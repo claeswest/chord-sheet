@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -24,25 +24,52 @@ import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
-import SongLibrary from "./SongLibrary";
 import { saveSong, type StoredSong } from "@/lib/storage";
+import { encodeSong, type SharedSong } from "@/lib/songUrl";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
 const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chorus", "Solo"];
 
-export default function SongEditor() {
-  const [title, setTitle] = useState("Untitled Song");
-  const [artist, setArtist] = useState("");
+interface SongEditorProps {
+  initialSong?: SharedSong | null;
+}
+
+export default function SongEditor({ initialSong }: SongEditorProps = {}) {
+  const [title, setTitle] = useState(initialSong?.title ?? "Untitled Song");
+  const [artist, setArtist] = useState(initialSong?.artist ?? "");
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [semitones, setSemitones] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
-  const [songId, setSongId] = useState(() => genId());
+  const [songId, setSongId] = useState(() => initialSong?.id ?? genId());
   const [saveFlash, setSaveFlash] = useState(false);
+  const [shareFlash, setShareFlash] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
+  const [lines, setLines] = useState<SongLine[]>(
+    () => initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }]
+  );
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
+
+  // Auto-save: debounce 1s after any content change, skip initial render
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }, 1000);
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, [title, artist, lines, songId]);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
   const sensors = useSensors(
@@ -58,9 +85,6 @@ export default function SongEditor() {
       return arrayMove(prev, oldIdx, newIdx);
     });
   }, []);
-  const [lines, setLines] = useState<SongLine[]>(() => [
-    { id: genId(), type: "lyric", text: "", chords: [] },
-  ]);
 
   // ── Line operations ──────────────────────────────────────────────────────────
 
@@ -136,6 +160,15 @@ export default function SongEditor() {
 
   // ── Save / Load ──────────────────────────────────────────────────────────────
 
+  const handleShare = useCallback(() => {
+    const encoded = encodeSong({ title, artist, lines });
+    const url = `${window.location.origin}/editor/new?song=${encoded}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareFlash(true);
+      setTimeout(() => setShareFlash(false), 2000);
+    });
+  }, [title, artist, lines]);
+
   const handleSave = useCallback(() => {
     saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     setSaveFlash(true);
@@ -148,7 +181,6 @@ export default function SongEditor() {
     setArtist(song.artist);
     setLines(song.lines);
     setSemitones(0);
-    setShowLibrary(false);
   }, []);
 
   const handleNew = useCallback(() => {
@@ -213,12 +245,21 @@ export default function SongEditor() {
             className="text-base font-semibold text-zinc-900 bg-transparent outline-none leading-tight"
             placeholder="Song title"
           />
-          <input
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            className="text-xs text-zinc-400 bg-transparent outline-none leading-tight"
-            placeholder="Artist"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              className="text-xs text-zinc-400 bg-transparent outline-none leading-tight"
+              placeholder="Artist"
+            />
+            <span
+              className={`text-xs text-zinc-300 transition-opacity duration-500 ${
+                autoSaved ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              Saved
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
           <button
@@ -227,12 +268,12 @@ export default function SongEditor() {
           >
             New
           </button>
-          <button
-            onClick={() => setShowLibrary(true)}
+          <Link
+            href="/songs"
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
           >
             Songs
-          </button>
+          </Link>
           <button
             onClick={() => setShowImport(true)}
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
@@ -281,6 +322,17 @@ export default function SongEditor() {
             title="Print / Export PDF"
           >
             Print
+          </button>
+          <button
+            onClick={handleShare}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+              shareFlash
+                ? "text-green-600 bg-green-50"
+                : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+            }`}
+            title="Copy shareable link"
+          >
+            {shareFlash ? "Copied!" : "Share"}
           </button>
           <button
             onClick={handleSave}
@@ -361,13 +413,6 @@ export default function SongEditor() {
         />
       )}
 
-      {/* Song library */}
-      {showLibrary && (
-        <SongLibrary
-          onLoad={handleLoad}
-          onClose={() => setShowLibrary(false)}
-        />
-      )}
     </div>
   );
 }

@@ -86,7 +86,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
-              href="/editor/new"
+              href="/songs"
               className="bg-indigo-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-indigo-700 transition-colors shadow-md"
             >
               Start for free
@@ -246,7 +246,7 @@ export default function HomePage() {
             perform their songs.
           </p>
           <Link
-            href="/editor/new"
+            href="/songs"
             className="inline-block bg-indigo-600 text-white px-10 py-4 rounded-full text-base font-semibold hover:bg-indigo-700 transition-colors shadow-md"
           >
             Create your first chord sheet

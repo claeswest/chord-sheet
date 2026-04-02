@@ -9,7 +9,19 @@ export type StoredSong = {
   artist: string;
   lines: SongLine[];
   updatedAt: string; // ISO string
+  tags?: string[];
 };
+
+export function updateSongTags(id: string, tags: string[]): void {
+  const raw = localStorage.getItem(`${STORAGE_KEY}_${id}`);
+  if (!raw) return;
+  try {
+    const song: StoredSong = JSON.parse(raw);
+    saveSong({ ...song, tags });
+  } catch {
+    // ignore corrupt entry
+  }
+}
 
 function readIndex(): string[] {
   try {

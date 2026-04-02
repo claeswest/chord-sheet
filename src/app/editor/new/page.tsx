@@ -1,6 +1,10 @@
-"use client";
-import SongEditor from "@/components/editor/SongEditor";
+import { Suspense } from "react";
+import SongEditorLoader from "@/components/editor/SongEditorLoader";
 
 export default function NewSongPage() {
-  return <SongEditor />;
+  return (
+    <Suspense fallback={null}>
+      <SongEditorLoader />
+    </Suspense>
+  );
 }
