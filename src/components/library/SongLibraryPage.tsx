@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listSongs, deleteSong, updateSongTags, type StoredSong } from "@/lib/storage";
 import { encodeSong } from "@/lib/songUrl";
+import { fetchSongs, removeSong, upsertSong, type DbSong } from "@/lib/songDb";
+import { listSongs, deleteSong, updateSongTags } from "@/lib/storage";
 
 const PRESET_TAGS = ["Worship", "Pop", "Rock", "Folk", "Country", "Blues", "Jazz", "Original", "Cover", "Setlist"];
 
@@ -19,41 +20,75 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function SongLibraryPage() {
-  const [songs, setSongs] = useState<StoredSong[]>([]);
+type Song = DbSong & { source: "db" | "local" };
+
+interface Props {
+  isLoggedIn: boolean;
+}
+
+export default function SongLibraryPage({ isLoggedIn }: Props) {
+  const [songs, setSongs] = useState<Song[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setSongs(listSongs());
-  }, []);
+    async function load() {
+      setLoading(true);
+      try {
+        if (isLoggedIn) {
+          const db = await fetchSongs();
+          setSongs(db.map((s) => ({ ...s, source: "db" as const })));
+        } else {
+          const local = listSongs();
+          setSongs(
+            local.map((s) => ({
+              id: s.id,
+              title: s.title,
+              artist: s.artist,
+              lines: s.lines,
+              tags: s.tags ?? [],
+              updatedAt: s.updatedAt,
+              source: "local" as const,
+            }))
+          );
+        }
+      } catch {
+        // fall back silently
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [isLoggedIn]);
 
-  const handleDelete = (id: string) => {
-    deleteSong(id);
+  const handleDelete = async (id: string, source: "db" | "local") => {
+    if (source === "db") await removeSong(id);
+    else deleteSong(id);
     setSongs((prev) => prev.filter((s) => s.id !== id));
   };
 
-  const handleToggleTag = (songId: string, tag: string) => {
-    setSongs((prev) =>
-      prev.map((s) => {
-        if (s.id !== songId) return s;
-        const tags = s.tags ?? [];
-        const next = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
-        updateSongTags(songId, next);
-        return { ...s, tags: next };
-      })
-    );
+  const handleToggleTag = async (songId: string, tag: string) => {
+    const song = songs.find((s) => s.id === songId);
+    if (!song) return;
+    const next = song.tags.includes(tag)
+      ? song.tags.filter((t) => t !== tag)
+      : [...song.tags, tag];
+    setSongs((prev) => prev.map((s) => s.id === songId ? { ...s, tags: next } : s));
+    if (song.source === "db") {
+      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next });
+    } else {
+      updateSongTags(songId, next);
+    }
   };
 
-  // All tags in use across all songs
-  const allTags = Array.from(new Set(songs.flatMap((s) => s.tags ?? []))).sort();
+  const allTags = Array.from(new Set(songs.flatMap((s) => s.tags))).sort();
 
   const filtered = songs.filter((s) => {
-    const matchesTag = !activeTag || (s.tags ?? []).includes(activeTag);
+    const matchesTag = !activeTag || s.tags.includes(activeTag);
     const q = search.toLowerCase();
-    const matchesSearch =
-      !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q);
+    const matchesSearch = !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q);
     return matchesTag && matchesSearch;
   });
 
@@ -67,6 +102,14 @@ export default function SongLibraryPage() {
         <div className="w-px h-5 bg-zinc-200" />
         <h1 className="text-sm font-semibold text-zinc-900">My Songs</h1>
         <div className="flex-1" />
+        {!isLoggedIn && (
+          <Link
+            href="/login"
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+          >
+            Sign in to sync
+          </Link>
+        )}
         <Link
           href="/editor/new"
           className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
@@ -89,9 +132,7 @@ export default function SongLibraryPage() {
               <button
                 onClick={() => setActiveTag(null)}
                 className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                  !activeTag
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
+                  !activeTag ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
                 }`}
               >
                 All
@@ -101,9 +142,7 @@ export default function SongLibraryPage() {
                   key={tag}
                   onClick={() => setActiveTag(activeTag === tag ? null : tag)}
                   className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    activeTag === tag
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
+                    activeTag === tag ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
                   }`}
                 >
                   {tag}
@@ -114,16 +153,15 @@ export default function SongLibraryPage() {
         </div>
 
         {/* Song grid */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-24 text-zinc-300 text-sm">Loading…</div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-24 text-zinc-400">
             {songs.length === 0 ? (
               <>
                 <p className="text-base font-medium mb-2">No songs yet</p>
                 <p className="text-sm mb-6">Create your first chord sheet to get started.</p>
-                <Link
-                  href="/editor/new"
-                  className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-                >
+                <Link href="/editor/new" className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
                   + New Song
                 </Link>
               </>
@@ -140,11 +178,7 @@ export default function SongLibraryPage() {
               const isEditingTags = editingTagsId === song.id;
 
               return (
-                <div
-                  key={song.id}
-                  className="group bg-white rounded-xl border border-zinc-200 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col"
-                >
-                  {/* Card body */}
+                <div key={song.id} className="group bg-white rounded-xl border border-zinc-200 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col">
                   <div className="flex-1 p-5">
                     <div className="text-base font-semibold text-zinc-900 truncate mb-0.5">
                       {song.title || "Untitled Song"}
@@ -155,35 +189,28 @@ export default function SongLibraryPage() {
                     <div className="text-xs text-zinc-300 mt-3">{timeAgo(song.updatedAt)}</div>
                   </div>
 
-                  {/* Tags row */}
+                  {/* Tags */}
                   <div className="px-5 pb-3">
                     <div className="flex flex-wrap gap-1.5 min-h-[24px]">
-                      {(song.tags ?? []).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full"
-                        >
-                          {tag}
-                        </span>
+                      {song.tags.map((tag) => (
+                        <span key={tag} className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">{tag}</span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Tag editor (expanded) */}
+                  {/* Tag editor */}
                   {isEditingTags && (
                     <div className="px-5 pb-4 border-t border-zinc-100 pt-3">
                       <p className="text-xs text-zinc-400 mb-2">Add tags</p>
                       <div className="flex flex-wrap gap-1.5">
                         {PRESET_TAGS.map((tag) => {
-                          const active = (song.tags ?? []).includes(tag);
+                          const active = song.tags.includes(tag);
                           return (
                             <button
                               key={tag}
                               onClick={() => handleToggleTag(song.id, tag)}
                               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                active
-                                  ? "bg-indigo-600 text-white border-indigo-600"
-                                  : "bg-white text-zinc-500 border-zinc-200 hover:border-indigo-300 hover:text-indigo-600"
+                                active ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-zinc-500 border-zinc-200 hover:border-indigo-300 hover:text-indigo-600"
                               }`}
                             >
                               {tag}
@@ -194,7 +221,7 @@ export default function SongLibraryPage() {
                     </div>
                   )}
 
-                  {/* Card footer */}
+                  {/* Footer */}
                   <div className="flex items-center gap-1 px-4 py-2.5 border-t border-zinc-100">
                     <button
                       onClick={() => setEditingTagsId(isEditingTags ? null : song.id)}
@@ -203,20 +230,14 @@ export default function SongLibraryPage() {
                       {isEditingTags ? "Done" : "# Tags"}
                     </button>
                     <div className="flex-1" />
-                    <Link
-                      href={viewUrl}
-                      className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
-                    >
+                    <Link href={viewUrl} className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors">
                       View
                     </Link>
-                    <Link
-                      href={editUrl}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition-colors font-medium"
-                    >
+                    <Link href={editUrl} className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition-colors font-medium">
                       Edit
                     </Link>
                     <button
-                      onClick={() => handleDelete(song.id)}
+                      onClick={() => handleDelete(song.id, song.source)}
                       className="text-xs text-zinc-300 hover:text-red-400 px-2 py-1 rounded hover:bg-red-50 transition-colors"
                     >
                       ✕

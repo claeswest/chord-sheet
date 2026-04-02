@@ -26,6 +26,7 @@ import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
+import { upsertSong } from "@/lib/songDb";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -33,9 +34,10 @@ const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chor
 
 interface SongEditorProps {
   initialSong?: SharedSong | null;
+  isLoggedIn?: boolean;
 }
 
-export default function SongEditor({ initialSong }: SongEditorProps = {}) {
+export default function SongEditor({ initialSong, isLoggedIn = false }: SongEditorProps = {}) {
   const [title, setTitle] = useState(initialSong?.title ?? "Untitled Song");
   const [artist, setArtist] = useState(initialSong?.artist ?? "");
   const [activeChord, setActiveChord] = useState<string | null>(null);
@@ -53,23 +55,6 @@ export default function SongEditor({ initialSong }: SongEditorProps = {}) {
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
-
-  // Auto-save: debounce 1s after any content change, skip initial render
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    autoSaveTimer.current = setTimeout(() => {
-      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
-      setAutoSaved(true);
-      setTimeout(() => setAutoSaved(false), 2000);
-    }, 1000);
-    return () => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    };
-  }, [title, artist, lines, songId]);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
   const sensors = useSensors(
@@ -169,11 +154,38 @@ export default function SongEditor({ initialSong }: SongEditorProps = {}) {
     });
   }, [title, artist, lines]);
 
+  const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
+    if (isLoggedIn) {
+      await upsertSong({ id: songId, title, artist, lines, tags: [] });
+    } else {
+      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
+    }
+    if (opts?.flash) {
+      setSaveFlash(true);
+      setTimeout(() => setSaveFlash(false), 1500);
+    }
+  }, [isLoggedIn, songId, title, artist, lines]);
+
   const handleSave = useCallback(() => {
-    saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
-    setSaveFlash(true);
-    setTimeout(() => setSaveFlash(false), 1500);
-  }, [songId, title, artist, lines]);
+    persistSong({ flash: true });
+  }, [persistSong]);
+
+  // Auto-save: debounce 1s after any content change, skip initial render
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      await persistSong();
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }, 1000);
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, [title, artist, lines, songId, persistSong]);
 
   const handleLoad = useCallback((song: StoredSong) => {
     setSongId(song.id);

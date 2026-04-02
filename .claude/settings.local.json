@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --name chordsheetmaker)",
+      "Bash(npx create-next-app@latest chordsheetmaker --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(mv chordsheetmaker/* .)",
+      "Bash(mv chordsheetmaker/.* .)",
+      "Bash(rmdir chordsheetmaker:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(gh auth:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma:*)",
+      "Bash(node -e \"const p = require\\(''''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@prisma/client/package.json''''\\); console.log\\(JSON.stringify\\({version:p.version, main:p.main, types:p.types, exports:p.exports}, null, 2\\)\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(find 'C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/prisma' -name *.md -o -name CHANGELOG*)",
+      "Bash(grep -rn \"from \"\"@prisma/client\"\"\\\\|from ''@prisma/client''\" \"C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/src/\")"
+    ]
+  }
+}
