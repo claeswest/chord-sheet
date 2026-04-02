@@ -23,6 +23,9 @@ import ChordPalette from "./ChordPalette";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
+import PrintView from "./PrintView";
+import SongLibrary from "./SongLibrary";
+import { saveSong, type StoredSong } from "@/lib/storage";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -36,6 +39,9 @@ export default function SongEditor() {
   const [showImport, setShowImport] = useState(false);
   const [semitones, setSemitones] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [songId, setSongId] = useState(() => genId());
+  const [saveFlash, setSaveFlash] = useState(false);
   useEffect(() => setMounted(true), []);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
@@ -128,6 +134,31 @@ export default function SongEditor() {
     );
   }, []);
 
+  // ── Save / Load ──────────────────────────────────────────────────────────────
+
+  const handleSave = useCallback(() => {
+    saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 1500);
+  }, [songId, title, artist, lines]);
+
+  const handleLoad = useCallback((song: StoredSong) => {
+    setSongId(song.id);
+    setTitle(song.title);
+    setArtist(song.artist);
+    setLines(song.lines);
+    setSemitones(0);
+    setShowLibrary(false);
+  }, []);
+
+  const handleNew = useCallback(() => {
+    setSongId(genId());
+    setTitle("Untitled Song");
+    setArtist("");
+    setLines([{ id: genId(), type: "lyric", text: "", chords: [] }]);
+    setSemitones(0);
+  }, []);
+
   // ── Render ───────────────────────────────────────────────────────────────────
 
   const displayLines = transposeSong(lines, semitones);
@@ -191,6 +222,18 @@ export default function SongEditor() {
         </div>
         <div className="flex items-center gap-2 ml-auto">
           <button
+            onClick={handleNew}
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+          >
+            New
+          </button>
+          <button
+            onClick={() => setShowLibrary(true)}
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+          >
+            Songs
+          </button>
+          <button
             onClick={() => setShowImport(true)}
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
           >
@@ -232,8 +275,22 @@ export default function SongEditor() {
           >
             View
           </button>
-          <button className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-            Save
+          <button
+            onClick={() => window.print()}
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+            title="Print / Export PDF"
+          >
+            Print
+          </button>
+          <button
+            onClick={handleSave}
+            className={`text-sm px-4 py-1.5 rounded-lg font-medium transition-colors ${
+              saveFlash
+                ? "bg-green-500 text-white"
+                : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
+          >
+            {saveFlash ? "Saved!" : "Save"}
           </button>
         </div>
       </header>
@@ -293,11 +350,22 @@ export default function SongEditor() {
         <ChordPalette activeChord={activeChord} onSelectChord={setActiveChord} />
       </div>
 
+      {/* Print view — invisible on screen, rendered by @media print */}
+      <PrintView title={title} artist={artist} lines={displayLines} watermark />
+
       {/* Import modal */}
       {showImport && (
         <ImportModal
           onImport={(imported) => setLines(imported)}
           onClose={() => setShowImport(false)}
+        />
+      )}
+
+      {/* Song library */}
+      {showLibrary && (
+        <SongLibrary
+          onLoad={handleLoad}
+          onClose={() => setShowLibrary(false)}
         />
       )}
     </div>

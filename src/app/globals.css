@@ -24,3 +24,110 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Print styles ─────────────────────────────────────────────────────────── */
+
+/* Hide on screen */
+#print-view { display: none; }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 18mm 24mm 18mm;
+  }
+
+  /* Hide everything, then reveal only the print view and its children.
+     visibility can be overridden by children; display cannot when a parent is hidden. */
+  body * {
+    visibility: hidden;
+  }
+
+  #print-view {
+    visibility: visible;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+  }
+
+  #print-view * {
+    visibility: visible;
+  }
+
+  /* Watermark */
+  #print-view.watermarked::after {
+    content: "ChordSheetMaker.com";
+    position: fixed;
+    bottom: 8mm;
+    right: 14mm;
+    font-size: 8pt;
+    color: #ccc;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.05em;
+    visibility: visible;
+  }
+
+  .print-song-title {
+    font-size: 18pt;
+    font-weight: 700;
+    margin-bottom: 2pt;
+  }
+
+  .print-song-artist {
+    font-size: 10pt;
+    color: #555;
+    margin-bottom: 18pt;
+  }
+
+  .print-section {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #4f46e5;
+    padding-top: 16pt;
+    padding-bottom: 3pt;
+    border-bottom: 0.5pt solid #dde;
+    margin-bottom: 4pt;
+    break-after: avoid;
+  }
+
+  .print-lyric-block {
+    position: relative;
+    padding-top: 16pt;
+    margin-bottom: 2pt;
+    break-inside: avoid;
+  }
+
+  .print-lyric-block.no-chords {
+    padding-top: 0;
+  }
+
+  .print-chord-row {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 14pt;
+  }
+
+  .print-chord {
+    position: absolute;
+    font-size: 9pt;
+    font-weight: 700;
+    color: #4f46e5;
+    white-space: nowrap;
+    top: 0;
+  }
+
+  .print-lyric {
+    font-size: 12pt;
+    white-space: pre;
+    line-height: 1.6;
+  }
+}
