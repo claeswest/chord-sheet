@@ -1,10 +1,24 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import type { SongLine, LyricLine, SectionHeader } from "@/types/song";
 import LyricLineEditor from "./LyricLineEditor";
 import SectionHeaderBlock from "./SectionHeaderBlock";
+import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
@@ -21,6 +35,23 @@ export default function SongEditor() {
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [semitones, setSemitones] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setLines((prev) => {
+      const oldIdx = prev.findIndex((l) => l.id === active.id);
+      const newIdx = prev.findIndex((l) => l.id === over.id);
+      return arrayMove(prev, oldIdx, newIdx);
+    });
+  }, []);
   const [lines, setLines] = useState<SongLine[]>(() => [
     { id: genId(), type: "lyric", text: "", chords: [] },
   ]);
@@ -114,6 +145,28 @@ export default function SongEditor() {
 
   const lastLineId = lines[lines.length - 1].id;
 
+  const renderLine = (line: SongLine) =>
+    line.type === "lyric" ? (
+      <LyricLineEditor
+        line={line}
+        activeChord={activeChord}
+        onClearActiveChord={() => setActiveChord(null)}
+        onUpdate={(text) => updateLineText(line.id, text)}
+        onAddChord={(pos, chord) => addChord(line.id, pos, chord)}
+        onUpdateChord={(cid, chord) => updateChord(line.id, cid, chord)}
+        onMoveChord={(cid, pos) => moveChord(line.id, cid, pos)}
+        onDeleteChord={(cid) => deleteChord(line.id, cid)}
+        onAddLineAfter={() => addLineAfter(line.id)}
+        onDelete={() => deleteLine(line.id)}
+      />
+    ) : (
+      <SectionHeaderBlock
+        section={line as SectionHeader}
+        onUpdate={(label) => updateSection(line.id, label)}
+        onDelete={() => deleteLine(line.id)}
+      />
+    );
+
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Toolbar */}
@@ -189,29 +242,30 @@ export default function SongEditor() {
         {/* Editor area */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
-            {displayLines.map((line) =>
-              line.type === "lyric" ? (
-                <LyricLineEditor
-                  key={line.id}
-                  line={line}
-                  activeChord={activeChord}
-                  onClearActiveChord={() => setActiveChord(null)}
-                  onUpdate={(text) => updateLineText(line.id, text)}
-                  onAddChord={(pos, chord) => addChord(line.id, pos, chord)}
-                  onUpdateChord={(cid, chord) => updateChord(line.id, cid, chord)}
-                  onMoveChord={(cid, pos) => moveChord(line.id, cid, pos)}
-                  onDeleteChord={(cid) => deleteChord(line.id, cid)}
-                  onAddLineAfter={() => addLineAfter(line.id)}
-                  onDelete={() => deleteLine(line.id)}
-                />
-              ) : (
-                <SectionHeaderBlock
-                  key={line.id}
-                  section={line as import("@/types/song").SectionHeader}
-                  onUpdate={(label) => updateSection(line.id, label)}
-                  onDelete={() => deleteLine(line.id)}
-                />
-              )
+            {mounted ? (
+              <DndContext
+                id="song-editor-dnd"
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={lines.map((l) => l.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {displayLines.map((line) => (
+                    <SortableLine key={line.id} id={line.id}>
+                      {renderLine(line)}
+                    </SortableLine>
+                  ))}
+                </SortableContext>
+              </DndContext>
+            ) : (
+              displayLines.map((line) => (
+                <div key={line.id} className="pl-4">
+                  {renderLine(line)}
+                </div>
+              ))
             )}
 
             {/* Bottom controls */}

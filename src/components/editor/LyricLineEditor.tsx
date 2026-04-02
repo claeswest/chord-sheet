@@ -156,7 +156,7 @@ export default function LyricLineEditor({
   const chordLeftPx = (position: number) => measureWidth(line.text.slice(0, position));
 
   return (
-    <div className="group relative py-0.5">
+    <div className="group/line relative py-0.5">
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
@@ -255,10 +255,13 @@ export default function LyricLineEditor({
         />
         <button
           onClick={onDelete}
-          className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 text-xs transition-opacity shrink-0 px-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-300 hover:text-red-400 transition-opacity shrink-0 px-1"
           tabIndex={-1}
+          title="Delete line"
         >
-          ✕
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M2 2l8 8M10 2l-8 8"/>
+          </svg>
         </button>
       </div>
     </div>
