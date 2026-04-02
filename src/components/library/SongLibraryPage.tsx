@@ -24,9 +24,11 @@ type Song = DbSong & { source: "db" | "local" };
 
 interface Props {
   isLoggedIn: boolean;
+  userName?: string | null;
+  userImage?: string | null;
 }
 
-export default function SongLibraryPage({ isLoggedIn }: Props) {
+export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Props) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -102,12 +104,25 @@ export default function SongLibraryPage({ isLoggedIn }: Props) {
         <div className="w-px h-5 bg-zinc-200" />
         <h1 className="text-sm font-semibold text-zinc-900">My Songs</h1>
         <div className="flex-1" />
-        {!isLoggedIn && (
+        {isLoggedIn ? (
+          <div className="flex items-center gap-2">
+            {userImage && (
+              <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full" />
+            )}
+            <span className="text-sm text-zinc-500 hidden sm:block">{userName}</span>
+            <a
+              href="/api/auth/signout"
+              className="text-sm text-zinc-400 hover:text-zinc-700 px-2 py-1 rounded hover:bg-zinc-100 transition-colors"
+            >
+              Sign out
+            </a>
+          </div>
+        ) : (
           <Link
             href="/login"
-            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+            className="text-sm text-indigo-600 font-medium hover:text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors"
           >
-            Sign in to sync
+            Sign in to sync →
           </Link>
         )}
         <Link
