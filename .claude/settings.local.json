@@ -15,7 +15,13 @@
       "Bash(node -e \"const p = require\\(''''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@prisma/client/package.json''''\\); console.log\\(JSON.stringify\\({version:p.version, main:p.main, types:p.types, exports:p.exports}, null, 2\\)\\)\")",
       "Bash(node -e \":*)",
       "Bash(find 'C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/prisma' -name *.md -o -name CHANGELOG*)",
-      "Bash(grep -rn \"from \"\"@prisma/client\"\"\\\\|from ''@prisma/client''\" \"C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/src/\")"
+      "Bash(grep -rn \"from \"\"@prisma/client\"\"\\\\|from ''@prisma/client''\" \"C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/src/\")",
+      "Bash(node -e \"const a = require\\(''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@prisma/adapter-neon''\\); console.log\\(Object.keys\\(a\\)\\)\")",
+      "Bash(node -e \"const a = require\\(''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@neondatabase/serverless''\\); console.log\\(Object.keys\\(a\\).slice\\(0,10\\)\\)\")",
+      "Bash(node -e \"const a = require\\(''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@neondatabase/serverless''\\); console.log\\(Object.keys\\(a\\)\\)\")",
+      "Bash(node -e \"const {PrismaNeonHttp} = require\\(''@prisma/adapter-neon''\\); console.log\\(PrismaNeonHttp.toString\\(\\).slice\\(0,300\\)\\)\")",
+      "Bash(find node_modules/next-auth -name *.js -exec grep -l MissingSecret {})",
+      "Bash(2)"
     ]
   }
 }
