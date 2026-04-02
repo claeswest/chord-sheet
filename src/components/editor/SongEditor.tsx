@@ -7,6 +7,8 @@ import LyricLineEditor from "./LyricLineEditor";
 import SectionHeaderBlock from "./SectionHeaderBlock";
 import ChordPalette from "./ChordPalette";
 import SongViewer from "./SongViewer";
+import ImportModal from "./ImportModal";
+import { transposeSong, semitoneLabel } from "@/lib/transpose";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -17,6 +19,8 @@ export default function SongEditor() {
   const [artist, setArtist] = useState("");
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [semitones, setSemitones] = useState(0);
   const [lines, setLines] = useState<SongLine[]>(() => [
     { id: genId(), type: "lyric", text: "", chords: [] },
   ]);
@@ -95,12 +99,14 @@ export default function SongEditor() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
+  const displayLines = transposeSong(lines, semitones);
+
   if (viewMode) {
     return (
       <SongViewer
         title={title}
         artist={artist}
-        lines={lines}
+        lines={displayLines}
         onEdit={() => setViewMode(false)}
       />
     );
@@ -132,6 +138,42 @@ export default function SongEditor() {
         </div>
         <div className="flex items-center gap-2 ml-auto">
           <button
+            onClick={() => setShowImport(true)}
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+          >
+            Import
+          </button>
+
+          {/* Transpose controls */}
+          <div className="flex items-center gap-1 border border-zinc-200 rounded-lg px-1 py-0.5">
+            <button
+              onClick={() => setSemitones((s) => s - 1)}
+              className="w-6 h-6 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded transition-colors text-sm font-medium"
+              title="Transpose down 1 semitone"
+            >
+              ▼
+            </button>
+            <button
+              onClick={() => setSemitones(0)}
+              className={`text-xs px-1.5 min-w-[3rem] text-center rounded transition-colors ${
+                semitones === 0
+                  ? "text-zinc-400"
+                  : "text-indigo-600 font-semibold hover:bg-indigo-50"
+              }`}
+              title="Reset to original key"
+            >
+              {semitoneLabel(semitones)}
+            </button>
+            <button
+              onClick={() => setSemitones((s) => s + 1)}
+              className="w-6 h-6 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded transition-colors text-sm font-medium"
+              title="Transpose up 1 semitone"
+            >
+              ▲
+            </button>
+          </div>
+
+          <button
             onClick={() => setViewMode(true)}
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
           >
@@ -147,7 +189,7 @@ export default function SongEditor() {
         {/* Editor area */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
-            {lines.map((line) =>
+            {displayLines.map((line) =>
               line.type === "lyric" ? (
                 <LyricLineEditor
                   key={line.id}
@@ -165,7 +207,7 @@ export default function SongEditor() {
               ) : (
                 <SectionHeaderBlock
                   key={line.id}
-                  section={line}
+                  section={line as import("@/types/song").SectionHeader}
                   onUpdate={(label) => updateSection(line.id, label)}
                   onDelete={() => deleteLine(line.id)}
                 />
@@ -196,6 +238,14 @@ export default function SongEditor() {
         {/* Chord palette */}
         <ChordPalette activeChord={activeChord} onSelectChord={setActiveChord} />
       </div>
+
+      {/* Import modal */}
+      {showImport && (
+        <ImportModal
+          onImport={(imported) => setLines(imported)}
+          onClose={() => setShowImport(false)}
+        />
+      )}
     </div>
   );
 }
