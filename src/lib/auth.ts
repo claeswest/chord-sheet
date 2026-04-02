@@ -4,8 +4,11 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { prisma } from "./prisma";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+// Lazy initialization so env vars are read fresh on every request,
+// avoiding module-init timing issues in Vercel serverless.
+export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   adapter: PrismaAdapter(prisma as any),
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   trustHost: true,
   providers: [
     GoogleProvider({
@@ -28,4 +31,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
   },
-});
+}));
