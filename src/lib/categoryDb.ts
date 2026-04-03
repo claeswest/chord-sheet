@@ -34,11 +34,15 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 export async function addSongToCategory(categoryId: string, songId: string): Promise<void> {
-  await fetch(`/api/categories/${categoryId}/songs`, {
+  const res = await fetch(`/api/categories/${categoryId}/songs`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ songId }),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    console.error("addSongToCategory failed", res.status, body);
+  }
 }
 
 export async function removeSongFromCategory(categoryId: string, songId: string): Promise<void> {

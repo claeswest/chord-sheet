@@ -17,10 +17,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   ]);
   if (!category || !song) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.songCategory.upsert({
-    where: { songId_categoryId: { songId, categoryId } },
-    create: { songId, categoryId },
-    update: {},
+  await prisma.songCategory.createMany({
+    data: [{ songId, categoryId }],
+    skipDuplicates: true,
   });
 
   return NextResponse.json({ ok: true });
