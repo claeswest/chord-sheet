@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export interface TextStyle {
   fontFamily?: string;
   fontSize?: number;
@@ -11,6 +13,8 @@ export interface SongStyle {
   lyrics: TextStyle;
   chords: TextStyle;
   background?: string;
+  backgroundImage?: string;   // base64 data URL, not included in share URLs
+  overlayOpacity?: number;    // 0–1, default 0.5
 }
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
@@ -70,4 +74,18 @@ export function loadGoogleFont(url: string): void {
 
 export function fontByStack(stack: string): GoogleFont {
   return ALL_FONTS.find(f => f.stack === stack) ?? SYSTEM_FONT;
+}
+
+/** Returns a React `style` object for the outermost background div. */
+export function backgroundStyle(s: SongStyle): CSSProperties {
+  if (s.backgroundImage) {
+    const opacity = s.overlayOpacity ?? 0.5;
+    const overlay = `rgba(0,0,0,${opacity})`;
+    return {
+      backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${s.backgroundImage})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
+  }
+  return { background: s.background ?? "#ffffff" };
 }

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { SongLine } from "@/types/song";
-import { DEFAULT_STYLE, MONO_STACK } from "@/lib/songStyle";
+import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
 function measureWidth(text: string, size: number, family: string): number {
@@ -93,7 +93,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   return (
     <div
       className="relative flex flex-col h-screen"
-      style={{ background: s.background ?? "#ffffff" }}
+      style={backgroundStyle(s)}
       onMouseMove={() => setShowControls(true)}
     >
       {/* Scrollable content */}

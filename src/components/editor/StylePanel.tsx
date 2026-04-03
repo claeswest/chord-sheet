@@ -88,6 +88,9 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [theme, setTheme] = useState("");
+  const [bgLoading, setBgLoading] = useState(false);
+  const [bgError, setBgError] = useState("");
+  const [bgPrompt, setBgPrompt] = useState("");
 
   const handleAiStyle = async () => {
     setAiLoading(true);
@@ -110,7 +113,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         const font = ALL_FONTS.find(f => f.stack === s.fontFamily);
         if (font) loadGoogleFont(font.url);
       });
-      onChange(data.style);
+      onChange({ ...style, ...data.style });
       setTheme(data.theme ?? "");
     } catch {
       setAiError("Network error");
@@ -119,8 +122,39 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
     }
   };
 
-  const reset = () => { onChange(DEFAULT_STYLE); setTheme(""); };
+  const handleAiBackground = async () => {
+    setBgLoading(true);
+    setBgError("");
+    setBgPrompt("");
+    try {
+      const res = await fetch("/api/ai/background", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: songTitle, artist: songArtist, lyrics: lyricsText }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setBgError(body.error ?? "Image generation failed");
+        return;
+      }
+      const data = await res.json();
+      onChange({ ...style, backgroundImage: data.image, overlayOpacity: style.overlayOpacity ?? 0.5 });
+      setBgPrompt(data.prompt ?? "");
+    } catch {
+      setBgError("Network error");
+    } finally {
+      setBgLoading(false);
+    }
+  };
+
+  const removeBackground = () => {
+    onChange({ ...style, backgroundImage: undefined });
+    setBgPrompt("");
+  };
+
+  const reset = () => { onChange(DEFAULT_STYLE); setTheme(""); setBgPrompt(""); };
   const bg = style.background ?? "#ffffff";
+  const overlayOpacity = style.overlayOpacity ?? 0.5;
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto bg-zinc-50">
@@ -151,7 +185,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         )}
       </div>
 
-      {/* Background */}
+      {/* Background color */}
       <div className="px-4 py-3 border-b border-zinc-100">
         <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Background</p>
         <div className="flex items-center gap-2">
@@ -163,6 +197,89 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
           />
           <span className="text-xs text-zinc-400 font-mono">{bg}</span>
         </div>
+      </div>
+
+      {/* AI Background Image */}
+      <div className="px-4 py-3 border-b border-zinc-100">
+        <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Background Image</p>
+
+        {style.backgroundImage ? (
+          <>
+            {/* Thumbnail */}
+            <div className="relative mb-2 rounded overflow-hidden" style={{ height: 80 }}>
+              <img
+                src={style.backgroundImage}
+                alt="Background"
+                className="w-full h-full object-cover"
+              />
+              <button
+                onClick={removeBackground}
+                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded text-xs transition-colors"
+                title="Remove background image"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Overlay opacity */}
+            <div className="mb-1">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-zinc-400">Overlay</label>
+                <span className="text-xs text-zinc-400 font-mono">{Math.round(overlayOpacity * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(overlayOpacity * 100)}
+                onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })}
+                className="w-full accent-indigo-500"
+              />
+            </div>
+
+            {bgPrompt && (
+              <p className="text-xs text-zinc-400 italic leading-relaxed mt-1">{bgPrompt}</p>
+            )}
+
+            {/* Regenerate */}
+            <button
+              onClick={handleAiBackground}
+              disabled={bgLoading}
+              className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-violet-600 border border-violet-200 hover:border-violet-400 hover:bg-violet-50 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {bgLoading ? (
+                <>
+                  <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Generating…
+                </>
+              ) : "↺ Regenerate"}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={handleAiBackground}
+              disabled={bgLoading}
+              className="w-full flex items-center justify-center gap-1.5 text-xs bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+            >
+              {bgLoading ? (
+                <>
+                  <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Generating…
+                </>
+              ) : "✦ Generate Background"}
+            </button>
+            {bgError && (
+              <p className="text-xs text-red-500 mt-2">{bgError}</p>
+            )}
+          </>
+        )}
       </div>
 
       <Section

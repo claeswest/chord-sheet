@@ -10,7 +10,12 @@ export type SharedSong = {
 };
 
 export function encodeSong(song: SharedSong): string {
-  const json = JSON.stringify(song);
+  // Strip backgroundImage — it's a large base64 blob that would break URLs
+  const { style, ...rest } = song;
+  const safeStyle = style
+    ? { ...style, backgroundImage: undefined }
+    : style;
+  const json = JSON.stringify({ ...rest, style: safeStyle });
   // btoa doesn't handle unicode — use this safe wrapper
   return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (_, p1) =>
     String.fromCharCode(parseInt(p1, 16))

@@ -28,7 +28,7 @@ import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong } from "@/lib/songDb";
-import { DEFAULT_STYLE } from "@/lib/songStyle";
+import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
@@ -368,7 +368,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
       <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
-        <div className="flex-1 overflow-y-auto" style={{ background: songStyle.background ?? "#ffffff" }}>
+        <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
             {/* Title & artist preview — styled same as viewer */}
             <div className="mb-10 text-center">
