@@ -184,7 +184,7 @@ export default function LyricLineEditor({
               <input
                 autoFocus
                 defaultValue={chord.chord}
-                className="w-16 text-xs font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm"
+                className="w-16 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm" style={{ fontSize: "12px" }}
                 onBlur={(e) => {
                   const val = e.target.value.trim();
                   if (val) onUpdateChord(chord.id, val);
@@ -208,7 +208,8 @@ export default function LyricLineEditor({
               />
             ) : (
               <span
-                className="text-xs font-bold text-indigo-600 whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
+                className="font-bold text-indigo-600 whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
+                style={{ fontSize: "12px" }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   setEditingChordId(chord.id);
@@ -233,7 +234,8 @@ export default function LyricLineEditor({
               if (e.key === "Escape") setAddingAtPx(null);
             }}
             placeholder="Am"
-            className="absolute top-0 w-14 text-xs font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm z-10"
+            className="absolute top-0 w-14 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm z-10"
+            style={{ fontSize: "12px" }}
             style={{ left: addingAtPx }}
             onClick={(e) => e.stopPropagation()}
           />
