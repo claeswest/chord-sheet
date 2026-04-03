@@ -57,7 +57,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       try {
         if (isLoggedIn) {
           const [db, cats] = await Promise.all([fetchSongs(), fetchCategories()]);
-          setSongs(db.map((s) => ({ ...s, source: "db" as const })));
+          setSongs(db.map((s) => ({ ...s, categoryIds: s.categoryIds ?? [], source: "db" as const })));
           setCategories(cats);
         } else {
           const local = listSongs();
