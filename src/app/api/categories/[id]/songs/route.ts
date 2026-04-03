@@ -17,15 +17,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   ]);
   if (!category || !song) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  try {
-    await prisma.songCategory.createMany({
-      data: [{ songId, categoryId }],
-      skipDuplicates: true,
-    });
-  } catch (e) {
-    console.error("songCategory.createMany error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
-  }
+  await prisma.$executeRaw`
+    INSERT INTO "SongCategory" ("songId", "categoryId")
+    VALUES (${songId}, ${categoryId})
+    ON CONFLICT DO NOTHING
+  `;
 
   return NextResponse.json({ ok: true });
 }
