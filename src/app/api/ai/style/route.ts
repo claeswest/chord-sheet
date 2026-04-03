@@ -40,35 +40,38 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
   "theme": "1-2 sentences describing the visual theme and why it suits the song",
   "background": "#hexcolor",
   "title": {
-    "fontName": "one of the available fonts above",
-    "fontSize": 22,
+    "fontName": "choose the most fitting font from the list above",
+    "fontSize": <integer 18–36, pick what suits the song's drama/energy>,
     "color": "#hexcolor",
-    "bold": true,
-    "italic": false
+    "bold": <true or false — bold for powerful/rock/dramatic songs, regular for soft/classical/folk>,
+    "italic": <true or false — italic for romantic/lyrical/poetic songs, upright otherwise>
   },
   "lyrics": {
-    "fontName": "one of the available fonts above",
-    "fontSize": 15,
+    "fontName": "choose the most fitting font from the list above",
+    "fontSize": <integer 13–18, readable but sized for the genre's feel>,
     "color": "#hexcolor",
-    "bold": false,
-    "italic": false
+    "bold": <true or false>,
+    "italic": <true or false — italic suits introspective/poetic lyrics>
   },
   "chords": {
-    "fontName": "one of the available fonts above",
-    "fontSize": 12,
+    "fontName": "choose the most fitting font from the list above",
+    "fontSize": <integer 11–15>,
     "color": "#hexcolor",
-    "bold": true,
-    "italic": false
+    "bold": <true or false — usually bold so chords stand out>,
+    "italic": <true or false>
   }
 }
 
 Design guidelines:
+- ALL fields must be chosen creatively — do not use placeholder or default values
 - Choose background and text colors with strong contrast for readability
 - The chord color should stand out clearly from the lyric color
-- Match the visual mood to the song: folk songs feel warm/earthy, rock songs feel bold/dark, love songs feel soft/elegant, classical feels refined, blues feels deep/moody, pop feels clean/bright
+- Match the visual mood to the song: folk feels warm/earthy, rock feels bold/dark, love songs feel soft/elegant, classical feels refined, blues feels deep/moody, pop feels clean/bright
 - Serif fonts suit classical, folk, country, ballads; monospace suits technical/indie/electronic; sans-serif suits pop/modern; Caveat suits handwritten/folk/personal
-- Title can use a display font; lyrics should prioritize readability
-- Be creative but always ensure the result is beautiful and readable`;
+- The title font can be expressive and dramatic; lyrics font should prioritize readability
+- Vary font sizes meaningfully: a dramatic rock anthem title might be 32px, a delicate folk ballad title might be 20px
+- Use bold/italic purposefully: bold adds weight and power, italic adds elegance and motion
+- Be creative and make every field reflect the song's character`;
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
