@@ -22,10 +22,12 @@ function featureValue(val: boolean | number): string {
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<Plan | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleUpgrade(plan: Plan) {
     if (plan === "free") return;
     setLoading(plan);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -33,7 +35,17 @@ export default function PricingPage() {
         body: JSON.stringify({ plan }),
       });
       const data = await res.json();
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong");
+        return;
+      }
       if (data.url) window.location.href = data.url;
+    } catch {
+      setError("Network error — please try again");
     } finally {
       setLoading(null);
     }
@@ -45,6 +57,9 @@ export default function PricingPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">Simple pricing</h1>
           <p className="text-gray-500 text-lg">Start free. Upgrade when you need more.</p>
+          {error && (
+            <p className="mt-4 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg inline-block">{error}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
