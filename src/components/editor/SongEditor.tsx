@@ -55,23 +55,35 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [lines, setLines] = useState<SongLine[]>(
     () => initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }]
   );
-  const [songStyle, setSongStyle] = useState<SongStyle>(initialSong?.style ?? DEFAULT_STYLE);
+  const [songStyle, setSongStyle] = useState<SongStyle>(() => {
+    // Seed backgroundImage from sessionStorage cache so it appears immediately
+    const base = initialSong?.style ?? DEFAULT_STYLE;
+    if (initialSong?.id && typeof sessionStorage !== "undefined") {
+      const cached = sessionStorage.getItem(`bgImg:${initialSong.id}`);
+      if (cached) return { ...base, backgroundImage: cached };
+    }
+    return base;
+  });
   const [rightPanel, setRightPanel] = useState<"chords" | "style">("chords");
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
 
-  // Restore backgroundImage from DB on mount — it's stripped from URL encoding
+  // Restore backgroundImage from DB on mount — it's stripped from URL encoding.
+  // Also cache it in sessionStorage so the next load is instant.
   useEffect(() => {
     const id = initialSong?.id;
     if (!id || !isLoggedIn) return;
     fetchSongStyle(id).then(fullStyle => {
       if (fullStyle?.backgroundImage) {
+        sessionStorage.setItem(`bgImg:${id}`, fullStyle.backgroundImage);
         setSongStyle(prev => ({
           ...prev,
           backgroundImage: fullStyle.backgroundImage,
           overlayOpacity: fullStyle.overlayOpacity ?? prev.overlayOpacity,
         }));
+      } else {
+        sessionStorage.removeItem(`bgImg:${id}`);
       }
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
