@@ -292,6 +292,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onFocus={(e) => e.target.select()}
             className="text-base font-semibold text-zinc-900 bg-transparent outline-none leading-tight"
             placeholder="Song title"
           />
@@ -299,6 +300,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             <input
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
+              onFocus={(e) => e.target.select()}
               className="text-xs text-zinc-400 bg-transparent outline-none leading-tight"
               placeholder="Artist"
             />
