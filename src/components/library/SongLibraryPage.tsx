@@ -22,7 +22,7 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-type Song = DbSong & { source: "db" | "local" };
+type Song = Omit<DbSong, "categoryIds"> & { source: "db" | "local"; categoryIds: string[] };
 
 interface Props {
   isLoggedIn: boolean;
@@ -104,7 +104,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     const next = [...song.tags, tag];
     setSongs((prev) => prev.map((s) => (s.id === songId ? { ...s, tags: next } : s)));
     if (song.source === "db") {
-      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next, categoryIds: song.categoryIds });
+      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next });
     } else {
       updateSongTags(songId, next);
     }
@@ -116,7 +116,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     const next = song.tags.filter((t) => t !== tag);
     setSongs((prev) => prev.map((s) => (s.id === songId ? { ...s, tags: next } : s)));
     if (song.source === "db") {
-      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next, categoryIds: song.categoryIds });
+      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next });
     } else {
       updateSongTags(songId, next);
     }
