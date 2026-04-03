@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 
 const features = [
   {
@@ -258,6 +259,8 @@ export default function HomePage() {
       <footer className="border-t border-zinc-100 px-6 py-8 text-center text-sm text-zinc-400">
         © {new Date().getFullYear()} ChordSheetMaker.com — Built for musicians
       </footer>
+
+      <ScrollToTop />
     </div>
   );
 }
