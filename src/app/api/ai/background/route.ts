@@ -6,7 +6,7 @@ Rules:
 - No text, letters, words, numbers, or sheet music in the image
 - Abstract, painterly, or photographic — not literal scene depictions of humans
 - Evoke the mood: warm sunset tones for country/folk, deep blues for blues/jazz, neon/dark for rock/metal, soft pastels for pop/ballads, etc.
-- Say "abstract" or describe textures/colors/light effects
+- Describe textures, colors, light effects, gradients
 - Keep it purely visual — no references to musicians or people
 - End with: "high quality, cinematic lighting, 4k"
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     lyrics ? `\nLyrics:\n${lyrics.slice(0, 800)}` : "",
   ].filter(Boolean).join("\n");
 
-  // Step 1: Ask Gemini Flash to write an image prompt
+  // Step 1: Ask Gemini Flash to write a visual image prompt
   const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
   const textRes = await fetch(textUrl, {
     method: "POST",
@@ -53,35 +53,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI returned empty image prompt" }, { status: 502 });
   }
 
-  // Step 2: Call Imagen 3 to generate the image
-  const imgUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+  // Step 2: Generate image using Gemini image generation model
+  const imgUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
   const imgRes = await fetch(imgUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      instances: [{ prompt: imagePrompt }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: "1:1",
-        safetyFilterLevel: "block_only_high",
-        personGeneration: "dont_allow",
-      },
+      contents: [{ parts: [{ text: imagePrompt }] }],
+      generationConfig: { responseModalities: ["IMAGE"] },
     }),
   });
 
   if (!imgRes.ok) {
     const err = await imgRes.json().catch(() => ({}));
-    console.error("Imagen error:", err);
-    return NextResponse.json({ error: "Image generation failed", detail: err }, { status: 502 });
+    console.error("Image generation error:", err);
+    const detail = err?.error?.message ?? JSON.stringify(err);
+    return NextResponse.json({ error: `Image generation failed: ${detail}` }, { status: 502 });
   }
 
   const imgData = await imgRes.json();
-  const b64: string = imgData.predictions?.[0]?.bytesBase64Encoded ?? "";
-  const mimeType: string = imgData.predictions?.[0]?.mimeType ?? "image/png";
 
-  if (!b64) {
+  // Response parts may include text + image; find the inlineData part
+  const parts: any[] = imgData.candidates?.[0]?.content?.parts ?? [];
+  const imagePart = parts.find((p: any) => p.inlineData?.data);
+
+  if (!imagePart) {
+    console.error("No image part in response:", JSON.stringify(imgData).slice(0, 500));
     return NextResponse.json({ error: "No image returned from AI" }, { status: 502 });
   }
+
+  const b64: string = imagePart.inlineData.data;
+  const mimeType: string = imagePart.inlineData.mimeType ?? "image/png";
 
   return NextResponse.json({
     image: `data:${mimeType};base64,${b64}`,

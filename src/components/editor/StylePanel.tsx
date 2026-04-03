@@ -138,10 +138,14 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         return;
       }
       const data = await res.json();
+      if (!data.image) {
+        setBgError(data.error ?? "No image returned");
+        return;
+      }
       onChange({ ...style, backgroundImage: data.image, overlayOpacity: style.overlayOpacity ?? 0.5 });
       setBgPrompt(data.prompt ?? "");
-    } catch {
-      setBgError("Network error");
+    } catch (e: any) {
+      setBgError(e?.message ?? "Network error");
     } finally {
       setBgLoading(false);
     }
