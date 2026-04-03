@@ -420,7 +420,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       {/* Import modal */}
       {showImport && (
         <ImportModal
-          onImport={(imported) => setLines(imported)}
+          onImport={(imported, meta) => {
+            setLines(imported);
+            if (meta?.title) setTitle(meta.title);
+            if (meta?.artist) setArtist(meta.artist);
+          }}
           onClose={() => setShowImport(false)}
         />
       )}
