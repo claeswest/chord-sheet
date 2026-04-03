@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { encodeSong } from "@/lib/songUrl";
-import { fetchSongs, removeSong, upsertSong, type DbSong } from "@/lib/songDb";
-import { listSongs, deleteSong, updateSongTags } from "@/lib/storage";
+import { fetchSongs, removeSong, type DbSong } from "@/lib/songDb";
+import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
   addSongToCategory, removeSongFromCategory, type DbCategory,
@@ -47,10 +47,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [dragSongId, setDragSongId] = useState<string | null>(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
 
-  // Tag editing
-  const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
-  const [tagInput, setTagInput] = useState("");
-
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -67,7 +63,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               title: s.title,
               artist: s.artist,
               lines: s.lines,
-              tags: s.tags ?? [],
+              tags: [],
               updatedAt: s.updatedAt,
               categoryIds: [],
               source: "local" as const,
@@ -88,38 +84,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     if (source === "db") await removeSong(id);
     else deleteSong(id);
     setSongs((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  // ── Tags ───────────────────────────────────────────────────────────────────
-  const toggleTagEditor = (songId: string) => {
-    setEditingTagsId((prev) => (prev === songId ? null : songId));
-    setTagInput("");
-  };
-
-  const handleAddTag = async (songId: string, raw: string) => {
-    const tag = raw.trim().replace(/,+$/, "").trim();
-    if (!tag) return;
-    const song = songs.find((s) => s.id === songId);
-    if (!song || song.tags.includes(tag)) return;
-    const next = [...song.tags, tag];
-    setSongs((prev) => prev.map((s) => (s.id === songId ? { ...s, tags: next } : s)));
-    if (song.source === "db") {
-      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next });
-    } else {
-      updateSongTags(songId, next);
-    }
-  };
-
-  const handleRemoveTag = async (songId: string, tag: string) => {
-    const song = songs.find((s) => s.id === songId);
-    if (!song) return;
-    const next = song.tags.filter((t) => t !== tag);
-    setSongs((prev) => prev.map((s) => (s.id === songId ? { ...s, tags: next } : s)));
-    if (song.source === "db") {
-      await upsertSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, tags: next });
-    } else {
-      updateSongTags(songId, next);
-    }
   };
 
   // ── Categories ─────────────────────────────────────────────────────────────
@@ -249,7 +213,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
           <aside className="w-56 shrink-0 bg-white border-r border-zinc-200 flex flex-col py-3">
-            {/* All Songs */}
             <button
               onClick={() => setSelectedCategoryId(null)}
               className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
@@ -262,7 +225,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               <span className="text-xs text-zinc-400">{songs.length}</span>
             </button>
 
-            {/* Uncategorized */}
             <button
               onClick={() => setSelectedCategoryId("uncategorized")}
               className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
@@ -277,7 +239,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
             {categories.length > 0 && <div className="h-px bg-zinc-100 mx-4 my-2" />}
 
-            {/* Category list */}
             <div className="flex-1 overflow-y-auto">
               {categories.map((cat) => (
                 <div
@@ -329,7 +290,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               ))}
             </div>
 
-            {/* Add category */}
             <div className="px-3 pt-2 border-t border-zinc-100">
               {showAddCategory ? (
                 <input
@@ -359,7 +319,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Main content */}
         <main className="flex-1 px-6 py-8 min-w-0">
           <div className="max-w-5xl">
-            {/* Search */}
             <div className="mb-8">
               <input
                 value={search}
@@ -369,7 +328,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               />
             </div>
 
-            {/* Song grid */}
             {loading ? (
               <div className="text-center py-24 text-zinc-300 text-sm">Loading…</div>
             ) : filtered.length === 0 ? (
@@ -395,7 +353,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines });
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
-                  const isEditingTags = editingTagsId === song.id;
 
                   return (
                     <div
@@ -407,7 +364,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         dragSongId === song.id ? "opacity-40 scale-95" : ""
                       }`}
                     >
-                      {/* Clickable body */}
                       <Link href={viewUrl} className="flex-1 p-5 block">
                         <div className="text-base font-semibold text-zinc-900 truncate mb-0.5">
                           {song.title || "Untitled Song"}
@@ -420,7 +376,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Category chips */}
                       {isLoggedIn && song.categoryIds.length > 0 && (
-                        <div className="px-5 pb-2 flex flex-wrap gap-1">
+                        <div className="px-5 pb-3 flex flex-wrap gap-1">
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -443,60 +399,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Tag chips */}
-                      {song.tags.length > 0 && (
-                        <div className="px-5 pb-2 flex flex-wrap gap-1">
-                          {song.tags.map((tag) => (
-                            <span key={tag} className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Tag editor */}
-                      {isEditingTags && (
-                        <div className="px-5 pb-4 border-t border-zinc-100 pt-3">
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            {song.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full"
-                              >
-                                {tag}
-                                <button
-                                  onClick={() => handleRemoveTag(song.id, tag)}
-                                  className="text-indigo-300 hover:text-indigo-600 leading-none"
-                                >
-                                  ×
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                          <input
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === ",") {
-                                e.preventDefault();
-                                handleAddTag(song.id, tagInput);
-                                setTagInput("");
-                              }
-                            }}
-                            placeholder="Type a tag and press Enter…"
-                            className="w-full text-xs bg-white border border-zinc-200 rounded px-2 py-1.5 outline-none focus:border-indigo-400 transition-colors"
-                          />
-                        </div>
-                      )}
-
-                      {/* Footer */}
                       <div className="flex items-center gap-1 px-4 py-2.5 border-t border-zinc-100">
-                        <button
-                          onClick={() => toggleTagEditor(song.id)}
-                          className="text-xs text-zinc-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
-                        >
-                          {isEditingTags ? "Done" : "# Tags"}
-                        </button>
                         <div className="flex-1" />
                         <Link
                           href={viewUrl}
