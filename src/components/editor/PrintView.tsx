@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
@@ -25,6 +26,20 @@ interface Props {
 
 export default function PrintView({ title, artist, lines, watermark = true, songStyle }: Props) {
   const s = songStyle ?? DEFAULT_STYLE;
+
+  // When a background image is present, override @page margins to zero so the
+  // image bleeds to the edge. Equivalent padding is added inside the div instead.
+  useEffect(() => {
+    if (!s.backgroundImage) return;
+    const el = document.createElement("style");
+    el.id = "print-full-bleed";
+    el.textContent = `@media print {
+      @page { margin: 0; }
+      #print-view { padding: 18mm 18mm 24mm 18mm !important; }
+    }`;
+    document.head.appendChild(el);
+    return () => el.remove();
+  }, [s.backgroundImage]);
 
   // Convert style px sizes → pt for consistent print layout
   const toPt = (px: number) => Math.round(px * 72 / 96);
