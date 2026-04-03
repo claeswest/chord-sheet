@@ -251,7 +251,7 @@ export default function LyricLineEditor({
           placeholder="Type lyrics here…"
           spellCheck={false}
           className="flex-1 text-zinc-800 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
-          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px" }}
+          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px", padding: 0, margin: 0 }}
         />
         <button
           onClick={onDelete}
