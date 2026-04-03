@@ -109,10 +109,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         <div className="flex-1" />
         {isLoggedIn ? (
           <div className="flex items-center gap-2">
-            {userImage && (
-              <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full" />
-            )}
-            <span className="text-sm text-zinc-500 hidden sm:block">{userName}</span>
+            <Link href="/account" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              {userImage && (
+                <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full" />
+              )}
+              <span className="text-sm text-zinc-500 hidden sm:block">{userName}</span>
+            </Link>
             <a
               href="/api/auth/signout"
               className="text-sm text-zinc-400 hover:text-zinc-700 px-2 py-1 rounded hover:bg-zinc-100 transition-colors"
