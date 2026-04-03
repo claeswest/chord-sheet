@@ -20,6 +20,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Plan tier: free | monthly | yearly | lifetime
+  plan                   String    @default("free")
+
   // Stripe subscription
   stripeCustomerId       String?   @unique
   stripeSubscriptionId   String?   @unique

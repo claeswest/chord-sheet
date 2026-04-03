@@ -103,6 +103,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         </Link>
         <div className="w-px h-5 bg-zinc-200" />
         <h1 className="text-sm font-semibold text-zinc-900">My Songs</h1>
+        <Link href="/pricing" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors hidden sm:block">
+          Pricing
+        </Link>
         <div className="flex-1" />
         {isLoggedIn ? (
           <div className="flex items-center gap-2">
