@@ -235,8 +235,7 @@ export default function LyricLineEditor({
             }}
             placeholder="Am"
             className="absolute top-0 w-14 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm z-10"
-            style={{ fontSize: "12px" }}
-            style={{ left: addingAtPx }}
+            style={{ fontSize: "12px", left: addingAtPx }}
             onClick={(e) => e.stopPropagation()}
           />
         )}
