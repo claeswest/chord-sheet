@@ -10,9 +10,11 @@ interface Props {
   onUpdate: (label: string) => void;
   onDelete: () => void;
   color?: string;
+  align?: "left" | "center";
+  showDivider?: boolean;
 }
 
-export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5" }: Props) {
+export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5", align = "left", showDivider = true }: Props) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,14 +59,21 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, color 
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="text-xs font-bold uppercase tracking-widest transition-colors"
+          className="text-xs font-bold uppercase tracking-widest transition-colors shrink-0"
           style={{ color }}
         >
           {section.label}
         </button>
       )}
 
-      <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
+      {/* Left-side divider line (center mode only) */}
+      {showDivider && align === "center" && (
+        <div className="flex-1 h-px order-first" style={{ background: color, opacity: 0.25 }} />
+      )}
+      {/* Right-side divider line */}
+      {showDivider && (
+        <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
+      )}
 
       <button
         onClick={onDelete}

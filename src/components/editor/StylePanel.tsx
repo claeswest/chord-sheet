@@ -306,6 +306,42 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         value={style.chords}
         onChange={(v) => onChange({ ...style, chords: v })}
       />
+
+      {/* Section headers */}
+      <div className="px-4 py-3 border-b border-zinc-100">
+        <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Sections</p>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs text-zinc-400 shrink-0">Align</span>
+          <div className="flex rounded border border-zinc-200 overflow-hidden">
+            {(["left", "center"] as const).map((a) => (
+              <button
+                key={a}
+                onClick={() => onChange({ ...style, sectionAlign: a })}
+                className={`px-2.5 py-1 text-xs transition-colors ${
+                  (style.sectionAlign ?? "left") === a
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white text-zinc-500 hover:bg-zinc-50"
+                }`}
+              >
+                {a === "left" ? "Left" : "Center"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-zinc-400 shrink-0">Divider line</span>
+          <button
+            onClick={() => onChange({ ...style, sectionDivider: !(style.sectionDivider ?? true) })}
+            className={`w-8 h-4 rounded-full transition-colors relative ${
+              (style.sectionDivider ?? true) ? "bg-indigo-500" : "bg-zinc-200"
+            }`}
+          >
+            <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${
+              (style.sectionDivider ?? true) ? "translate-x-4" : "translate-x-0.5"
+            }`} />
+          </button>
+        </div>
+      </div>
       <div className="px-4 py-3">
         <button
           onClick={reset}

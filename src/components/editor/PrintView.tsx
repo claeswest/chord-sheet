@@ -95,11 +95,18 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       {lines.map((line) => {
         if (line.type === "section") {
           const sectionColor = s.chords.color ?? "#4f46e5";
+          const align = s.sectionAlign ?? "left";
+          const showDivider = s.sectionDivider ?? true;
           return (
             <div
               key={line.id}
               className="print-section"
-              style={{ color: sectionColor, borderBottomColor: sectionColor }}
+              style={{
+                color: sectionColor,
+                borderBottomColor: showDivider ? sectionColor : "transparent",
+                borderBottomWidth: showDivider ? undefined : 0,
+                textAlign: align,
+              }}
             >
               {line.label}
             </div>

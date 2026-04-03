@@ -16,16 +16,20 @@ export interface SongStyle {
   background?: string;
   backgroundImage?: string;   // base64 data URL, not included in share URLs
   overlayOpacity?: number;    // 0–1, default 0.5
+  sectionAlign?: "left" | "center";
+  sectionDivider?: boolean;
 }
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 export const DEFAULT_STYLE: SongStyle = {
-  title:      { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
-  artist:     { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
-  lyrics:     { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
-  chords:     { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
-  background: "#ffffff",
+  title:          { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
+  artist:         { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
+  lyrics:         { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
+  chords:         { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
+  background:     "#ffffff",
+  sectionAlign:   "left",
+  sectionDivider: true,
 };
 
 export interface GoogleFont {

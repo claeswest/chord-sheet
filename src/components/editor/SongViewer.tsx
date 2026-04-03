@@ -134,19 +134,23 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
             {lines.map((line) => {
               if (line.type === "section") {
                 const sectionColor = s.chords.color ?? "#4f46e5";
+                const align = s.sectionAlign ?? "left";
+                const showDivider = s.sectionDivider ?? true;
                 return (
-                  <div key={line.id} className="pt-8 pb-1">
+                  <div
+                    key={line.id}
+                    className="pt-8 pb-1"
+                    style={{ textAlign: align }}
+                  >
                     <span
-                      className="font-bold uppercase tracking-widest pb-0.5"
-                      style={{
-                        fontSize: lyricSize - 3,
-                        color: sectionColor,
-                        borderBottom: `1px solid ${sectionColor}`,
-                        opacity: 0.85,
-                      }}
+                      className="font-bold uppercase tracking-widest"
+                      style={{ fontSize: lyricSize - 3, color: sectionColor }}
                     >
                       {line.label}
                     </span>
+                    {showDivider && (
+                      <div style={{ borderBottom: `1px solid ${sectionColor}`, opacity: 0.3, marginTop: 3 }} />
+                    )}
                   </div>
                 );
               }
