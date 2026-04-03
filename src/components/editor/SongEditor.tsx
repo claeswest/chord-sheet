@@ -368,8 +368,36 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
       <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" style={{ background: songStyle.background ?? "#ffffff" }}>
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
+            {/* Title & artist preview — styled same as viewer */}
+            <div className="mb-10 text-center">
+              <div
+                style={{
+                  fontFamily: songStyle.title.fontFamily,
+                  fontSize: songStyle.title.fontSize,
+                  fontWeight: songStyle.title.bold !== false ? "bold" : "normal",
+                  fontStyle: songStyle.title.italic ? "italic" : "normal",
+                  color: songStyle.title.color ?? "#18181b",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title || <span style={{ opacity: 0.3 }}>Untitled Song</span>}
+              </div>
+              {artist && (
+                <div
+                  style={{
+                    fontFamily: songStyle.lyrics.fontFamily,
+                    fontSize: (songStyle.lyrics.fontSize ?? 14) - 2,
+                    color: songStyle.lyrics.color ?? "#71717a",
+                    marginTop: 4,
+                    opacity: 0.7,
+                  }}
+                >
+                  {artist}
+                </div>
+              )}
+            </div>
             {mounted ? (
               <DndContext
                 id="song-editor-dnd"

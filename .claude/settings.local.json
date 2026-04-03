@@ -21,7 +21,8 @@
       "Bash(node -e \"const a = require\\(''C:/Users/claes.westlin/OneDrive - Brandon/Desktop/Claude/ChordSheetCreator/node_modules/@neondatabase/serverless''\\); console.log\\(Object.keys\\(a\\)\\)\")",
       "Bash(node -e \"const {PrismaNeonHttp} = require\\(''@prisma/adapter-neon''\\); console.log\\(PrismaNeonHttp.toString\\(\\).slice\\(0,300\\)\\)\")",
       "Bash(find node_modules/next-auth -name *.js -exec grep -l MissingSecret {})",
-      "Bash(2)"
+      "Bash(2)",
+      "Bash(npm run:*)"
     ]
   }
 }

@@ -82,9 +82,24 @@ function Section({
 
 export default function StylePanel({ style, onChange }: Props) {
   const reset = () => onChange(DEFAULT_STYLE);
+  const bg = style.background ?? "#ffffff";
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto bg-zinc-50">
+      {/* Background */}
+      <div className="px-4 py-3 border-b border-zinc-100">
+        <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Background</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={bg}
+            onChange={(e) => onChange({ ...style, background: e.target.value })}
+            className="w-8 h-7 rounded border border-zinc-200 cursor-pointer p-0.5"
+          />
+          <span className="text-xs text-zinc-400 font-mono">{bg}</span>
+        </div>
+      </div>
+
       <Section
         label="Title"
         value={style.title}

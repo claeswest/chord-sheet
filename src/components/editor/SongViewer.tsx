@@ -92,7 +92,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
 
   return (
     <div
-      className="relative flex flex-col h-screen bg-white"
+      className="relative flex flex-col h-screen"
+      style={{ background: s.background ?? "#ffffff" }}
       onMouseMove={() => setShowControls(true)}
     >
       {/* Scrollable content */}

@@ -10,14 +10,16 @@ export interface SongStyle {
   title: TextStyle;
   lyrics: TextStyle;
   chords: TextStyle;
+  background?: string;
 }
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 export const DEFAULT_STYLE: SongStyle = {
-  title:  { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
-  lyrics: { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
-  chords: { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
+  title:      { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
+  lyrics:     { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
+  chords:     { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
+  background: "#ffffff",
 };
 
 export interface GoogleFont {
