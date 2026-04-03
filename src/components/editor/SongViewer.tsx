@@ -117,9 +117,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
               <p
                 className="mt-1"
                 style={{
-                  fontSize: lyricSize - 2,
-                  fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
-                  color: s.lyrics.color ?? "#71717a",
+                  fontSize: (s.artist?.fontSize ?? 13) + sizeAdjust,
+                  fontFamily: s.artist?.fontFamily ?? MONO_STACK,
+                  fontWeight: s.artist?.bold ? "bold" : "normal",
+                  fontStyle: s.artist?.italic ? "italic" : "normal",
+                  color: s.artist?.color ?? "#71717a",
                 }}
               >
                 {artist}

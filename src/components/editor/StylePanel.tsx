@@ -292,6 +292,11 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         onChange={(v) => onChange({ ...style, title: v })}
       />
       <Section
+        label="Artist"
+        value={style.artist ?? DEFAULT_STYLE.artist}
+        onChange={(v) => onChange({ ...style, artist: v })}
+      />
+      <Section
         label="Lyrics"
         value={style.lyrics}
         onChange={(v) => onChange({ ...style, lyrics: v })}

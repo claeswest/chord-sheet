@@ -10,6 +10,7 @@ export interface TextStyle {
 
 export interface SongStyle {
   title: TextStyle;
+  artist: TextStyle;
   lyrics: TextStyle;
   chords: TextStyle;
   background?: string;
@@ -21,6 +22,7 @@ export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monosp
 
 export const DEFAULT_STYLE: SongStyle = {
   title:      { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
+  artist:     { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
   lyrics:     { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
   chords:     { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
   background: "#ffffff",

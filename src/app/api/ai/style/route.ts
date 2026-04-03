@@ -46,6 +46,13 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
     "bold": <true or false — bold for powerful/rock/dramatic songs, regular for soft/classical/folk>,
     "italic": <true or false — italic for romantic/lyrical/poetic songs, upright otherwise>
   },
+  "artist": {
+    "fontName": "choose the most fitting font from the list above",
+    "fontSize": <integer 11–16, typically smaller than title>,
+    "color": "#hexcolor",
+    "bold": <true or false>,
+    "italic": <true or false — italic artist name can feel elegant>
+  },
   "lyrics": {
     "fontName": "choose the most fitting font from the list above",
     "fontSize": <integer 13–18, readable but sized for the genre's feel>,
@@ -134,7 +141,8 @@ export async function POST(req: NextRequest) {
     theme: parsed.theme ?? "",
     style: {
       background: parsed.background ?? "#ffffff",
-      title: toStyle(parsed.title),
+      title:  toStyle(parsed.title),
+      artist: toStyle(parsed.artist ?? parsed.lyrics),  // fall back to lyrics style if missing
       lyrics: toStyle(parsed.lyrics),
       chords: toStyle(parsed.chords),
     },

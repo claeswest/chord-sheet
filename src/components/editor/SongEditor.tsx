@@ -387,11 +387,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               {artist && (
                 <div
                   style={{
-                    fontFamily: songStyle.lyrics.fontFamily,
-                    fontSize: (songStyle.lyrics.fontSize ?? 14) - 2,
-                    color: songStyle.lyrics.color ?? "#71717a",
+                    fontFamily: songStyle.artist?.fontFamily ?? songStyle.lyrics.fontFamily,
+                    fontSize: songStyle.artist?.fontSize ?? 13,
+                    fontWeight: songStyle.artist?.bold ? "bold" : "normal",
+                    fontStyle: songStyle.artist?.italic ? "italic" : "normal",
+                    color: songStyle.artist?.color ?? "#71717a",
                     marginTop: 4,
-                    opacity: 0.7,
                   }}
                 >
                   {artist}
