@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PLANS, Plan } from "@/lib/plans";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly", "lifetime"];
@@ -52,7 +53,17 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16 px-4">
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center gap-4">
+        <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
+          Chord<span className="text-indigo-600">Sheet</span>
+        </Link>
+        <div className="w-px h-5 bg-zinc-200" />
+        <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+          ← My Songs
+        </Link>
+      </header>
+      <div className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">Simple pricing</h1>
@@ -123,6 +134,7 @@ export default function PricingPage() {
           })}
         </div>
       </div>
+    </div>
     </div>
   );
 }

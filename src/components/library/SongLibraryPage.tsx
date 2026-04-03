@@ -197,7 +197,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
               return (
                 <div key={song.id} className="group bg-white rounded-xl border border-zinc-200 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col">
-                  <div className="flex-1 p-5">
+                  <Link href={viewUrl} className="flex-1 p-5 block">
                     <div className="text-base font-semibold text-zinc-900 truncate mb-0.5">
                       {song.title || "Untitled Song"}
                     </div>
@@ -205,7 +205,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {song.artist || <span className="italic">No artist</span>}
                     </div>
                     <div className="text-xs text-zinc-300 mt-3">{timeAgo(song.updatedAt)}</div>
-                  </div>
+                  </Link>
 
                   {/* Tags */}
                   <div className="px-5 pb-3">
