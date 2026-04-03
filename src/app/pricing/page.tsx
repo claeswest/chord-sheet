@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { PLANS, Plan } from "@/lib/plans";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly", "lifetime"];
@@ -22,8 +23,14 @@ function featureValue(val: boolean | number): string {
 }
 
 export default function PricingPage() {
+  return <Suspense><PricingContent /></Suspense>;
+}
+
+function PricingContent() {
   const [loading, setLoading] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const success = searchParams.get("success") === "true";
 
   async function handleUpgrade(plan: Plan) {
     if (plan === "free") return;
@@ -65,13 +72,38 @@ export default function PricingPage() {
       </header>
       <div className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Simple pricing</h1>
-          <p className="text-gray-500 text-lg">Start free. Upgrade when you need more.</p>
-          {error && (
-            <p className="mt-4 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg inline-block">{error}</p>
-          )}
-        </div>
+
+        {success ? (
+          <div className="max-w-md mx-auto mb-12 bg-white border border-green-200 rounded-2xl p-8 text-center shadow-sm">
+            <div className="text-4xl mb-4">🎉</div>
+            <h1 className="text-2xl font-bold text-zinc-900 mb-2">You&apos;re all set!</h1>
+            <p className="text-zinc-500 mb-6">
+              Your subscription is active. It may take a few seconds to reflect on your account.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/account"
+                className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                View my account
+              </Link>
+              <Link
+                href="/songs"
+                className="bg-zinc-100 text-zinc-700 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-zinc-200 transition-colors"
+              >
+                Go to my songs
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">Simple pricing</h1>
+            <p className="text-gray-500 text-lg">Start free. Upgrade when you need more.</p>
+            {error && (
+              <p className="mt-4 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg inline-block">{error}</p>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PLAN_ORDER.map((planKey) => {
