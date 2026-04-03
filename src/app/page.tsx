@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import { auth } from "@/lib/auth";
 
 const features = [
   {
@@ -40,7 +41,8 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
   return (
     <div className="flex flex-col min-h-full">
       {/* Nav */}
@@ -55,18 +57,26 @@ export default function HomePage() {
           <Link href="#pricing" className="hover:text-zinc-900 transition-colors">
             Pricing
           </Link>
-          <Link
-            href="/login"
-            className="hover:text-zinc-900 transition-colors"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/register"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors"
-          >
-            Get started free
-          </Link>
+          {session ? (
+            <Link
+              href="/songs"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
+              My Songs
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="hover:text-zinc-900 transition-colors">
+                Sign in
+              </Link>
+              <Link
+                href="/login"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                Get started free
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
