@@ -7,6 +7,7 @@ export type DbSong = {
   lines: SongLine[];
   tags: string[];
   updatedAt: string;
+  categoryIds: string[];
 };
 
 export async function fetchSongs(): Promise<DbSong[]> {
@@ -39,5 +40,6 @@ function rowToDbSong(row: any): DbSong {
     lines: content.lines ?? [],
     tags: content.tags ?? [],
     updatedAt: row.updatedAt,
+    categoryIds: row.categoryIds ?? [],
   };
 }

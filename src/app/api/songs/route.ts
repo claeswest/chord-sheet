@@ -19,10 +19,14 @@ export async function GET() {
       content: true,
       createdAt: true,
       updatedAt: true,
+      categories: { select: { categoryId: true } },
     },
   });
 
-  return NextResponse.json(songs);
+  return NextResponse.json(songs.map((s) => ({
+    ...s,
+    categoryIds: s.categories.map((c) => c.categoryId),
+  })));
 }
 
 // POST /api/songs — create or upsert a song
