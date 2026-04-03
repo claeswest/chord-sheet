@@ -32,7 +32,7 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(3);
-  const [fontSize, setFontSize] = useState(15);
+  const [fontSize, setFontSize] = useState(14);
   const [showControls, setShowControls] = useState(true);
 
   // Auto-hide controls after 3s of playing
@@ -81,7 +81,7 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div
           className="max-w-2xl mx-auto px-10 pt-16 pb-40"
-          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
+          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px" }}
         >
           {/* Song header */}
           <div className="mb-10 text-center">
@@ -137,8 +137,8 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
                   )}
                   {/* Lyric */}
                   <div
-                    className="text-zinc-800 leading-relaxed whitespace-pre"
-                    style={{ fontSize }}
+                    className="text-zinc-800 whitespace-pre"
+                    style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize, lineHeight: "1.25rem" }}
                   >
                     {line.text || "\u00A0"}
                   </div>

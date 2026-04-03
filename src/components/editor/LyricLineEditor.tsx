@@ -250,8 +250,8 @@ export default function LyricLineEditor({
           onKeyDown={handleKeyDown}
           placeholder="Type lyrics here…"
           spellCheck={false}
-          className="flex-1 text-sm font-mono text-zinc-800 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
-          style={{ fontSize: "14px" }}
+          className="flex-1 text-zinc-800 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
+          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px" }}
         />
         <button
           onClick={onDelete}
