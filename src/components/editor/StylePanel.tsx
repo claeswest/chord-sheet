@@ -228,7 +228,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             {/* Overlay opacity */}
             <div className="mb-1">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs text-zinc-400">Overlay</label>
+                <label className="text-xs text-zinc-400">Fade</label>
                 <span className="text-xs text-zinc-400 font-mono">{Math.round(overlayOpacity * 100)}%</span>
               </div>
               <input

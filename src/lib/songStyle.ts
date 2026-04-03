@@ -76,11 +76,24 @@ export function fontByStack(stack: string): GoogleFont {
   return ALL_FONTS.find(f => f.stack === stack) ?? SYSTEM_FONT;
 }
 
+/** Converts a hex color (#rrggbb or #rgb) to `rgba(r,g,b,a)`. */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const full = h.length === 3
+    ? h.split("").map(c => c + c).join("")
+    : h;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 /** Returns a React `style` object for the outermost background div. */
 export function backgroundStyle(s: SongStyle): CSSProperties {
   if (s.backgroundImage) {
     const opacity = s.overlayOpacity ?? 0.5;
-    const overlay = `rgba(0,0,0,${opacity})`;
+    // Overlay tints toward the background color so text always stays readable
+    const overlay = hexToRgba(s.background ?? "#ffffff", opacity);
     return {
       backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${s.backgroundImage})`,
       backgroundSize: "cover",
