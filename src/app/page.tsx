@@ -227,10 +227,10 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <Link
-                  href="/register"
+                  href="/pricing"
                   className="block text-center bg-white text-indigo-600 px-6 py-3 rounded-full font-medium hover:bg-indigo-50 transition-colors"
                 >
-                  Start free trial
+                  See pricing
                 </Link>
               </div>
             </div>
