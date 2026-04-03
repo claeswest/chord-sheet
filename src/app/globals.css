@@ -53,6 +53,10 @@ body {
     font-size: 12pt;
     color: #000;
     background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-size: cover;
+    background-position: center;
   }
 
   #print-view * {

@@ -33,6 +33,14 @@ export async function removeSong(id: string): Promise<void> {
   await fetch(`/api/songs/${id}`, { method: "DELETE" });
 }
 
+/** Fetches the full style (including backgroundImage) for a single song by ID. */
+export async function fetchSongStyle(id: string): Promise<SongStyle | undefined> {
+  const res = await fetch(`/api/songs/${id}`, { cache: "no-store" });
+  if (!res.ok) return undefined;
+  const row = await res.json();
+  return (row.content as any)?.style ?? undefined;
+}
+
 function rowToDbSong(row: any): DbSong {
   const content = row.content ?? {};
   return {

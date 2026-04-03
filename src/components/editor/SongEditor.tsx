@@ -27,7 +27,7 @@ import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
-import { upsertSong } from "@/lib/songDb";
+import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -60,6 +60,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
+
+  // Restore backgroundImage from DB on mount — it's stripped from URL encoding
+  useEffect(() => {
+    const id = initialSong?.id;
+    if (!id || !isLoggedIn) return;
+    fetchSongStyle(id).then(fullStyle => {
+      if (fullStyle?.backgroundImage) {
+        setSongStyle(prev => ({
+          ...prev,
+          backgroundImage: fullStyle.backgroundImage,
+          overlayOpacity: fullStyle.overlayOpacity ?? prev.overlayOpacity,
+        }));
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
   const sensors = useSensors(
@@ -489,7 +505,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       </div>
 
       {/* Print view — invisible on screen, rendered by @media print */}
-      <PrintView title={title} artist={artist} lines={displayLines} watermark />
+      <PrintView title={title} artist={artist} lines={displayLines} songStyle={songStyle} watermark />
 
       {/* Import modal */}
       {showImport && (
