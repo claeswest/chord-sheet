@@ -472,7 +472,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
             />
           ) : (
-            <StylePanel style={songStyle} onChange={setSongStyle} />
+            <StylePanel
+              style={songStyle}
+              onChange={setSongStyle}
+              songTitle={title}
+              songArtist={artist}
+              lyricsText={lines
+                .filter((l) => l.type === "lyric")
+                .map((l) => (l.type === "lyric" ? l.text : ""))
+                .filter(Boolean)
+                .join("\n")}
+            />
           )}
         </div>
       </div>
