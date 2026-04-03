@@ -22,11 +22,14 @@ import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
+import StylePanel from "./StylePanel";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong } from "@/lib/songDb";
+import { DEFAULT_STYLE } from "@/lib/songStyle";
+import type { SongStyle } from "@/lib/songStyle";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -52,6 +55,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [lines, setLines] = useState<SongLine[]>(
     () => initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }]
   );
+  const [songStyle, setSongStyle] = useState<SongStyle>(initialSong?.style ?? DEFAULT_STYLE);
+  const [rightPanel, setRightPanel] = useState<"chords" | "style">("chords");
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
@@ -146,17 +151,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   // ── Save / Load ──────────────────────────────────────────────────────────────
 
   const handleShare = useCallback(() => {
-    const encoded = encodeSong({ title, artist, lines });
+    const encoded = encodeSong({ title, artist, lines, style: songStyle });
     const url = `${window.location.origin}/editor/new?song=${encoded}`;
     navigator.clipboard.writeText(url).then(() => {
       setShareFlash(true);
       setTimeout(() => setShareFlash(false), 2000);
     });
-  }, [title, artist, lines]);
+  }, [title, artist, lines, songStyle]);
 
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
     if (isLoggedIn) {
-      await upsertSong({ id: songId, title, artist, lines, tags: [] });
+      await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle });
     } else {
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     }
@@ -164,7 +169,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       setSaveFlash(true);
       setTimeout(() => setSaveFlash(false), 1500);
     }
-  }, [isLoggedIn, songId, title, artist, lines]);
+  }, [isLoggedIn, songId, title, artist, lines, songStyle]);
 
   const handleSave = useCallback(() => {
     persistSong({ flash: true });
@@ -185,7 +190,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [title, artist, lines, songId, persistSong]);
+  }, [title, artist, lines, songId, songStyle, persistSong]);
 
   const handleLoad = useCallback((song: StoredSong) => {
     setSongId(song.id);
@@ -214,6 +219,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         artist={artist}
         lines={displayLines}
         onEdit={() => setViewMode(false)}
+        songStyle={songStyle}
       />
     );
   }
@@ -233,6 +239,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         onDeleteChord={(cid) => deleteChord(line.id, cid)}
         onAddLineAfter={() => addLineAfter(line.id)}
         onDelete={() => deleteLine(line.id)}
+        songStyle={songStyle}
       />
     ) : (
       <SectionHeaderBlock
@@ -410,8 +417,36 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           </div>
         </div>
 
-        {/* Chord palette */}
-        <ChordPalette activeChord={activeChord} onSelectChord={setActiveChord} />
+        {/* Right panel with tabs */}
+        <div className="w-52 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden">
+          <div className="flex border-b border-zinc-200 shrink-0 bg-zinc-50">
+            <button
+              onClick={() => setRightPanel("chords")}
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                rightPanel === "chords" ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              Chords
+            </button>
+            <button
+              onClick={() => setRightPanel("style")}
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                rightPanel === "style" ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              Style
+            </button>
+          </div>
+          {rightPanel === "chords" ? (
+            <ChordPalette
+              activeChord={activeChord}
+              onSelectChord={setActiveChord}
+              asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
+            />
+          ) : (
+            <StylePanel style={songStyle} onChange={setSongStyle} />
+          )}
+        </div>
       </div>
 
       {/* Print view — invisible on screen, rendered by @media print */}
@@ -422,7 +457,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         <ImportModal
           onImport={(imported, meta) => {
             setLines(imported);
-            if (meta?.title) setTitle(meta.title);
+            if (meta?.title && meta.title !== "Unknown") setTitle(meta.title);
             if (meta?.artist) setArtist(meta.artist);
           }}
           onClose={() => setShowImport(false)}

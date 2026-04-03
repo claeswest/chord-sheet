@@ -2,6 +2,8 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { LyricLine } from "@/types/song";
+import type { SongStyle } from "@/lib/songStyle";
+import { MONO_STACK } from "@/lib/songStyle";
 
 interface Props {
   line: LyricLine;
@@ -14,31 +16,14 @@ interface Props {
   onDeleteChord: (chordId: string) => void;
   onAddLineAfter: () => void;
   onDelete: () => void;
+  songStyle?: SongStyle;
 }
 
-// Measure how wide text.slice(0, n) is at the editor font size
-const FONT_SPEC = "14px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-
-function measureWidth(text: string): number {
+function measureWidth(text: string, size: number, family: string): number {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  ctx.font = FONT_SPEC;
+  ctx.font = `${size}px ${family}`;
   return ctx.measureText(text).width;
-}
-
-function pxToCharPos(text: string, px: number): number {
-  // Walk through character positions to find the closest one
-  let best = 0;
-  let bestDist = Infinity;
-  for (let i = 0; i <= text.length; i++) {
-    const w = measureWidth(text.slice(0, i));
-    const dist = Math.abs(w - px);
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = i;
-    }
-  }
-  return best;
 }
 
 export default function LyricLineEditor({
@@ -52,9 +37,17 @@ export default function LyricLineEditor({
   onDeleteChord,
   onAddLineAfter,
   onDelete,
+  songStyle,
 }: Props) {
   const chordAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Derived style values
+  const lyricFont = songStyle?.lyrics?.fontFamily ?? MONO_STACK;
+  const lyricSize = songStyle?.lyrics?.fontSize ?? 14;
+  const chordFont = songStyle?.chords?.fontFamily ?? MONO_STACK;
+  const chordSize = songStyle?.chords?.fontSize ?? 12;
+  const chordColor = songStyle?.chords?.color ?? "#4f46e5";
 
   // Inline "add chord" popup
   const [addingAtPx, setAddingAtPx] = useState<number | null>(null);
@@ -73,12 +66,18 @@ export default function LyricLineEditor({
   const onMoveChordRef = useRef(onMoveChord);
   useEffect(() => { onMoveChordRef.current = onMoveChord; }, [onMoveChord]);
 
+  // Keep style refs up to date for use in event handlers
+  const lyricSizeRef = useRef(lyricSize);
+  const lyricFontRef = useRef(lyricFont);
+  useEffect(() => { lyricSizeRef.current = lyricSize; }, [lyricSize]);
+  useEffect(() => { lyricFontRef.current = lyricFont; }, [lyricFont]);
+
   // Global mouse listeners for drag
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const d = draggingRef.current;
       if (!d || !chordAreaRef.current) return;
-      const charWidth = measureWidth("M"); // monospace: all chars same width
+      const charWidth = measureWidth("M", lyricSizeRef.current, lyricFontRef.current);
       const dx = e.clientX - d.startX;
       const newPos = Math.max(0, d.startPos + Math.round(dx / charWidth));
       onMoveChordRef.current(d.chordId, newPos);
@@ -92,6 +91,16 @@ export default function LyricLineEditor({
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
+
+  function pxToCharPos(text: string, px: number): number {
+    let best = 0, bestDist = Infinity;
+    for (let i = 0; i <= text.length; i++) {
+      const w = measureWidth(text.slice(0, i), lyricSize, lyricFont);
+      const dist = Math.abs(w - px);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return best;
+  }
 
   // ── Chord area click ─────────────────────────────────────────────────────────
 
@@ -112,7 +121,8 @@ export default function LyricLineEditor({
       setAddingText("");
       setTimeout(() => addingInputRef.current?.focus(), 0);
     },
-    [activeChord, line.text, onAddChord, onClearActiveChord]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeChord, line.text, onAddChord, onClearActiveChord, lyricFont, lyricSize]
   );
 
   const confirmAdd = useCallback(() => {
@@ -124,7 +134,8 @@ export default function LyricLineEditor({
     onAddChord(pos, addingText.trim());
     setAddingAtPx(null);
     setAddingText("");
-  }, [addingAtPx, addingText, line.text, onAddChord]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addingAtPx, addingText, line.text, onAddChord, lyricFont, lyricSize]);
 
   // ── Lyric input keyboard ─────────────────────────────────────────────────────
 
@@ -153,7 +164,7 @@ export default function LyricLineEditor({
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  const chordLeftPx = (position: number) => measureWidth(line.text.slice(0, position));
+  const chordLeftPx = (position: number) => measureWidth(line.text.slice(0, position), lyricSize, lyricFont);
 
   return (
     <div className="group/line relative py-0.5">
@@ -184,7 +195,11 @@ export default function LyricLineEditor({
               <input
                 autoFocus
                 defaultValue={chord.chord}
-                className="w-16 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm" style={{ fontSize: "12px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
+                className="w-16 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm"
+                style={{
+                  fontSize: chordSize,
+                  fontFamily: chordFont,
+                }}
                 onBlur={(e) => {
                   const val = e.target.value.trim();
                   if (val) onUpdateChord(chord.id, val);
@@ -208,8 +223,14 @@ export default function LyricLineEditor({
               />
             ) : (
               <span
-                className="font-bold text-indigo-600 whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
-                style={{ fontSize: "12px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
+                className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
+                style={{
+                  fontSize: chordSize,
+                  fontFamily: chordFont,
+                  fontWeight: songStyle?.chords?.bold !== false ? "bold" : "normal",
+                  fontStyle: songStyle?.chords?.italic ? "italic" : "normal",
+                  color: chordColor,
+                }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   setEditingChordId(chord.id);
@@ -235,7 +256,7 @@ export default function LyricLineEditor({
             }}
             placeholder="Am"
             className="absolute top-0 w-14 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm z-10"
-            style={{ fontSize: "12px", left: addingAtPx, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
+            style={{ fontSize: chordSize, left: addingAtPx, fontFamily: chordFont }}
             onClick={(e) => e.stopPropagation()}
           />
         )}
@@ -251,8 +272,16 @@ export default function LyricLineEditor({
           onKeyDown={handleKeyDown}
           placeholder="Type lyrics here…"
           spellCheck={false}
-          className="flex-1 text-zinc-800 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
-          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px", padding: 0, margin: 0 }}
+          className="flex-1 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
+          style={{
+            fontFamily: lyricFont,
+            fontSize: lyricSize,
+            fontWeight: songStyle?.lyrics?.bold ? "bold" : "normal",
+            fontStyle: songStyle?.lyrics?.italic ? "italic" : "normal",
+            color: songStyle?.lyrics?.color ?? "#27272a",
+            padding: 0,
+            margin: 0,
+          }}
         />
         <button
           onClick={onDelete}

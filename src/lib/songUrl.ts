@@ -1,10 +1,12 @@
 import type { SongLine } from "@/types/song";
+import type { SongStyle } from "./songStyle";
 
 export type SharedSong = {
   id?: string; // present when opening from own library; absent for external shares
   title: string;
   artist: string;
   lines: SongLine[];
+  style?: SongStyle;
 };
 
 export function encodeSong(song: SharedSong): string {

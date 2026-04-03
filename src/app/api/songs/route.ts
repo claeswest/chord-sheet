@@ -37,14 +37,14 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { id, title, artist, lines, tags } = body;
+  const { id, title, artist, lines, tags, style } = body;
 
   const song = await prisma.song.upsert({
     where: { id: id ?? "__new__" },
     update: {
       title: title ?? "Untitled Song",
       artist: artist ?? "",
-      content: { lines, tags: tags ?? [] },
+      content: { lines, tags: tags ?? [], style: style ?? null },
       updatedAt: new Date(),
     },
     create: {
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       userId: session.user.id,
       title: title ?? "Untitled Song",
       artist: artist ?? "",
-      content: { lines, tags: tags ?? [] },
+      content: { lines, tags: tags ?? [], style: style ?? null },
     },
   });
 

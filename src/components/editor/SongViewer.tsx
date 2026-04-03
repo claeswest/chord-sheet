@@ -2,14 +2,13 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { SongLine } from "@/types/song";
+import { DEFAULT_STYLE, MONO_STACK } from "@/lib/songStyle";
+import type { SongStyle } from "@/lib/songStyle";
 
-const FONT_SPEC = (size: number) =>
-  `${size}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
-
-function measureWidth(text: string, fontSize: number): number {
+function measureWidth(text: string, size: number, family: string): number {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  ctx.font = FONT_SPEC(fontSize);
+  ctx.font = `${size}px ${family}`;
   return ctx.measureText(text).width;
 }
 
@@ -18,6 +17,7 @@ interface Props {
   artist: string;
   lines: SongLine[];
   onEdit: () => void;
+  songStyle?: SongStyle;
 }
 
 const SPEED_PX_PER_TICK: Record<number, number> = {
@@ -26,14 +26,32 @@ const SPEED_PX_PER_TICK: Record<number, number> = {
 };
 const TICK_MS = 40; // ~25fps
 
-export default function SongViewer({ title, artist, lines, onEdit }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(3);
-  const [fontSize, setFontSize] = useState(14);
+  const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
+
+  const s = songStyle ?? DEFAULT_STYLE;
+  const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust;
+  const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust;
+  const titleSize = (s.title.fontSize ?? 20) + sizeAdjust;
+
+  // Load any Google Fonts on mount/change
+  useEffect(() => {
+    [s.title.fontFamily, s.lyrics.fontFamily, s.chords.fontFamily].forEach(fam => {
+      if (fam && !fam.startsWith("ui-monospace")) {
+        import("@/lib/songStyle").then(({ ALL_FONTS, loadGoogleFont }) => {
+          const font = ALL_FONTS.find(f => f.stack === fam);
+          if (font) loadGoogleFont(font.url);
+        });
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.title.fontFamily, s.lyrics.fontFamily, s.chords.fontFamily]);
 
   // Auto-hide controls after 3s of playing
   useEffect(() => {
@@ -79,20 +97,30 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
     >
       {/* Scrollable content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div
-          className="max-w-2xl mx-auto px-10 pt-16 pb-40"
-          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: "14px" }}
-        >
+        <div className="max-w-2xl mx-auto px-10 pt-16 pb-40">
           {/* Song header */}
           <div className="mb-10 text-center">
             <h1
-              className="font-bold text-zinc-900 leading-tight"
-              style={{ fontSize: fontSize + 6 }}
+              className="leading-tight"
+              style={{
+                fontSize: titleSize,
+                fontFamily: s.title.fontFamily ?? MONO_STACK,
+                fontWeight: s.title.bold !== false ? "bold" : "normal",
+                fontStyle: s.title.italic ? "italic" : "normal",
+                color: s.title.color ?? "#18181b",
+              }}
             >
               {title || "Untitled Song"}
             </h1>
             {artist && (
-              <p className="text-zinc-500 mt-1" style={{ fontSize: fontSize - 1 }}>
+              <p
+                className="mt-1"
+                style={{
+                  fontSize: lyricSize - 2,
+                  fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
+                  color: s.lyrics.color ?? "#71717a",
+                }}
+              >
                 {artist}
               </p>
             )}
@@ -106,7 +134,7 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
                   <div key={line.id} className="pt-8 pb-1">
                     <span
                       className="font-bold uppercase tracking-widest text-indigo-600 border-b border-indigo-200 pb-0.5"
-                      style={{ fontSize: fontSize - 3 }}
+                      style={{ fontSize: lyricSize - 3 }}
                     >
                       {line.label}
                     </span>
@@ -123,10 +151,14 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
                       {line.chords.map((chord) => (
                         <span
                           key={chord.id}
-                          className="absolute font-bold text-indigo-600 whitespace-nowrap"
+                          className="absolute whitespace-nowrap"
                           style={{
-                            left: measureWidth(line.text.slice(0, chord.position), fontSize),
-                            fontSize: fontSize - 2,
+                            left: measureWidth(line.text.slice(0, chord.position), lyricSize, s.lyrics.fontFamily ?? MONO_STACK),
+                            fontSize: chordSize,
+                            fontFamily: s.chords.fontFamily ?? MONO_STACK,
+                            fontWeight: s.chords.bold !== false ? "bold" : "normal",
+                            fontStyle: s.chords.italic ? "italic" : "normal",
+                            color: s.chords.color ?? "#4f46e5",
                             top: 0,
                           }}
                         >
@@ -137,8 +169,15 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
                   )}
                   {/* Lyric */}
                   <div
-                    className="text-zinc-800 whitespace-pre"
-                    style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize, lineHeight: "1.25rem" }}
+                    className="whitespace-pre"
+                    style={{
+                      fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
+                      fontSize: lyricSize,
+                      fontWeight: s.lyrics.bold ? "bold" : "normal",
+                      fontStyle: s.lyrics.italic ? "italic" : "normal",
+                      color: s.lyrics.color ?? "#27272a",
+                      lineHeight: "1.25rem",
+                    }}
                   >
                     {line.text || "\u00A0"}
                   </div>
@@ -201,13 +240,13 @@ export default function SongViewer({ title, artist, lines, onEdit }: Props) {
           {/* Font size */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setFontSize((s) => Math.max(12, s - 1))}
+              onClick={() => setSizeAdjust(s => Math.max(-6, s - 1))}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
             >
               A-
             </button>
             <button
-              onClick={() => setFontSize((s) => Math.min(28, s + 1))}
+              onClick={() => setSizeAdjust(s => Math.min(14, s + 1))}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
             >
               A+

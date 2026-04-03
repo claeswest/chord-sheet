@@ -1,4 +1,5 @@
 import type { SongLine } from "@/types/song";
+import type { SongStyle } from "./songStyle";
 
 export type DbSong = {
   id: string;
@@ -8,6 +9,7 @@ export type DbSong = {
   tags: string[];
   updatedAt: string;
   categoryIds?: string[];
+  style?: SongStyle;
 };
 
 export async function fetchSongs(): Promise<DbSong[]> {
@@ -41,5 +43,6 @@ function rowToDbSong(row: any): DbSong {
     tags: content.tags ?? [],
     updatedAt: row.updatedAt,
     categoryIds: row.categoryIds ?? [],
+    style: content.style ?? undefined,
   };
 }

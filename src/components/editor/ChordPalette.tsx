@@ -14,9 +14,10 @@ const CHORD_GROUPS = [
 interface Props {
   activeChord: string | null;
   onSelectChord: (chord: string | null) => void;
+  asideClassName?: string;
 }
 
-export default function ChordPalette({ activeChord, onSelectChord }: Props) {
+export default function ChordPalette({ activeChord, onSelectChord, asideClassName }: Props) {
   const [customChord, setCustomChord] = useState("");
 
   const handleCustomSubmit = (e: React.FormEvent) => {
@@ -28,7 +29,7 @@ export default function ChordPalette({ activeChord, onSelectChord }: Props) {
   };
 
   return (
-    <aside className="w-52 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden">
+    <aside className={asideClassName ?? "w-52 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
       <div className="px-4 py-3 border-b border-zinc-200">
         <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
           Chord Palette

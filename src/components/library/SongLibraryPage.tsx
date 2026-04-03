@@ -350,7 +350,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((song) => {
-                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines });
+                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
 
