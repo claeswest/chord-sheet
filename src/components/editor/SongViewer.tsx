@@ -133,11 +133,17 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
           <div className="space-y-0">
             {lines.map((line) => {
               if (line.type === "section") {
+                const sectionColor = s.chords.color ?? "#4f46e5";
                 return (
                   <div key={line.id} className="pt-8 pb-1">
                     <span
-                      className="font-bold uppercase tracking-widest text-indigo-600 border-b border-indigo-200 pb-0.5"
-                      style={{ fontSize: lyricSize - 3 }}
+                      className="font-bold uppercase tracking-widest pb-0.5"
+                      style={{
+                        fontSize: lyricSize - 3,
+                        color: sectionColor,
+                        borderBottom: `1px solid ${sectionColor}`,
+                        opacity: 0.85,
+                      }}
                     >
                       {line.label}
                     </span>

@@ -94,8 +94,13 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       {/* Lines */}
       {lines.map((line) => {
         if (line.type === "section") {
+          const sectionColor = s.chords.color ?? "#4f46e5";
           return (
-            <div key={line.id} className="print-section">
+            <div
+              key={line.id}
+              className="print-section"
+              style={{ color: sectionColor, borderBottomColor: sectionColor }}
+            >
               {line.label}
             </div>
           );

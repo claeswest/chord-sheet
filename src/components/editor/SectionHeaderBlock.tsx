@@ -9,9 +9,10 @@ interface Props {
   section: SectionHeader;
   onUpdate: (label: string) => void;
   onDelete: () => void;
+  color?: string;
 }
 
-export default function SectionHeaderBlock({ section, onUpdate, onDelete }: Props) {
+export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5" }: Props) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +35,8 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete }: Prop
               if (e.key === "Enter") commit(e.currentTarget.value);
               if (e.key === "Escape") setEditing(false);
             }}
-            className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-300 rounded px-2 py-0.5 outline-none w-28"
+            className="text-xs font-bold uppercase tracking-widest rounded px-2 py-0.5 outline-none w-28"
+            style={{ color, borderColor: color, border: `1px solid ${color}`, background: `${color}18` }}
           />
           <div className="flex flex-wrap gap-1">
             {QUICK_LABELS.map((l) => (
@@ -55,13 +57,14 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete }: Prop
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="text-xs font-bold uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+          className="text-xs font-bold uppercase tracking-widest transition-colors"
+          style={{ color }}
         >
           {section.label}
         </button>
       )}
 
-      <div className="flex-1 h-px bg-zinc-100" />
+      <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
 
       <button
         onClick={onDelete}

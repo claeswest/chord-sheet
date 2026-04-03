@@ -262,6 +262,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         section={line as SectionHeader}
         onUpdate={(label) => updateSection(line.id, label)}
         onDelete={() => deleteLine(line.id)}
+        color={songStyle.chords.color ?? "#4f46e5"}
       />
     );
 
