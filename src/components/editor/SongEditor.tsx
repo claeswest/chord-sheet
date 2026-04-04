@@ -26,7 +26,7 @@ import StylePanel from "./StylePanel";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
-import { encodeSong, type SharedSong } from "@/lib/songUrl";
+import { type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
@@ -178,13 +178,24 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
   // ── Save / Load ──────────────────────────────────────────────────────────────
 
-  const handleShare = useCallback(() => {
-    const encoded = encodeSong({ title, artist, lines, style: songStyle });
-    const url = `${window.location.origin}/editor/new?song=${encoded}`;
-    navigator.clipboard.writeText(url).then(() => {
+  const [shareLoading, setShareLoading] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    setShareLoading(true);
+    try {
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, artist, lines, style: songStyle }),
+      });
+      const { token } = await res.json();
+      const url = `${window.location.origin}/share/${token}`;
+      await navigator.clipboard.writeText(url);
       setShareFlash(true);
       setTimeout(() => setShareFlash(false), 2000);
-    });
+    } finally {
+      setShareLoading(false);
+    }
   }, [title, artist, lines, songStyle]);
 
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
@@ -377,14 +388,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           </button>
           <button
             onClick={handleShare}
-            className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+            disabled={shareLoading}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
               shareFlash
                 ? "text-green-600 bg-green-50"
                 : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
             }`}
             title="Copy shareable link"
           >
-            {shareFlash ? "Copied!" : "Share"}
+            {shareFlash ? "Copied!" : shareLoading ? "…" : "Share"}
           </button>
           <button
             onClick={handleSave}

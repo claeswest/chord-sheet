@@ -110,3 +110,11 @@ model SongCategory {
 
   @@id([songId, categoryId])
 }
+
+model Share {
+  id        String   @id @default(cuid())
+  title     String
+  artist    String   @default("")
+  content   Json     // { lines, style } — style includes backgroundImage
+  createdAt DateTime @default(now())
+}

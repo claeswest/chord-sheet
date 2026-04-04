@@ -16,7 +16,7 @@ interface Props {
   title: string;
   artist: string;
   lines: SongLine[];
-  onEdit: () => void;
+  onEdit?: () => void;
   songStyle?: SongStyle;
 }
 
@@ -208,13 +208,15 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
         }`}
       >
         <div className="flex items-center justify-center gap-4 px-6 py-4 bg-gradient-to-t from-black/60 to-transparent">
-          {/* Edit button */}
-          <button
-            onClick={onEdit}
-            className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm"
-          >
-            ← Edit
-          </button>
+          {/* Edit button — hidden on public share pages */}
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm"
+            >
+              ← Edit
+            </button>
+          )}
 
           {/* Play / Pause */}
           <button
