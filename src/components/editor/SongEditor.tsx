@@ -386,14 +386,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     <div className="flex flex-col h-screen bg-white">
       {/* Toolbar */}
       <header className="flex items-center gap-3 px-6 py-3 border-b border-zinc-200 bg-white z-10 shrink-0">
-        {isLoggedIn ? (
-          <Link href="/songs" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors mr-2 flex items-center gap-1">
-            ← My Songs
-          </Link>
-        ) : (
-          <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900 mr-2">
-            Chord<span className="text-indigo-600">Sheet</span>
-          </Link>
+        <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
+          Chord<span className="text-indigo-600">Sheet</span>
+        </Link>
+        {isLoggedIn && (
+          <>
+            <div className="w-px h-5 bg-zinc-200" />
+            <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+              ← My Songs
+            </Link>
+          </>
         )}
         <div className="w-px h-5 bg-zinc-200" />
         <div className="flex flex-col min-w-0">
