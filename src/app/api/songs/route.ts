@@ -23,10 +23,20 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(songs.map((s) => ({
-    ...s,
-    categoryIds: s.categories.map((c) => c.categoryId),
-  })));
+  return NextResponse.json(songs.map((s) => {
+    // Strip backgroundImage from list responses — it's large (150 KB each) and
+    // not needed in the library view. Fetched individually when opening a song.
+    const content = (s.content as Record<string, unknown>) ?? {};
+    const style = content.style as Record<string, unknown> | undefined;
+    const safeContent = style
+      ? { ...content, style: { ...style, backgroundImage: undefined } }
+      : content;
+    return {
+      ...s,
+      content: safeContent,
+      categoryIds: s.categories.map((c) => c.categoryId),
+    };
+  }));
 }
 
 // POST /api/songs — create or upsert a song

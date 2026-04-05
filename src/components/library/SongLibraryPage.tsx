@@ -377,13 +377,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
 
+                  const swatchBg = song.style?.background ?? "#f4f4f5";
+                  const titleColor = song.style?.title?.color ?? "#18181b";
+                  const artistColor = song.style?.artist?.color ?? "#a1a1aa";
+                  const initial = (song.title || "U")[0].toUpperCase();
+
                   return (
                     <div
                       key={song.id}
                       draggable={isLoggedIn}
                       onDragStart={(e) => handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
-                      className={`group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-zinc-50 ${
+                      className={`group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-zinc-50 ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""}`}
                     >
@@ -394,13 +399,40 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
+                      {/* Style swatch — shows song's background color + title initial */}
+                      <Link href={viewUrl} className="shrink-0" tabIndex={-1} aria-hidden>
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center select-none"
+                          style={{ background: swatchBg }}
+                        >
+                          <span
+                            className="text-sm font-bold leading-none"
+                            style={{
+                              color: titleColor,
+                              fontFamily: song.style?.title?.fontFamily,
+                              fontStyle: song.style?.title?.italic ? "italic" : "normal",
+                            }}
+                          >
+                            {initial}
+                          </span>
+                        </div>
+                      </Link>
+
                       {/* Title + artist — clicking opens view */}
                       <Link href={viewUrl} className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-zinc-900 truncate">
+                        <div
+                          className="text-sm font-medium truncate"
+                          style={{ color: titleColor }}
+                        >
                           {song.title || "Untitled Song"}
                         </div>
                         {song.artist ? (
-                          <div className="text-xs text-zinc-400 truncate mt-0.5">{song.artist}</div>
+                          <div
+                            className="text-xs truncate mt-0.5"
+                            style={{ color: artistColor }}
+                          >
+                            {song.artist}
+                          </div>
                         ) : null}
                       </Link>
 
