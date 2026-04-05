@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
+import { compressImage } from "@/lib/imageUtils";
 
 interface Props {
   style: SongStyle;
@@ -142,7 +143,9 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         setBgError(data.error ?? "No image returned");
         return;
       }
-      onChange({ ...style, backgroundImage: data.image, overlayOpacity: style.overlayOpacity ?? 0.5 });
+      // Compress before storing — brings 1–3 MB PNG down to ~150 KB JPEG
+      const compressed = await compressImage(data.image);
+      onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
       setBgPrompt(data.prompt ?? "");
     } catch (e: any) {
       setBgError(e?.message ?? "Network error");
