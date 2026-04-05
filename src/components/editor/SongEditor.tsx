@@ -52,9 +52,18 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [saveFlash, setSaveFlash] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
-  const [lines, setLines] = useState<SongLine[]>(
-    () => initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }]
-  );
+  // ── History (undo / redo) ────────────────────────────────────────────────────
+  const MAX_HISTORY = 100;
+  const historyStack = useRef<SongLine[][]>([]);
+  const [historyPos, setHistoryPos] = useState(0);
+  const textSnapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Lines state — initializer also seeds the history stack
+  const [lines, setLines] = useState<SongLine[]>(() => {
+    const initial = initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }];
+    historyStack.current = [initial];
+    return initial;
+  });
   const [songStyle, setSongStyle] = useState<SongStyle>(() => {
     // Seed backgroundImage from sessionStorage cache so it appears immediately
     const base = initialSong?.style ?? DEFAULT_STYLE;
@@ -68,6 +77,65 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   useEffect(() => setMounted(true), []);
+
+  // ── Snapshot helpers ─────────────────────────────────────────────────────────
+
+  // Push a snapshot immediately (structural changes: add/delete line/chord/section)
+  const pushSnap = useCallback((next: SongLine[]) => {
+    if (textSnapTimer.current) { clearTimeout(textSnapTimer.current); textSnapTimer.current = null; }
+    const truncated = historyStack.current.slice(0, historyPos + 1);
+    truncated.push(next);
+    if (truncated.length > MAX_HISTORY) truncated.shift();
+    historyStack.current = truncated;
+    setHistoryPos(truncated.length - 1);
+  // historyPos read from closure — intentional, see note below
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyPos]);
+
+  // Push a snapshot after 600ms of inactivity (text typing / chord renaming)
+  const pushSnapDebounced = useCallback((next: SongLine[]) => {
+    if (textSnapTimer.current) clearTimeout(textSnapTimer.current);
+    textSnapTimer.current = setTimeout(() => {
+      const truncated = historyStack.current.slice(0, historyPos + 1);
+      truncated.push(next);
+      if (truncated.length > MAX_HISTORY) truncated.shift();
+      historyStack.current = truncated;
+      setHistoryPos(truncated.length - 1);
+      textSnapTimer.current = null;
+    }, 600);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyPos]);
+
+  const undo = useCallback(() => {
+    setHistoryPos(pos => {
+      if (pos <= 0) return pos;
+      const next = pos - 1;
+      setLines(historyStack.current[next]);
+      return next;
+    });
+  }, []);
+
+  const redo = useCallback(() => {
+    setHistoryPos(pos => {
+      if (pos >= historyStack.current.length - 1) return pos;
+      const next = pos + 1;
+      setLines(historyStack.current[next]);
+      return next;
+    });
+  }, []);
+
+  // Keyboard shortcuts: Ctrl+Z / Cmd+Z = undo, Ctrl+Y / Ctrl+Shift+Z = redo
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      if (e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (e.key === "z" &&  e.shiftKey) { e.preventDefault(); redo(); }
+      if (e.key === "y")                { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   // Restore backgroundImage from DB on mount — it's stripped from URL encoding.
   // Also cache it in sessionStorage so the next load is instant.
@@ -100,9 +168,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     setLines((prev) => {
       const oldIdx = prev.findIndex((l) => l.id === active.id);
       const newIdx = prev.findIndex((l) => l.id === over.id);
-      return arrayMove(prev, oldIdx, newIdx);
+      const next = arrayMove(prev, oldIdx, newIdx);
+      pushSnap(next);
+      return next;
     });
-  }, []);
+  }, [pushSnap]);
 
   // ── Line operations ──────────────────────────────────────────────────────────
 
@@ -110,71 +180,92 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     setLines((prev) => {
       const idx = prev.findIndex((l) => l.id === id);
       const newLine: LyricLine = { id: genId(), type: "lyric", text: "", chords: [] };
-      return [...prev.slice(0, idx + 1), newLine, ...prev.slice(idx + 1)];
+      const next = [...prev.slice(0, idx + 1), newLine, ...prev.slice(idx + 1)];
+      pushSnap(next);
+      return next;
     });
-  }, []);
+  }, [pushSnap]);
 
   const deleteLine = useCallback((id: string) => {
-    setLines((prev) => (prev.length === 1 ? prev : prev.filter((l) => l.id !== id)));
-  }, []);
+    setLines((prev) => {
+      if (prev.length === 1) return prev;
+      const next = prev.filter((l) => l.id !== id);
+      pushSnap(next);
+      return next;
+    });
+  }, [pushSnap]);
 
   const updateLineText = useCallback((id: string, text: string) => {
-    setLines((prev) =>
-      prev.map((l) => (l.id === id && l.type === "lyric" ? { ...l, text } : l))
-    );
-  }, []);
+    setLines((prev) => {
+      const next = prev.map((l) => (l.id === id && l.type === "lyric" ? { ...l, text } : l));
+      pushSnapDebounced(next);
+      return next;
+    });
+  }, [pushSnapDebounced]);
 
   const addSectionAfter = useCallback((id: string, label: string) => {
     setLines((prev) => {
       const idx = prev.findIndex((l) => l.id === id);
       const header: SectionHeader = { id: genId(), type: "section", label };
-      return [...prev.slice(0, idx + 1), header, ...prev.slice(idx + 1)];
+      const next = [...prev.slice(0, idx + 1), header, ...prev.slice(idx + 1)];
+      pushSnap(next);
+      return next;
     });
-  }, []);
+  }, [pushSnap]);
 
   const updateSection = useCallback((id: string, label: string) => {
-    setLines((prev) =>
-      prev.map((l) => (l.id === id && l.type === "section" ? { ...l, label } : l))
-    );
-  }, []);
+    setLines((prev) => {
+      const next = prev.map((l) => (l.id === id && l.type === "section" ? { ...l, label } : l));
+      pushSnapDebounced(next);
+      return next;
+    });
+  }, [pushSnapDebounced]);
 
   // ── Chord operations ─────────────────────────────────────────────────────────
 
   const addChord = useCallback((lineId: string, position: number, chord: string) => {
-    setLines((prev) =>
-      prev.map((l) => {
+    setLines((prev) => {
+      const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
         return { ...l, chords: [...l.chords, { id: genId(), chord, position }] };
-      })
-    );
-  }, []);
+      });
+      pushSnap(next);
+      return next;
+    });
+  }, [pushSnap]);
 
   const updateChord = useCallback((lineId: string, chordId: string, chord: string) => {
-    setLines((prev) =>
-      prev.map((l) => {
+    setLines((prev) => {
+      const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
         return { ...l, chords: l.chords.map((c) => (c.id === chordId ? { ...c, chord } : c)) };
-      })
-    );
-  }, []);
+      });
+      pushSnapDebounced(next);
+      return next;
+    });
+  }, [pushSnapDebounced]);
 
   const moveChord = useCallback((lineId: string, chordId: string, position: number) => {
-    setLines((prev) =>
-      prev.map((l) => {
+    setLines((prev) => {
+      const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
         return { ...l, chords: l.chords.map((c) => (c.id === chordId ? { ...c, position } : c)) };
-      })
-    );
-  }, []);
+      });
+      pushSnap(next);
+      return next;
+    });
+  }, [pushSnap]);
 
   const deleteChord = useCallback((lineId: string, chordId: string) => {
-    setLines((prev) =>
-      prev.map((l) => {
+    setLines((prev) => {
+      const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
         return { ...l, chords: l.chords.filter((c) => c.id !== chordId) };
-      })
-    );
-  }, []);
+      });
+      pushSnap(next);
+      return next;
+    });
+  }, [pushSnap]);
 
   // ── Save / Load ──────────────────────────────────────────────────────────────
 
@@ -325,6 +416,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
+          {/* Undo / Redo */}
+          <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden">
+            <button
+              onClick={undo}
+              disabled={historyPos <= 0}
+              className="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+              title="Undo (Ctrl+Z)"
+            >↩</button>
+            <button
+              onClick={redo}
+              disabled={historyPos >= historyStack.current.length - 1}
+              className="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm border-l border-zinc-200"
+              title="Redo (Ctrl+Y)"
+            >↪</button>
+          </div>
+          <div className="w-px h-5 bg-zinc-200" />
           <button
             onClick={handleNew}
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
