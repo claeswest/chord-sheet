@@ -27,7 +27,7 @@ import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { type SharedSong } from "@/lib/songUrl";
-import { upsertSong, fetchSongStyle } from "@/lib/songDb";
+import { upsertSong, fetchSongStyle, saveBackgroundImage } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -76,6 +76,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [rightPanel, setRightPanel] = useState<"chords" | "style">("chords");
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+  // Track the last-saved backgroundImage so we only call the dedicated endpoint on changes
+  const lastSavedBgImage = useRef<string | undefined>(
+    // Initialise to whatever we seeded from sessionStorage/initialSong — no need to save that
+    (() => {
+      const base = initialSong?.style?.backgroundImage;
+      if (initialSong?.id && typeof sessionStorage !== "undefined") {
+        return sessionStorage.getItem(`bgImg:${initialSong.id}`) ?? base;
+      }
+      return base;
+    })()
+  );
   useEffect(() => setMounted(true), []);
 
   // ── Snapshot helpers ─────────────────────────────────────────────────────────
@@ -156,6 +167,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Save backgroundImage via dedicated endpoint whenever it changes.
+  // This keeps the main POST /api/songs body small (no huge base64 blob).
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const newBg = songStyle.backgroundImage;
+    if (newBg === lastSavedBgImage.current) return;
+    lastSavedBgImage.current = newBg;
+    // Update sessionStorage cache too
+    if (newBg) {
+      sessionStorage.setItem(`bgImg:${songId}`, newBg);
+    } else {
+      sessionStorage.removeItem(`bgImg:${songId}`);
+    }
+    saveBackgroundImage(songId, newBg).catch(() => {});
+  }, [songStyle.backgroundImage, isLoggedIn, songId]);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
   const sensors = useSensors(

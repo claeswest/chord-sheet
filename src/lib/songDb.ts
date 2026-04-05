@@ -33,6 +33,15 @@ export async function removeSong(id: string): Promise<void> {
   await fetch(`/api/songs/${id}`, { method: "DELETE" });
 }
 
+/** Saves the background image for a song via the dedicated endpoint (avoids large POST body). */
+export async function saveBackgroundImage(songId: string, backgroundImage: string | undefined): Promise<void> {
+  await fetch(`/api/songs/${songId}/background`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ backgroundImage: backgroundImage ?? null }),
+  });
+}
+
 /** Fetches the full style (including backgroundImage) for a single song by ID. */
 export async function fetchSongStyle(id: string): Promise<SongStyle | undefined> {
   const res = await fetch(`/api/songs/${id}`, { cache: "no-store" });
