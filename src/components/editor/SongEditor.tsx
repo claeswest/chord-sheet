@@ -27,7 +27,7 @@ import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { type SharedSong } from "@/lib/songUrl";
-import { upsertSong, fetchSongStyle, saveBackgroundImage } from "@/lib/songDb";
+import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -74,9 +74,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     return base;
   });
   const [rightPanel, setRightPanel] = useState<"chords" | "style">("chords");
+  // Always-current snapshot of song data — updated every render so effects can read
+  // latest values without adding them as deps (avoids stale closures).
+  const latestSongRef = useRef({ title, artist, lines, songId, songStyle });
+  latestSongRef.current = { title, artist, lines, songId, songStyle };
+
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
-  // Track the last-saved backgroundImage so we only call the dedicated endpoint on changes
+  // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
   const lastSavedBgImage = useRef<string | undefined>(
     // Initialise to whatever we seeded from sessionStorage/initialSong — no need to save that
     (() => {
@@ -156,6 +161,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     fetchSongStyle(id).then(fullStyle => {
       if (fullStyle?.backgroundImage) {
         sessionStorage.setItem(`bgImg:${id}`, fullStyle.backgroundImage);
+        // Mark as already-saved BEFORE calling setSongStyle so the backgroundImage
+        // change effect doesn't trigger an unnecessary re-save for a DB-restored image.
+        lastSavedBgImage.current = fullStyle.backgroundImage;
         setSongStyle(prev => ({
           ...prev,
           backgroundImage: fullStyle.backgroundImage,
@@ -168,21 +176,25 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save backgroundImage via dedicated endpoint whenever it changes.
-  // This keeps the main POST /api/songs body small (no huge base64 blob).
+  // When backgroundImage changes (user generates or removes it), save immediately —
+  // don't wait for the 1s auto-save debounce so navigating away can't lose it.
+  // Image is compressed to ~150 KB before reaching here, so body size is fine.
   useEffect(() => {
     if (!isLoggedIn) return;
     const newBg = songStyle.backgroundImage;
     if (newBg === lastSavedBgImage.current) return;
     lastSavedBgImage.current = newBg;
-    // Update sessionStorage cache too
+    // Keep sessionStorage in sync
     if (newBg) {
-      sessionStorage.setItem(`bgImg:${songId}`, newBg);
+      sessionStorage.setItem(`bgImg:${latestSongRef.current.songId}`, newBg);
     } else {
-      sessionStorage.removeItem(`bgImg:${songId}`);
+      sessionStorage.removeItem(`bgImg:${latestSongRef.current.songId}`);
     }
-    saveBackgroundImage(songId, newBg).catch(() => {});
-  }, [songStyle.backgroundImage, isLoggedIn, songId]);
+    // Immediate full save — latestSongRef always has current values without stale closure risk
+    const { title: t, artist: a, lines: l, songId: id, songStyle: s } = latestSongRef.current;
+    upsertSong({ id, title: t, artist: a, lines: l, tags: [], style: s }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [songStyle.backgroundImage, isLoggedIn]);
 
   // Require 8px movement before starting a row drag — prevents conflicts with chord dragging
   const sensors = useSensors(

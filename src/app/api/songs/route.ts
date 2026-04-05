@@ -39,31 +39,12 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { id, title, artist, lines, tags, style } = body;
 
-  // Strip backgroundImage from incoming style — it's saved separately via
-  // PUT /api/songs/[id]/background to avoid large request bodies.
-  // Preserve the existing backgroundImage already stored in the DB.
-  const { backgroundImage: _dropped, ...styleWithoutBg } = (style ?? {}) as Record<string, unknown>;
-
-  // For updates, fetch the existing backgroundImage so we don't wipe it.
-  let existingBgImage: string | null = null;
-  if (id) {
-    const existing = await prisma.song.findFirst({
-      where: { id, userId: session.user.id },
-      select: { content: true },
-    });
-    existingBgImage = (existing?.content as any)?.style?.backgroundImage ?? null;
-  }
-
-  const mergedStyle = existingBgImage
-    ? { ...styleWithoutBg, backgroundImage: existingBgImage }
-    : styleWithoutBg;
-
   const song = await prisma.song.upsert({
     where: { id: id ?? "__new__" },
     update: {
       title: title ?? "Untitled Song",
       artist: artist ?? "",
-      content: { lines, tags: tags ?? [], style: mergedStyle as any },
+      content: { lines, tags: tags ?? [], style: style ?? null },
       updatedAt: new Date(),
     },
     create: {
@@ -71,7 +52,7 @@ export async function POST(req: Request) {
       userId: session.user.id,
       title: title ?? "Untitled Song",
       artist: artist ?? "",
-      content: { lines, tags: tags ?? [], style: styleWithoutBg as any },
+      content: { lines, tags: tags ?? [], style: style ?? null },
     },
   });
 
