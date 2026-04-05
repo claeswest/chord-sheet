@@ -22,7 +22,10 @@
       "Bash(node -e \"const {PrismaNeonHttp} = require\\(''@prisma/adapter-neon''\\); console.log\\(PrismaNeonHttp.toString\\(\\).slice\\(0,300\\)\\)\")",
       "Bash(find node_modules/next-auth -name *.js -exec grep -l MissingSecret {})",
       "Bash(2)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(curl -s \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyDSb5902ZB5zHhZHJhPzeKLV0cNnqKfZes&pageSize=100\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\claes.westlin\\\\OneDrive - Brandon\\\\Desktop\\\\Claude\\\\ChordSheetCreator\\\\src\\\\app\\\\api\\\\share\\\\[token]\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\claes.westlin\\\\OneDrive - Brandon\\\\Desktop\\\\Claude\\\\ChordSheetCreator\\\\src\\\\app\\\\share\\\\[token]\")"
     ]
   }
 }

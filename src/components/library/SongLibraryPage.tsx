@@ -186,7 +186,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       {/* Header */}
       <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center gap-4 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
-          Chord<span className="text-indigo-600">Sheet</span>
+          Chord<span className="text-indigo-600">SheetCreator</span>
         </Link>
         <div className="w-px h-5 bg-zinc-200" />
         <h1 className="text-sm font-semibold text-zinc-900">My Songs</h1>

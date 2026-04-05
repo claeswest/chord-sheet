@@ -387,7 +387,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       {/* Toolbar */}
       <header className="flex items-center gap-3 px-6 py-3 border-b border-zinc-200 bg-white z-10 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
-          Chord<span className="text-indigo-600">Sheet</span>
+          Chord<span className="text-indigo-600">SheetCreator</span>
         </Link>
         {isLoggedIn && (
           <>

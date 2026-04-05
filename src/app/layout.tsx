@@ -8,7 +8,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "ChordSheetMaker — Create & Share Chord Sheets",
+  title: "ChordSheetCreator — Create & Share Chord Sheets",
   description:
     "The easiest way to create, edit, and share chord sheets. Drag-and-drop chords over lyrics, auto-scroll in performance mode, and export to PDF.",
 };

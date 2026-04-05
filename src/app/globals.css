@@ -65,7 +65,7 @@ body {
 
   /* Watermark */
   #print-view.watermarked::after {
-    content: "ChordSheetMaker.com";
+    content: "ChordSheetCreator.com";
     position: fixed;
     bottom: 8mm;
     right: 14mm;

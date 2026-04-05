@@ -48,7 +48,7 @@ export default async function HomePage() {
       {/* Nav */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 max-w-6xl mx-auto w-full">
         <span className="text-xl font-bold tracking-tight text-zinc-900">
-          ChordSheet<span className="text-indigo-600">Maker</span>
+          ChordSheet<span className="text-indigo-600">Creator</span>
         </span>
         <nav className="flex items-center gap-6 text-sm text-zinc-600">
           <Link href="#features" className="hover:text-zinc-900 transition-colors">
@@ -253,7 +253,7 @@ export default async function HomePage() {
             Ready to play?
           </h2>
           <p className="text-zinc-500 mb-8 max-w-md mx-auto">
-            Join musicians who use ChordSheetMaker to create, organise, and
+            Join musicians who use ChordSheetCreator to create, organise, and
             perform their songs.
           </p>
           <Link
@@ -267,7 +267,7 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-100 px-6 py-8 text-center text-sm text-zinc-400">
-        © {new Date().getFullYear()} ChordSheetMaker.com — Built for musicians
+        © {new Date().getFullYear()} ChordSheetCreator.com — Built for musicians
       </footer>
 
       <ScrollToTop />

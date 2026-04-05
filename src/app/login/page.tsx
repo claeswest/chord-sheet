@@ -5,7 +5,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
       <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-10 w-full max-w-sm text-center">
         <div className="text-2xl font-bold tracking-tight mb-1">
-          Chord<span className="text-indigo-600">Sheet</span>
+          Chord<span className="text-indigo-600">SheetCreator</span>
         </div>
         <p className="text-sm text-zinc-400 mb-8">Sign in to save and access your songs</p>
 
