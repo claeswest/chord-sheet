@@ -335,14 +335,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Main content */}
         <main className="flex-1 px-6 py-6 min-w-0">
           <div className="max-w-4xl">
-            {/* Search */}
-            <div className="mb-5">
+            {/* Search + count */}
+            <div className="flex items-center gap-4 mb-5">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search songs…"
                 className="w-full max-w-sm text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
               />
+              {!loading && (
+                <span className="text-sm text-zinc-400 shrink-0">
+                  {filtered.length} {filtered.length === 1 ? "song" : "songs"}
+                </span>
+              )}
             </div>
 
             {loading ? (
