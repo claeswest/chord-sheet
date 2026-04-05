@@ -5,9 +5,14 @@ import type { SongLine } from "@/types/song";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
+// Reuse a single canvas context across all measurements
+let _ctx: CanvasRenderingContext2D | null = null;
+function getCtx(): CanvasRenderingContext2D {
+  if (!_ctx) _ctx = document.createElement("canvas").getContext("2d")!;
+  return _ctx;
+}
 function measureWidth(text: string, size: number, family: string): number {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
+  const ctx = getCtx();
   ctx.font = `${size}px ${family}`;
   return ctx.measureText(text).width;
 }
@@ -189,7 +194,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
                       fontWeight: s.lyrics.bold ? "bold" : "normal",
                       fontStyle: s.lyrics.italic ? "italic" : "normal",
                       color: s.lyrics.color ?? "#27272a",
-                      lineHeight: "1.25rem",
+                      lineHeight: 1.35,
                     }}
                   >
                     {line.text || "\u00A0"}
