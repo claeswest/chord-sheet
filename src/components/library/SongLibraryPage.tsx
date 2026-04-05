@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { encodeSong } from "@/lib/songUrl";
-import { fetchSongs, removeSong, type DbSong } from "@/lib/songDb";
+import { fetchSongs, removeSong, duplicateSong, type DbSong } from "@/lib/songDb";
 import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
@@ -36,6 +36,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   // Category editing
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -79,14 +80,29 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     load();
   }, [isLoggedIn]);
 
-  // ── Delete song ────────────────────────────────────────────────────────────
+  // ── Delete song ──────────────────────────────────────────────────────────────
   const handleDelete = async (id: string, source: "db" | "local") => {
     if (source === "db") await removeSong(id);
     else deleteSong(id);
     setSongs((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // ── Categories ─────────────────────────────────────────────────────────────
+  // ── Duplicate song ───────────────────────────────────────────────────────────
+  const handleDuplicate = async (song: Song) => {
+    if (song.source !== "db") return;
+    setDuplicatingId(song.id);
+    try {
+      const newSong = await duplicateSong(song);
+      setSongs((prev) => [
+        { ...newSong, categoryIds: newSong.categoryIds ?? [], source: "db" as const },
+        ...prev,
+      ]);
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
+  // ── Categories ───────────────────────────────────────────────────────────────
   const handleCreateCategory = async () => {
     const name = newCategoryName.trim();
     setNewCategoryName("");
@@ -116,7 +132,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     await deleteCategory(id);
   };
 
-  // ── Drag and drop ──────────────────────────────────────────────────────────
+  // ── Drag and drop ────────────────────────────────────────────────────────────
   const handleDragStart = (e: React.DragEvent, songId: string) => {
     e.dataTransfer.setData("songId", songId);
     e.dataTransfer.effectAllowed = "move";
@@ -155,7 +171,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     await removeSongFromCategory(categoryId, songId);
   };
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
+  // ── Filtering ────────────────────────────────────────────────────────────────
   const uncategorizedCount = songs.filter((s) => s.categoryIds.length === 0).length;
 
   const filtered = songs.filter((s) => {
@@ -317,9 +333,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         )}
 
         {/* Main content */}
-        <main className="flex-1 px-6 py-8 min-w-0">
-          <div className="max-w-5xl">
-            <div className="mb-8">
+        <main className="flex-1 px-6 py-6 min-w-0">
+          <div className="max-w-4xl">
+            {/* Search */}
+            <div className="mb-5">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -348,11 +365,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filtered.map((song) => {
+              <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+                {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
+                  const isDuplicating = duplicatingId === song.id;
 
                   return (
                     <div
@@ -360,30 +378,37 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       draggable={isLoggedIn}
                       onDragStart={(e) => handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
-                      className={`group bg-white rounded-xl border border-zinc-200 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col ${
-                        dragSongId === song.id ? "opacity-40 scale-95" : ""
-                      }`}
+                      className={`group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-zinc-50 ${
+                        idx !== 0 ? "border-t border-zinc-100" : ""
+                      } ${dragSongId === song.id ? "opacity-40" : ""}`}
                     >
-                      <Link href={viewUrl} className="flex-1 p-5 block">
-                        <div className="text-base font-semibold text-zinc-900 truncate mb-0.5">
+                      {/* Drag handle */}
+                      {isLoggedIn && (
+                        <div className="text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors select-none text-xs leading-none">
+                          ⠿
+                        </div>
+                      )}
+
+                      {/* Title + artist — clicking opens view */}
+                      <Link href={viewUrl} className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-zinc-900 truncate">
                           {song.title || "Untitled Song"}
                         </div>
-                        <div className="text-sm text-zinc-400 truncate">
-                          {song.artist || <span className="italic">No artist</span>}
-                        </div>
-                        <div className="text-xs text-zinc-300 mt-3">{timeAgo(song.updatedAt)}</div>
+                        {song.artist ? (
+                          <div className="text-xs text-zinc-400 truncate mt-0.5">{song.artist}</div>
+                        ) : null}
                       </Link>
 
                       {/* Category chips */}
                       {isLoggedIn && song.categoryIds.length > 0 && (
-                        <div className="px-5 pb-3 flex flex-wrap gap-1">
+                        <div className="hidden sm:flex flex-wrap gap-1 shrink-0">
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
                             return (
                               <span
                                 key={catId}
-                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-full"
+                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-full"
                               >
                                 {cat.name}
                                 <button
@@ -399,8 +424,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      <div className="flex items-center gap-1 px-4 py-2.5 border-t border-zinc-100">
-                        <div className="flex-1" />
+                      {/* Updated time */}
+                      <div className="text-xs text-zinc-300 shrink-0 hidden md:block w-16 text-right">
+                        {timeAgo(song.updatedAt)}
+                      </div>
+
+                      {/* Actions — visible on hover */}
+                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link
                           href={viewUrl}
                           className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
@@ -409,13 +439,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </Link>
                         <Link
                           href={editUrl}
-                          className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition-colors font-medium"
+                          className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
                         >
                           Edit
                         </Link>
+                        {song.source === "db" && (
+                          <button
+                            onClick={() => handleDuplicate(song)}
+                            disabled={isDuplicating}
+                            title="Duplicate"
+                            className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors disabled:opacity-40"
+                          >
+                            {isDuplicating ? "…" : "Copy"}
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(song.id, song.source)}
                           className="text-xs text-zinc-300 hover:text-red-400 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete"
                         >
                           ✕
                         </button>

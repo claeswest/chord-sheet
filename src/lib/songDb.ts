@@ -41,6 +41,23 @@ export async function fetchSongStyle(id: string): Promise<SongStyle | undefined>
   return (row.content as any)?.style ?? undefined;
 }
 
+/** Duplicates a song — fetches full content (incl. backgroundImage) then saves as new. */
+export async function duplicateSong(song: DbSong): Promise<DbSong> {
+  // Fetch full content from DB to include backgroundImage
+  const res = await fetch(`/api/songs/${song.id}`, { cache: "no-store" });
+  const fullContent = res.ok ? ((await res.json()).content ?? {}) : {};
+  const fullStyle = fullContent.style ?? song.style;
+
+  return upsertSong({
+    id: crypto.randomUUID(),
+    title: `${song.title} (copy)`,
+    artist: song.artist,
+    lines: song.lines,
+    tags: song.tags ?? [],
+    style: fullStyle,
+  });
+}
+
 function rowToDbSong(row: any): DbSong {
   const content = row.content ?? {};
   return {
