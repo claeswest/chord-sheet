@@ -155,19 +155,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     if (!sourceSongId || sourceSongId === targetSongId || selectedCategoryId === "uncategorized") return;
 
     if (selectedCategoryId === null) {
-      // All Songs — reorder the songs array directly
-      setSongs((prev) => {
-        const fromIdx = prev.findIndex((s) => s.id === sourceSongId);
-        const toIdx = prev.findIndex((s) => s.id === targetSongId);
-        if (fromIdx === -1 || toIdx === -1) return prev;
-        const reordered = [...prev];
-        const [moved] = reordered.splice(fromIdx, 1);
-        reordered.splice(toIdx, 0, moved);
-        reorderAllSongs(reordered.map((s) => s.id))
-          .then(() => showToast("Sort order saved"))
-          .catch(() => showToast("Failed to save sort order"));
-        return reordered;
-      });
+      // All Songs — compute the new order, update state and persist in one go
+      const fromIdx = songs.findIndex((s) => s.id === sourceSongId);
+      const toIdx = songs.findIndex((s) => s.id === targetSongId);
+      if (fromIdx === -1 || toIdx === -1) return;
+      const reordered = [...songs];
+      const [moved] = reordered.splice(fromIdx, 1);
+      reordered.splice(toIdx, 0, moved);
+      setSongs(reordered);
+      reorderAllSongs(reordered.map((s) => s.id))
+        .then(() => showToast("Sort order saved"))
+        .catch(() => showToast("Failed to save sort order"));
     } else {
       // Named category — use category's songIds as source of truth
       const cat = categories.find((c) => c.id === selectedCategoryId);
