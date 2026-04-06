@@ -37,6 +37,7 @@ const TICK_MS = 40; // ~25fps
 export default function SongViewer({ title, artist, lines, onEdit, songStyle }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scrollAccRef = useRef(0); // accumulates sub-pixel amounts
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(4);
@@ -71,8 +72,14 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   // Scroll loop
   useEffect(() => {
     if (playing) {
+      scrollAccRef.current = 0;
       intervalRef.current = setInterval(() => {
-        scrollRef.current?.scrollBy({ top: SPEED_PX_PER_TICK[speed] });
+        scrollAccRef.current += SPEED_PX_PER_TICK[speed];
+        const pixels = Math.floor(scrollAccRef.current);
+        if (pixels >= 1) {
+          scrollRef.current?.scrollBy({ top: pixels });
+          scrollAccRef.current -= pixels;
+        }
       }, TICK_MS);
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
