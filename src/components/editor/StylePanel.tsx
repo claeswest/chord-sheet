@@ -85,6 +85,17 @@ function Section({
   );
 }
 
+const BG_STYLES = [
+  { id: "abstract",    label: "Abstract",    emoji: "🎨" },
+  { id: "landscape",   label: "Landscape",   emoji: "🌄" },
+  { id: "dark",        label: "Dark & Moody", emoji: "🌑" },
+  { id: "vintage",     label: "Vintage",     emoji: "📷" },
+  { id: "bokeh",       label: "Bokeh",       emoji: "✨" },
+  { id: "performance", label: "Performance", emoji: "🎸" },
+] as const;
+
+type BgStyleId = (typeof BG_STYLES)[number]["id"];
+
 export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText }: Props) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -92,6 +103,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [bgLoading, setBgLoading] = useState(false);
   const [bgError, setBgError] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
+  const [bgStyle, setBgStyle] = useState<BgStyleId>("abstract");
 
   const handleAiStyle = async () => {
     setAiLoading(true);
@@ -131,7 +143,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       const res = await fetch("/api/ai/background", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: songTitle, artist: songArtist, lyrics: lyricsText }),
+        body: JSON.stringify({ title: songTitle, artist: songArtist, lyrics: lyricsText, bgStyle }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -209,6 +221,24 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       {/* AI Background Image */}
       <div className="px-4 py-3 border-b border-zinc-100">
         <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Background Image</p>
+
+        {/* Style picker */}
+        <div className="grid grid-cols-3 gap-1 mb-2">
+          {BG_STYLES.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setBgStyle(s.id)}
+              className={`flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg border text-xs transition-colors ${
+                bgStyle === s.id
+                  ? "border-violet-400 bg-violet-50 text-violet-700 font-medium"
+                  : "border-zinc-200 bg-white text-zinc-500 hover:border-violet-200 hover:bg-violet-50/40"
+              }`}
+            >
+              <span className="text-base leading-none">{s.emoji}</span>
+              <span className="leading-none">{s.label}</span>
+            </button>
+          ))}
+        </div>
 
         {style.backgroundImage ? (
           <>
