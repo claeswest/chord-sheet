@@ -22,7 +22,7 @@ Chorus
 [C]The [G]sound of [Am]silence`;
 
 export default function ImportModal({ onImport, onClose }: Props) {
-  const [tab, setTab] = useState<"text" | "image">("text");
+  const [tab, setTab] = useState<"search" | "text" | "image">("search");
 
   // Text tab state
   const [text, setText] = useState("");
@@ -31,6 +31,12 @@ export default function ImportModal({ onImport, onClose }: Props) {
   const [aiError, setAiError] = useState("");
   const [meta, setMeta] = useState<ImportMeta>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Search tab state
+  const [query, setQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Image tab state
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -41,6 +47,7 @@ export default function ImportModal({ onImport, onClose }: Props) {
 
   useEffect(() => {
     if (tab === "text") textareaRef.current?.focus();
+    if (tab === "search") searchInputRef.current?.focus();
   }, [tab]);
 
   useEffect(() => {
@@ -160,6 +167,36 @@ export default function ImportModal({ onImport, onClose }: Props) {
     }
   };
 
+  // ── Search tab: AI song search ──────────────────────────────────────────
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    setSearchLoading(true);
+    setSearchError("");
+    try {
+      const res = await fetch("/api/ai/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setSearchError(body.error ?? "Search failed");
+        return;
+      }
+      const data = await res.json();
+      setText(data.text ?? "");
+      setMeta({
+        title: data.title && data.title !== "Unknown" ? data.title : undefined,
+        artist: data.artist || undefined,
+      });
+      setTab("text");
+    } catch {
+      setSearchError("Network error — check your connection");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   // ── Import ──────────────────────────────────────────────────────────────
   const handleImport = () => {
     if (preview.length > 0) {
@@ -198,33 +235,81 @@ export default function ImportModal({ onImport, onClose }: Props) {
 
         {/* Tabs */}
         <div className="flex border-b border-zinc-100 px-6">
-          <button
-            onClick={() => setTab("text")}
-            className={`text-sm font-medium px-1 py-3 mr-6 border-b-2 transition-colors ${
-              tab === "text"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-zinc-400 hover:text-zinc-700"
-            }`}
-          >
-            Paste text
-          </button>
-          <button
-            onClick={() => setTab("image")}
-            className={`text-sm font-medium px-1 py-3 border-b-2 transition-colors ${
-              tab === "image"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-zinc-400 hover:text-zinc-700"
-            }`}
-          >
-            📷 Upload image
-          </button>
+          {(["search", "text", "image"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`text-sm font-medium px-1 py-3 mr-6 border-b-2 transition-colors ${
+                tab === t
+                  ? "border-indigo-600 text-indigo-600"
+                  : "border-transparent text-zinc-400 hover:text-zinc-700"
+              }`}
+            >
+              {t === "search" && "✦ AI Search"}
+              {t === "text"   && "Paste text"}
+              {t === "image"  && "📷 Upload image"}
+            </button>
+          ))}
         </div>
 
         <div className="flex flex-1 overflow-hidden divide-x divide-zinc-100">
           {/* ── Left pane ── */}
           <div className="flex flex-col flex-1 p-4 gap-3">
 
-            {tab === "text" ? (
+            {tab === "search" ? (
+              <>
+                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+                  Search for a song
+                </label>
+
+                <p className="text-xs text-zinc-400 -mt-1">
+                  AI will transcribe the chord sheet from memory. Results may not be 100% accurate — always double-check before a gig.
+                </p>
+
+                {searchError && (
+                  <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">
+                    {searchError}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <input
+                    ref={searchInputRef}
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setSearchError(""); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                    placeholder="e.g. Yesterday Beatles, Creep Radiohead…"
+                    spellCheck={false}
+                    className="flex-1 border border-zinc-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-400 transition-colors"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    disabled={!query.trim() || searchLoading}
+                    className="flex items-center gap-1.5 text-sm bg-violet-600 text-white px-4 py-2.5 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium shrink-0"
+                  >
+                    {searchLoading ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Searching…
+                      </>
+                    ) : (
+                      <>✦ Search</>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center text-zinc-300 min-h-[180px]">
+                  <span className="text-4xl">🎵</span>
+                  <p className="text-xs max-w-[220px]">
+                    Type a song name and artist, then hit Search.<br />
+                    The result will open in the text tab for review.
+                  </p>
+                </div>
+              </>
+            ) : tab === "text" ? (
               <>
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
@@ -383,7 +468,9 @@ export default function ImportModal({ onImport, onClose }: Props) {
             <div className="flex-1 overflow-y-auto bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 font-mono text-sm">
               {preview.length === 0 ? (
                 <p className="text-zinc-300 text-xs">
-                  {tab === "image" && !text
+                  {tab === "search"
+                    ? "Search result will appear here after the AI transcribes the song."
+                    : tab === "image" && !text
                     ? "Upload an image and click ✦ Read with AI — parsed output will appear here."
                     : "Parsed output will appear here…"}
                 </p>
@@ -422,7 +509,7 @@ export default function ImportModal({ onImport, onClose }: Props) {
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-100 bg-zinc-50 rounded-b-2xl">
           <p className="text-xs text-zinc-400">
-            Supports chord-over-lyric, inline [Am] brackets, section headers, and image upload.
+            AI Search · Paste text · Upload image · Paste from clipboard
           </p>
           <div className="flex gap-3">
             <button
