@@ -315,7 +315,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               <span className="text-xs text-zinc-400">{uncategorizedCount}</span>
             </button>
 
-            {categories.length > 0 && <div className="h-px bg-zinc-100 mx-4 my-2" />}
+            {categories.length > 0 && (
+              <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+                <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Categories</span>
+                <div className="flex-1 h-px bg-zinc-100" />
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto">
               {categories.map((cat) => (
