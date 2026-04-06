@@ -54,15 +54,18 @@ export async function PUT(req: Request) {
 
   const userId = session.user.id;
 
-  // Use a transaction so all updates succeed or none do
-  await prisma.$transaction(
-    songIds.map((id, idx) =>
-      prisma.song.updateMany({
-        where: { id, userId },
-        data: { order: idx },
-      })
-    )
-  );
+  try {
+    // Use raw SQL to avoid any Prisma client cache issues with the new `order` column
+    for (let idx = 0; idx < songIds.length; idx++) {
+      await prisma.$executeRaw`
+        UPDATE "Song" SET "order" = ${idx}
+        WHERE id = ${songIds[idx]} AND "userId" = ${userId}
+      `;
+    }
+  } catch (err) {
+    console.error("PUT /api/songs order error:", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
