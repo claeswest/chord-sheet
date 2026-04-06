@@ -327,11 +327,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 <div
                   key={cat.id}
                   onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
-                  onDragLeave={() => setDragOverCategoryId(null)}
+                  onDragLeave={(e) => {
+                    // Only clear when the pointer actually leaves this element,
+                    // not when it moves over a child element inside it.
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setDragOverCategoryId(null);
+                    }
+                  }}
                   onDrop={(e) => handleDrop(e, cat.id)}
-                  className={`group flex items-center gap-1 px-4 py-1.5 transition-colors ${
+                  className={`group flex items-center gap-1 px-4 transition-all duration-100 ${
+                    dragSongId ? "py-3" : "py-1.5"
+                  } ${
                     dragOverCategoryId === cat.id
-                      ? "bg-indigo-50 ring-1 ring-inset ring-indigo-200"
+                      ? "bg-indigo-100 ring-2 ring-inset ring-indigo-400"
+                      : dragSongId
+                      ? "bg-indigo-50/60 ring-1 ring-inset ring-indigo-100"
                       : selectedCategoryId === cat.id
                       ? "bg-indigo-50"
                       : "hover:bg-zinc-50"
