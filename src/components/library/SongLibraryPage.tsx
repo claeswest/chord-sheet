@@ -29,6 +29,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   // Category editing
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -166,7 +172,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     ));
 
     // Persist to DB
-    reorderSongsInCategory(selectedCategoryId, currentOrder).catch(() => {});
+    reorderSongsInCategory(selectedCategoryId, currentOrder)
+      .then(() => showToast("Sort order saved"))
+      .catch(() => showToast("Failed to save sort order"));
   };
 
   const handleDrop = async (e: React.DragEvent, categoryId: string) => {
@@ -536,6 +544,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             )}
           </div>
         </main>
+      </div>
+
+      {/* Toast notification */}
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 pointer-events-none ${
+          toast ? "opacity-100 translate-y-0 bg-zinc-800 text-white" : "opacity-0 translate-y-2"
+        }`}
+      >
+        {toast}
       </div>
     </div>
   );

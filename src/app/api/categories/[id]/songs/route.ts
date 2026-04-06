@@ -39,11 +39,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const category = await prisma.category.findFirst({ where: { id: categoryId, userId: session.user.id } });
   if (!category) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Update order for each song in parallel
+  // Update order using the compound primary key — updateMany can miss composite PK rows
   await Promise.all(
     songIds.map((songId, idx) =>
-      prisma.songCategory.updateMany({
-        where: { categoryId, songId },
+      prisma.songCategory.update({
+        where: { songId_categoryId: { songId, categoryId } },
         data: { order: idx },
       })
     )
