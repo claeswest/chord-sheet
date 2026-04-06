@@ -26,9 +26,12 @@ interface Props {
 }
 
 const SPEED_PX_PER_TICK: Record<number, number> = {
-  1: 0.3, 2: 0.6, 3: 0.9, 4: 1.3, 5: 1.8,
-  6: 2.4, 7: 3.1, 8: 4.0, 9: 5.0, 10: 6.5,
+  1: 0.15, 2: 0.25, 3: 0.38, 4: 0.52, 5: 0.68,
+  6: 0.85, 7: 1.05, 8: 1.28, 9: 1.55, 10: 1.85,
+  11: 2.20, 12: 2.60, 13: 3.05, 14: 3.55, 15: 4.10,
+  16: 4.70, 17: 5.40, 18: 6.15, 19: 7.00, 20: 8.00,
 };
+const MAX_SPEED = 20;
 const TICK_MS = 40; // ~25fps
 
 export default function SongViewer({ title, artist, lines, onEdit, songStyle }: Props) {
@@ -36,7 +39,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(3);
+  const [speed, setSpeed] = useState(6);
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
 
@@ -77,12 +80,21 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [playing, speed]);
 
-  // Spacebar to toggle
+  // Keyboard shortcuts: Space = play/pause, +/=/ArrowRight = faster, -/ArrowLeft = slower
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.code === "Space" && e.target === document.body) {
+      if (e.target !== document.body) return;
+      if (e.code === "Space") {
         e.preventDefault();
         setPlaying((p) => !p);
+        setShowControls(true);
+      } else if (e.key === "+" || e.key === "=" || e.code === "ArrowRight") {
+        e.preventDefault();
+        setSpeed((s) => Math.min(MAX_SPEED, s + 1));
+        setShowControls(true);
+      } else if (e.key === "-" || e.code === "ArrowLeft") {
+        e.preventDefault();
+        setSpeed((s) => Math.max(1, s - 1));
         setShowControls(true);
       }
     };
@@ -249,10 +261,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
             <input
               type="range"
               min={1}
-              max={10}
+              max={MAX_SPEED}
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
-              className="w-24 accent-indigo-400"
+              className="w-28 accent-indigo-400"
+              title={`Speed ${speed}/${MAX_SPEED} — use ←/→ or +/− to adjust`}
             />
             <span className="text-white/60 text-xs">Fast</span>
           </div>
