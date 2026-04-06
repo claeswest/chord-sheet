@@ -194,6 +194,9 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+          <p className="text-center text-xs text-zinc-500 mt-4">
+            ↑ Real chord sheet created in ChordSheetCreator — background image and styling generated with AI
+          </p>
         </section>
 
         {/* Features */}
