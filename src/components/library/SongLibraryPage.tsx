@@ -138,6 +138,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     e.dataTransfer.setData("songId", songId);
     e.dataTransfer.effectAllowed = "move";
     setDragSongId(songId);
+
+    // Replace the default (full-width row) ghost with a compact pill so the
+    // cursor sits at the left edge — much less distance to drag to the sidebar.
+    const song = songs.find((s) => s.id === songId);
+    const ghost = document.createElement("div");
+    ghost.textContent = song ? `${song.title}` : "Song";
+    ghost.style.cssText = [
+      "position:fixed", "top:-999px", "left:-999px",
+      "background:#4f46e5", "color:#fff",
+      "padding:5px 12px", "border-radius:8px",
+      "font-size:13px", "font-family:sans-serif",
+      "white-space:nowrap", "pointer-events:none",
+      "box-shadow:0 2px 8px rgba(0,0,0,0.25)",
+    ].join(";");
+    document.body.appendChild(ghost);
+    // xOffset=8 keeps cursor just inside the left edge; yOffset centres vertically
+    e.dataTransfer.setDragImage(ghost, 8, 16);
+    setTimeout(() => document.body.removeChild(ghost), 0);
   };
 
   const handleDragEnd = () => {
