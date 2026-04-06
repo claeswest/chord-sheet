@@ -1,6 +1,17 @@
 import Link from "next/link";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import { auth } from "@/lib/auth";
+import { PLANS, type Plan } from "@/lib/plans";
+
+const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly", "lifetime"];
+const FEATURE_LABELS: Record<string, string> = {
+  songLimit: "Songs",
+  chordTranspose: "Chord transposition",
+  pdfExport: "PDF export",
+  sharing: "Public song sharing",
+  setlists: "Setlists / folders",
+  prioritySupport: "Priority support",
+};
 
 const features = [
   {
@@ -173,76 +184,68 @@ export default async function HomePage() {
 
         {/* Pricing */}
         <section id="pricing" className="bg-zinc-50 border-t border-zinc-100 px-6 py-24">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-zinc-900 mb-4">
               Simple pricing
             </h2>
             <p className="text-center text-zinc-500 mb-16">
               Start free. Upgrade when you need more.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Free */}
-              <div className="bg-white rounded-2xl border border-zinc-200 p-8">
-                <h3 className="font-bold text-xl text-zinc-900 mb-1">Free</h3>
-                <p className="text-zinc-400 text-sm mb-6">For casual players</p>
-                <div className="text-4xl font-extrabold text-zinc-900 mb-8">
-                  $0
-                  <span className="text-base font-normal text-zinc-400"> / month</span>
-                </div>
-                <ul className="space-y-3 text-sm text-zinc-600 mb-8">
-                  {[
-                    "Full chord sheet editor",
-                    "AI-assisted import",
-                    "Auto-scroll view mode",
-                    "Up to 20 saved songs",
-                    "PDF export (watermarked)",
-                    "Ad-supported",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span> {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/register"
-                  className="block text-center border border-zinc-200 text-zinc-700 px-6 py-3 rounded-full font-medium hover:bg-zinc-50 transition-colors"
-                >
-                  Get started
-                </Link>
-              </div>
-
-              {/* Pro */}
-              <div className="bg-indigo-600 rounded-2xl border border-indigo-600 p-8 text-white relative overflow-hidden">
-                <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                  Most popular
-                </div>
-                <h3 className="font-bold text-xl mb-1">Pro</h3>
-                <p className="text-indigo-200 text-sm mb-6">For serious musicians</p>
-                <div className="text-4xl font-extrabold mb-8">
-                  $4.99
-                  <span className="text-base font-normal text-indigo-300"> / month</span>
-                </div>
-                <ul className="space-y-3 text-sm text-indigo-100 mb-8">
-                  {[
-                    "Everything in Free",
-                    "Unlimited saved songs",
-                    "No watermarks on exports",
-                    "Ad-free experience",
-                    "Chord transposition",
-                    "Priority AI processing",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="text-white">✓</span> {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/pricing"
-                  className="block text-center bg-white text-indigo-600 px-6 py-3 rounded-full font-medium hover:bg-indigo-50 transition-colors"
-                >
-                  See pricing
-                </Link>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {PLAN_ORDER.map((planKey) => {
+                const plan = PLANS[planKey];
+                const isPopular = planKey === "yearly";
+                return (
+                  <div
+                    key={planKey}
+                    className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${
+                      isPopular ? "border-indigo-500 ring-2 ring-indigo-500" : "border-zinc-200"
+                    }`}
+                  >
+                    {isPopular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                        Most popular
+                      </div>
+                    )}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-zinc-900">{plan.name}</h3>
+                      <div className="mt-2 flex items-end gap-1">
+                        <span className="text-3xl font-bold text-zinc-900">${plan.price}</span>
+                        {planKey === "monthly" && <span className="text-zinc-400 text-sm mb-1">/mo</span>}
+                        {planKey === "yearly" && <span className="text-zinc-400 text-sm mb-1">/yr</span>}
+                        {planKey === "lifetime" && <span className="text-zinc-400 text-sm mb-1"> once</span>}
+                      </div>
+                      <p className="text-zinc-400 text-sm mt-1">{plan.description}</p>
+                    </div>
+                    <ul className="space-y-2 flex-1 mb-6 text-sm">
+                      {Object.entries(FEATURE_LABELS).map(([key, label]) => {
+                        const val = plan.features[key as keyof typeof plan.features];
+                        const active = val !== false && val !== 0;
+                        return (
+                          <li key={key} className={`flex items-center gap-2 ${active ? "text-zinc-700" : "text-zinc-300"}`}>
+                            <span className="w-4 text-center">
+                              {val === true ? "✓" : val === false ? "—" : String(val)}
+                            </span>
+                            <span>{key === "songLimit" ? (val === true ? "Unlimited songs" : `Up to ${val} songs`) : label}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <Link
+                      href={planKey === "free" ? "/songs" : "/pricing"}
+                      className={`block text-center px-6 py-2.5 rounded-full text-sm font-medium transition-colors ${
+                        isPopular
+                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                          : planKey === "free"
+                          ? "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                          : "bg-zinc-900 text-white hover:bg-zinc-700"
+                      }`}
+                    >
+                      {planKey === "free" ? "Get started free" : "Upgrade"}
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
