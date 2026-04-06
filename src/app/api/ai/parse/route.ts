@@ -26,6 +26,11 @@ More examples of correct mid-word placement:
   [D]Long a[G]go and [D]far a[A]way
   [C]Yes-ter[Am]day, all my [F]troub[G]les seemed so [C]far a[G]way
 
+CHORD-ONLY LINES — when a line has chords but no lyrics (instrumental break, intro riff, etc.) keep the spacing between chords using actual spaces in the lyric part so positions are preserved:
+  [G]   [D]   [Em]   [C]
+  [Am]      [F]
+Do NOT collapse them all to position 0 like [G][D][Em][C].
+
 SECTION LABELS — put on their own line, no brackets:
   Verse 1
   Chorus

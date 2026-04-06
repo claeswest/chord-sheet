@@ -164,7 +164,15 @@ export default function LyricLineEditor({
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  const chordLeftPx = (position: number) => measureWidth(line.text.slice(0, position), lyricSize, lyricFont);
+  const chordLeftPx = (position: number) => {
+    if (!line.text) {
+      // No lyric text — treat position as a character column index and use a
+      // fixed char width so chords spread out instead of stacking at 0.
+      const charWidth = measureWidth("M", lyricSize, lyricFont);
+      return position * charWidth;
+    }
+    return measureWidth(line.text.slice(0, position), lyricSize, lyricFont);
+  };
 
   return (
     <div className="group/line relative py-0.5">

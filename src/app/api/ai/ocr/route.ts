@@ -20,6 +20,11 @@ Good example (chords mid-word where the beat falls):
 
 If the image shows chords written above lyrics on separate lines (chord-over-lyric format), convert them to the inline [Chord] bracket format, placing each chord at the correct character position above which it appeared.
 
+CHORD-ONLY LINES — when a line has chords but no lyrics (instrumental break, intro riff, etc.) keep the spacing between chords using actual spaces in the lyric part so positions are preserved:
+  [G]   [D]   [Em]   [C]
+  [Am]      [F]
+Do NOT collapse them all to position 0 like [G][D][Em][C].
+
 SECTION LABELS — put on their own line, no brackets:
   Verse 1
   Chorus
