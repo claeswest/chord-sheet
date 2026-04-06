@@ -48,14 +48,17 @@ export async function PUT(req: Request) {
   }
 
   const { songIds } = await req.json() as { songIds: string[] };
-  if (!Array.isArray(songIds)) {
+  if (!Array.isArray(songIds) || songIds.length === 0) {
     return NextResponse.json({ error: "songIds required" }, { status: 400 });
   }
 
-  await Promise.all(
+  const userId = session.user.id;
+
+  // Use a transaction so all updates succeed or none do
+  await prisma.$transaction(
     songIds.map((id, idx) =>
       prisma.song.updateMany({
-        where: { id, userId: session.user!.id },
+        where: { id, userId },
         data: { order: idx },
       })
     )

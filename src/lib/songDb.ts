@@ -30,11 +30,15 @@ export async function upsertSong(song: Omit<DbSong, "updatedAt">): Promise<DbSon
 }
 
 export async function reorderAllSongs(songIds: string[]): Promise<void> {
-  await fetch("/api/songs", {
+  const res = await fetch("/api/songs", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ songIds }),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Failed to reorder songs (${res.status})`);
+  }
 }
 
 export async function removeSong(id: string): Promise<void> {

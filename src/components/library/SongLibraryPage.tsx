@@ -165,7 +165,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       setSongs(reordered);
       reorderAllSongs(reordered.map((s) => s.id))
         .then(() => showToast("Sort order saved"))
-        .catch(() => showToast("Failed to save sort order"));
+        .catch((err) => showToast(`Failed: ${err?.message ?? "unknown error"}`));
     } else {
       // Named category — use category's songIds as source of truth
       const cat = categories.find((c) => c.id === selectedCategoryId);
@@ -185,7 +185,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
       reorderSongsInCategory(selectedCategoryId, currentOrder)
         .then(() => showToast("Sort order saved"))
-        .catch(() => showToast("Failed to save sort order"));
+        .catch((err) => showToast(`Failed: ${err?.message ?? "unknown error"}`));
     }
   };
 

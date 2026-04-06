@@ -54,9 +54,13 @@ export async function removeSongFromCategory(categoryId: string, songId: string)
 }
 
 export async function reorderSongsInCategory(categoryId: string, songIds: string[]): Promise<void> {
-  await fetch(`/api/categories/${categoryId}/songs`, {
+  const res = await fetch(`/api/categories/${categoryId}/songs`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ songIds }),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Failed to reorder songs (${res.status})`);
+  }
 }
