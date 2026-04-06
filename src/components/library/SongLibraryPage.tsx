@@ -276,18 +276,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             Sign in to sync →
           </Link>
         )}
-        <Link
-          href="/editor/new"
-          className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-        >
-          + New Song
-        </Link>
       </header>
 
       <div className="flex flex-1">
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
           <aside className="w-56 shrink-0 bg-white border-r border-zinc-200 flex flex-col py-3">
+            <div className="px-3 pb-3">
+              <Link
+                href="/editor/new"
+                className="flex items-center justify-center gap-1.5 w-full text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              >
+                <span className="text-base leading-none">+</span> New Song
+              </Link>
+            </div>
+
             <button
               onClick={() => setSelectedCategoryId(null)}
               className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
