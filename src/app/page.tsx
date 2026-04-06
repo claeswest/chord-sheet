@@ -123,38 +123,76 @@ export default async function HomePage() {
         </section>
 
         {/* Preview strip */}
-        <section className="bg-zinc-50 border-y border-zinc-100 py-12 px-6">
-          <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-zinc-200 p-8 font-mono text-sm leading-8">
-            <p className="text-xs font-sans font-semibold text-indigo-500 uppercase tracking-widest mb-4">
-              Verse 1
-            </p>
-            <div className="text-zinc-400 text-xs mb-1 tracking-widest">
-              <span className="mr-[4.5rem]">Am</span>
-              <span className="mr-[3.5rem]">G</span>
-              <span>C</span>
+        <section className="border-y border-zinc-100 py-12 px-6" style={{ background: "#c9d4db" }}>
+          <div
+            className="max-w-2xl mx-auto rounded-2xl shadow-xl overflow-hidden"
+            style={{
+              background: "linear-gradient(rgba(140,160,175,0.55), rgba(140,160,175,0.55)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80') center/cover no-repeat",
+              padding: "2.5rem 3rem",
+            }}
+          >
+            {/* Title */}
+            <div className="text-center mb-8">
+              <div style={{ fontFamily: "Georgia, serif", fontSize: 28, fontStyle: "italic", color: "#f0f4f8", letterSpacing: "0.01em" }}>
+                Regn hos mig (blue)
+              </div>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "rgba(240,244,248,0.7)", marginTop: 6 }}>
+                Orup
+              </div>
             </div>
-            <p className="text-zinc-800">
-              Hello darkness, my old friend,
-            </p>
-            <div className="text-zinc-400 text-xs mt-3 mb-1 tracking-widest">
-              <span className="mr-[2rem]">Em</span>
-              <span className="mr-[5rem]">Am</span>
-              <span>G</span>
+
+            {/* Verse */}
+            <div style={{ fontFamily: "Georgia, serif", color: "rgba(240,244,248,0.6)", fontSize: 11, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 12 }}>
+              Verse
             </div>
-            <p className="text-zinc-800">
-              I&apos;ve come to talk with you again.
-            </p>
-            <p className="mt-6 text-xs font-sans font-semibold text-indigo-500 uppercase tracking-widest">
+
+            {/* Line 1 */}
+            <div className="mb-1" style={{ fontFamily: "Georgia, serif" }}>
+              <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
+                <span style={{ marginRight: "4.5rem" }}>C</span>
+                <span style={{ marginRight: "7rem" }}>Am7</span>
+              </div>
+              <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
+                Jag har hört på radion idag att vi har solsken
+              </div>
+            </div>
+
+            {/* Line 2 */}
+            <div className="mb-4" style={{ fontFamily: "Georgia, serif" }}>
+              <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
+                <span style={{ marginRight: "2rem" }}>Fmaj</span>
+                <span style={{ marginRight: "3.5rem" }}>G</span>
+                <span>C</span>
+              </div>
+              <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
+                Det låter väldigt underligt för jag har bara regn hos mig.
+              </div>
+            </div>
+
+            {/* Chorus */}
+            <div style={{ fontFamily: "Georgia, serif", color: "rgba(240,244,248,0.6)", fontSize: 11, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 12 }}>
               Chorus
-            </p>
-            <div className="text-zinc-400 text-xs mt-1 mb-1 tracking-widest">
-              <span className="mr-[1rem]">C</span>
-              <span className="mr-[5rem]">G</span>
-              <span>Am</span>
             </div>
-            <p className="text-zinc-800">
-              The sound of silence.
-            </p>
+
+            {/* Line 3 */}
+            <div className="mb-1" style={{ fontFamily: "Georgia, serif" }}>
+              <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
+                <span style={{ marginRight: "5rem" }}>Am7</span>
+              </div>
+              <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
+                Och jag minns när du var här, solen lyste som sig bör.
+              </div>
+            </div>
+            <div style={{ fontFamily: "Georgia, serif" }}>
+              <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
+                <span style={{ marginRight: "2rem" }}>Fmaj</span>
+                <span style={{ marginRight: "3.5rem" }}>G</span>
+                <span>C</span>
+              </div>
+              <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
+                Kom tillbaks och gör det fort nu, här är blött och kallt.
+              </div>
+            </div>
           </div>
         </section>
 
