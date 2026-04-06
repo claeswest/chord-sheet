@@ -38,6 +38,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollAccRef = useRef(0); // accumulates sub-pixel amounts
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(4);
@@ -61,6 +62,18 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.title.fontFamily, s.lyrics.fontFamily, s.chords.fontFamily]);
+
+  // Wake lock — keep screen on while playing
+  useEffect(() => {
+    if (playing) {
+      navigator.wakeLock?.request("screen").then((lock) => {
+        wakeLockRef.current = lock;
+      }).catch(() => {});
+    } else {
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+  }, [playing]);
 
   // Auto-hide controls after 3s of playing
   useEffect(() => {
@@ -191,27 +204,48 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
               return (
                 <div key={line.id} className="relative" style={{ paddingTop: hasChords ? "1.6em" : 0 }}>
                   {/* Chord row */}
-                  {hasChords && (
-                    <div className="absolute top-0 left-0 w-full" style={{ height: "1.5em" }}>
-                      {line.chords.map((chord) => (
-                        <span
-                          key={chord.id}
-                          className="absolute whitespace-nowrap"
-                          style={{
-                            left: measureWidth(line.text.slice(0, chord.position), lyricSize, s.lyrics.fontFamily ?? MONO_STACK),
-                            fontSize: chordSize,
-                            fontFamily: s.chords.fontFamily ?? MONO_STACK,
-                            fontWeight: s.chords.bold !== false ? "bold" : "normal",
-                            fontStyle: s.chords.italic ? "italic" : "normal",
-                            color: s.chords.color ?? "#4f46e5",
-                            top: 0,
-                          }}
-                        >
-                          {chord.chord}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {hasChords && (() => {
+                    // Compute overlap-free display positions
+                    const CHORD_GAP = 6;
+                    const lyricFam = s.lyrics.fontFamily ?? MONO_STACK;
+                    const chordFam = s.chords.fontFamily ?? MONO_STACK;
+                    const raw = line.chords.map((c) => ({
+                      id: c.id,
+                      chord: c.chord,
+                      px: line.text
+                        ? measureWidth(line.text.slice(0, c.position), lyricSize, lyricFam)
+                        : c.position * measureWidth("M", lyricSize, lyricFam),
+                    }));
+                    raw.sort((a, b) => a.px - b.px);
+                    let prevRight = -Infinity;
+                    const positions = new Map<string, number>();
+                    for (const item of raw) {
+                      const x = Math.max(item.px, prevRight + CHORD_GAP);
+                      positions.set(item.id, x);
+                      prevRight = x + measureWidth(item.chord, chordSize, chordFam);
+                    }
+                    return (
+                      <div className="absolute top-0 left-0 w-full" style={{ height: "1.5em" }}>
+                        {line.chords.map((chord) => (
+                          <span
+                            key={chord.id}
+                            className="absolute whitespace-nowrap"
+                            style={{
+                              left: positions.get(chord.id) ?? 0,
+                              fontSize: chordSize,
+                              fontFamily: chordFam,
+                              fontWeight: s.chords.bold !== false ? "bold" : "normal",
+                              fontStyle: s.chords.italic ? "italic" : "normal",
+                              color: s.chords.color ?? "#4f46e5",
+                              top: 0,
+                            }}
+                          >
+                            {chord.chord}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   {/* Lyric */}
                   <div
                     className="whitespace-pre"
@@ -280,9 +314,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
               className="w-28 accent-indigo-400"
-              title={`Speed ${speed}/${MAX_SPEED} — use ←/→ or +/− to adjust`}
+              title="← → to adjust"
             />
             <span className="text-white/60 text-xs">Fast</span>
+            <span className="text-white/50 text-xs w-6 text-right tabular-nums">{speed}</span>
           </div>
 
           {/* Font size */}
@@ -290,12 +325,15 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
             <button
               onClick={() => setSizeAdjust(s => Math.max(-6, s - 1))}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+              title="− to shrink"
             >
               A-
             </button>
+            <span className="text-white/50 text-xs w-6 text-center tabular-nums">{lyricSize}</span>
             <button
               onClick={() => setSizeAdjust(s => Math.min(14, s + 1))}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+              title="+ to grow"
             >
               A+
             </button>
