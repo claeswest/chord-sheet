@@ -148,24 +148,25 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     const sourceSongId = e.dataTransfer.getData("songId");
     if (!sourceSongId || sourceSongId === targetSongId || !selectedCategoryId || selectedCategoryId === "uncategorized") return;
 
-    // Reorder the filtered list
-    setSongs((prev) => {
-      const inCat = prev.filter((s) => s.categoryIds.includes(selectedCategoryId));
-      const rest = prev.filter((s) => !s.categoryIds.includes(selectedCategoryId));
-      const fromIdx = inCat.findIndex((s) => s.id === sourceSongId);
-      const toIdx = inCat.findIndex((s) => s.id === targetSongId);
-      if (fromIdx === -1 || toIdx === -1) return prev;
-      const reordered = [...inCat];
-      const [moved] = reordered.splice(fromIdx, 1);
-      reordered.splice(toIdx, 0, moved);
-      // Persist new order
-      reorderSongsInCategory(selectedCategoryId, reordered.map((s) => s.id)).catch(() => {});
-      // Sync category songIds order
-      setCategories((cats) => cats.map((c) =>
-        c.id === selectedCategoryId ? { ...c, songIds: reordered.map((s) => s.id) } : c
-      ));
-      return [...reordered, ...rest];
-    });
+    // Use the category's songIds as the source of truth for current visual order
+    const cat = categories.find((c) => c.id === selectedCategoryId);
+    if (!cat) return;
+
+    const currentOrder = [...cat.songIds];
+    const fromIdx = currentOrder.indexOf(sourceSongId);
+    const toIdx = currentOrder.indexOf(targetSongId);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    const [moved] = currentOrder.splice(fromIdx, 1);
+    currentOrder.splice(toIdx, 0, moved);
+
+    // Update categories — this drives the sort in `filtered`
+    setCategories((cats) => cats.map((c) =>
+      c.id === selectedCategoryId ? { ...c, songIds: currentOrder } : c
+    ));
+
+    // Persist to DB
+    reorderSongsInCategory(selectedCategoryId, currentOrder).catch(() => {});
   };
 
   const handleDrop = async (e: React.DragEvent, categoryId: string) => {
