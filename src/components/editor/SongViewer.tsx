@@ -39,7 +39,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(6);
+  const [speed, setSpeed] = useState(4);
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
 
