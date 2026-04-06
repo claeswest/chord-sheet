@@ -26,7 +26,7 @@ function isChordLine(line: string): boolean {
 
 /** Known section header keywords */
 const SECTION_RE =
-  /^\s*\[?(?:intro|verse\s*\d*|pre-?chorus|chorus|bridge|outro|solo|interlude|hook|refrain|tag|coda|breakdown)\]?\s*$/i;
+  /^\s*\[?(?:intro|verse\s*\d*|pre-?chorus|chorus|bridge|outro|solo|interlude|instrumental|hook|refrain|tag|coda|breakdown)\]?\s*$/i;
 
 function isSectionHeader(line: string): boolean {
   return SECTION_RE.test(line);
