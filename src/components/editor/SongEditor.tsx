@@ -22,6 +22,7 @@ import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
+import FindReplaceModal from "./FindReplaceModal";
 import StylePanel from "./StylePanel";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
@@ -46,6 +47,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showFindReplace, setShowFindReplace] = useState(false);
   const [semitones, setSemitones] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [songId, setSongId] = useState(() => initialSong?.id ?? genId());
@@ -377,6 +379,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     setSemitones(0);
   }, []);
 
+  // ── Find & Replace ───────────────────────────────────────────────────────────
+
+  const handleFindReplace = (find: string, replace: string) => {
+    const next = lines.map((line) => {
+      if (line.type !== "lyric") return line;
+      return {
+        ...line,
+        chords: line.chords.map((c) =>
+          c.chord === find ? { ...c, chord: replace } : c
+        ),
+      };
+    });
+    pushSnap(next);
+    setLines(next);
+  };
+
   // ── Render ───────────────────────────────────────────────────────────────────
 
   const displayLines = transposeSong(lines, semitones);
@@ -496,6 +514,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
           >
             Import
+          </button>
+          <button
+            onClick={() => setShowFindReplace(true)}
+            className="text-sm text-zinc-500 hover:text-zinc-900 px-3 py-1.5 rounded-lg hover:bg-zinc-100 transition-colors"
+            title="Find & replace a chord name across the whole song"
+          >
+            Replace
           </button>
 
           {/* Transpose controls */}
@@ -699,6 +724,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             if (meta?.artist) setArtist(meta.artist);
           }}
           onClose={() => setShowImport(false)}
+        />
+      )}
+
+      {/* Find & Replace modal */}
+      {showFindReplace && (
+        <FindReplaceModal
+          lines={lines}
+          onReplace={handleFindReplace}
+          onClose={() => setShowFindReplace(false)}
         />
       )}
 

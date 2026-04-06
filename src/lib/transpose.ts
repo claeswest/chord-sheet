@@ -84,7 +84,7 @@ export function transposeSong(lines: SongLine[], semitones: number): SongLine[] 
 
 /** Human-readable key name from semitone offset, e.g. +2 = "up 2" */
 export function semitoneLabel(semitones: number): string {
-  if (semitones === 0) return "Original";
+  if (semitones === 0) return "Transpose";
   const abs = Math.abs(semitones);
   const dir = semitones > 0 ? "▲" : "▼";
   return `${dir} ${abs}`;
