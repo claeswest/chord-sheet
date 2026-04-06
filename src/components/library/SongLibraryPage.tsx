@@ -492,10 +492,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       </Link>
 
-                      {/* Category chips */}
-                      {isLoggedIn && song.categoryIds.length > 0 && (
-                        <div className="hidden sm:flex flex-wrap gap-1 shrink-0">
-                          {song.categoryIds.map((catId) => {
+                      {/* Category chips — fixed width so title pill is always the same width */}
+                      {isLoggedIn && (
+                        <div className="hidden sm:flex flex-wrap gap-1 w-36 shrink-0">
+                        {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
                             return (
