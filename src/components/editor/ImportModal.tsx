@@ -263,7 +263,7 @@ export default function ImportModal({ onImport, onClose }: Props) {
                 </label>
 
                 <p className="text-xs text-zinc-400 -mt-1">
-                  AI will transcribe the chord sheet from memory. Results may not be 100% accurate — always double-check before a gig.
+                  AI searches the web for the chord sheet and formats it for you. Always double-check before a gig.
                 </p>
 
                 {searchError && (

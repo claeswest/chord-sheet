@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: `${PROMPT}\n\nSong request: ${query.trim()}` }] }],
+      tools: [{ google_search: {} }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
     }),
   });
