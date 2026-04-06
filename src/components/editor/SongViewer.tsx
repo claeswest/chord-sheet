@@ -95,13 +95,21 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
         e.preventDefault();
         setPlaying((p) => !p);
         setShowControls(true);
-      } else if (e.key === "+" || e.key === "=" || e.code === "ArrowRight") {
+      } else if (e.code === "ArrowRight") {
         e.preventDefault();
         setSpeed((s) => Math.min(MAX_SPEED, s + 1));
         setShowControls(true);
-      } else if (e.key === "-" || e.code === "ArrowLeft") {
+      } else if (e.code === "ArrowLeft") {
         e.preventDefault();
         setSpeed((s) => Math.max(1, s - 1));
+        setShowControls(true);
+      } else if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        setSizeAdjust((s) => Math.min(14, s + 1));
+        setShowControls(true);
+      } else if (e.key === "-") {
+        e.preventDefault();
+        setSizeAdjust((s) => Math.max(-6, s - 1));
         setShowControls(true);
       }
     };
