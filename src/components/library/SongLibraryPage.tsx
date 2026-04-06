@@ -456,12 +456,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       }}
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
-                      className={`group flex items-center gap-4 px-5 py-3.5 transition-colors ${
+                      className={`group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-zinc-50 ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
-                      style={{ backgroundColor: rowBg ?? undefined }}
                     >
                       {/* Drag handle */}
                       {isLoggedIn && (
@@ -470,22 +469,27 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Title + artist — clicking opens view */}
+                      {/* Title + artist — background color applied only here */}
                       <Link href={viewUrl} className="flex-1 min-w-0">
                         <div
-                          className="text-sm font-medium truncate"
-                          style={{ color: titleColor }}
+                          className="rounded px-2 py-1 -mx-2 -my-1"
+                          style={{ backgroundColor: rowBg ?? undefined }}
                         >
-                          {song.title || "Untitled Song"}
-                        </div>
-                        {song.artist ? (
                           <div
-                            className="text-xs truncate mt-0.5"
-                            style={{ color: artistColor }}
+                            className="text-sm font-medium truncate"
+                            style={{ color: titleColor }}
                           >
-                            {song.artist}
+                            {song.title || "Untitled Song"}
                           </div>
-                        ) : null}
+                          {song.artist ? (
+                            <div
+                              className="text-xs truncate mt-0.5"
+                              style={{ color: artistColor }}
+                            >
+                              {song.artist}
+                            </div>
+                          ) : null}
+                        </div>
                       </Link>
 
                       {/* Category chips */}
