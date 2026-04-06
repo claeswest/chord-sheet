@@ -582,10 +582,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             {isDuplicating ? "…" : "Copy"}
                           </button>
                         )}
+                        {/* Remove from category — only shown when browsing a specific category */}
+                        {selectedCategoryId && selectedCategoryId !== "uncategorized" && (
+                          <button
+                            onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
+                            className="text-xs text-zinc-500 hover:text-orange-500 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
+                            title={`Remove from this category (does not delete the song)`}
+                          >
+                            Remove
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(song.id, song.source)}
                           className="text-xs text-zinc-300 hover:text-red-400 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                          title="Delete"
+                          title="Delete song permanently"
                         >
                           ✕
                         </button>
