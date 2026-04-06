@@ -472,7 +472,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {/* Title + artist — background color applied only here */}
                       <Link href={viewUrl} className="flex-1 min-w-0">
                         <div
-                          className="rounded px-2 py-1 -mx-2 -my-1"
+                          className="block rounded px-2 py-1 -mx-2 -my-1"
                           style={{ backgroundColor: rowBg ?? undefined }}
                         >
                           <div
