@@ -446,7 +446,34 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </div>
 
             {loading ? (
-              <div className="text-center py-24 text-zinc-300 text-sm">Loading…</div>
+              <div className="flex flex-col items-center justify-center py-24 gap-5">
+                {/* Three bouncing musical notes */}
+                <div className="flex items-end gap-3">
+                  {[0, 1, 2].map((i) => (
+                    <svg
+                      key={i}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="w-7 h-7 text-indigo-300"
+                      style={{
+                        animation: "noteJump 1.1s ease-in-out infinite",
+                        animationDelay: `${i * 0.18}s`,
+                      }}
+                    >
+                      <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-sm text-zinc-400 tracking-wide">Loading your songs…</span>
+                <style>{`
+                  @keyframes noteJump {
+                    0%, 100% { transform: translateY(0); opacity: 0.5; }
+                    40%       { transform: translateY(-10px); opacity: 1; }
+                    60%       { transform: translateY(-6px); opacity: 0.9; }
+                  }
+                `}</style>
+              </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-zinc-400">
                 {songs.length === 0 ? (
