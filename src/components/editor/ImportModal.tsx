@@ -57,6 +57,22 @@ export default function ImportModal({ onImport, onClose }: Props) {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // Paste image from clipboard (Ctrl+V / Cmd+V) when on image tab
+  useEffect(() => {
+    if (tab !== "image") return;
+    const handler = (e: ClipboardEvent) => {
+      const items = Array.from(e.clipboardData?.items ?? []);
+      const imageItem = items.find((item) => item.type.startsWith("image/"));
+      if (!imageItem) return;
+      e.preventDefault();
+      const file = imageItem.getAsFile();
+      if (file) loadImageFile(file);
+    };
+    window.addEventListener("paste", handler);
+    return () => window.removeEventListener("paste", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
   // ── Text tab: AI Clean ──────────────────────────────────────────────────
   const handleAiClean = async () => {
     if (!text.trim()) return;
@@ -313,10 +329,10 @@ export default function ImportModal({ onImport, onClose }: Props) {
                     <div className="flex flex-col items-center gap-2 text-center px-6">
                       <span className="text-3xl">📷</span>
                       <p className="text-sm font-medium text-zinc-600">
-                        Click to upload or drag &amp; drop
+                        Click to upload, drag &amp; drop, or paste
                       </p>
                       <p className="text-xs text-zinc-400">
-                        JPG, PNG, WEBP — photo or scan of any chord sheet
+                        JPG, PNG, WEBP — or just Ctrl+V / ⌘V a copied image
                       </p>
                     </div>
                   )}
