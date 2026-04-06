@@ -166,13 +166,29 @@ export default function LyricLineEditor({
 
   const chordLeftPx = (position: number) => {
     if (!line.text) {
-      // No lyric text — treat position as a character column index and use a
-      // fixed char width so chords spread out instead of stacking at 0.
+      // No lyric text — treat position as a character column index
       const charWidth = measureWidth("M", lyricSize, lyricFont);
       return position * charWidth;
     }
     return measureWidth(line.text.slice(0, position), lyricSize, lyricFont);
   };
+
+  // Compute display X positions that guarantee no two chord labels overlap.
+  // Walk chords sorted by raw pixel position; if one would overlap the previous,
+  // push it rightward by the deficit + a small gap.
+  const CHORD_GAP = 6; // px minimum gap between chord labels
+  const chordDisplayPositions: Map<string, number> = (() => {
+    const raw = line.chords.map((c) => ({ id: c.id, chord: c.chord, px: chordLeftPx(c.position) }));
+    raw.sort((a, b) => a.px - b.px);
+    let prevRight = -Infinity;
+    const out = new Map<string, number>();
+    for (const item of raw) {
+      const x = Math.max(item.px, prevRight + CHORD_GAP);
+      out.set(item.id, x);
+      prevRight = x + measureWidth(item.chord, chordSize, chordFont);
+    }
+    return out;
+  })();
 
   return (
     <div className="group/line relative py-0.5">
@@ -188,7 +204,7 @@ export default function LyricLineEditor({
             key={chord.id}
             data-chord-token
             className="absolute top-0"
-            style={{ left: chordLeftPx(chord.position) }}
+            style={{ left: chordDisplayPositions.get(chord.id) ?? chordLeftPx(chord.position) }}
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
