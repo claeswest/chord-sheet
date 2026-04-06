@@ -7,19 +7,11 @@ import { fetchSongs, removeSong, duplicateSong, type DbSong } from "@/lib/songDb
 import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
-  addSongToCategory, removeSongFromCategory, type DbCategory,
+  addSongToCategory, removeSongFromCategory, reorderSongsInCategory, type DbCategory,
 } from "@/lib/categoryDb";
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
 type Song = Omit<DbSong, "categoryIds"> & { source: "db" | "local"; categoryIds: string[] };
@@ -44,9 +36,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  // Drag and drop
+  // Drag and drop — category assignment
   const [dragSongId, setDragSongId] = useState<string | null>(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
+
+  // Drag and drop — reorder within category
+  const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -142,6 +137,35 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const handleDragEnd = () => {
     setDragSongId(null);
     setDragOverCategoryId(null);
+    setDragOverSongId(null);
+  };
+
+  // Reorder songs within the selected category by dropping onto another song row
+  const handleDropOnSong = (e: React.DragEvent, targetSongId: string) => {
+    e.preventDefault();
+    e.stopPropagation(); // don't bubble up to category drop zones
+    setDragOverSongId(null);
+    const sourceSongId = e.dataTransfer.getData("songId");
+    if (!sourceSongId || sourceSongId === targetSongId || !selectedCategoryId || selectedCategoryId === "uncategorized") return;
+
+    // Reorder the filtered list
+    setSongs((prev) => {
+      const inCat = prev.filter((s) => s.categoryIds.includes(selectedCategoryId));
+      const rest = prev.filter((s) => !s.categoryIds.includes(selectedCategoryId));
+      const fromIdx = inCat.findIndex((s) => s.id === sourceSongId);
+      const toIdx = inCat.findIndex((s) => s.id === targetSongId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const reordered = [...inCat];
+      const [moved] = reordered.splice(fromIdx, 1);
+      reordered.splice(toIdx, 0, moved);
+      // Persist new order
+      reorderSongsInCategory(selectedCategoryId, reordered.map((s) => s.id)).catch(() => {});
+      // Sync category songIds order
+      setCategories((cats) => cats.map((c) =>
+        c.id === selectedCategoryId ? { ...c, songIds: reordered.map((s) => s.id) } : c
+      ));
+      return [...reordered, ...rest];
+    });
   };
 
   const handleDrop = async (e: React.DragEvent, categoryId: string) => {
@@ -174,12 +198,25 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   // ── Filtering ────────────────────────────────────────────────────────────────
   const uncategorizedCount = songs.filter((s) => s.categoryIds.length === 0).length;
 
-  const filtered = songs.filter((s) => {
-    if (selectedCategoryId === "uncategorized" && s.categoryIds.length > 0) return false;
-    if (selectedCategoryId && selectedCategoryId !== "uncategorized" && !s.categoryIds.includes(selectedCategoryId)) return false;
-    const q = search.toLowerCase();
-    return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
-  });
+  const filtered = songs
+    .filter((s) => {
+      if (selectedCategoryId === "uncategorized" && s.categoryIds.length > 0) return false;
+      if (selectedCategoryId && selectedCategoryId !== "uncategorized" && !s.categoryIds.includes(selectedCategoryId)) return false;
+      const q = search.toLowerCase();
+      return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
+    })
+    .sort((a, b) => {
+      // Within a specific category, sort by the category's song order
+      if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
+        const cat = categories.find((c) => c.id === selectedCategoryId);
+        if (cat) {
+          const ai = cat.songIds.indexOf(a.id);
+          const bi = cat.songIds.indexOf(b.id);
+          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        }
+      }
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col">
@@ -381,15 +418,27 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const artistColor = song.style?.artist?.color ?? "#a1a1aa";
                   const rowBg = song.style?.background;
 
+                  const isReorderTarget = dragOverSongId === song.id && selectedCategoryId && selectedCategoryId !== "uncategorized";
+
                   return (
                     <div
                       key={song.id}
                       draggable={isLoggedIn}
                       onDragStart={(e) => handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (selectedCategoryId && selectedCategoryId !== "uncategorized" && dragSongId && dragSongId !== song.id) {
+                          setDragOverSongId(song.id);
+                        }
+                      }}
+                      onDragLeave={() => setDragOverSongId(null)}
+                      onDrop={(e) => handleDropOnSong(e, song.id)}
                       className={`group flex items-center gap-4 px-5 py-3.5 transition-colors ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
-                      } ${dragSongId === song.id ? "opacity-40" : ""}`}
+                      } ${dragSongId === song.id ? "opacity-40" : ""} ${
+                        isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
+                      }`}
                       style={{ backgroundColor: rowBg ?? undefined }}
                     >
                       {/* Drag handle */}
@@ -442,9 +491,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Updated time */}
-                      <div className="text-xs text-zinc-300 shrink-0 hidden md:block w-16 text-right">
-                        {timeAgo(song.updatedAt)}
+                      {/* Updated date */}
+                      <div className="text-xs text-zinc-300 shrink-0 hidden md:block text-right">
+                        {formatDate(song.updatedAt)}
                       </div>
 
                       {/* Actions — visible on hover */}
