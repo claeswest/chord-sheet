@@ -623,6 +623,32 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 </div>
               )}
             </div>
+            {/* Empty state — shown when there is no content yet */}
+            {lines.length === 1 &&
+              lines[0].type === "lyric" &&
+              (lines[0] as LyricLine).text === "" &&
+              (lines[0] as LyricLine).chords.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 gap-5 text-center">
+                  <div className="text-4xl">🎵</div>
+                  <div>
+                    <p className="text-base font-semibold text-zinc-700">Start your chord sheet</p>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      Import from a chord site or image, or start typing below.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowImport(true)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-6 py-3 rounded-xl shadow-md transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8l-3-3m3 3l3-3" />
+                    </svg>
+                    Import chord sheet
+                  </button>
+                  <p className="text-xs text-zinc-300">Paste text · Upload image · Paste from clipboard</p>
+                </div>
+              )}
+
             {mounted ? (
               <DndContext
                 id="song-editor-dnd"
