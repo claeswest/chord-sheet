@@ -27,23 +27,23 @@ export default function SortableLine({ id, children }: Props) {
         opacity: isDragging ? 0.4 : 1,
         zIndex: isDragging ? 10 : undefined,
       }}
-      className="group/row flex items-start gap-1"
+      className="group/row flex items-center gap-1"
     >
       {/* Drag handle — visible on row hover */}
       <button
         {...attributes}
         {...listeners}
-        className="opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 transition-opacity shrink-0 mt-1 px-0.5 touch-none"
+        className="opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-800 transition-opacity shrink-0 touch-none rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
         tabIndex={-1}
         aria-label="Drag to reorder"
       >
-        <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-          <circle cx="3" cy="3"  r="1.5" />
-          <circle cx="7" cy="3"  r="1.5" />
-          <circle cx="3" cy="8"  r="1.5" />
-          <circle cx="7" cy="8"  r="1.5" />
-          <circle cx="3" cy="13" r="1.5" />
-          <circle cx="7" cy="13" r="1.5" />
+        <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor">
+          <circle cx="3.5" cy="3"  r="2" />
+          <circle cx="8.5" cy="3"  r="2" />
+          <circle cx="3.5" cy="9"  r="2" />
+          <circle cx="8.5" cy="9"  r="2" />
+          <circle cx="3.5" cy="15" r="2" />
+          <circle cx="8.5" cy="15" r="2" />
         </svg>
       </button>
 

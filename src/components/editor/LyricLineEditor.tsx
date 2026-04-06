@@ -309,11 +309,11 @@ export default function LyricLineEditor({
         />
         <button
           onClick={onDelete}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-300 hover:text-red-400 transition-opacity shrink-0 px-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-red-500 transition-opacity shrink-0 rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
           tabIndex={-1}
           title="Delete line"
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
             <path d="M2 2l8 8M10 2l-8 8"/>
           </svg>
         </button>
