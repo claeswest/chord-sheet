@@ -29,6 +29,14 @@ export async function upsertSong(song: Omit<DbSong, "updatedAt">): Promise<DbSon
   return rowToDbSong(await res.json());
 }
 
+export async function reorderAllSongs(songIds: string[]): Promise<void> {
+  await fetch("/api/songs", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ songIds }),
+  });
+}
+
 export async function removeSong(id: string): Promise<void> {
   await fetch(`/api/songs/${id}`, { method: "DELETE" });
 }

@@ -79,6 +79,7 @@ model Song {
   capo      Int?
   tempo     Int?
   content   Json     // Structured chord sheet data (sections, lines, chords)
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

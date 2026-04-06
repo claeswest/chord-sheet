@@ -11,12 +11,13 @@ export async function GET() {
 
   const songs = await prisma.song.findMany({
     where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
     select: {
       id: true,
       title: true,
       artist: true,
       content: true,
+      order: true,
       createdAt: true,
       updatedAt: true,
       categories: { select: { categoryId: true } },
@@ -37,6 +38,30 @@ export async function GET() {
       categoryIds: s.categories.map((c) => c.categoryId),
     };
   }));
+}
+
+// PUT /api/songs — save global sort order: body { songIds: string[] }
+export async function PUT(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { songIds } = await req.json() as { songIds: string[] };
+  if (!Array.isArray(songIds)) {
+    return NextResponse.json({ error: "songIds required" }, { status: 400 });
+  }
+
+  await Promise.all(
+    songIds.map((id, idx) =>
+      prisma.song.updateMany({
+        where: { id, userId: session.user!.id },
+        data: { order: idx },
+      })
+    )
+  );
+
+  return NextResponse.json({ ok: true });
 }
 
 // POST /api/songs — create or upsert a song

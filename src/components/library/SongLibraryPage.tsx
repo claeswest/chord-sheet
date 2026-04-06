@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { encodeSong } from "@/lib/songUrl";
-import { fetchSongs, removeSong, duplicateSong, type DbSong } from "@/lib/songDb";
+import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, type DbSong } from "@/lib/songDb";
 import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
@@ -146,35 +146,49 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     setDragOverSongId(null);
   };
 
-  // Reorder songs within the selected category by dropping onto another song row
+  // Reorder songs — works for "All Songs" (selectedCategoryId === null) and named categories
   const handleDropOnSong = (e: React.DragEvent, targetSongId: string) => {
     e.preventDefault();
-    e.stopPropagation(); // don't bubble up to category drop zones
+    e.stopPropagation();
     setDragOverSongId(null);
     const sourceSongId = e.dataTransfer.getData("songId");
-    if (!sourceSongId || sourceSongId === targetSongId || !selectedCategoryId || selectedCategoryId === "uncategorized") return;
+    if (!sourceSongId || sourceSongId === targetSongId || selectedCategoryId === "uncategorized") return;
 
-    // Use the category's songIds as the source of truth for current visual order
-    const cat = categories.find((c) => c.id === selectedCategoryId);
-    if (!cat) return;
+    if (selectedCategoryId === null) {
+      // All Songs — reorder the songs array directly
+      setSongs((prev) => {
+        const fromIdx = prev.findIndex((s) => s.id === sourceSongId);
+        const toIdx = prev.findIndex((s) => s.id === targetSongId);
+        if (fromIdx === -1 || toIdx === -1) return prev;
+        const reordered = [...prev];
+        const [moved] = reordered.splice(fromIdx, 1);
+        reordered.splice(toIdx, 0, moved);
+        reorderAllSongs(reordered.map((s) => s.id))
+          .then(() => showToast("Sort order saved"))
+          .catch(() => showToast("Failed to save sort order"));
+        return reordered;
+      });
+    } else {
+      // Named category — use category's songIds as source of truth
+      const cat = categories.find((c) => c.id === selectedCategoryId);
+      if (!cat) return;
 
-    const currentOrder = [...cat.songIds];
-    const fromIdx = currentOrder.indexOf(sourceSongId);
-    const toIdx = currentOrder.indexOf(targetSongId);
-    if (fromIdx === -1 || toIdx === -1) return;
+      const currentOrder = [...cat.songIds];
+      const fromIdx = currentOrder.indexOf(sourceSongId);
+      const toIdx = currentOrder.indexOf(targetSongId);
+      if (fromIdx === -1 || toIdx === -1) return;
 
-    const [moved] = currentOrder.splice(fromIdx, 1);
-    currentOrder.splice(toIdx, 0, moved);
+      const [moved] = currentOrder.splice(fromIdx, 1);
+      currentOrder.splice(toIdx, 0, moved);
 
-    // Update categories — this drives the sort in `filtered`
-    setCategories((cats) => cats.map((c) =>
-      c.id === selectedCategoryId ? { ...c, songIds: currentOrder } : c
-    ));
+      setCategories((cats) => cats.map((c) =>
+        c.id === selectedCategoryId ? { ...c, songIds: currentOrder } : c
+      ));
 
-    // Persist to DB
-    reorderSongsInCategory(selectedCategoryId, currentOrder)
-      .then(() => showToast("Sort order saved"))
-      .catch(() => showToast("Failed to save sort order"));
+      reorderSongsInCategory(selectedCategoryId, currentOrder)
+        .then(() => showToast("Sort order saved"))
+        .catch(() => showToast("Failed to save sort order"));
+    }
   };
 
   const handleDrop = async (e: React.DragEvent, categoryId: string) => {
@@ -215,7 +229,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      // Within a specific category, sort by the category's song order
+      // Within a specific named category, sort by the category's song order
       if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
         const cat = categories.find((c) => c.id === selectedCategoryId);
         if (cat) {
@@ -224,6 +238,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
         }
       }
+      // "All Songs" and "Uncategorized" preserve songs[] order (already ordered by server/drag)
       return 0;
     });
 
@@ -427,7 +442,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const artistColor = song.style?.artist?.color ?? "#a1a1aa";
                   const rowBg = song.style?.background;
 
-                  const isReorderTarget = dragOverSongId === song.id && selectedCategoryId && selectedCategoryId !== "uncategorized";
+                  const isReorderTarget = dragOverSongId === song.id && selectedCategoryId !== "uncategorized";
 
                   return (
                     <div
@@ -437,7 +452,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => {
                         e.preventDefault();
-                        if (selectedCategoryId && selectedCategoryId !== "uncategorized" && dragSongId && dragSongId !== song.id) {
+                        if (selectedCategoryId !== "uncategorized" && dragSongId && dragSongId !== song.id) {
                           setDragOverSongId(song.id);
                         }
                       }}
