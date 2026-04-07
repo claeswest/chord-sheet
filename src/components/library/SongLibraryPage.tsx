@@ -48,6 +48,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc"); // desc = newest / A→Z default
+
+  const handleSortClick = (opt: "date" | "title" | "artist") => {
+    if (opt === sortBy) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(opt);
+      setSortDir(opt === "date" ? "desc" : "asc"); // natural defaults
+    }
+  };
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -272,11 +282,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
         }
       }
-      // "All Songs" and "Uncategorized" — apply sortBy
-      if (sortBy === "title")  return a.title.localeCompare(b.title);
-      if (sortBy === "artist") return (a.artist ?? "").localeCompare(b.artist ?? "");
-      // "date" — most recently updated first
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      // "All Songs" and "Uncategorized" — apply sortBy + sortDir
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortBy === "title")  return dir * a.title.localeCompare(b.title);
+      if (sortBy === "artist") return dir * (a.artist ?? "").localeCompare(b.artist ?? "");
+      // "date"
+      return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     });
 
   return (
@@ -466,14 +477,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   {(["date", "title", "artist"] as const).map((opt) => (
                     <button
                       key={opt}
-                      onClick={() => setSortBy(opt)}
-                      className={`text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
+                      onClick={() => handleSortClick(opt)}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
                         sortBy === opt
                           ? "bg-indigo-600 text-white"
                           : "bg-white border border-zinc-200 text-zinc-500 hover:border-indigo-300 hover:text-indigo-600"
                       }`}
                     >
                       {opt === "date" ? "Recent" : opt === "title" ? "Title" : "Artist"}
+                      {sortBy === opt && (
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                          {sortDir === "asc"
+                            ? <path d="M12 8l-6 6h12l-6-6Z"/>
+                            : <path d="M12 16l6-6H6l6 6Z"/>}
+                        </svg>
+                      )}
                     </button>
                   ))}
                 </div>
