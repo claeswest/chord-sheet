@@ -164,7 +164,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "p" || e.key === "P") setViewMode(true);
       if (e.key === "e" || e.key === "E") setViewMode(false);
-      if (e.key === "m" || e.key === "M") router.push("/songs");
+      if (e.key === "s" || e.key === "S") router.push("/songs");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -477,7 +477,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           <>
             <div className="w-px h-5 bg-zinc-200" />
             <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5">
-              ← My Songs <kbd className="text-xs text-zinc-300 font-mono">[M]</kbd>
+              ← Songs <kbd className="text-xs text-zinc-300 font-mono">[S]</kbd>
             </Link>
           </>
         )}

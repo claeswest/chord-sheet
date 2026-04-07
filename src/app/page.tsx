@@ -63,7 +63,7 @@ export default async function HomePage() {
             <Link href="#pricing"  className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
             {session ? (
               <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
-                My Songs
+                Songs
               </Link>
             ) : (
               <>

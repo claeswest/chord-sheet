@@ -67,7 +67,7 @@ function PricingContent() {
         </Link>
         <div className="w-px h-5 bg-zinc-200" />
         <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-          ← My Songs
+          ← Songs
         </Link>
       </header>
       <div className="py-16 px-4">

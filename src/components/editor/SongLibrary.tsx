@@ -37,7 +37,7 @@ export default function SongLibrary({ onLoad, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-          <h2 className="text-base font-semibold text-zinc-900">My Songs</h2>
+          <h2 className="text-base font-semibold text-zinc-900">Songs</h2>
           <button
             onClick={onClose}
             className="text-zinc-400 hover:text-zinc-700 transition-colors"

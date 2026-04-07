@@ -62,7 +62,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "e" || e.key === "E") onEdit();
-      if (e.key === "m" || e.key === "M") router.push("/songs");
+      if (e.key === "s" || e.key === "S") router.push("/songs");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
