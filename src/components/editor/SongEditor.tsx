@@ -582,12 +582,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3Zm-3 11H8v-5h8v5Zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-1-9H6v4h12V3Z"/></svg>
                   Print
                 </button>
-                <div className="border-t border-zinc-100 my-1" />
-                <button onClick={() => { handleNew(); setShowOverflow(false); }}
-                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm-1 7V3.5L18.5 9H13Zm-2 8v-3H9v-2h2v-2h2v2h2v2h-2v3h-2Z"/></svg>
-                  New Song
-                </button>
               </div>
             )}
           </div>
