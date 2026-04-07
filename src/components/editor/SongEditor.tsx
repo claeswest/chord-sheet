@@ -741,7 +741,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         </div>
 
         {/* Right panel with tabs */}
-        <div className="w-64 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden">
+        <div className="w-72 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden">
           <div className="flex border-b border-zinc-200 shrink-0 bg-zinc-50">
             <button
               onClick={() => setRightPanel("chords")}

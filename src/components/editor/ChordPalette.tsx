@@ -29,14 +29,14 @@ export default function ChordPalette({ activeChord, onSelectChord, asideClassNam
   };
 
   return (
-    <aside className={asideClassName ?? "w-64 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
+    <aside className={asideClassName ?? "w-72 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
       <div className="px-4 py-3 border-b border-zinc-200">
         <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
           Chord Palette
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {/* Active chord banner */}
         {activeChord && (
           <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2">
