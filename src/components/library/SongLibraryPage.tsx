@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { encodeSong } from "@/lib/songUrl";
 import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, type DbSong } from "@/lib/songDb";
@@ -48,6 +48,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // Switch category and clear any active sort
@@ -69,6 +70,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
+
+  // "/" focuses the search box (like GitHub / Linear / Notion)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return; // already typing
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Category editing
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -355,7 +369,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               }`}
             >
               <span>All Songs</span>
-              <span className="text-xs text-zinc-400">{songs.length}</span>
+              <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full">{songs.length}</span>
             </button>
 
             <button
@@ -367,7 +381,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               }`}
             >
               <span>Uncategorized</span>
-              <span className="text-xs text-zinc-400">{uncategorizedCount}</span>
+              <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full">{uncategorizedCount}</span>
             </button>
 
             {categories.length > 0 && (
@@ -427,7 +441,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {cat.name}
                     </button>
                   )}
-                  <span className="text-xs text-zinc-300 shrink-0">{cat.songIds.length}</span>
+                  <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full shrink-0">{cat.songIds.length}</span>
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
@@ -468,9 +482,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Main content */}
         <main className="flex-1 px-6 py-6 min-w-0">
           <div className="max-w-4xl">
-            {/* Search + sort + count */}
-            <div className="flex items-center gap-3 mb-5 flex-wrap">
+            {/* Search + sort + count — sticky so it stays visible while scrolling */}
+            <div className="sticky top-0 z-10 bg-zinc-50 pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6">
               <input
+                ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search songs…"
