@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   closestCenter,
@@ -42,6 +43,7 @@ interface SongEditorProps {
 }
 
 export default function SongEditor({ initialSong, isLoggedIn = false }: SongEditorProps = {}) {
+  const router = useRouter();
   const [title, setTitle] = useState(initialSong?.title ?? "Untitled Song");
   const [artist, setArtist] = useState(initialSong?.artist ?? "");
   const [activeChord, setActiveChord] = useState<string | null>(null);
@@ -162,6 +164,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "p" || e.key === "P") setViewMode(true);
       if (e.key === "e" || e.key === "E") setViewMode(false);
+      if (e.key === "m" || e.key === "M") router.push("/songs");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -473,8 +476,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         {isLoggedIn && (
           <>
             <div className="w-px h-5 bg-zinc-200" />
-            <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-              ← My Songs
+            <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5">
+              ← My Songs <kbd className="text-xs text-zinc-300 font-mono">[M]</kbd>
             </Link>
           </>
         )}

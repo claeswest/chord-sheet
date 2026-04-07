@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { SongLine } from "@/types/song";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
@@ -35,6 +36,7 @@ const MAX_SPEED = 20;
 const TICK_MS = 40; // ~25fps
 
 export default function SongViewer({ title, artist, lines, onEdit, songStyle }: Props) {
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollAccRef = useRef(0); // accumulates sub-pixel amounts
@@ -60,6 +62,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "e" || e.key === "E") onEdit();
+      if (e.key === "m" || e.key === "M") router.push("/songs");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
