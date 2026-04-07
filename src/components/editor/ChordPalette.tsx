@@ -87,7 +87,7 @@ export default function ChordPalette({ activeChord, onSelectChord, asideClassNam
   const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600";
 
   return (
-    <aside className={asideClassName ?? "w-72 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
+    <aside className={asideClassName ?? "w-80 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
       <div className="px-4 py-3 border-b border-zinc-200">
         <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Chord Palette</p>
       </div>
