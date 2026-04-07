@@ -16,13 +16,13 @@ function formatDate(iso: string): string {
 
 // One palette entry per category slot — full Tailwind class strings so purging works
 const CATEGORY_COLORS = [
-  { chip: "bg-indigo-100 text-indigo-700", dot: "bg-indigo-400" },
-  { chip: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
-  { chip: "bg-amber-100 text-amber-700",    dot: "bg-amber-400"  },
-  { chip: "bg-rose-100 text-rose-700",      dot: "bg-rose-400"   },
-  { chip: "bg-sky-100 text-sky-700",        dot: "bg-sky-400"    },
-  { chip: "bg-violet-100 text-violet-700",  dot: "bg-violet-400" },
-  { chip: "bg-orange-100 text-orange-700",  dot: "bg-orange-400" },
+  { chip: "bg-indigo-100 text-indigo-700", dot: "bg-indigo-400",  accent: "bg-indigo-300",  sidebarSelected: "border-l-indigo-400"  },
+  { chip: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500", accent: "bg-emerald-400", sidebarSelected: "border-l-emerald-500" },
+  { chip: "bg-amber-100 text-amber-700",    dot: "bg-amber-400",   accent: "bg-amber-300",   sidebarSelected: "border-l-amber-400"   },
+  { chip: "bg-rose-100 text-rose-700",      dot: "bg-rose-400",    accent: "bg-rose-300",    sidebarSelected: "border-l-rose-400"    },
+  { chip: "bg-sky-100 text-sky-700",        dot: "bg-sky-400",     accent: "bg-sky-300",     sidebarSelected: "border-l-sky-400"     },
+  { chip: "bg-violet-100 text-violet-700",  dot: "bg-violet-400",  accent: "bg-violet-300",  sidebarSelected: "border-l-violet-400"  },
+  { chip: "bg-orange-100 text-orange-700",  dot: "bg-orange-400",  accent: "bg-orange-300",  sidebarSelected: "border-l-orange-400"  },
 ];
 
 function getCatColor(catId: string, cats: DbCategory[]) {
@@ -390,7 +390,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       <div className="flex flex-1">
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
-          <aside className="w-96 shrink-0 bg-white border-r border-zinc-200 flex flex-col py-3">
+          <aside className="w-96 shrink-0 bg-zinc-50 border-r border-zinc-200 flex flex-col py-3">
             <div className="px-3 pb-3">
               <Link
                 href="/editor/new"
@@ -402,10 +402,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
             <button
               onClick={() => selectCategory(null)}
-              className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
+              className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
-                  ? "bg-indigo-50 text-indigo-700 font-medium"
-                  : "text-zinc-600 hover:bg-zinc-50"
+                  ? "bg-white text-indigo-700 font-semibold border-l-indigo-500"
+                  : "text-zinc-600 hover:bg-zinc-100 border-l-transparent"
               }`}
             >
               <span>All Songs</span>
@@ -414,10 +414,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
             <button
               onClick={() => selectCategory("uncategorized")}
-              className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
+              className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === "uncategorized"
-                  ? "bg-indigo-50 text-indigo-700 font-medium"
-                  : "text-zinc-600 hover:bg-zinc-50"
+                  ? "bg-white text-indigo-700 font-semibold border-l-indigo-500"
+                  : "text-zinc-600 hover:bg-zinc-100 border-l-transparent"
               }`}
             >
               <span>Uncategorized</span>
@@ -444,16 +444,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     }
                   }}
                   onDrop={(e) => handleDrop(e, cat.id)}
-                  className={`group flex items-center gap-1 px-4 transition-all duration-100 ${
+                  className={`group flex items-center gap-1 pl-3 pr-4 transition-all duration-100 border-l-4 ${
                     dragSongId ? "py-3" : "py-1.5"
                   } ${
                     dragOverCategoryId === cat.id
-                      ? "bg-indigo-100 ring-2 ring-inset ring-indigo-400"
+                      ? "bg-indigo-100 ring-2 ring-inset ring-indigo-400 border-l-transparent"
                       : dragSongId
-                      ? "bg-indigo-50/60 ring-1 ring-inset ring-indigo-100"
+                      ? "bg-indigo-50/60 ring-1 ring-inset ring-indigo-100 border-l-transparent"
                       : selectedCategoryId === cat.id
-                      ? "bg-indigo-50"
-                      : "hover:bg-zinc-50"
+                      ? `bg-white ${getCatColor(cat.id, categories).sidebarSelected}`
+                      : "hover:bg-zinc-100 border-l-transparent"
                   }`}
                 >
                   {editingCategoryId === cat.id ? (
@@ -756,7 +756,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
-              <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
                   const editUrl = `/editor/new?song=${encoded}`;
@@ -764,10 +764,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const isDuplicating = duplicatingId === song.id;
 
                   const titleColor = song.style?.title?.color ?? "#18181b";
-                  const artistColor = song.style?.artist?.color ?? "#a1a1aa";
+                  const artistColor = song.style?.artist?.color ?? "#71717a";
                   const rowBg = song.style?.background;
 
                   const isReorderTarget = dragOverSongId === song.id && selectedCategoryId !== "uncategorized";
+                  const firstCatAccent = song.categoryIds[0] ? getCatColor(song.categoryIds[0], categories).accent : null;
 
                   // Quick-info stats (computed once per row)
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -795,12 +796,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       }}
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
-                      className={`group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-zinc-50 ${
+                      className={`group relative flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-indigo-50/30 ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
+                      {/* Category colour accent bar on left edge */}
+                      {firstCatAccent && !rowBg && (
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${firstCatAccent}`} />
+                      )}
+
                       {/* Drag handle */}
                       {isLoggedIn && (
                         <div className="text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors select-none text-xs leading-none">
@@ -815,7 +821,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           style={{ backgroundColor: rowBg ?? undefined }}
                         >
                           <div
-                            className="text-sm font-medium truncate"
+                            className="text-sm font-semibold truncate"
                             style={{ color: titleColor }}
                           >
                             {song.title || "Untitled Song"}
@@ -860,7 +866,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {/* Date ↔ quick-info (swaps on row hover) */}
                       <div className="relative shrink-0 hidden md:flex items-center justify-end w-44">
                         {/* Date — fades out on hover */}
-                        <span className="text-xs text-zinc-300 group-hover:opacity-0 transition-opacity whitespace-nowrap">
+                        <span className="text-xs text-zinc-400 group-hover:opacity-0 transition-opacity whitespace-nowrap">
                           {formatDate(song.updatedAt)}
                         </span>
                         {/* Stats — fades in on hover */}
