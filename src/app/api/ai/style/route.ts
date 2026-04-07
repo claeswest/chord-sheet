@@ -1,35 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ALL_FONTS } from "@/lib/songStyle";
 
-const AVAILABLE_FONTS = [
-  "System Mono",
-  "Source Code Pro", "JetBrains Mono", "IBM Plex Mono", "Space Mono",
-  "Roboto Mono", "Inconsolata", "Fira Code",
-  "Playfair Display", "Merriweather", "EB Garamond", "Lora", "Crimson Pro",
-  "Inter", "Lato", "Poppins", "Raleway", "Oswald", "Nunito", "Caveat",
-];
-
-const FONT_STACKS: Record<string, string> = {
-  "System Mono":      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-  "Source Code Pro":  "'Source Code Pro', monospace",
-  "JetBrains Mono":   "'JetBrains Mono', monospace",
-  "IBM Plex Mono":    "'IBM Plex Mono', monospace",
-  "Space Mono":       "'Space Mono', monospace",
-  "Roboto Mono":      "'Roboto Mono', monospace",
-  "Inconsolata":      "'Inconsolata', monospace",
-  "Fira Code":        "'Fira Code', monospace",
-  "Playfair Display": "'Playfair Display', serif",
-  "Merriweather":     "'Merriweather', serif",
-  "EB Garamond":      "'EB Garamond', serif",
-  "Lora":             "'Lora', serif",
-  "Crimson Pro":      "'Crimson Pro', serif",
-  "Inter":            "'Inter', sans-serif",
-  "Lato":             "'Lato', sans-serif",
-  "Poppins":          "'Poppins', sans-serif",
-  "Raleway":          "'Raleway', sans-serif",
-  "Oswald":           "'Oswald', sans-serif",
-  "Nunito":           "'Nunito', sans-serif",
-  "Caveat":           "'Caveat', cursive",
-};
+// Derived directly from songStyle.ts — always in sync with the actual font list
+const AVAILABLE_FONTS = ALL_FONTS.map(f => f.name);
+const FONT_STACKS: Record<string, string> = Object.fromEntries(ALL_FONTS.map(f => [f.name, f.stack]));
 
 const PROMPT = `You are a visual designer and music expert. You will receive a song title, artist, and lyrics. Based on the song's mood, genre, era, and emotional feel, design a beautiful typography and color scheme for a chord sheet.
 
@@ -65,6 +39,13 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
     "fontSize": <integer 11–15>,
     "color": "#hexcolor",
     "bold": <true or false — usually bold so chords stand out>,
+    "italic": <true or false>
+  },
+  "section": {
+    "fontName": "choose the most fitting font from the list above",
+    "fontSize": <integer 10–13, section headers are labels so slightly smaller>,
+    "color": "#hexcolor — often matches or complements the chord color",
+    "bold": <true or false — usually bold for clear section labels>,
     "italic": <true or false>
   }
 }
@@ -141,10 +122,11 @@ export async function POST(req: NextRequest) {
     theme: parsed.theme ?? "",
     style: {
       background: parsed.background ?? "#ffffff",
-      title:  toStyle(parsed.title),
-      artist: toStyle(parsed.artist ?? parsed.lyrics),  // fall back to lyrics style if missing
-      lyrics: toStyle(parsed.lyrics),
-      chords: toStyle(parsed.chords),
+      title:   toStyle(parsed.title),
+      artist:  toStyle(parsed.artist ?? parsed.lyrics),  // fall back to lyrics style if missing
+      lyrics:  toStyle(parsed.lyrics),
+      chords:  toStyle(parsed.chords),
+      section: toStyle(parsed.section ?? parsed.chords),  // fall back to chords style if missing
     },
   });
 }
