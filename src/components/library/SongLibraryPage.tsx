@@ -194,10 +194,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
   // ── Pointer-events drag (replaces HTML5 DnD — prevents Chrome Split View) ────
 
+  // Listeners are registered synchronously inside startPointerDrag so they
+  // are active immediately — no useEffect delay that would drop early events.
   const startPointerDrag = (e: React.PointerEvent, songId: string) => {
-    if (e.button !== 0) return;   // left-click only
+    if (e.button !== 0) return;
     e.preventDefault();
 
+    // Create ghost pill
     const song = songsRef.current.find((s) => s.id === songId);
     const ghost = document.createElement("div");
     ghost.textContent = song?.title ?? "Song";
@@ -212,16 +215,26 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     ghost.style.top  = `${e.clientY}px`;
     document.body.appendChild(ghost);
     dragGhostRef.current = ghost;
-
     setDragSongId(songId);
-  };
 
-  // Install/uninstall document listeners only while a drag is active
-  useEffect(() => {
-    if (!dragSongId) return;
-    const sourceSongId = dragSongId; // stable for this drag session
+    // ── helpers ────────────────────────────────────────────────────────────
+    const findCatId    = (x: number, y: number) =>
+      (document.elementsFromPoint(x, y)
+        .find((el) => (el as HTMLElement).dataset?.categoryId) as HTMLElement | undefined)
+        ?.dataset.categoryId;
 
-    const cleanupGhost = () => {
+    const findSongId   = (x: number, y: number) =>
+      (document.elementsFromPoint(x, y)
+        .find((el) => {
+          const sid = (el as HTMLElement).dataset?.songId;
+          return sid && sid !== songId;
+        }) as HTMLElement | undefined)
+        ?.dataset.songId;
+
+    const cleanup = () => {
+      document.removeEventListener("pointermove",   onMove);
+      document.removeEventListener("pointerup",     onUp);
+      document.removeEventListener("pointercancel", cleanup);
       if (dragGhostRef.current) {
         document.body.removeChild(dragGhostRef.current);
         dragGhostRef.current = null;
@@ -231,48 +244,33 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       setDragOverSongId(null);
     };
 
-    const onMove = (e: PointerEvent) => {
+    const onMove = (ev: PointerEvent) => {
       if (dragGhostRef.current) {
-        dragGhostRef.current.style.left = `${e.clientX + 10}px`;
-        dragGhostRef.current.style.top  = `${e.clientY}px`;
+        dragGhostRef.current.style.left = `${ev.clientX + 10}px`;
+        dragGhostRef.current.style.top  = `${ev.clientY}px`;
       }
-      const els = document.elementsFromPoint(e.clientX, e.clientY);
-      // Highlight category target
-      const catEl = els.find((el) => (el as HTMLElement).dataset?.categoryId);
-      setDragOverCategoryId((catEl as HTMLElement)?.dataset.categoryId ?? null);
-      // Highlight song reorder target
-      const songEl = els.find((el) => {
-        const sid = (el as HTMLElement).dataset?.songId;
-        return sid && sid !== sourceSongId;
-      });
+      setDragOverCategoryId(findCatId(ev.clientX, ev.clientY) ?? null);
       if (selectedCategoryIdRef.current !== "uncategorized") {
-        setDragOverSongId((songEl as HTMLElement)?.dataset.songId ?? null);
+        setDragOverSongId(findSongId(ev.clientX, ev.clientY) ?? null);
       }
     };
 
-    const onUp = async (e: PointerEvent) => {
-      const els = document.elementsFromPoint(e.clientX, e.clientY);
-      const catEl  = els.find((el) => (el as HTMLElement).dataset?.categoryId);
-      const catId  = (catEl as HTMLElement)?.dataset.categoryId;
-      const songEl = els.find((el) => {
-        const sid = (el as HTMLElement).dataset?.songId;
-        return sid && sid !== sourceSongId;
-      });
-      const targetSongId = (songEl as HTMLElement)?.dataset.songId;
-
-      cleanupGhost();
+    const onUp = async (ev: PointerEvent) => {
+      const catId        = findCatId(ev.clientX, ev.clientY);
+      const targetSongId = findSongId(ev.clientX, ev.clientY);
+      cleanup();
 
       if (catId) {
         // ── Assign to category ──────────────────────────────────────────────
-        const song = songsRef.current.find((s) => s.id === sourceSongId);
-        if (song && !song.categoryIds.includes(catId)) {
+        const s = songsRef.current.find((s) => s.id === songId);
+        if (s && !s.categoryIds.includes(catId)) {
           setSongs((prev) => prev.map((s) =>
-            s.id === sourceSongId ? { ...s, categoryIds: [...s.categoryIds, catId] } : s
+            s.id === songId ? { ...s, categoryIds: [...s.categoryIds, catId] } : s
           ));
           setCategories((prev) => prev.map((c) =>
-            c.id === catId ? { ...c, songIds: [...c.songIds, sourceSongId] } : c
+            c.id === catId ? { ...c, songIds: [...c.songIds, songId] } : c
           ));
-          await addSongToCategory(catId, sourceSongId);
+          await addSongToCategory(catId, songId);
         }
       } else if (targetSongId) {
         // ── Reorder ─────────────────────────────────────────────────────────
@@ -281,44 +279,38 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
         if (scid === null) {
           const cur = songsRef.current;
-          const fromIdx = cur.findIndex((s) => s.id === sourceSongId);
-          const toIdx   = cur.findIndex((s) => s.id === targetSongId);
-          if (fromIdx === -1 || toIdx === -1) return;
-          const reordered = [...cur];
-          const [moved] = reordered.splice(fromIdx, 1);
-          reordered.splice(toIdx, 0, moved);
-          setSongs(reordered);
-          reorderAllSongs(reordered.map((s) => s.id))
-            .then(() => setToast("Sort order saved"))
-            .catch((err) => setToast(`Failed: ${(err as Error)?.message ?? "unknown error"}`));
-          setTimeout(() => setToast(null), 2500);
+          const fi = cur.findIndex((s) => s.id === songId);
+          const ti = cur.findIndex((s) => s.id === targetSongId);
+          if (fi === -1 || ti === -1) return;
+          const next = [...cur];
+          const [m] = next.splice(fi, 1);
+          next.splice(ti, 0, m);
+          setSongs(next);
+          reorderAllSongs(next.map((s) => s.id))
+            .then(() => { setToast("Sort order saved"); setTimeout(() => setToast(null), 2500); })
+            .catch(() => { setToast("Reorder failed"); setTimeout(() => setToast(null), 2500); });
         } else {
           const cat = categoriesRef.current.find((c) => c.id === scid);
           if (!cat) return;
           const order = [...cat.songIds];
-          const fromIdx = order.indexOf(sourceSongId);
-          const toIdx   = order.indexOf(targetSongId);
-          if (fromIdx === -1 || toIdx === -1) return;
-          const [moved] = order.splice(fromIdx, 1);
-          order.splice(toIdx, 0, moved);
+          const fi = order.indexOf(songId);
+          const ti = order.indexOf(targetSongId);
+          if (fi === -1 || ti === -1) return;
+          const [m] = order.splice(fi, 1);
+          order.splice(ti, 0, m);
           setCategories((cats) => cats.map((c) => c.id === scid ? { ...c, songIds: order } : c));
           reorderSongsInCategory(scid, order)
-            .then(() => setToast("Sort order saved"))
-            .catch((err) => setToast(`Failed: ${(err as Error)?.message ?? "unknown error"}`));
-          setTimeout(() => setToast(null), 2500);
+            .then(() => { setToast("Sort order saved"); setTimeout(() => setToast(null), 2500); })
+            .catch(() => { setToast("Reorder failed"); setTimeout(() => setToast(null), 2500); });
         }
       }
     };
 
-    document.addEventListener("pointermove",  onMove);
-    document.addEventListener("pointerup",    onUp);
-    document.addEventListener("pointercancel", cleanupGhost);
-    return () => {
-      document.removeEventListener("pointermove",  onMove);
-      document.removeEventListener("pointerup",    onUp);
-      document.removeEventListener("pointercancel", cleanupGhost);
-    };
-  }, [dragSongId]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Register immediately — not via useEffect — so no events are missed
+    document.addEventListener("pointermove",   onMove);
+    document.addEventListener("pointerup",     onUp);
+    document.addEventListener("pointercancel", cleanup);
+  };
 
   const handleRemoveFromCategory = async (songId: string, categoryId: string) => {
     setSongs((prev) =>
