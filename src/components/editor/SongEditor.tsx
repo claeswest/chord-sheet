@@ -365,7 +365,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
     if (isLoggedIn) {
-      await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle });
+      await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle, semitones });
     } else {
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     }

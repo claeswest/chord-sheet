@@ -670,7 +670,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               /* ── Card / Grid view ─────────────────────────────────────── */
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {filtered.map((song) => {
-                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
+                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
@@ -766,7 +766,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 text-right shrink-0">Updated</span>
                 </div>
                 {filtered.map((song, idx) => {
-                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
+                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;

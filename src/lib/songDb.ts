@@ -10,6 +10,7 @@ export type DbSong = {
   updatedAt: string;
   categoryIds?: string[];
   style?: SongStyle;
+  semitones?: number;
 };
 
 export async function fetchSongs(): Promise<DbSong[]> {
@@ -90,5 +91,6 @@ function rowToDbSong(row: any): DbSong {
     updatedAt: row.updatedAt,
     categoryIds: row.categoryIds ?? [],
     style: content.style ?? undefined,
+    semitones: content.semitones ?? 0,
   };
 }
