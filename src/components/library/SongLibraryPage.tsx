@@ -404,24 +404,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               onClick={() => selectCategory(null)}
               className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
-                  ? "bg-white/10 text-white font-semibold border-l-indigo-400"
+                  ? "bg-white/20 text-white font-semibold border-l-indigo-300"
                   : "text-white/60 hover:bg-white/10 border-l-transparent"
               }`}
             >
               <span>All Songs</span>
-              <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full">{songs.length}</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategoryId === null ? "bg-white/20 text-white/70" : "bg-white/10 text-white/40"}`}>{songs.length}</span>
             </button>
 
             <button
               onClick={() => selectCategory("uncategorized")}
               className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === "uncategorized"
-                  ? "bg-white/10 text-white font-semibold border-l-indigo-400"
+                  ? "bg-white/20 text-white font-semibold border-l-indigo-300"
                   : "text-white/60 hover:bg-white/10 border-l-transparent"
               }`}
             >
               <span>Uncategorized</span>
-              <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full">{uncategorizedCount}</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategoryId === "uncategorized" ? "bg-white/20 text-white/70" : "bg-white/10 text-white/40"}`}>{uncategorizedCount}</span>
             </button>
 
             {categories.length > 0 && (
@@ -452,7 +452,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       : dragSongId
                       ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
                       : selectedCategoryId === cat.id
-                      ? `bg-white/10 ${getCatColor(cat.id, categories).sidebarSelected}`
+                      ? `bg-white/20 ${getCatColor(cat.id, categories).sidebarSelected}`
                       : "hover:bg-white/10 border-l-transparent"
                   }`}
                 >
@@ -473,7 +473,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
                       onDoubleClick={() => startRename(cat)}
                       className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${
-                        selectedCategoryId === cat.id ? "text-white font-medium" : "text-white/60"
+                        selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"
                       }`}
                       title="Double-click to rename"
                     >
@@ -757,6 +757,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
               <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+                {/* Column headers */}
+                <div className="flex items-center gap-4 px-5 py-2 border-b border-zinc-100 bg-zinc-50">
+                  {isLoggedIn && <div className="w-3 shrink-0" />}{/* drag handle placeholder */}
+                  <span className="flex-1 text-xs font-medium text-zinc-400 uppercase tracking-wide">Song</span>
+                  {isLoggedIn && <span className="hidden sm:block text-xs font-medium text-zinc-400 uppercase tracking-wide w-36 shrink-0">Categories</span>}
+                  <span className="hidden md:block text-xs font-medium text-zinc-400 uppercase tracking-wide w-44 text-right shrink-0">Updated</span>
+                  <div className="w-24 shrink-0" />{/* actions placeholder */}
+                </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
                   const editUrl = `/editor/new?song=${encoded}`;
