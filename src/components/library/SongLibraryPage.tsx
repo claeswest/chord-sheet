@@ -718,6 +718,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                   const isReorderTarget = dragOverSongId === song.id && selectedCategoryId !== "uncategorized";
 
+                  // Quick-info stats (computed once per row)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const allLines = (song.lines as any[]) ?? [];
+                  const lyricLines = allLines.filter((l) => l.type === "lyric");
+                  const lineCount  = lyricLines.length;
+                  const chordCount = allLines.reduce((n: number, l: any) => n + (l.chords?.length ?? 0), 0);
+                  const wordCount  = lyricLines.reduce((n: number, l: any) => {
+                    const t = (l.text ?? "").trim();
+                    return n + (t ? t.split(/\s+/).length : 0);
+                  }, 0);
+                  const firstChord = allLines.find((l: any) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
+
                   return (
                     <div
                       key={song.id}
@@ -794,9 +806,23 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Updated date */}
-                      <div className="text-xs text-zinc-300 shrink-0 hidden md:block text-right">
-                        {formatDate(song.updatedAt)}
+                      {/* Date ↔ quick-info (swaps on row hover) */}
+                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-44">
+                        {/* Date — fades out on hover */}
+                        <span className="text-xs text-zinc-300 group-hover:opacity-0 transition-opacity whitespace-nowrap">
+                          {formatDate(song.updatedAt)}
+                        </span>
+                        {/* Stats — fades in on hover */}
+                        <div className="absolute right-0 inset-y-0 flex flex-col items-end justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <span className="text-xs text-zinc-500 whitespace-nowrap">
+                            {lineCount} lines · {chordCount} chords · {wordCount} words
+                          </span>
+                          {firstChord && (
+                            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium self-end">
+                              {firstChord}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Actions — icon buttons, visible on hover */}
