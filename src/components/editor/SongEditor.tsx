@@ -602,10 +602,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           >
             {saveFlash ? "Saved!" : "Save"}
           </button>
-          <span className={`flex items-center gap-1 text-xs text-green-300 transition-opacity duration-500 ${autoSaved ? "opacity-100" : "opacity-0"}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z"/></svg>
-            Saved
-          </span>
         </div>
       </header>
 
@@ -785,6 +781,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           onClose={() => setShowFindReplace(false)}
         />
       )}
+
+      {/* Auto-save toast — centered bottom */}
+      <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 text-white text-sm font-medium shadow-lg transition-all duration-300 pointer-events-none z-50 ${
+        autoSaved ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+      }`}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-green-400">
+          <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z"/>
+        </svg>
+        Saved
+      </div>
 
     </div>
   );
