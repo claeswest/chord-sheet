@@ -15,12 +15,12 @@ interface Props {
 export default function ShareViewer({ title, artist, lines, style }: Props) {
   return (
     <div>
-      <div className="bg-white border-b border-zinc-200 px-6 py-3 flex items-center gap-4">
-        <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
-          Chord<span className="text-indigo-600">SheetCreator</span>
+      <div className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center gap-4">
+        <Link href="/" className="text-sm font-bold tracking-tight text-white">
+          Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
-        <div className="w-px h-5 bg-zinc-200" />
-        <span className="text-sm text-zinc-400">Shared song</span>
+        <div className="w-px h-5 bg-white/20" />
+        <span className="text-sm text-white/40">Shared song</span>
       </div>
       <SongViewer
         title={title}

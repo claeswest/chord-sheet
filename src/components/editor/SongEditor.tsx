@@ -469,25 +469,25 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Toolbar */}
-      <header className="flex items-center gap-3 px-6 py-3 border-b border-zinc-200 bg-white z-10 shrink-0">
-        <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
-          Chord<span className="text-indigo-600">SheetCreator</span>
+      <header className="flex items-center gap-3 px-6 py-3 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
+        <Link href="/" className="text-sm font-bold tracking-tight text-white">
+          Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
         {isLoggedIn && (
           <>
-            <div className="w-px h-5 bg-zinc-200" />
-            <Link href="/songs" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5">
-              ← Songs <kbd className="text-xs text-zinc-300 font-mono">[S]</kbd>
+            <div className="w-px h-5 bg-white/20" />
+            <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+              ← Songs <kbd className="text-xs text-white/30 font-mono">[S]</kbd>
             </Link>
           </>
         )}
-        <div className="w-px h-5 bg-zinc-200" />
+        <div className="w-px h-5 bg-white/20" />
         <div className="flex flex-col min-w-0">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onFocus={(e) => e.target.select()}
-            className="text-base font-semibold text-zinc-900 bg-transparent outline-none leading-tight"
+            className="text-base font-semibold text-white bg-transparent outline-none leading-tight placeholder:text-white/30"
             placeholder="Song title"
           />
           <div className="flex items-center gap-2">
@@ -495,11 +495,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
               onFocus={(e) => e.target.select()}
-              className="text-xs text-zinc-400 bg-transparent outline-none leading-tight"
+              className="text-xs text-white/50 bg-transparent outline-none leading-tight placeholder:text-white/25"
               placeholder="Artist"
             />
             <span
-              className={`text-xs text-zinc-300 transition-opacity duration-500 ${
+              className={`text-xs text-white/30 transition-opacity duration-500 ${
                 autoSaved ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -509,11 +509,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         </div>
         <div className="flex items-center gap-2 ml-auto">
           {/* Undo / Redo */}
-          <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
             <button
               onClick={undo}
               disabled={historyPos <= 0}
-              className="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Undo (Ctrl+Z)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -523,7 +523,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             <button
               onClick={redo}
               disabled={historyPos >= historyStack.current.length - 1}
-              className="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-zinc-200"
+              className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-white/20"
               title="Redo (Ctrl+Y)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -532,21 +532,21 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             </button>
           </div>
 
-          <div className="w-px h-5 bg-zinc-200" />
+          <div className="w-px h-5 bg-white/20" />
 
           {/* Transpose: − key + */}
-          <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
             <button
               onClick={() => setSemitones((s) => s - 1)}
-              className="w-7 h-7 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-base font-medium"
+              className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-base font-medium"
               title="Transpose down 1 semitone"
             >−</button>
             <button
               onClick={() => setSemitones(0)}
-              className={`text-xs px-2 min-w-[3.5rem] text-center border-x border-zinc-200 h-7 transition-colors ${
+              className={`text-xs px-2 min-w-[3.5rem] text-center border-x border-white/20 h-7 transition-colors ${
                 semitones === 0
-                  ? "text-zinc-400"
-                  : "text-indigo-600 font-semibold hover:bg-indigo-50"
+                  ? "text-white/40"
+                  : "text-indigo-300 font-semibold hover:bg-white/10"
               }`}
               title="Reset to original key"
             >
@@ -554,18 +554,18 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             </button>
             <button
               onClick={() => setSemitones((s) => s + 1)}
-              className="w-7 h-7 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-base font-medium"
+              className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-base font-medium"
               title="Transpose up 1 semitone"
             >+</button>
           </div>
 
-          <div className="w-px h-5 bg-zinc-200" />
+          <div className="w-px h-5 bg-white/20" />
 
           {/* Overflow menu — Import, Replace, View, Print, New */}
           <div className="relative" ref={overflowRef}>
             <button
               onClick={() => setShowOverflow((v) => !v)}
-              className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors text-lg leading-none"
+              className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-lg leading-none"
               title="More options"
             >•••</button>
             {showOverflow && (
@@ -606,8 +606,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             disabled={shareLoading}
             className={`text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
               shareFlash
-                ? "text-green-600 bg-green-50"
-                : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+                ? "text-green-300 bg-white/10"
+                : "text-white/60 hover:text-white hover:bg-white/10"
             }`}
             title="Copy shareable link"
           >
