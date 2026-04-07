@@ -550,30 +550,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 placeholder="Search songs…"
                 className="w-full max-w-xs text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
               />
-              {!loading && (
-                <div className="flex items-center gap-1 shrink-0">
-                  {(["date", "title", "artist"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => handleSortClick(opt)}
-                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
-                        sortBy === opt
-                          ? "bg-indigo-600 text-white"
-                          : "bg-white border border-zinc-200 text-zinc-500 hover:border-indigo-300 hover:text-indigo-600"
-                      }`}
-                    >
-                      {opt === "date" ? "Recent" : opt === "title" ? "Title" : "Artist"}
-                      {sortBy === opt && (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                          {sortDir === "asc"
-                            ? <path d="M12 8l-6 6h12l-6-6Z"/>
-                            : <path d="M12 16l6-6H6l6 6Z"/>}
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
               <div className="flex-1" />
               {/* List / Grid toggle */}
               {!loading && (
@@ -767,9 +743,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  <span className="flex-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Song</span>
-                  {isLoggedIn && <span className="hidden sm:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
-                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 text-right shrink-0">Updated</span>
+                  <button onClick={() => handleSortClick("title")} className="flex-1 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                    Song
+                    {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                  </button>
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0 hover:text-zinc-800 transition-colors">
+                    Artist
+                    {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                  </button>
+                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors">
+                    Updated
+                    {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                  </button>
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
@@ -830,29 +816,27 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Title + artist */}
+                      {/* Title */}
                       <Link href={viewUrl} className="flex-1 min-w-0">
-                        <div className="block">
-                          <div
-                            className="text-sm font-semibold truncate"
-                            style={{ color: titleColor }}
-                          >
-                            {song.title || "Untitled Song"}
-                          </div>
-                          {song.artist ? (
-                            <div
-                              className="text-xs truncate mt-0.5"
-                              style={{ color: artistColor }}
-                            >
-                              {song.artist}
-                            </div>
-                          ) : null}
+                        <div className="text-sm font-semibold truncate" style={{ color: titleColor }}>
+                          {song.title || "Untitled Song"}
                         </div>
+                        {/* Artist shown as subtitle on mobile only (hidden when Artist column is visible) */}
+                        {song.artist && (
+                          <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
+                            {song.artist}
+                          </div>
+                        )}
                       </Link>
 
-                      {/* Category chips — fixed width so title pill is always the same width */}
+                      {/* Artist column */}
+                      <div className="hidden sm:block w-36 shrink-0 text-xs truncate" style={{ color: artistColor }}>
+                        {song.artist || <span className="text-zinc-300">—</span>}
+                      </div>
+
+                      {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden sm:flex flex-wrap gap-1 w-36 shrink-0">
+                        <div className="hidden lg:flex flex-wrap gap-1 w-36 shrink-0">
                         {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -877,7 +861,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       )}
 
                       {/* Date ↔ Actions (swap on hover) */}
-                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-36">
+                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-32">
                         {/* Date — fades out on hover */}
                         <span className="text-xs text-zinc-400 whitespace-nowrap group-hover:opacity-0 transition-opacity">
                           {formatDate(song.updatedAt)}
