@@ -581,14 +581,29 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           <button
             onClick={handleShare}
             disabled={shareLoading}
-            className={`text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 ${
               shareFlash
                 ? "text-green-300 bg-white/10"
-                : "text-white/60 hover:text-white hover:bg-white/10"
+                : "text-white/50 hover:text-white hover:bg-white/10"
             }`}
             title="Copy shareable link"
           >
-            {shareFlash ? "Copied!" : shareLoading ? "…" : "Share"}
+            {shareFlash ? (
+              /* checkmark when copied */
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : shareLoading ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            ) : (
+              /* link/chain icon */
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            )}
           </button>
 
           {/* Save */}
