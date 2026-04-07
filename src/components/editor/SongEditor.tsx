@@ -161,7 +161,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "p" || e.key === "P") setViewMode(true);
-      if (e.key === "v" || e.key === "V") setViewMode(false);
+      if (e.key === "e" || e.key === "E") setViewMode(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -580,7 +580,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 <button onClick={() => { setViewMode(true); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
-                  Play <span className="ml-auto text-xs text-zinc-400">P</span>
+                  Play <span className="ml-auto text-xs text-zinc-400 font-mono">[P]</span>
                 </button>
                 <button onClick={() => { window.print(); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
