@@ -392,7 +392,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pb-2">
               {categories.map((cat) => (
                 <div
                   key={cat.id}
@@ -452,30 +452,31 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   </button>
                 </div>
               ))}
-            </div>
 
-            <div className="px-3 pt-2 border-t border-zinc-100">
-              {showAddCategory ? (
-                <input
-                  autoFocus
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreateCategory();
-                    if (e.key === "Escape") { setShowAddCategory(false); setNewCategoryName(""); }
-                  }}
-                  onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
-                  placeholder="Category name…"
-                  className="w-full text-sm bg-white border border-indigo-300 rounded px-2 py-1 outline-none"
-                />
-              ) : (
-                <button
-                  onClick={() => setShowAddCategory(true)}
-                  className="text-xs text-zinc-400 hover:text-indigo-600 py-1 transition-colors"
-                >
-                  + Add category
-                </button>
-              )}
+              {/* Add category — sits directly below the last category */}
+              <div className="px-4 pt-1">
+                {showAddCategory ? (
+                  <input
+                    autoFocus
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCreateCategory();
+                      if (e.key === "Escape") { setShowAddCategory(false); setNewCategoryName(""); }
+                    }}
+                    onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
+                    placeholder="Category name…"
+                    className="w-full text-sm bg-white border border-indigo-300 rounded px-2 py-1 outline-none"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowAddCategory(true)}
+                    className="text-xs text-zinc-400 hover:text-indigo-600 py-1.5 transition-colors"
+                  >
+                    + Add category
+                  </button>
+                )}
+              </div>
             </div>
           </aside>
         )}
