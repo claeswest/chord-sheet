@@ -52,6 +52,19 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   const titleSize = (s.title.fontSize ?? 20) + sizeAdjust;
 
   // Load any Google Fonts on mount/change
+  // [E] = back to edit, [P] = stay / already in play (no-op here)
+  useEffect(() => {
+    if (!onEdit) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "e" || e.key === "E") onEdit();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onEdit]);
+
   useEffect(() => {
     [s.title.fontFamily, s.lyrics.fontFamily, s.chords.fontFamily].forEach(fam => {
       if (fam && !fam.startsWith("ui-monospace")) {
