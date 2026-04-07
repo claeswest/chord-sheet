@@ -483,21 +483,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         )}
         <div className="w-px h-5 bg-white/20" />
         <div className="flex flex-col min-w-0">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onFocus={(e) => e.target.select()}
-            className="text-base font-semibold text-white bg-transparent outline-none leading-tight placeholder:text-white/30"
-            placeholder="Song title"
-          />
+          <span className="text-base font-semibold text-white leading-tight truncate">
+            {title || <span className="text-white/30">Untitled Song</span>}
+          </span>
           <div className="flex items-center gap-2">
-            <input
-              value={artist}
-              onChange={(e) => setArtist(e.target.value)}
-              onFocus={(e) => e.target.select()}
-              className="text-xs text-white/50 bg-transparent outline-none leading-tight placeholder:text-white/25"
-              placeholder="Artist"
-            />
+            <span className="text-xs text-white/50 leading-tight truncate">
+              {artist || ""}
+            </span>
             <span
               className={`text-xs text-white/30 transition-opacity duration-500 ${
                 autoSaved ? "opacity-100" : "opacity-0"
@@ -632,9 +624,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         {/* Editor area */}
         <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
-            {/* Title & artist preview — styled same as viewer */}
+            {/* Title & artist — editable inline */}
             <div className="mb-10 text-center">
-              <div
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                placeholder="Untitled Song"
+                className="w-full bg-transparent border-none outline-none text-center"
                 style={{
                   fontFamily: songStyle.title.fontFamily,
                   fontSize: songStyle.title.fontSize,
@@ -642,24 +639,24 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                   fontStyle: songStyle.title.italic ? "italic" : "normal",
                   color: songStyle.title.color ?? "#18181b",
                   lineHeight: 1.2,
+                  opacity: title ? 1 : 0.35,
                 }}
-              >
-                {title || <span style={{ opacity: 0.3 }}>Untitled Song</span>}
-              </div>
-              {artist && (
-                <div
-                  style={{
-                    fontFamily: songStyle.artist?.fontFamily ?? songStyle.lyrics.fontFamily,
-                    fontSize: songStyle.artist?.fontSize ?? 13,
-                    fontWeight: songStyle.artist?.bold ? "bold" : "normal",
-                    fontStyle: songStyle.artist?.italic ? "italic" : "normal",
-                    color: songStyle.artist?.color ?? "#71717a",
-                    marginTop: 4,
-                  }}
-                >
-                  {artist}
-                </div>
-              )}
+              />
+              <input
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                placeholder="Artist"
+                className="w-full bg-transparent border-none outline-none text-center mt-1"
+                style={{
+                  fontFamily: songStyle.artist?.fontFamily ?? songStyle.lyrics.fontFamily,
+                  fontSize: songStyle.artist?.fontSize ?? 13,
+                  fontWeight: songStyle.artist?.bold ? "bold" : "normal",
+                  fontStyle: songStyle.artist?.italic ? "italic" : "normal",
+                  color: songStyle.artist?.color ?? "#71717a",
+                  opacity: artist ? 1 : 0.35,
+                }}
+              />
             </div>
             {/* Empty state — shown when there is no content yet */}
             {lines.length === 1 &&
