@@ -47,8 +47,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [loading, setLoading] = useState(true);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"date" | "title" | "artist">("date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc"); // desc = newest / A→Z default
+  const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  // Switch category and clear any active sort
+  const selectCategory = (id: string | null) => {
+    setSelectedCategoryId(id);
+    setSortBy(null);
+  };
 
   const handleSortClick = (opt: "date" | "title" | "artist") => {
     if (opt === sortBy) {
@@ -273,6 +279,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
+      // No sort active — natural order (drag order for named categories, server order otherwise)
+      if (!sortBy) {
+        if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
+          const cat = categories.find((c) => c.id === selectedCategoryId);
+          if (cat) {
+            return (cat.songIds.indexOf(a.id) ?? 999) - (cat.songIds.indexOf(b.id) ?? 999);
+          }
+        }
+        return 0;
+      }
       const dir = sortDir === "asc" ? 1 : -1;
       if (sortBy === "title")  return dir * a.title.localeCompare(b.title);
       if (sortBy === "artist") return dir * (a.artist ?? "").localeCompare(b.artist ?? "");
@@ -331,7 +347,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </div>
 
             <button
-              onClick={() => setSelectedCategoryId(null)}
+              onClick={() => selectCategory(null)}
               className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
                 selectedCategoryId === null
                   ? "bg-indigo-50 text-indigo-700 font-medium"
@@ -343,7 +359,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </button>
 
             <button
-              onClick={() => setSelectedCategoryId("uncategorized")}
+              onClick={() => selectCategory("uncategorized")}
               className={`flex items-center justify-between px-4 py-2 text-sm w-full text-left transition-colors ${
                 selectedCategoryId === "uncategorized"
                   ? "bg-indigo-50 text-indigo-700 font-medium"
@@ -400,7 +416,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     />
                   ) : (
                     <button
-                      onClick={() => setSelectedCategoryId(cat.id === selectedCategoryId ? null : cat.id)}
+                      onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
                       onDoubleClick={() => startRename(cat)}
                       className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${
                         selectedCategoryId === cat.id ? "text-indigo-700 font-medium" : "text-zinc-600"
