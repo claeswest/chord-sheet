@@ -50,6 +50,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; title: string; source: "db" | "local" } | null>(null);
   const searchRef   = useRef<HTMLInputElement>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -743,7 +744,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             </svg>
                           </button>
                         )}
-                        <button onClick={() => handleDelete(song.id, song.source)} title="Delete permanently"
+                        <button onClick={() => setConfirmDelete({ id: song.id, title: song.title, source: song.source })} title="Delete permanently"
                           className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-red-500 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                             <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
@@ -918,7 +919,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           </button>
                         )}
                         {/* Delete */}
-                        <button onClick={() => handleDelete(song.id, song.source)}
+                        <button onClick={() => setConfirmDelete({ id: song.id, title: song.title, source: song.source })}
                           title="Delete song permanently"
                           className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -935,6 +936,32 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           </div>
         </main>
       </div>
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <h2 className="text-base font-semibold text-zinc-900 mb-1">Delete song?</h2>
+            <p className="text-sm text-zinc-500 mb-5">
+              <span className="font-medium text-zinc-700">"{confirmDelete.title}"</span> will be permanently deleted. This cannot be undone.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { handleDelete(confirmDelete.id, confirmDelete.source); setConfirmDelete(null); }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast notification */}
       <div
