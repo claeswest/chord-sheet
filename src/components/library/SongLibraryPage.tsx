@@ -443,6 +443,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     </button>
                   )}
                   <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full shrink-0">{cat.songIds.length}</span>
+                  {/* Rename */}
+                  <button
+                    onClick={() => startRename(cat)}
+                    className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-indigo-500 transition-opacity shrink-0"
+                    title="Rename category"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
+                    </svg>
+                  </button>
+                  {/* Delete */}
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
