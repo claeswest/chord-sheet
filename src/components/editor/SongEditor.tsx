@@ -25,7 +25,7 @@ import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
 import StylePanel from "./StylePanel";
-import { transposeSong, semitoneLabel } from "@/lib/transpose";
+import { transposeSong, transposeChord, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
