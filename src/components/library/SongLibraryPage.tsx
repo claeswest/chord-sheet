@@ -802,10 +802,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
-                      {/* Category colour accent bar on left edge */}
-                      {firstCatAccent && !rowBg && (
+                      {/* Left-edge accent bar — song colour takes priority over category colour */}
+                      {rowBg ? (
+                        <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: rowBg }} />
+                      ) : firstCatAccent ? (
                         <div className={`absolute left-0 top-0 bottom-0 w-1 ${firstCatAccent}`} />
-                      )}
+                      ) : null}
 
                       {/* Drag handle */}
                       {isLoggedIn && (
@@ -814,12 +816,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Title + artist — background color applied only here */}
+                      {/* Title + artist */}
                       <Link href={viewUrl} className="flex-1 min-w-0">
-                        <div
-                          className="block rounded px-2 py-1 -mx-2 -my-1"
-                          style={{ backgroundColor: rowBg ?? undefined }}
-                        >
+                        <div className="block">
                           <div
                             className="text-sm font-semibold truncate"
                             style={{ color: titleColor }}
