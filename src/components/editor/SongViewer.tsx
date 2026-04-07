@@ -293,9 +293,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
           {onEdit && (
             <button
               onClick={onEdit}
-              className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm"
+              className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-2"
             >
-              ← Edit
+              ← Edit <kbd className="text-xs text-white/40 font-mono">E</kbd>
             </button>
           )}
 

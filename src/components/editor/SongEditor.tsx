@@ -154,6 +154,19 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // P = Play mode, E = Edit mode (only when not typing in an input/textarea)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "p" || e.key === "P") setViewMode(true);
+      if (e.key === "e" || e.key === "E") setViewMode(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
@@ -566,8 +579,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 </button>
                 <button onClick={() => { setViewMode(true); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>
-                  View
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
+                  Play <span className="ml-auto text-xs text-zinc-400">P</span>
                 </button>
                 <button onClick={() => { window.print(); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
