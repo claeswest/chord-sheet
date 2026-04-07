@@ -50,7 +50,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef      = useRef<HTMLInputElement>(null);
+  // Refs used by the document-level pointer handlers to avoid stale closures
+  const dragGhostRef            = useRef<HTMLElement | null>(null);
+  const songsRef                = useRef(songs);
+  const categoriesRef           = useRef(categories);
+  const selectedCategoryIdRef   = useRef(selectedCategoryId);
 
   // Switch category and clear any active sort
   const selectCategory = (id: string | null) => {
@@ -71,6 +76,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
+
+  // Keep refs in sync so pointer-event closures always see current values
+  useEffect(() => { songsRef.current = songs; }, [songs]);
+  useEffect(() => { categoriesRef.current = categories; }, [categories]);
+  useEffect(() => { selectedCategoryIdRef.current = selectedCategoryId; }, [selectedCategoryId]);
 
   // "/" focuses the search box (like GitHub / Linear / Notion)
   useEffect(() => {
@@ -182,96 +192,133 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     await deleteCategory(id);
   };
 
-  // ── Drag and drop ────────────────────────────────────────────────────────────
-  const handleDragStart = (e: React.DragEvent, songId: string) => {
-    e.dataTransfer.setData("songId", songId);
-    e.dataTransfer.effectAllowed = "move";
-    setDragSongId(songId);
+  // ── Pointer-events drag (replaces HTML5 DnD — prevents Chrome Split View) ────
 
-    // Replace the default (full-width row) ghost with a compact pill so the
-    // cursor sits at the left edge — much less distance to drag to the sidebar.
-    const song = songs.find((s) => s.id === songId);
+  const startPointerDrag = (e: React.PointerEvent, songId: string) => {
+    if (e.button !== 0) return;   // left-click only
+    e.preventDefault();
+
+    const song = songsRef.current.find((s) => s.id === songId);
     const ghost = document.createElement("div");
-    ghost.textContent = song ? `${song.title}` : "Song";
+    ghost.textContent = song?.title ?? "Song";
     ghost.style.cssText = [
-      "position:fixed", "top:-999px", "left:-999px",
-      "background:#4f46e5", "color:#fff",
-      "padding:5px 12px", "border-radius:8px",
-      "font-size:13px", "font-family:sans-serif",
-      "white-space:nowrap", "pointer-events:none",
-      "box-shadow:0 2px 8px rgba(0,0,0,0.25)",
+      "position:fixed", "z-index:9999", "pointer-events:none",
+      "background:#4f46e5", "color:#fff", "padding:5px 12px",
+      "border-radius:8px", "font-size:13px", "font-family:sans-serif",
+      "white-space:nowrap", "box-shadow:0 2px 8px rgba(0,0,0,.25)",
+      "transform:translate(0,-50%)",
     ].join(";");
+    ghost.style.left = `${e.clientX + 10}px`;
+    ghost.style.top  = `${e.clientY}px`;
     document.body.appendChild(ghost);
-    // xOffset=8 keeps cursor just inside the left edge; yOffset centres vertically
-    e.dataTransfer.setDragImage(ghost, 8, 16);
-    setTimeout(() => document.body.removeChild(ghost), 0);
+    dragGhostRef.current = ghost;
+
+    setDragSongId(songId);
   };
 
-  const handleDragEnd = () => {
-    setDragSongId(null);
-    setDragOverCategoryId(null);
-    setDragOverSongId(null);
-  };
+  // Install/uninstall document listeners only while a drag is active
+  useEffect(() => {
+    if (!dragSongId) return;
+    const sourceSongId = dragSongId; // stable for this drag session
 
-  // Reorder songs — works for "All Songs" (selectedCategoryId === null) and named categories
-  const handleDropOnSong = (e: React.DragEvent, targetSongId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverSongId(null);
-    const sourceSongId = e.dataTransfer.getData("songId");
-    if (!sourceSongId || sourceSongId === targetSongId || selectedCategoryId === "uncategorized") return;
+    const cleanupGhost = () => {
+      if (dragGhostRef.current) {
+        document.body.removeChild(dragGhostRef.current);
+        dragGhostRef.current = null;
+      }
+      setDragSongId(null);
+      setDragOverCategoryId(null);
+      setDragOverSongId(null);
+    };
 
-    if (selectedCategoryId === null) {
-      // All Songs — compute the new order, update state and persist in one go
-      const fromIdx = songs.findIndex((s) => s.id === sourceSongId);
-      const toIdx = songs.findIndex((s) => s.id === targetSongId);
-      if (fromIdx === -1 || toIdx === -1) return;
-      const reordered = [...songs];
-      const [moved] = reordered.splice(fromIdx, 1);
-      reordered.splice(toIdx, 0, moved);
-      setSongs(reordered);
-      reorderAllSongs(reordered.map((s) => s.id))
-        .then(() => showToast("Sort order saved"))
-        .catch((err) => showToast(`Failed: ${err?.message ?? "unknown error"}`));
-    } else {
-      // Named category — use category's songIds as source of truth
-      const cat = categories.find((c) => c.id === selectedCategoryId);
-      if (!cat) return;
+    const onMove = (e: PointerEvent) => {
+      if (dragGhostRef.current) {
+        dragGhostRef.current.style.left = `${e.clientX + 10}px`;
+        dragGhostRef.current.style.top  = `${e.clientY}px`;
+      }
+      const els = document.elementsFromPoint(e.clientX, e.clientY);
+      // Highlight category target
+      const catEl = els.find((el) => (el as HTMLElement).dataset?.categoryId);
+      setDragOverCategoryId((catEl as HTMLElement)?.dataset.categoryId ?? null);
+      // Highlight song reorder target
+      const songEl = els.find((el) => {
+        const sid = (el as HTMLElement).dataset?.songId;
+        return sid && sid !== sourceSongId;
+      });
+      if (selectedCategoryIdRef.current !== "uncategorized") {
+        setDragOverSongId((songEl as HTMLElement)?.dataset.songId ?? null);
+      }
+    };
 
-      const currentOrder = [...cat.songIds];
-      const fromIdx = currentOrder.indexOf(sourceSongId);
-      const toIdx = currentOrder.indexOf(targetSongId);
-      if (fromIdx === -1 || toIdx === -1) return;
+    const onUp = async (e: PointerEvent) => {
+      const els = document.elementsFromPoint(e.clientX, e.clientY);
+      const catEl  = els.find((el) => (el as HTMLElement).dataset?.categoryId);
+      const catId  = (catEl as HTMLElement)?.dataset.categoryId;
+      const songEl = els.find((el) => {
+        const sid = (el as HTMLElement).dataset?.songId;
+        return sid && sid !== sourceSongId;
+      });
+      const targetSongId = (songEl as HTMLElement)?.dataset.songId;
 
-      const [moved] = currentOrder.splice(fromIdx, 1);
-      currentOrder.splice(toIdx, 0, moved);
+      cleanupGhost();
 
-      setCategories((cats) => cats.map((c) =>
-        c.id === selectedCategoryId ? { ...c, songIds: currentOrder } : c
-      ));
+      if (catId) {
+        // ── Assign to category ──────────────────────────────────────────────
+        const song = songsRef.current.find((s) => s.id === sourceSongId);
+        if (song && !song.categoryIds.includes(catId)) {
+          setSongs((prev) => prev.map((s) =>
+            s.id === sourceSongId ? { ...s, categoryIds: [...s.categoryIds, catId] } : s
+          ));
+          setCategories((prev) => prev.map((c) =>
+            c.id === catId ? { ...c, songIds: [...c.songIds, sourceSongId] } : c
+          ));
+          await addSongToCategory(catId, sourceSongId);
+        }
+      } else if (targetSongId) {
+        // ── Reorder ─────────────────────────────────────────────────────────
+        const scid = selectedCategoryIdRef.current;
+        if (scid === "uncategorized") return;
 
-      reorderSongsInCategory(selectedCategoryId, currentOrder)
-        .then(() => showToast("Sort order saved"))
-        .catch((err) => showToast(`Failed: ${err?.message ?? "unknown error"}`));
-    }
-  };
+        if (scid === null) {
+          const cur = songsRef.current;
+          const fromIdx = cur.findIndex((s) => s.id === sourceSongId);
+          const toIdx   = cur.findIndex((s) => s.id === targetSongId);
+          if (fromIdx === -1 || toIdx === -1) return;
+          const reordered = [...cur];
+          const [moved] = reordered.splice(fromIdx, 1);
+          reordered.splice(toIdx, 0, moved);
+          setSongs(reordered);
+          reorderAllSongs(reordered.map((s) => s.id))
+            .then(() => setToast("Sort order saved"))
+            .catch((err) => setToast(`Failed: ${(err as Error)?.message ?? "unknown error"}`));
+          setTimeout(() => setToast(null), 2500);
+        } else {
+          const cat = categoriesRef.current.find((c) => c.id === scid);
+          if (!cat) return;
+          const order = [...cat.songIds];
+          const fromIdx = order.indexOf(sourceSongId);
+          const toIdx   = order.indexOf(targetSongId);
+          if (fromIdx === -1 || toIdx === -1) return;
+          const [moved] = order.splice(fromIdx, 1);
+          order.splice(toIdx, 0, moved);
+          setCategories((cats) => cats.map((c) => c.id === scid ? { ...c, songIds: order } : c));
+          reorderSongsInCategory(scid, order)
+            .then(() => setToast("Sort order saved"))
+            .catch((err) => setToast(`Failed: ${(err as Error)?.message ?? "unknown error"}`));
+          setTimeout(() => setToast(null), 2500);
+        }
+      }
+    };
 
-  const handleDrop = async (e: React.DragEvent, categoryId: string) => {
-    e.preventDefault();
-    const songId = e.dataTransfer.getData("songId");
-    setDragSongId(null);
-    setDragOverCategoryId(null);
-    if (!songId) return;
-    const song = songs.find((s) => s.id === songId);
-    if (!song || song.categoryIds.includes(categoryId)) return;
-    setSongs((prev) =>
-      prev.map((s) => (s.id === songId ? { ...s, categoryIds: [...s.categoryIds, categoryId] } : s))
-    );
-    setCategories((prev) =>
-      prev.map((c) => (c.id === categoryId ? { ...c, songIds: [...c.songIds, songId] } : c))
-    );
-    await addSongToCategory(categoryId, songId);
-  };
+    document.addEventListener("pointermove",  onMove);
+    document.addEventListener("pointerup",    onUp);
+    document.addEventListener("pointercancel", cleanupGhost);
+    return () => {
+      document.removeEventListener("pointermove",  onMove);
+      document.removeEventListener("pointerup",    onUp);
+      document.removeEventListener("pointercancel", cleanupGhost);
+    };
+  }, [dragSongId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRemoveFromCategory = async (songId: string, categoryId: string) => {
     setSongs((prev) =>
@@ -396,15 +443,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
-                  onDragLeave={(e) => {
-                    // Only clear when the pointer actually leaves this element,
-                    // not when it moves over a child element inside it.
-                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                      setDragOverCategoryId(null);
-                    }
-                  }}
-                  onDrop={(e) => handleDrop(e, cat.id)}
+                  data-category-id={cat.id}
                   className={`group flex items-center gap-1 px-4 transition-all duration-100 ${
                     dragSongId ? "py-3" : "py-1.5"
                   } ${
@@ -633,13 +672,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   return (
                     <div
                       key={song.id}
-                      draggable={isLoggedIn}
-                      onDragStart={(e) => handleDragStart(e, song.id)}
-                      onDragEnd={handleDragEnd}
+                      data-song-id={song.id}
                       className={`group relative rounded-xl border border-zinc-200 overflow-hidden bg-white hover:shadow-md transition-all ${
                         dragSongId === song.id ? "opacity-40" : ""
                       }`}
                     >
+                      {/* Drag handle (top-left corner, pointer events) */}
+                      {isLoggedIn && (
+                        <div
+                          onPointerDown={(e) => startPointerDrag(e, song.id)}
+                          className="absolute top-2 left-2 text-white/60 hover:text-white/90 cursor-grab active:cursor-grabbing select-none text-xs leading-none touch-none z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ⠿
+                        </div>
+                      )}
+
                       {/* Coloured top area */}
                       <Link href={viewUrl} className="block">
                         <div
@@ -733,26 +780,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   return (
                     <div
                       key={song.id}
-                      draggable={isLoggedIn}
-                      onDragStart={(e) => handleDragStart(e, song.id)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (selectedCategoryId !== "uncategorized" && dragSongId && dragSongId !== song.id) {
-                          setDragOverSongId(song.id);
-                        }
-                      }}
-                      onDragLeave={() => setDragOverSongId(null)}
-                      onDrop={(e) => handleDropOnSong(e, song.id)}
+                      data-song-id={song.id}
                       className={`group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-zinc-50 ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
-                      {/* Drag handle */}
+                      {/* Drag handle — pointer-events drag starts here */}
                       {isLoggedIn && (
-                        <div className="text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors select-none text-xs leading-none">
+                        <div
+                          onPointerDown={(e) => startPointerDrag(e, song.id)}
+                          className="text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors select-none text-xs leading-none touch-none"
+                        >
                           ⠿
                         </div>
                       )}
