@@ -762,8 +762,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   {isLoggedIn && <div className="w-3 shrink-0" />}
                   <span className="flex-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Song</span>
                   {isLoggedIn && <span className="hidden sm:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
-                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 text-right shrink-0">Updated</span>
-                  <div className="w-24 shrink-0" />
+                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 text-right shrink-0">Updated</span>
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
@@ -870,15 +869,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Date */}
-                      <div className="shrink-0 hidden md:flex items-center justify-end w-32">
-                        <span className="text-xs text-zinc-400 whitespace-nowrap">
+                      {/* Date ↔ Actions (swap on hover) */}
+                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-36">
+                        {/* Date — fades out on hover */}
+                        <span className="text-xs text-zinc-400 whitespace-nowrap group-hover:opacity-0 transition-opacity">
                           {formatDate(song.updatedAt)}
                         </span>
-                      </div>
-
-                      {/* Actions — icon buttons, visible on hover */}
-                      <div className="flex items-center gap-0.5 shrink-0 w-24 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Actions — fades in on hover, sits over the date */}
+                        <div className="absolute inset-0 flex items-center gap-0.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         {/* View */}
                         <Link href={viewUrl} title="View"
                           className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
@@ -927,7 +925,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
                           </svg>
                         </button>
-                      </div>
+                        </div>{/* end actions */}
+                      </div>{/* end date↔actions */}
                     </div>
                   );
                 })}
