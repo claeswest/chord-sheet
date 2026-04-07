@@ -48,8 +48,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   // Switch category and clear any active sort
   const selectCategory = (id: string | null) => {
@@ -516,6 +517,23 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 </div>
               )}
               <div className="flex-1" />
+              {/* List / Grid toggle */}
+              {!loading && (
+                <div className="flex items-center gap-0.5 bg-white border border-zinc-200 rounded-lg p-0.5 shrink-0">
+                  <button onClick={() => setViewMode("list")} title="List view"
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-zinc-100 text-zinc-700" : "text-zinc-400 hover:text-zinc-600"}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M3 13h2v-2H3v2Zm0 4h2v-2H3v2Zm0-8h2V7H3v2Zm4 4h14v-2H7v2Zm0 4h14v-2H7v2ZM7 7v2h14V7H7Z"/>
+                    </svg>
+                  </button>
+                  <button onClick={() => setViewMode("grid")} title="Card view"
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-zinc-100 text-zinc-700" : "text-zinc-400 hover:text-zinc-600"}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M3 3h8v8H3V3Zm0 10h8v8H3v-8Zm10-10h8v8h-8V3Zm0 10h8v8h-8v-8Z"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
               {!loading && (
                 <span className="text-sm text-zinc-400 shrink-0">
                   {filtered.length} {filtered.length === 1 ? "song" : "songs"}
@@ -555,21 +573,138 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-zinc-400">
                 {songs.length === 0 ? (
+                  /* Library is totally empty */
                   <>
                     <p className="text-base font-medium mb-2">No songs yet</p>
                     <p className="text-sm mb-6">Create your first chord sheet to get started.</p>
-                    <Link
-                      href="/editor/new"
-                      className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-                    >
+                    <Link href="/editor/new"
+                      className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
                       + New Song
                     </Link>
                   </>
+                ) : selectedCategoryId && selectedCategoryId !== "uncategorized" && !search ? (
+                  /* Named category is empty — show drag hint */
+                  (() => {
+                    const catName = categories.find((c) => c.id === selectedCategoryId)?.name ?? "this category";
+                    return (
+                      <div className="flex flex-col items-center gap-4">
+                        {/* Drag illustration */}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" fill="none" className="w-20 h-12 text-zinc-200">
+                          {/* Song pill on the right */}
+                          <rect x="44" y="10" width="32" height="14" rx="7" fill="currentColor"/>
+                          <rect x="48" y="14" width="16" height="3" rx="1.5" fill="white" opacity="0.7"/>
+                          <rect x="48" y="19" width="10" height="2" rx="1" fill="white" opacity="0.5"/>
+                          {/* Arrow pointing left */}
+                          <path d="M38 17 L14 17 M14 17 L20 12 M14 17 L20 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          {/* Target folder/category on the left */}
+                          <rect x="2" y="8" width="10" height="8" rx="2" fill="currentColor" opacity="0.5"/>
+                          <rect x="2" y="14" width="10" height="8" rx="2" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                        <div>
+                          <p className="text-sm font-medium text-zinc-500">No songs in <span className="text-zinc-700">"{catName}"</span> yet</p>
+                          <p className="text-xs mt-1 text-zinc-400">Drag a song from the list here, or pick a song and drop it onto this category in the sidebar.</p>
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : search ? (
+                  /* Search returned nothing */
+                  <p className="text-sm">No songs match <span className="font-medium text-zinc-600">"{search}"</span></p>
                 ) : (
                   <p className="text-sm">No songs match your filter.</p>
                 )}
               </div>
+            ) : viewMode === "grid" ? (
+              /* ── Card / Grid view ─────────────────────────────────────── */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {filtered.map((song) => {
+                  const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
+                  const editUrl = `/editor/new?song=${encoded}`;
+                  const viewUrl = `/view?song=${encoded}`;
+                  const isDuplicating = duplicatingId === song.id;
+                  const titleColor = song.style?.title?.color ?? "#18181b";
+                  const artistColor = song.style?.artist?.color ?? "#71717a";
+                  const cardBg = song.style?.background;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const firstChord = (song.lines as any[])?.find((l) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const chordCount = (song.lines as any[])?.reduce((n: number, l: any) => n + (l.chords?.length ?? 0), 0) ?? 0;
+
+                  return (
+                    <div
+                      key={song.id}
+                      draggable={isLoggedIn}
+                      onDragStart={(e) => handleDragStart(e, song.id)}
+                      onDragEnd={handleDragEnd}
+                      className={`group relative rounded-xl border border-zinc-200 overflow-hidden bg-white hover:shadow-md transition-all ${
+                        dragSongId === song.id ? "opacity-40" : ""
+                      }`}
+                    >
+                      {/* Coloured top area */}
+                      <Link href={viewUrl} className="block">
+                        <div
+                          className="px-4 pt-4 pb-5 min-h-[88px]"
+                          style={cardBg
+                            ? { backgroundColor: cardBg }
+                            : { background: "linear-gradient(135deg,#eef2ff 0%,#e0e7ff 100%)" }}
+                        >
+                          <p className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: titleColor }}>
+                            {song.title || "Untitled Song"}
+                          </p>
+                          {song.artist && (
+                            <p className="text-xs mt-1 truncate" style={{ color: artistColor }}>
+                              {song.artist}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Meta bar */}
+                      <div className="px-3 py-2 border-t border-zinc-100 flex items-center gap-2 flex-wrap min-h-[36px]">
+                        {firstChord && (
+                          <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium">{firstChord}</span>
+                        )}
+                        {chordCount > 0 && (
+                          <span className="text-xs text-zinc-400">{chordCount} chords</span>
+                        )}
+                        <div className="flex-1" />
+                        {/* Category colour dots */}
+                        <div className="flex gap-0.5">
+                          {song.categoryIds.slice(0, 4).map((catId) => (
+                            <span key={catId} className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(catId, categories).dot}`} />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Hover action overlay — top-right corner */}
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Link href={editUrl} title="Edit"
+                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-indigo-600 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
+                          </svg>
+                        </Link>
+                        {song.source === "db" && (
+                          <button onClick={() => handleDuplicate(song)} disabled={isDuplicating} title="Duplicate"
+                            className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-indigo-600 transition-colors disabled:opacity-30">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                              <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
+                            </svg>
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(song.id, song.source)} title="Delete permanently"
+                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-red-500 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                            <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
+              /* ── List view (default) ──────────────────────────────────── */
               <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
