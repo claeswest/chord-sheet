@@ -323,11 +323,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     });
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-zinc-200 px-6 py-3 flex items-center shrink-0">
-        <Link href="/" className="text-sm font-bold tracking-tight text-zinc-900">
-          Chord<span className="text-indigo-600">SheetCreator</span>
+      <header className="bg-[#0f0c29] border-b border-white/10 px-6 py-3 flex items-center shrink-0">
+        <Link href="/" className="text-sm font-bold tracking-tight text-white">
+          Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
         <div className="flex-1" />
         {isLoggedIn ? (
@@ -335,14 +335,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu((v) => !v)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-zinc-100 transition-colors"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
             >
               {userImage
-                ? <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full" />
-                : <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">{userName?.[0]}</div>
+                ? <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full ring-1 ring-white/20" />
+                : <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">{userName?.[0]}</div>
               }
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}>
+                className={`w-3.5 h-3.5 text-white/40 transition-transform ${showUserMenu ? "rotate-180" : ""}`}>
                 <path d="M12 16l-6-6h12l-6 6Z"/>
               </svg>
             </button>
@@ -381,7 +381,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           </div>
         ) : (
           <Link href="/login"
-            className="text-sm text-indigo-600 font-medium hover:text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
+            className="text-sm text-indigo-300 font-medium hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors">
             Sign in to sync →
           </Link>
         )}
@@ -390,7 +390,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       <div className="flex flex-1">
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
-          <aside className="w-96 shrink-0 bg-zinc-50 border-r border-zinc-200 flex flex-col py-3">
+          <aside className="w-96 shrink-0 bg-[#1a1730] border-r border-white/10 flex flex-col py-3">
             <div className="px-3 pb-3">
               <Link
                 href="/editor/new"
@@ -404,30 +404,30 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               onClick={() => selectCategory(null)}
               className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
-                  ? "bg-white text-indigo-700 font-semibold border-l-indigo-500"
-                  : "text-zinc-600 hover:bg-zinc-100 border-l-transparent"
+                  ? "bg-white/10 text-white font-semibold border-l-indigo-400"
+                  : "text-white/60 hover:bg-white/10 border-l-transparent"
               }`}
             >
               <span>All Songs</span>
-              <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full">{songs.length}</span>
+              <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full">{songs.length}</span>
             </button>
 
             <button
               onClick={() => selectCategory("uncategorized")}
               className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === "uncategorized"
-                  ? "bg-white text-indigo-700 font-semibold border-l-indigo-500"
-                  : "text-zinc-600 hover:bg-zinc-100 border-l-transparent"
+                  ? "bg-white/10 text-white font-semibold border-l-indigo-400"
+                  : "text-white/60 hover:bg-white/10 border-l-transparent"
               }`}
             >
               <span>Uncategorized</span>
-              <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full">{uncategorizedCount}</span>
+              <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full">{uncategorizedCount}</span>
             </button>
 
             {categories.length > 0 && (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-                <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Categories</span>
-                <div className="flex-1 h-px bg-zinc-100" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-white/30">Categories</span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
             )}
 
@@ -448,12 +448,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     dragSongId ? "py-3" : "py-1.5"
                   } ${
                     dragOverCategoryId === cat.id
-                      ? "bg-indigo-100 ring-2 ring-inset ring-indigo-400 border-l-transparent"
+                      ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400 border-l-transparent"
                       : dragSongId
-                      ? "bg-indigo-50/60 ring-1 ring-inset ring-indigo-100 border-l-transparent"
+                      ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
                       : selectedCategoryId === cat.id
-                      ? `bg-white ${getCatColor(cat.id, categories).sidebarSelected}`
-                      : "hover:bg-zinc-100 border-l-transparent"
+                      ? `bg-white/10 ${getCatColor(cat.id, categories).sidebarSelected}`
+                      : "hover:bg-white/10 border-l-transparent"
                   }`}
                 >
                   {editingCategoryId === cat.id ? (
@@ -466,14 +466,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         if (e.key === "Escape") setEditingCategoryId(null);
                       }}
                       onBlur={() => handleRenameCategory(cat.id)}
-                      className="flex-1 text-sm bg-white border border-indigo-300 rounded px-2 py-0.5 outline-none min-w-0"
+                      className="flex-1 text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
                     />
                   ) : (
                     <button
                       onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
                       onDoubleClick={() => startRename(cat)}
                       className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${
-                        selectedCategoryId === cat.id ? "text-indigo-700 font-medium" : "text-zinc-600"
+                        selectedCategoryId === cat.id ? "text-white font-medium" : "text-white/60"
                       }`}
                       title="Double-click to rename"
                     >
@@ -481,11 +481,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {cat.name}
                     </button>
                   )}
-                  <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full shrink-0">{cat.songIds.length}</span>
+                  <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{cat.songIds.length}</span>
                   {/* Rename */}
                   <button
                     onClick={() => startRename(cat)}
-                    className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-indigo-500 transition-opacity shrink-0"
+                    className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
                     title="Rename category"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -495,7 +495,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   {/* Delete */}
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
-                    className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                    className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
                     title="Delete category"
                   >
                     ×
@@ -516,12 +516,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     }}
                     onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
                     placeholder="Category name…"
-                    className="w-full text-sm bg-white border border-indigo-300 rounded px-2 py-1 outline-none"
+                    className="w-full text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
                   />
                 ) : (
                   <button
                     onClick={() => setShowAddCategory(true)}
-                    className="text-xs text-zinc-400 hover:text-indigo-600 py-1.5 transition-colors"
+                    className="text-xs text-white/35 hover:text-indigo-300 py-1.5 transition-colors"
                   >
                     + Add category
                   </button>
@@ -535,7 +535,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         <main className="flex-1 px-6 py-6 min-w-0">
           <div className="max-w-4xl">
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
-            <div className="sticky top-0 z-10 bg-zinc-50 pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6">
+            <div className="sticky top-0 z-10 bg-white pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6">
               <input
                 ref={searchRef}
                 value={search}
