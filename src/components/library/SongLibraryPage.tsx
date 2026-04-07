@@ -758,12 +758,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               /* ── List view (default) ──────────────────────────────────── */
               <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
                 {/* Column headers */}
-                <div className="flex items-center gap-4 px-5 py-2 border-b border-zinc-100 bg-zinc-50">
-                  {isLoggedIn && <div className="w-3 shrink-0" />}{/* drag handle placeholder */}
-                  <span className="flex-1 text-xs font-medium text-zinc-400 uppercase tracking-wide">Song</span>
-                  {isLoggedIn && <span className="hidden sm:block text-xs font-medium text-zinc-400 uppercase tracking-wide w-36 shrink-0">Categories</span>}
-                  <span className="hidden md:block text-xs font-medium text-zinc-400 uppercase tracking-wide w-44 text-right shrink-0">Updated</span>
-                  <div className="w-24 shrink-0" />{/* actions placeholder */}
+                <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
+                  {isLoggedIn && <div className="w-3 shrink-0" />}
+                  <span className="flex-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Song</span>
+                  {isLoggedIn && <span className="hidden sm:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
+                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-44 text-right shrink-0">Updated</span>
+                  <div className="w-24 shrink-0" />
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style });
@@ -877,12 +877,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           {formatDate(song.updatedAt)}
                         </span>
                         {/* Stats — fades in on hover */}
-                        <div className="absolute right-0 inset-y-0 flex flex-col items-end justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                        <div className="absolute right-0 inset-y-0 flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           <span className="text-xs text-zinc-500 whitespace-nowrap">
                             {lineCount} lines · {chordCount} chords · {wordCount} words
                           </span>
                           {firstChord && (
-                            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium self-end">
+                            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
                               {firstChord}
                             </span>
                           )}
