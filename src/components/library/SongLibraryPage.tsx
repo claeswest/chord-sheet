@@ -325,7 +325,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-[#0f0c29] border-b border-white/10 px-6 py-3 flex items-center shrink-0">
+      <header className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
@@ -390,7 +390,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       <div className="flex flex-1">
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
-          <aside className="w-96 shrink-0 bg-[#1a1730] border-r border-white/10 flex flex-col py-3">
+          <aside className="w-96 shrink-0 bg-[#24243e] border-r border-white/10 flex flex-col py-3">
             <div className="px-3 pb-3">
               <Link
                 href="/editor/new"
