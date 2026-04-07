@@ -14,6 +14,23 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
+// One palette entry per category slot — full Tailwind class strings so purging works
+const CATEGORY_COLORS = [
+  { chip: "bg-indigo-100 text-indigo-700", dot: "bg-indigo-400" },
+  { chip: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
+  { chip: "bg-amber-100 text-amber-700",    dot: "bg-amber-400"  },
+  { chip: "bg-rose-100 text-rose-700",      dot: "bg-rose-400"   },
+  { chip: "bg-sky-100 text-sky-700",        dot: "bg-sky-400"    },
+  { chip: "bg-violet-100 text-violet-700",  dot: "bg-violet-400" },
+  { chip: "bg-orange-100 text-orange-700",  dot: "bg-orange-400" },
+];
+
+function getCatColor(catId: string, cats: DbCategory[]) {
+  const idx = cats.findIndex((c) => c.id === catId);
+  const i = ((idx < 0 ? 0 : idx) % CATEGORY_COLORS.length);
+  return CATEGORY_COLORS[i];
+}
+
 type Song = Omit<DbSong, "categoryIds"> & { source: "db" | "local"; categoryIds: string[] };
 
 interface Props {
@@ -30,6 +47,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [loading, setLoading] = useState(true);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"date" | "title" | "artist">("date");
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -245,7 +263,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      // Within a specific named category, sort by the category's song order
+      // Within a specific named category, sort by the category's drag order
       if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
         const cat = categories.find((c) => c.id === selectedCategoryId);
         if (cat) {
@@ -254,8 +272,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
         }
       }
-      // "All Songs" and "Uncategorized" preserve songs[] order (already ordered by server/drag)
-      return 0;
+      // "All Songs" and "Uncategorized" — apply sortBy
+      if (sortBy === "title")  return a.title.localeCompare(b.title);
+      if (sortBy === "artist") return (a.artist ?? "").localeCompare(b.artist ?? "");
+      // "date" — most recently updated first
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
 
   return (
@@ -381,11 +402,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     <button
                       onClick={() => setSelectedCategoryId(cat.id === selectedCategoryId ? null : cat.id)}
                       onDoubleClick={() => startRename(cat)}
-                      className={`flex-1 text-left text-sm truncate min-w-0 ${
+                      className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${
                         selectedCategoryId === cat.id ? "text-indigo-700 font-medium" : "text-zinc-600"
                       }`}
                       title="Double-click to rename"
                     >
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
                       {cat.name}
                     </button>
                   )}
@@ -430,14 +452,33 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Main content */}
         <main className="flex-1 px-6 py-6 min-w-0">
           <div className="max-w-4xl">
-            {/* Search + count */}
-            <div className="flex items-center gap-4 mb-5">
+            {/* Search + sort + count */}
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search songs…"
-                className="w-full max-w-sm text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
+                className="w-full max-w-xs text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
               />
+              {/* Sort — hidden when a named category is active (those use drag order) */}
+              {(!selectedCategoryId || selectedCategoryId === "uncategorized") && !loading && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {(["date", "title", "artist"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setSortBy(opt)}
+                      className={`text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
+                        sortBy === opt
+                          ? "bg-indigo-600 text-white"
+                          : "bg-white border border-zinc-200 text-zinc-500 hover:border-indigo-300 hover:text-indigo-600"
+                      }`}
+                    >
+                      {opt === "date" ? "Recent" : opt === "title" ? "Title" : "Artist"}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex-1" />
               {!loading && (
                 <span className="text-sm text-zinc-400 shrink-0">
                   {filtered.length} {filtered.length === 1 ? "song" : "songs"}
@@ -561,15 +602,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
+                            const color = getCatColor(catId, categories);
                             return (
                               <span
                                 key={catId}
-                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-full"
+                                className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}
                               >
                                 {cat.name}
                                 <button
                                   onClick={() => handleRemoveFromCategory(song.id, catId)}
-                                  className="text-zinc-400 hover:text-red-400 ml-0.5 leading-none"
+                                  className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity"
                                   title={`Remove from ${cat.name}`}
                                 >
                                   ×
@@ -585,46 +627,55 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {formatDate(song.updatedAt)}
                       </div>
 
-                      {/* Actions — visible on hover */}
-                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          href={viewUrl}
-                          className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
-                        >
-                          View
+                      {/* Actions — icon buttons, visible on hover */}
+                      <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* View */}
+                        <Link href={viewUrl} title="View"
+                          className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
+                          </svg>
                         </Link>
-                        <Link
-                          href={editUrl}
-                          className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
-                        >
-                          Edit
+                        {/* Edit */}
+                        <Link href={editUrl} title="Edit"
+                          className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
+                          </svg>
                         </Link>
+                        {/* Duplicate */}
                         {song.source === "db" && (
-                          <button
-                            onClick={() => handleDuplicate(song)}
-                            disabled={isDuplicating}
+                          <button onClick={() => handleDuplicate(song)} disabled={isDuplicating}
                             title="Duplicate"
-                            className="text-xs text-zinc-500 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors disabled:opacity-40"
-                          >
-                            {isDuplicating ? "…" : "Copy"}
+                            className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-30">
+                            {isDuplicating ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 animate-spin">
+                                <path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8Z"/>
+                              </svg>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
+                              </svg>
+                            )}
                           </button>
                         )}
-                        {/* Remove from category — only shown when browsing a specific category */}
+                        {/* Remove from category */}
                         {selectedCategoryId && selectedCategoryId !== "uncategorized" && (
-                          <button
-                            onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
-                            className="text-xs text-zinc-500 hover:text-orange-500 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
-                            title={`Remove from this category (does not delete the song)`}
-                          >
-                            Remove
+                          <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
+                            title="Remove from this category"
+                            className="p-1.5 rounded text-zinc-400 hover:text-orange-500 hover:bg-orange-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                              <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-4 8H8v-2h8v2Z"/>
+                            </svg>
                           </button>
                         )}
-                        <button
-                          onClick={() => handleDelete(song.id, song.source)}
-                          className="text-xs text-zinc-300 hover:text-red-400 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                        {/* Delete */}
+                        <button onClick={() => handleDelete(song.id, song.source)}
                           title="Delete song permanently"
-                        >
-                          ✕
+                          className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                            <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
+                          </svg>
                         </button>
                       </div>
                     </div>
