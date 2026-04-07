@@ -26,7 +26,7 @@ function TextSection({
 
   return (
     <div className="py-3 border-b border-zinc-100 last:border-0">
-      <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">{label}</p>
+      <p className="text-xs font-semibold text-zinc-600 uppercase tracking-wide mb-2">{label}</p>
 
       <select
         value={currentFont.name}
@@ -194,7 +194,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       {/* ── Background tab ── */}
       <div className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-4"}>
         <div>
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Color</p>
+          <p className="text-xs font-semibold text-zinc-600 uppercase tracking-wide mb-2">Color</p>
           <div className="flex items-center gap-2">
             <input type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="w-8 h-7 rounded border border-zinc-200 cursor-pointer p-0.5" />
             <span className="text-xs text-zinc-400 font-mono">{bg}</span>
@@ -202,7 +202,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">AI Background Image</p>
+          <p className="text-xs font-semibold text-zinc-600 uppercase tracking-wide mb-2">AI Background Image</p>
           <div className="grid grid-cols-3 gap-1 mb-3">
             {BG_STYLES.map((s) => (
               <button key={s.id} onClick={() => setBgStyle(s.id)}
