@@ -161,7 +161,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "p" || e.key === "P") setViewMode(true);
-      if (e.key === "e" || e.key === "E") setViewMode(false);
+      if (e.key === "v" || e.key === "V") setViewMode(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
