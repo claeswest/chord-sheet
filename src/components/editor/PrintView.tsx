@@ -94,7 +94,8 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       {/* Lines */}
       {lines.map((line) => {
         if (line.type === "section") {
-          const sectionColor = s.chords.color ?? "#4f46e5";
+          const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
+          const sectionPt = toPt(s.section?.fontSize ?? 11);
           const align = s.sectionAlign ?? "left";
           const showDivider = s.sectionDivider ?? true;
           return (
@@ -103,6 +104,10 @@ export default function PrintView({ title, artist, lines, watermark = true, song
               className="print-section"
               style={{
                 color: sectionColor,
+                fontSize: `${sectionPt}pt`,
+                fontFamily: s.section?.fontFamily ?? s.chords.fontFamily ?? MONO_STACK,
+                fontWeight: (s.section?.bold ?? true) ? "bold" : "normal",
+                fontStyle: (s.section?.italic ?? false) ? "italic" : "normal",
                 borderBottomColor: showDivider ? sectionColor : "transparent",
                 borderBottomWidth: showDivider ? undefined : 0,
                 textAlign: align,
