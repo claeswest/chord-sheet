@@ -87,6 +87,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+  // Set to true before programmatic style updates (e.g. fetchSongStyle on load) so
+  // the auto-save effect skips that render — it's not a user edit.
+  const suppressAutoSave = useRef(false);
   // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
   const lastSavedBgImage = useRef<string | undefined>(
     // Initialise to whatever we seeded from sessionStorage/initialSong — no need to save that
@@ -193,6 +196,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         // Mark as already-saved BEFORE calling setSongStyle so the backgroundImage
         // change effect doesn't trigger an unnecessary re-save for a DB-restored image.
         lastSavedBgImage.current = fullStyle.backgroundImage;
+        // Suppress auto-save for this programmatic style restore — it's not a user edit.
+        suppressAutoSave.current = true;
         setSongStyle(prev => ({
           ...prev,
           backgroundImage: fullStyle.backgroundImage,
@@ -386,6 +391,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      return;
+    }
+    if (suppressAutoSave.current) {
+      suppressAutoSave.current = false;
       return;
     }
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
