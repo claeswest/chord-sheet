@@ -309,8 +309,12 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             <TextSection label="Chords" value={style.chords}                   onChange={(v) => onChange({ ...style, chords: v })} />
 
             {/* Section headers */}
+            <TextSection
+              label="Sections"
+              value={style.section ?? DEFAULT_STYLE.section!}
+              onChange={(v) => onChange({ ...style, section: v })}
+            />
             <div className="py-3 border-b border-zinc-100">
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Sections</p>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs text-zinc-400 shrink-0">Align</span>
                 <div className="flex rounded border border-zinc-200 overflow-hidden">

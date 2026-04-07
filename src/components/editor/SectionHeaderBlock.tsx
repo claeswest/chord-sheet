@@ -10,11 +10,14 @@ interface Props {
   onUpdate: (label: string) => void;
   onDelete: () => void;
   color?: string;
+  fontSize?: number;
+  bold?: boolean;
+  italic?: boolean;
   align?: "left" | "center";
   showDivider?: boolean;
 }
 
-export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5", align = "left", showDivider = true }: Props) {
+export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5", fontSize = 11, bold = true, italic = false, align = "left", showDivider = true }: Props) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,8 +40,8 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, color 
               if (e.key === "Enter") commit(e.currentTarget.value);
               if (e.key === "Escape") setEditing(false);
             }}
-            className="text-xs font-bold uppercase tracking-widest rounded px-2 py-0.5 outline-none w-28"
-            style={{ color, borderColor: color, border: `1px solid ${color}`, background: `${color}18` }}
+            className="uppercase tracking-widest rounded px-2 py-0.5 outline-none w-28"
+            style={{ color, fontSize, fontWeight: bold ? "bold" : "normal", fontStyle: italic ? "italic" : "normal", borderColor: color, border: `1px solid ${color}`, background: `${color}18` }}
           />
           <div className="flex flex-wrap gap-1">
             {QUICK_LABELS.map((l) => (
@@ -59,8 +62,8 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, color 
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="text-xs font-bold uppercase tracking-widest transition-colors shrink-0"
-          style={{ color }}
+          className="uppercase tracking-widest transition-colors shrink-0"
+          style={{ color, fontSize, fontWeight: bold ? "bold" : "normal", fontStyle: italic ? "italic" : "normal" }}
         >
           {section.label}
         </button>

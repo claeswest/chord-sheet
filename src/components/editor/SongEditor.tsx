@@ -478,7 +478,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         section={line as SectionHeader}
         onUpdate={(label) => updateSection(line.id, label)}
         onDelete={() => deleteLine(line.id)}
-        color={songStyle.chords.color ?? "#4f46e5"}
+        color={songStyle.section?.color ?? songStyle.chords.color ?? "#4f46e5"}
+        fontSize={songStyle.section?.fontSize ?? 11}
+        bold={songStyle.section?.bold ?? true}
+        italic={songStyle.section?.italic ?? false}
         align={songStyle.sectionAlign ?? "left"}
         showDivider={songStyle.sectionDivider ?? true}
       />

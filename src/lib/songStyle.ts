@@ -13,6 +13,7 @@ export interface SongStyle {
   artist: TextStyle;
   lyrics: TextStyle;
   chords: TextStyle;
+  section?: TextStyle;
   background?: string;
   backgroundImage?: string;   // base64 data URL, not included in share URLs
   overlayOpacity?: number;    // 0–1, default 0.5
@@ -27,6 +28,7 @@ export const DEFAULT_STYLE: SongStyle = {
   artist:         { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
   lyrics:         { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
   chords:         { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
+  section:        { fontFamily: MONO_STACK, fontSize: 11, color: "#4f46e5", bold: true,  italic: false },
   background:     "#ffffff",
   sectionAlign:   "left",
   sectionDivider: true,

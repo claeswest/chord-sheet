@@ -209,7 +209,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
           <div className="space-y-0">
             {lines.map((line) => {
               if (line.type === "section") {
-                const sectionColor = s.chords.color ?? "#4f46e5";
+                const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
+                const sectionSize = s.section?.fontSize ?? (lyricSize - 3);
+                const sectionBold = s.section?.bold ?? true;
+                const sectionItalic = s.section?.italic ?? false;
                 const align = s.sectionAlign ?? "left";
                 const showDivider = s.sectionDivider ?? true;
                 return (
@@ -219,8 +222,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
                     style={{ textAlign: align }}
                   >
                     <span
-                      className="font-bold uppercase tracking-widest"
-                      style={{ fontSize: lyricSize - 3, color: sectionColor }}
+                      className="uppercase tracking-widest"
+                      style={{ fontSize: sectionSize, color: sectionColor, fontWeight: sectionBold ? "bold" : "normal", fontStyle: sectionItalic ? "italic" : "normal" }}
                     >
                       {line.label}
                     </span>
