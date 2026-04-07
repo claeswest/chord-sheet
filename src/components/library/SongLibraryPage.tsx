@@ -390,7 +390,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       <div className="flex flex-1">
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
-          <aside className="w-96 shrink-0 bg-[#24243e] border-r border-white/10 flex flex-col py-3">
+          <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
             <div className="px-3 pb-3">
               <Link
                 href="/editor/new"
