@@ -218,18 +218,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     setDragSongId(songId);
 
     // ── helpers ────────────────────────────────────────────────────────────
-    const findCatId    = (x: number, y: number) =>
-      (document.elementsFromPoint(x, y)
-        .find((el) => (el as HTMLElement).dataset?.categoryId) as HTMLElement | undefined)
-        ?.dataset.categoryId;
+    // elementFromPoint gives the topmost element; closest() walks up the
+    // ancestor chain — far more reliable than searching elementsFromPoint[].
+    const findCatId  = (x: number, y: number) => {
+      const el = document.elementFromPoint(x, y) as HTMLElement | null;
+      return (el?.closest("[data-category-id]") as HTMLElement | null)?.dataset.categoryId;
+    };
 
-    const findSongId   = (x: number, y: number) =>
-      (document.elementsFromPoint(x, y)
-        .find((el) => {
-          const sid = (el as HTMLElement).dataset?.songId;
-          return sid && sid !== songId;
-        }) as HTMLElement | undefined)
-        ?.dataset.songId;
+    const findSongId = (x: number, y: number) => {
+      const el    = document.elementFromPoint(x, y) as HTMLElement | null;
+      const found = (el?.closest("[data-song-id]") as HTMLElement | null);
+      const sid   = found?.dataset.songId;
+      return sid && sid !== songId ? sid : undefined;
+    };
 
     const cleanup = () => {
       document.removeEventListener("pointermove",   onMove);
