@@ -28,7 +28,7 @@ import StylePanel from "./StylePanel";
 import { transposeSong, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import { saveSong, type StoredSong } from "@/lib/storage";
-import { type SharedSong } from "@/lib/songUrl";
+import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
@@ -363,11 +363,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     } else {
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     }
+    // Keep the URL in sync so reloads restore the latest title/artist/content
+    const encoded = encodeSong({ id: songId, title, artist, lines, style: songStyle });
+    router.replace(`/editor/new?song=${encoded}`, { scroll: false });
     if (opts?.flash) {
       setSaveFlash(true);
       setTimeout(() => setSaveFlash(false), 1500);
     }
-  }, [isLoggedIn, songId, title, artist, lines, songStyle]);
+  }, [isLoggedIn, songId, title, artist, lines, songStyle, router]);
 
   const handleSave = useCallback(() => {
     persistSong({ flash: true });
