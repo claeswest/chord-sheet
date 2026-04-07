@@ -804,9 +804,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     >
                       {/* Left-edge accent bar — song colour takes priority over category colour */}
                       {rowBg ? (
-                        <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: rowBg }} />
+                        <div className="absolute left-0 top-0 bottom-0 w-2" style={{ backgroundColor: rowBg }} />
                       ) : firstCatAccent ? (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${firstCatAccent}`} />
+                        <div className={`absolute left-0 top-0 bottom-0 w-2 ${firstCatAccent}`} />
                       ) : null}
 
                       {/* Drag handle */}
