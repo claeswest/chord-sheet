@@ -50,7 +50,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showFindReplace, setShowFindReplace] = useState(false);
-  const [semitones, setSemitones] = useState(0);
+  const [semitones, setSemitones] = useState(initialSong?.semitones ?? 0);
   const [mounted, setMounted] = useState(false);
   const [songId, setSongId] = useState(() => initialSong?.id ?? genId());
   const [saveFlash, setSaveFlash] = useState(false);
@@ -370,13 +370,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     }
     // Keep the URL in sync so reloads restore the latest title/artist/content
-    const encoded = encodeSong({ id: songId, title, artist, lines, style: songStyle });
+    const encoded = encodeSong({ id: songId, title, artist, lines, style: songStyle, semitones: semitones || undefined });
     router.replace(`/editor/new?song=${encoded}`, { scroll: false });
     if (opts?.flash) {
       setSaveFlash(true);
       setTimeout(() => setSaveFlash(false), 1500);
     }
-  }, [isLoggedIn, songId, title, artist, lines, songStyle, router]);
+  }, [isLoggedIn, songId, title, artist, lines, songStyle, semitones, router]);
 
   const handleSave = useCallback(() => {
     persistSong({ flash: true });

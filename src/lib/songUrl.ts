@@ -7,6 +7,7 @@ export type SharedSong = {
   artist: string;
   lines: SongLine[];
   style?: SongStyle;
+  semitones?: number;
 };
 
 export function encodeSong(song: SharedSong): string {
