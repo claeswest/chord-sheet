@@ -762,7 +762,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   {isLoggedIn && <div className="w-3 shrink-0" />}
                   <span className="flex-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Song</span>
                   {isLoggedIn && <span className="hidden sm:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
-                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-44 text-right shrink-0">Updated</span>
+                  <span className="hidden md:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 text-right shrink-0">Updated</span>
                   <div className="w-24 shrink-0" />
                 </div>
                 {filtered.map((song, idx) => {
@@ -870,23 +870,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Date ↔ quick-info (swaps on row hover) */}
-                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-44">
-                        {/* Date — fades out on hover */}
-                        <span className="text-xs text-zinc-400 group-hover:opacity-0 transition-opacity whitespace-nowrap">
+                      {/* Date */}
+                      <div className="shrink-0 hidden md:flex items-center justify-end w-32">
+                        <span className="text-xs text-zinc-400 whitespace-nowrap">
                           {formatDate(song.updatedAt)}
                         </span>
-                        {/* Stats — fades in on hover */}
-                        <div className="absolute right-0 inset-y-0 flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <span className="text-xs text-zinc-500 whitespace-nowrap">
-                            {lineCount} lines · {chordCount} chords
-                          </span>
-                          {firstChord && (
-                            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
-                              {firstChord}
-                            </span>
-                          )}
-                        </div>
                       </div>
 
                       {/* Actions — icon buttons, visible on hover */}
