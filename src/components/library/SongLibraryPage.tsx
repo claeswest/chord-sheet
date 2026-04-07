@@ -819,7 +819,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Drag handle */}
                       {isLoggedIn && (
-                        <div className="text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors select-none text-xs leading-none">
+                        <div className="w-3 shrink-0 text-zinc-200 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors select-none text-xs leading-none">
                           ⠿
                         </div>
                       )}
@@ -890,7 +890,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </div>
 
                       {/* Actions — icon buttons, visible on hover */}
-                      <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-0.5 shrink-0 w-24 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         {/* View */}
                         <Link href={viewUrl} title="View"
                           className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
