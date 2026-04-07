@@ -292,26 +292,32 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   // ── Chord operations ─────────────────────────────────────────────────────────
 
   const addChord = useCallback((lineId: string, position: number, chord: string) => {
+    // If the song is transposed, the user typed the chord in the transposed key.
+    // Un-transpose it before storing so the display round-trip shows what they typed.
+    const preferFlats = chord.includes("b") && !chord.startsWith("B");
+    const storedChord = semitones !== 0 ? transposeChord(chord, -semitones, preferFlats) : chord;
     setLines((prev) => {
       const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
-        return { ...l, chords: [...l.chords, { id: genId(), chord, position }] };
+        return { ...l, chords: [...l.chords, { id: genId(), chord: storedChord, position }] };
       });
       pushSnap(next);
       return next;
     });
-  }, [pushSnap]);
+  }, [pushSnap, semitones]);
 
   const updateChord = useCallback((lineId: string, chordId: string, chord: string) => {
+    const preferFlats = chord.includes("b") && !chord.startsWith("B");
+    const storedChord = semitones !== 0 ? transposeChord(chord, -semitones, preferFlats) : chord;
     setLines((prev) => {
       const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
-        return { ...l, chords: l.chords.map((c) => (c.id === chordId ? { ...c, chord } : c)) };
+        return { ...l, chords: l.chords.map((c) => (c.id === chordId ? { ...c, chord: storedChord } : c)) };
       });
       pushSnapDebounced(next);
       return next;
     });
-  }, [pushSnapDebounced]);
+  }, [pushSnapDebounced, semitones]);
 
   const moveChord = useCallback((lineId: string, chordId: string, position: number) => {
     setLines((prev) => {
