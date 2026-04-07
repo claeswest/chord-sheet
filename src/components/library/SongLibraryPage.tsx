@@ -879,7 +879,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {/* Stats — fades in on hover */}
                         <div className="absolute right-0 inset-y-0 flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           <span className="text-xs text-zinc-500 whitespace-nowrap">
-                            {lineCount} lines · {chordCount} chords · {wordCount} words
+                            {lineCount} lines · {chordCount} chords
                           </span>
                           {firstChord && (
                             <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
