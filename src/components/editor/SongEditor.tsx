@@ -481,24 +481,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             </Link>
           </>
         )}
-        <div className="w-px h-5 bg-white/20" />
-        <div className="flex flex-col min-w-0">
-          <span className="text-base font-semibold text-white leading-tight truncate">
-            {title || <span className="text-white/30">Untitled Song</span>}
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/50 leading-tight truncate">
-              {artist || ""}
-            </span>
-            <span
-              className={`text-xs text-white/30 transition-opacity duration-500 ${
-                autoSaved ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              Saved
-            </span>
-          </div>
-        </div>
         <div className="flex items-center gap-2 ml-auto">
           {/* Undo / Redo */}
           <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
@@ -617,6 +599,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           >
             {saveFlash ? "Saved!" : "Save"}
           </button>
+          <span className={`text-xs text-white/30 transition-opacity duration-500 ${autoSaved ? "opacity-100" : "opacity-0"}`}>
+            Saved
+          </span>
         </div>
       </header>
 
