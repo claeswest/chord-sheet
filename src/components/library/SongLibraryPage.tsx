@@ -273,20 +273,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      // Within a specific named category, sort by the category's drag order
-      if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
-        const cat = categories.find((c) => c.id === selectedCategoryId);
-        if (cat) {
-          const ai = cat.songIds.indexOf(a.id);
-          const bi = cat.songIds.indexOf(b.id);
-          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-        }
-      }
-      // "All Songs" and "Uncategorized" — apply sortBy + sortDir
       const dir = sortDir === "asc" ? 1 : -1;
       if (sortBy === "title")  return dir * a.title.localeCompare(b.title);
       if (sortBy === "artist") return dir * (a.artist ?? "").localeCompare(b.artist ?? "");
-      // "date"
       return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     });
 
@@ -471,8 +460,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 placeholder="Search songs…"
                 className="w-full max-w-xs text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
               />
-              {/* Sort — hidden when a named category is active (those use drag order) */}
-              {(!selectedCategoryId || selectedCategoryId === "uncategorized") && !loading && (
+              {!loading && (
                 <div className="flex items-center gap-1 shrink-0">
                   {(["date", "title", "artist"] as const).map((opt) => (
                     <button
