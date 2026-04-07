@@ -763,8 +763,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
 
-                  const titleColor = song.style?.title?.color ?? "#18181b";
-                  const artistColor = song.style?.artist?.color ?? "#71717a";
+                  const titleColor = "#18181b";
+                  const artistColor = "#71717a";
                   const rowBg = song.style?.background;
 
                   const isReorderTarget = dragOverSongId === song.id && selectedCategoryId !== "uncategorized";
