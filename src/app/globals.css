@@ -40,26 +40,26 @@ body {
     margin: 18mm 18mm 24mm 18mm;
   }
 
-  /* Hide everything, then reveal only the print view and its children.
-     visibility can be overridden by children; display cannot when a parent is hidden. */
   html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  /* Hide the editor UI; leave only the print view in the flow */
+  [data-no-print] {
+    display: none !important;
+  }
+
+  /* Make the root wrapper not clip the print view */
+  #song-editor-root {
+    display: block !important;
     height: auto !important;
     overflow: visible !important;
   }
 
-  body * {
-    visibility: hidden;
-  }
-
   #print-view {
-    visibility: visible;
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: auto;
-    overflow: visible;
+    display: block !important;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12pt;
     color: #000;
@@ -68,10 +68,6 @@ body {
     print-color-adjust: exact;
     background-size: cover;
     background-position: center;
-  }
-
-  #print-view * {
-    visibility: visible;
   }
 
   /* Watermark */
@@ -84,7 +80,6 @@ body {
     color: #ccc;
     font-family: Arial, sans-serif;
     letter-spacing: 0.05em;
-    visibility: visible;
   }
 
   .print-song-title {
