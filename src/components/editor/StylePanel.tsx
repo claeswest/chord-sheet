@@ -78,20 +78,20 @@ function TextSection({
 
 const BG_STYLES = [
   { id: "abstract",    label: "Abstract",    emoji: "🎨" },
-  { id: "landscape",   label: "Landscape",   emoji: "🌄" },
-  { id: "sunset",      label: "Sunset",      emoji: "🌅" },
-  { id: "forest",      label: "Forest",      emoji: "🌲" },
-  { id: "ocean",       label: "Ocean",       emoji: "🌊" },
+  { id: "dreamy",      label: "Dreamy",      emoji: "🌙" },
+  { id: "cinematic",   label: "Cinematic",   emoji: "🎬" },
+  { id: "watercolor",  label: "Watercolor",  emoji: "🖌️" },
+  { id: "minimal",     label: "Minimal",     emoji: "⬜" },
   { id: "vintage",     label: "Vintage",     emoji: "📷" },
   { id: "bokeh",       label: "Bokeh",       emoji: "✨" },
-  { id: "performance", label: "Performance", emoji: "🎸" },
-  { id: "festival",    label: "Festival",    emoji: "🎉" },
-  { id: "neon",        label: "Neon",        emoji: "💜" },
-  { id: "pastel",      label: "Pastel",      emoji: "🌸" },
-  { id: "minimal",     label: "Minimal",     emoji: "⬜" },
   { id: "dramatic",    label: "Dramatic",    emoji: "🎭" },
-  { id: "retro",       label: "Retro",       emoji: "🕹️" },
-  { id: "acoustic",    label: "Acoustic",    emoji: "🪕" },
+  { id: "neon",        label: "Neon",        emoji: "💡" },
+  { id: "pastel",      label: "Pastel",      emoji: "🌸" },
+  { id: "retro",       label: "Retro",       emoji: "📼" },
+  { id: "geometric",   label: "Geometric",   emoji: "🔷" },
+  { id: "warm",        label: "Warm",        emoji: "🌟" },
+  { id: "ethereal",    label: "Ethereal",    emoji: "🌫️" },
+  { id: "bold",        label: "Bold",        emoji: "🔴" },
 ] as const;
 
 type BgStyleId = (typeof BG_STYLES)[number]["id"];
@@ -212,7 +212,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
         <div>
           <p className="text-xs font-bold text-zinc-800 uppercase tracking-wide mb-2">AI Background Image</p>
-          <div className="grid grid-cols-5 gap-1 mb-3">
+          <div className="grid grid-cols-3 gap-1 mb-3">
             {BG_STYLES.map((s) => (
               <button key={s.id} onClick={() => setBgStyle(s.id)}
                 className={`flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg border text-xs transition-colors ${bgStyle === s.id ? "border-violet-400 bg-violet-50 text-violet-700 font-medium" : "border-zinc-200 bg-white text-zinc-500 hover:border-violet-200"}`}
