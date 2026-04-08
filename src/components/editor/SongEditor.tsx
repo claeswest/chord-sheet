@@ -606,6 +606,29 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             )}
           </div>
 
+          {/* PDF download */}
+          <button
+            onClick={async () => {
+              setPdfLoading(true);
+              try { await downloadPdf(`${title || "chord-sheet"}.pdf`); }
+              finally { setPdfLoading(false); }
+            }}
+            disabled={pdfLoading}
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 text-white/50 hover:text-white hover:bg-white/10"
+            title="Download PDF"
+          >
+            {pdfLoading ? (
+              <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="9" y1="13" x2="15" y2="13"/>
+                <line x1="9" y1="17" x2="13" y2="17"/>
+              </svg>
+            )}
+          </button>
+
           {/* Share */}
           <button
             onClick={handleShare}
