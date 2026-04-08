@@ -101,16 +101,23 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
     // ── 3. Measure block positions BEFORE canvas render (clone still in DOM) ─
     // We snap page breaks to gaps between blocks so no line is ever bisected.
-    const cloneRect = clone.getBoundingClientRect();
-    const blockEls  = clone.querySelectorAll(
+    // Use offsetTop/offsetHeight — reliable for off-screen elements, unlike
+    // getBoundingClientRect which can be inaccurate at extreme positions.
+    const blockEls = clone.querySelectorAll(
       ".print-lyric-block, .print-section, .print-song-title, .print-song-artist"
     );
-    // Each block's top/bottom in canvas-pixel coordinates (apply SCALE)
     const blockBounds = Array.from(blockEls).map((el) => {
-      const r = (el as HTMLElement).getBoundingClientRect();
+      const htmlEl = el as HTMLElement;
+      // Walk offsetParent chain up to the wrapper to get position within clone
+      let top = 0;
+      let cur: HTMLElement | null = htmlEl;
+      while (cur && cur !== wrapper) {
+        top += cur.offsetTop;
+        cur  = cur.offsetParent as HTMLElement | null;
+      }
       return {
-        top:    Math.round((r.top    - cloneRect.top) * SCALE),
-        bottom: Math.round((r.bottom - cloneRect.top) * SCALE),
+        top:    Math.round(top * SCALE),
+        bottom: Math.round((top + htmlEl.offsetHeight) * SCALE),
       };
     }).sort((a, b) => a.top - b.top);
 
