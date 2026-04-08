@@ -35,10 +35,13 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
   clone.style.position   = "static";
   clone.style.width      = "100%";
   clone.style.margin     = "0";
-  // Padding provides the text breathing room while letting the background
-  // image (if any) bleed to the full page edge (margin is 0 in html2pdf).
-  clone.style.padding    = "18mm 18mm 24mm 18mm";
-  clone.style.boxSizing  = "border-box";
+  // Side padding only — top/bottom breathing room is handled by html2pdf
+  // margin so it applies on every page, not just the first and last.
+  clone.style.paddingLeft  = "18mm";
+  clone.style.paddingRight = "18mm";
+  clone.style.paddingTop   = "0";
+  clone.style.paddingBottom = "0";
+  clone.style.boxSizing    = "border-box";
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
@@ -51,7 +54,8 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {
-      margin:      0,   // padding is on the clone itself so background covers full page
+      // Top/bottom margin applied per-page by html2pdf; sides handled by clone padding.
+      margin:      [22, 0, 22, 0],
       filename,
       image:       { type: "jpeg", quality: 0.97 },
       html2canvas: {
