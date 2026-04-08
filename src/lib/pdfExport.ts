@@ -55,7 +55,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {
       // Top/bottom margin applied per-page by html2pdf; sides handled by clone padding.
-      margin:      [22, 0, 22, 0],
+      margin:      [45, 0, 45, 0],
       filename,
       image:       { type: "jpeg", quality: 0.97 },
       html2canvas: {
