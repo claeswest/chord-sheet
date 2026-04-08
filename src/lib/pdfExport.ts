@@ -99,7 +99,35 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       import("jspdf"),
     ]);
 
-    // ── 3. Render content to a single tall canvas ───────────────────────────
+    // ── 3. Measure block positions BEFORE canvas render (clone still in DOM) ─
+    // We snap page breaks to gaps between blocks so no line is ever bisected.
+    const cloneRect = clone.getBoundingClientRect();
+    const blockEls  = clone.querySelectorAll(
+      ".print-lyric-block, .print-section, .print-song-title, .print-song-artist"
+    );
+    // Each block's top/bottom in canvas-pixel coordinates (apply SCALE)
+    const blockBounds = Array.from(blockEls).map((el) => {
+      const r = (el as HTMLElement).getBoundingClientRect();
+      return {
+        top:    Math.round((r.top    - cloneRect.top) * SCALE),
+        bottom: Math.round((r.bottom - cloneRect.top) * SCALE),
+      };
+    }).sort((a, b) => a.top - b.top);
+
+    /**
+     * Find the latest gap between blocks that sits at or before `targetY`.
+     * This ensures we never slice through the middle of a lyric line.
+     */
+    function smartBreak(targetY: number): number {
+      let best = 0;
+      for (const b of blockBounds) {
+        if (b.top    <= targetY) best = Math.max(best, b.top);
+        if (b.bottom <= targetY) best = Math.max(best, b.bottom);
+      }
+      return best > 0 ? best : targetY;
+    }
+
+    // ── 4. Render content to a single tall canvas ───────────────────────────
     const contentCanvas = await html2canvas(clone, {
       scale:       SCALE,
       useCORS:     true,
@@ -111,12 +139,26 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       backgroundColor: null,   // transparent — we draw our own bg
     });
 
-    // ── 4. Compose pages ────────────────────────────────────────────────────
-    const numPages = Math.ceil(contentCanvas.height / CONTENT_H_PX);
+    // ── 5. Calculate smart page break points ────────────────────────────────
+    const pageStarts: number[] = [0];
+    let curY = 0;
+    while (curY < contentCanvas.height) {
+      const next = smartBreak(curY + CONTENT_H_PX);
+      if (next <= curY) break;          // safety: avoid infinite loop
+      if (next >= contentCanvas.height) break;
+      pageStarts.push(next);
+      curY = next;
+    }
+
+    // ── 6. Compose pages ────────────────────────────────────────────────────
     const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
-    for (let i = 0; i < numPages; i++) {
+    for (let i = 0; i < pageStarts.length; i++) {
       if (i > 0) pdf.addPage();
+
+      const srcY = pageStarts[i];
+      const srcEnd = i + 1 < pageStarts.length ? pageStarts[i + 1] : contentCanvas.height;
+      const srcH = srcEnd - srcY;
 
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width  = PAGE_W_PX;
@@ -136,14 +178,12 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
         }
       }
 
-      // c) Content slice, inset by PADDING_PX top & bottom
-      const srcY = i * CONTENT_H_PX;
-      const srcH = Math.min(CONTENT_H_PX, contentCanvas.height - srcY);
+      // c) Content slice, inset by PADDING_PX from top
       if (srcH > 0) {
         ctx.drawImage(
           contentCanvas,
-          0, srcY, PAGE_W_PX, srcH,          // source region
-          0, PADDING_PX, PAGE_W_PX, srcH,    // destination (padded from top)
+          0, srcY, PAGE_W_PX, srcH,       // source region
+          0, PADDING_PX, PAGE_W_PX, srcH, // destination (padded from top)
         );
       }
 
