@@ -51,10 +51,10 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
  * We look for a row where every pixel is fully transparent (alpha < 8),
  * meaning it's an empty gap between lyric blocks.
  * We scan backwards from maxY so we get the LAST safe gap before the limit.
- * We don't scan lower than 60% of maxY to avoid overly short pages.
+ * minY is the start of the current page so we never pick a row from a
+ * previous page.
  */
-function findBreakRow(data: Uint8ClampedArray, width: number, maxY: number): number {
-  const minY = Math.round(maxY * 0.6);
+function findBreakRow(data: Uint8ClampedArray, width: number, maxY: number, minY: number): number {
   for (let y = maxY; y >= minY; y--) {
     let empty = true;
     for (let x = 0; x < width; x++) {
@@ -127,7 +127,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
     while (curY < contentCanvas.height) {
       const limit = curY + CONTENT_H_PX;
       if (limit >= contentCanvas.height) break;
-      const breakY = findBreakRow(pixelData, contentCanvas.width, limit);
+      const breakY = findBreakRow(pixelData, contentCanvas.width, limit, curY);
       if (breakY <= curY) break; // safety
       pageStarts.push(breakY);
       curY = breakY;
