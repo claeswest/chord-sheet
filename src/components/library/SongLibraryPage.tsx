@@ -232,7 +232,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     e.stopPropagation();
     setDragOverSongId(null);
     const sourceSongId = e.dataTransfer.getData("songId");
-    if (!sourceSongId || sourceSongId === targetSongId || selectedCategoryId === "uncategorized") return;
+    if (!sourceSongId || sourceSongId === targetSongId) return;
 
     if (selectedCategoryId === null) {
       // All Songs — compute the new order, update state and persist in one go
@@ -297,19 +297,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   };
 
   // ── Filtering ────────────────────────────────────────────────────────────────
-  const uncategorizedCount = songs.filter((s) => s.categoryIds.length === 0).length;
-
   const filtered = songs
     .filter((s) => {
-      if (selectedCategoryId === "uncategorized" && s.categoryIds.length > 0) return false;
-      if (selectedCategoryId && selectedCategoryId !== "uncategorized" && !s.categoryIds.includes(selectedCategoryId)) return false;
+      if (selectedCategoryId && !s.categoryIds.includes(selectedCategoryId)) return false;
       const q = search.toLowerCase();
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
       // No sort active — natural order (drag order for named categories, server order otherwise)
       if (!sortBy) {
-        if (selectedCategoryId && selectedCategoryId !== "uncategorized") {
+        if (selectedCategoryId) {
           const cat = categories.find((c) => c.id === selectedCategoryId);
           if (cat) {
             return (cat.songIds.indexOf(a.id) ?? 999) - (cat.songIds.indexOf(b.id) ?? 999);
@@ -405,18 +402,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             >
               <span>All Songs</span>
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategoryId === null ? "bg-white/20 text-white/70" : "bg-white/10 text-white/40"}`}>{songs.length}</span>
-            </button>
-
-            <button
-              onClick={() => selectCategory("uncategorized")}
-              className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
-                selectedCategoryId === "uncategorized"
-                  ? "bg-white/20 text-white font-semibold border-l-indigo-300"
-                  : "text-white/60 hover:bg-white/10 border-l-transparent"
-              }`}
-            >
-              <span>Uncategorized</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategoryId === "uncategorized" ? "bg-white/20 text-white/70" : "bg-white/10 text-white/40"}`}>{uncategorizedCount}</span>
             </button>
 
             {categories.length > 0 && (
@@ -613,7 +598,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       + New Song
                     </Link>
                   </>
-                ) : selectedCategoryId && selectedCategoryId !== "uncategorized" && !search ? (
+                ) : selectedCategoryId && !search ? (
                   /* Named category is empty — show drag hint */
                   (() => {
                     const catName = categories.find((c) => c.id === selectedCategoryId)?.name ?? "this category";
@@ -764,7 +749,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const artistColor = "#71717a";
                   const rowBg = song.style?.background;
 
-                  const isReorderTarget = dragOverSongId === song.id && selectedCategoryId !== "uncategorized";
+                  const isReorderTarget = dragOverSongId === song.id;
                   const firstCatAccent = song.categoryIds[0] ? getCatColor(song.categoryIds[0], categories).accent : null;
 
                   // Quick-info stats (computed once per row)
@@ -787,7 +772,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => {
                         e.preventDefault();
-                        if (selectedCategoryId !== "uncategorized" && dragSongId && dragSongId !== song.id) {
+                        if (dragSongId && dragSongId !== song.id) {
                           setDragOverSongId(song.id);
                         }
                       }}
@@ -896,7 +881,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           </button>
                         )}
                         {/* Remove from category */}
-                        {selectedCategoryId && selectedCategoryId !== "uncategorized" && (
+                        {selectedCategoryId && (
                           <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
                             title="Remove from this category"
                             className="p-1.5 rounded text-zinc-400 hover:text-orange-500 hover:bg-orange-50 transition-colors">
