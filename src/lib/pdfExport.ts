@@ -71,7 +71,6 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
     `top:0`,
     `left:-${A4_W_CSS + 200}px`,
     `width:${A4_W_CSS}px`,
-    "visibility:hidden",
     "pointer-events:none",
     "margin:0", "padding:0", "border:none", "background:transparent",
     "overflow:visible",
