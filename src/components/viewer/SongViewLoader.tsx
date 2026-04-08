@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
+import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
 import type { SongStyle } from "@/lib/songStyle";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export default function SongViewLoader() {
   const encoded = searchParams.get("song");
   const song = encoded ? decodeSong(encoded) : null;
 
+  const [ready, setReady] = useState(false);
   const [songStyle, setSongStyle] = useState<SongStyle | undefined>(() => {
     // Seed backgroundImage from sessionStorage cache so it's visible immediately
     const base = song?.style;
@@ -27,7 +29,7 @@ export default function SongViewLoader() {
   // Fetch full style (incl. backgroundImage) from DB if we have an ID
   useEffect(() => {
     const id = song?.id;
-    if (!id) return;
+    if (!id) { setReady(true); return; }
     fetch(`/api/songs/${id}`, { cache: "no-store" })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -39,7 +41,8 @@ export default function SongViewLoader() {
           setSongStyle(fullStyle);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setReady(true));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

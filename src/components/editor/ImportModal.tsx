@@ -12,6 +12,7 @@ interface ImportMeta {
 interface Props {
   onImport: (lines: SongLine[], meta?: ImportMeta) => void;
   onClose: () => void;
+  defaultTab?: "search" | "text" | "image";
 }
 
 const EXAMPLE = `Verse 1
@@ -21,8 +22,8 @@ const EXAMPLE = `Verse 1
 Chorus
 [C]The [G]sound of [Am]silence`;
 
-export default function ImportModal({ onImport, onClose }: Props) {
-  const [tab, setTab] = useState<"search" | "text" | "image">("search");
+export default function ImportModal({ onImport, onClose, defaultTab = "search" }: Props) {
+  const [tab, setTab] = useState<"search" | "text" | "image">(defaultTab);
 
   // Text tab state
   const [text, setText] = useState("");
