@@ -394,17 +394,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
             <button
               onClick={() => selectCategory(null)}
-              className={`flex items-center justify-between pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
+              className={`flex items-center gap-2 pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
                   ? "bg-white/20 text-white font-semibold border-l-indigo-300"
                   : "text-white/60 hover:bg-white/10 border-l-transparent"
               }`}
             >
-              <span>All Songs</span>
+              <span className="w-2 h-2 rounded-full shrink-0 bg-white/30" />
+              <span className="flex-1">All Songs</span>
               <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
             </button>
 
-            <div className="flex items-center gap-2 px-4 pt-4 pb-1">
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1">
               <span className="text-xs font-semibold uppercase tracking-widest text-white/30">Categories</span>
             </div>
 
