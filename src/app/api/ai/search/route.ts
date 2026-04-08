@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: `${PROMPT}\n\nSong request: ${query.trim()}` }] }],
-      tools: [{ googleSearch: {} }],
+      tools: [{ google_search: {} }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
     }),
   });
@@ -68,6 +68,11 @@ export async function POST(req: NextRequest) {
   // Join all text parts — grounding responses can split text across multiple parts
   const parts: any[] = data.candidates?.[0]?.content?.parts ?? [];
   const raw: string = parts.map((p: any) => p.text ?? "").join("");
+
+  console.log("Gemini search response — finishReason:", data.candidates?.[0]?.finishReason);
+  console.log("Gemini search response — parts count:", parts.length);
+  console.log("Gemini search response — raw length:", raw.length);
+  if (!raw) console.error("Gemini search empty response — full data:", JSON.stringify(data).slice(0, 2000));
 
   // Parse Title / Artist from first few lines (same logic as /api/ai/parse)
   const rawLines = raw.split(/\r?\n/);
