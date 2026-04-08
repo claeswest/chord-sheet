@@ -404,11 +404,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
             </button>
 
-            <div className="mx-3 my-3 h-px bg-white/20" />
-
-            <div className="flex items-center gap-2 px-4 pb-1">
+            <div className="flex items-center gap-2 px-4 pt-4 pb-1">
               <span className="text-xs font-semibold uppercase tracking-widest text-white/30">Categories</span>
-              <div className="flex-1 h-px bg-white/10" />
             </div>
 
 
