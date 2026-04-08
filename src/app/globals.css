@@ -40,25 +40,14 @@ body {
     margin: 18mm 18mm 24mm 18mm;
   }
 
-  html, body {
-    height: auto !important;
-    overflow: visible !important;
-    background: #fff !important;
-  }
-
-  /* Hide the editor UI; leave only the print view in the flow */
-  [data-no-print] {
+  /* #print-view is portalled to <body> directly, so hiding all body
+     children and then specifically showing #print-view is reliable. */
+  body > * {
     display: none !important;
   }
 
-  /* Make the root wrapper not clip the print view */
-  #song-editor-root {
-    display: block !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  #print-view {
+  /* ID specificity beats *, so this wins even with !important above */
+  body > #print-view {
     display: block !important;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12pt;

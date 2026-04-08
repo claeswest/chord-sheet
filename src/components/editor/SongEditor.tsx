@@ -488,9 +488,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     );
 
   return (
-    <div id="song-editor-root" className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white">
       {/* Toolbar */}
-      <header data-no-print className="flex items-center gap-3 px-6 py-3 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
+      <header className="flex items-center gap-3 px-6 py-3 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
@@ -632,7 +632,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         </div>
       </header>
 
-      <div data-no-print className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
         <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">

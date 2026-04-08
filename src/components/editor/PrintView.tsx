@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
@@ -25,6 +26,9 @@ interface Props {
 }
 
 export default function PrintView({ title, artist, lines, watermark = true, songStyle }: Props) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const s = songStyle ?? DEFAULT_STYLE;
 
   // When a background image is present, override @page margins to zero so the
@@ -41,6 +45,8 @@ export default function PrintView({ title, artist, lines, watermark = true, song
     return () => el.remove();
   }, [s.backgroundImage]);
 
+  if (!mounted) return null;
+
   // Convert style px sizes → pt for consistent print layout
   const toPt = (px: number) => Math.round(px * 72 / 96);
 
@@ -56,7 +62,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
 
   const bgStyle = backgroundStyle(s);
 
-  return (
+  const content = (
     <div
       id="print-view"
       className={watermark ? "watermarked" : ""}
@@ -164,4 +170,6 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       })}
     </div>
   );
+
+  return createPortal(content, document.body);
 }
