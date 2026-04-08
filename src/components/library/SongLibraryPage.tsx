@@ -530,7 +530,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         <main className="flex-1 px-6 py-6 min-w-0">
           <div className="max-w-4xl">
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
-            <div className="sticky top-0 z-10 bg-white pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6">
+            <div className={`sticky top-0 z-10 bg-white pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 transition-opacity duration-200 ${loading ? "invisible" : ""}`}>
               <input
                 ref={searchRef}
                 value={search}
