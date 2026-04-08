@@ -31,11 +31,14 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
   // Deep-clone the portal content (already has all inline styles / class names)
   const clone = source.cloneNode(true) as HTMLElement;
-  clone.style.display  = "block";
-  clone.style.position = "static";
-  clone.style.width    = "100%";
-  clone.style.margin   = "0";
-  clone.style.padding  = "0";
+  clone.style.display    = "block";
+  clone.style.position   = "static";
+  clone.style.width      = "100%";
+  clone.style.margin     = "0";
+  // Padding provides the text breathing room while letting the background
+  // image (if any) bleed to the full page edge (margin is 0 in html2pdf).
+  clone.style.padding    = "18mm 18mm 24mm 18mm";
+  clone.style.boxSizing  = "border-box";
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
@@ -48,7 +51,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {
-      margin:      [18, 18, 18, 18],   // mm: top, right, bottom, left
+      margin:      0,   // padding is on the clone itself so background covers full page
       filename,
       image:       { type: "jpeg", quality: 0.97 },
       html2canvas: {
