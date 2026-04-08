@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface Props {
   onSearch: () => void;
   onImport: () => void;
@@ -8,7 +10,7 @@ interface Props {
 
 export default function StartModal({ onSearch, onImport, onWriteMyself }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm px-6">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md px-6">
       <div className="w-full max-w-sm">
 
         {/* Header */}
@@ -19,7 +21,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-zinc-900">New chord sheet</h2>
-          <p className="text-zinc-400 mt-1.5 text-sm">How do you want to start?</p>
+          <p className="text-zinc-500 mt-1.5 text-sm">How do you want to start?</p>
         </div>
 
         {/* Options */}
@@ -48,7 +50,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
           {/* Import */}
           <button
             onClick={onImport}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
+            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
           >
             <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -67,7 +69,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
           {/* Write myself */}
           <button
             onClick={onWriteMyself}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
+            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
           >
             <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -84,6 +86,20 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
           </button>
 
         </div>
+
+        {/* Back link */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/songs"
+            className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors inline-flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to songs
+          </Link>
+        </div>
+
       </div>
     </div>
   );
