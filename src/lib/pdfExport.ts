@@ -141,7 +141,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
       const srcY   = pageStarts[i];
       const srcEnd = i + 1 < pageStarts.length ? pageStarts[i + 1] : contentCanvas.height;
-      const srcH   = Math.min(srcEnd - srcY, CONTENT_H_PX);
+      const srcH   = srcEnd - srcY;
 
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width  = PAGE_W_PX;
