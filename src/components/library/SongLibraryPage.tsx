@@ -394,7 +394,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
             <button
               onClick={() => selectCategory(null)}
-              className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
+              className={`flex items-center justify-between pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
                   ? "bg-white/20 text-white font-semibold border-l-indigo-300"
                   : "text-white/60 hover:bg-white/10 border-l-transparent"
@@ -404,20 +404,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
             </button>
 
-            <div className="mx-3 my-3 h-px bg-white/10" />
+            <div className="mx-3 my-3 h-px bg-white/20" />
 
             <div className="flex items-center gap-2 px-4 pb-1">
               <span className="text-xs font-semibold uppercase tracking-widest text-white/30">Categories</span>
               <div className="flex-1 h-px bg-white/10" />
-              <button
-                onClick={() => setShowAddCategory(true)}
-                className="text-white/30 hover:text-indigo-300 transition-colors"
-                title="Add category"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
             </div>
 
 
@@ -512,9 +503,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               ) : (
                 <button
                   onClick={() => setShowAddCategory(true)}
-                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-white/40 hover:text-indigo-300 hover:bg-white/5 transition-colors border-l-4 border-l-transparent"
+                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors border-l-4 border-l-transparent mt-1"
                 >
-                  <span className="w-2 h-2 rounded-full shrink-0 border border-white/25 border-dashed" />
+                  <span className="w-4 h-4 rounded-full shrink-0 bg-white/10 flex items-center justify-center text-white/60 text-base leading-none">+</span>
                   Add category
                 </button>
               )}
