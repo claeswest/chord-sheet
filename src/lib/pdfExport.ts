@@ -1,18 +1,15 @@
 /**
  * Generates and downloads a PDF of the chord sheet.
  *
- * Approach: html2canvas renders the content (without background), then we
- * manually compose each A4 page canvas by:
- *   1. Drawing the full-bleed background (color + image + overlay)
- *   2. Drawing the content slice offset by PADDING from top
- *
- * Page breaks are snapped to the gap between lyric/section blocks so no
- * line is ever bisected at a page boundary.
+ * Page-break strategy: render content on a transparent background, then scan
+ * the canvas pixel data for fully-transparent rows (gaps between lines).
+ * Break at the last transparent row at or before the page boundary — this is
+ * pixel-perfect and requires no DOM measurement.
  */
 
 const A4_W_MM    = 210;
 const A4_H_MM    = 297;
-const PADDING_MM = 20;   // top & bottom padding on every page
+const PADDING_MM = 18;   // top & bottom padding on every page
 const SIDE_MM    = 18;   // left & right padding
 const DPI        = 96;
 const SCALE      = 2;    // render at 2× for sharper text
@@ -22,9 +19,9 @@ const mmToPx = (mm: number) => Math.round(mm * (DPI / 25.4) * SCALE);
 const PAGE_W_PX    = mmToPx(A4_W_MM);
 const PAGE_H_PX    = mmToPx(A4_H_MM);
 const PADDING_PX   = mmToPx(PADDING_MM);
-const CONTENT_H_PX = PAGE_H_PX - 2 * PADDING_PX;   // usable content height per page
+const CONTENT_H_PX = PAGE_H_PX - 2 * PADDING_PX;
 
-/** Parse "linear-gradient(rgba(...), rgba(...)), url(data:...)" → { imageUrl, overlay } */
+/** Parse "linear-gradient(rgba(...)), url(data:...)" → { imageUrl, overlay } */
 function parseBgStyle(css: string): { imageUrl: string | null; overlay: string | null } {
   const urlMatch  = css.match(/url\(["']?(data:[^"')]+)["']?\)/);
   const rgbaMatch = css.match(/rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)/);
@@ -40,7 +37,6 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Draw image scaled to cover the full canvas (background-size: cover, centered) */
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
   const ia = img.naturalWidth / img.naturalHeight;
   const da = w / h;
@@ -50,30 +46,42 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 }
 
+/**
+ * Scan canvas pixel data for the best page-break row at or before maxY.
+ * We look for a row where every pixel is fully transparent (alpha < 8),
+ * meaning it's an empty gap between lyric blocks.
+ * We scan backwards from maxY so we get the LAST safe gap before the limit.
+ * We don't scan lower than 60% of maxY to avoid overly short pages.
+ */
+function findBreakRow(data: Uint8ClampedArray, width: number, maxY: number): number {
+  const minY = Math.round(maxY * 0.6);
+  for (let y = maxY; y >= minY; y--) {
+    let empty = true;
+    for (let x = 0; x < width; x++) {
+      if (data[(y * width + x) * 4 + 3] > 8) { empty = false; break; }
+    }
+    if (empty) return y;
+  }
+  return maxY; // no gap found — hard cut
+}
+
 export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
   const source = document.getElementById("print-view");
   if (!source) throw new Error("print-view element not found");
 
-  // ── 1. Parse background ───────────────────────────────────────────────────
   const rawBgImage = source.style.backgroundImage ?? "";
   const rawBgColor = source.style.background || source.style.backgroundColor || "#ffffff";
   const { imageUrl, overlay } = parseBgStyle(rawBgImage);
   const bgImage = imageUrl ? await loadImage(imageUrl).catch(() => null) : null;
 
-  const A4_W_CSS = Math.round(A4_W_MM * (DPI / 25.4)); // px at 1×
+  const A4_W_CSS = Math.round(A4_W_MM * (DPI / 25.4));
 
-  // ── 2. Build off-screen clone ─────────────────────────────────────────────
-  // Position to the LEFT of the viewport (not above it) so that Y coordinates
-  // are in the normal range — getBoundingClientRect is accurate.
+  // Build clone off-screen to the left (fixed top:0 so Y coords are valid)
   const wrapper = document.createElement("div");
   wrapper.style.cssText = [
-    "position:fixed",
-    `top:0`,
-    `left:-${A4_W_CSS + 200}px`,
-    `width:${A4_W_CSS}px`,
-    "pointer-events:none",
-    "margin:0", "padding:0", "border:none", "background:transparent",
-    "overflow:visible",
+    "position:fixed", "top:0", `left:-${A4_W_CSS + 200}px`,
+    `width:${A4_W_CSS}px`, "pointer-events:none",
+    "margin:0", "padding:0", "border:none", "background:transparent", "overflow:visible",
   ].join(";");
 
   const clone = source.cloneNode(true) as HTMLElement;
@@ -83,13 +91,12 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
   clone.style.margin          = "0";
   clone.style.padding         = `0 ${SIDE_MM}mm`;
   clone.style.boxSizing       = "border-box";
-  clone.style.backgroundImage = "none";        // bg drawn per-page separately
+  clone.style.backgroundImage = "none";
   clone.style.backgroundColor = "transparent";
 
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
-  // Wait for layout
   await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
   try {
@@ -98,42 +105,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       import("jspdf"),
     ]);
 
-    // ── 3. Measure block Y positions using getBoundingClientRect ──────────────
-    // The wrapper is off-screen left but Y=0, so rects have correct Y values.
-    const cloneTop = clone.getBoundingClientRect().top;
-
-    const blockEls = clone.querySelectorAll<HTMLElement>(
-      ".print-lyric-block, .print-section, .print-song-title, .print-song-artist"
-    );
-
-    // Collect block extents in canvas pixels (SCALE applied)
-    const blocks = Array.from(blockEls).map(el => {
-      const r = el.getBoundingClientRect();
-      return {
-        top:    Math.round((r.top    - cloneTop) * SCALE),
-        bottom: Math.round((r.bottom - cloneTop) * SCALE),
-      };
-    }).filter(b => b.bottom > b.top)
-      .sort((a, b) => a.top - b.top);
-
-    /**
-     * Find the best page-break point at or before targetY.
-     * We prefer breaking at a block's BOTTOM (after a complete line),
-     * falling back to the block's TOP (push entire block to next page).
-     */
-    function smartBreak(targetY: number): number {
-      let best = 0;
-      for (const b of blocks) {
-        // A block's bottom edge: safe to break here (block is complete above)
-        if (b.bottom <= targetY) best = Math.max(best, b.bottom);
-        // A block's top edge: also safe (block hasn't started yet)
-        else if (b.top <= targetY) best = Math.max(best, b.top);
-      }
-      // If we found a clean break, use it; otherwise fall back to hard cut
-      return best > 0 ? best : targetY;
-    }
-
-    // ── 4. Render content canvas ──────────────────────────────────────────────
+    // Render content at transparent background so empty rows have alpha=0
     const contentCanvas = await html2canvas(clone, {
       scale:           SCALE,
       useCORS:         true,
@@ -142,22 +114,26 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       windowWidth:     A4_W_CSS,
       scrollX:         0,
       scrollY:         0,
-      backgroundColor: null,   // transparent — bg drawn per-page
+      backgroundColor: null,
     });
 
-    // ── 5. Compute page break positions ───────────────────────────────────────
+    // Read all pixel data once — used for gap detection
+    const contentCtx  = contentCanvas.getContext("2d")!;
+    const pixelData   = contentCtx.getImageData(0, 0, contentCanvas.width, contentCanvas.height).data;
+
+    // Compute page break positions by scanning for transparent rows
     const pageStarts: number[] = [0];
     let curY = 0;
     while (curY < contentCanvas.height) {
-      const target = curY + CONTENT_H_PX;
-      if (target >= contentCanvas.height) break;
-      const breakY = smartBreak(target);
-      if (breakY <= curY) break;  // safety: avoid infinite loop
+      const limit = curY + CONTENT_H_PX;
+      if (limit >= contentCanvas.height) break;
+      const breakY = findBreakRow(pixelData, contentCanvas.width, limit);
+      if (breakY <= curY) break; // safety
       pageStarts.push(breakY);
       curY = breakY;
     }
 
-    // ── 6. Compose & save pages ───────────────────────────────────────────────
+    // Compose and save pages
     const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
     for (let i = 0; i < pageStarts.length; i++) {
@@ -165,24 +141,24 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
       const srcY   = pageStarts[i];
       const srcEnd = i + 1 < pageStarts.length ? pageStarts[i + 1] : contentCanvas.height;
-      const srcH   = srcEnd - srcY;
+      const srcH   = Math.min(srcEnd - srcY, CONTENT_H_PX);
 
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width  = PAGE_W_PX;
       pageCanvas.height = PAGE_H_PX;
       const ctx = pageCanvas.getContext("2d")!;
 
-      // a) Background color
+      // Background color
       ctx.fillStyle = rawBgColor || "#ffffff";
       ctx.fillRect(0, 0, PAGE_W_PX, PAGE_H_PX);
 
-      // b) Background image + overlay
+      // Background image + overlay
       if (bgImage) {
         drawCover(ctx, bgImage, PAGE_W_PX, PAGE_H_PX);
         if (overlay) { ctx.fillStyle = overlay; ctx.fillRect(0, 0, PAGE_W_PX, PAGE_H_PX); }
       }
 
-      // c) Content slice inset by PADDING_PX from top
+      // Content slice placed PADDING_PX from the top
       if (srcH > 0) {
         ctx.drawImage(contentCanvas, 0, srcY, PAGE_W_PX, srcH, 0, PADDING_PX, PAGE_W_PX, srcH);
       }
