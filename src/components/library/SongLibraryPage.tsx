@@ -420,22 +420,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </button>
             </div>
 
-            {showAddCategory && (
-              <div className="px-4 pb-2">
-                <input
-                  autoFocus
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreateCategory();
-                    if (e.key === "Escape") { setShowAddCategory(false); setNewCategoryName(""); }
-                  }}
-                  onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
-                  placeholder="Category name…"
-                  className="w-full text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
-                />
-              </div>
-            )}
 
             <div className="flex-1 overflow-y-auto pb-2">
               {categories.map((cat) => (
@@ -508,6 +492,32 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   </button>
                 </div>
               ))}
+
+              {/* Add category row */}
+              {showAddCategory ? (
+                <div className="pl-3 pr-4 py-1.5">
+                  <input
+                    autoFocus
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCreateCategory();
+                      if (e.key === "Escape") { setShowAddCategory(false); setNewCategoryName(""); }
+                    }}
+                    onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
+                    placeholder="Category name…"
+                    className="w-full text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAddCategory(true)}
+                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-white/40 hover:text-indigo-300 hover:bg-white/5 transition-colors border-l-4 border-l-transparent"
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0 border border-white/25 border-dashed" />
+                  Add category
+                </button>
+              )}
 
             </div>
           </aside>
