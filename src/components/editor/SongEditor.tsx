@@ -27,6 +27,7 @@ import FindReplaceModal from "./FindReplaceModal";
 import StylePanel from "./StylePanel";
 import { transposeSong, transposeChord, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
+import StartModal from "./StartModal";
 import { saveSong, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
@@ -50,6 +51,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(false);
+  // Start modal: only show on a genuinely blank new song
+  const isBlankNew = !initialSong || (
+    (initialSong.lines?.length ?? 0) <= 1 &&
+    (initialSong.lines?.[0] as any)?.text === "" &&
+    ((initialSong.lines?.[0] as any)?.chords?.length ?? 0) === 0
+  );
+  const [startModalDismissed, setStartModalDismissed] = useState(!isBlankNew);
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [semitones, setSemitones] = useState(initialSong?.semitones ?? 0);
   const [mounted, setMounted] = useState(false);
@@ -717,57 +725,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 }}
               />
             </div>
-            {/* Empty state — shown when there is no content yet */}
-            {lines.length === 1 &&
+            {/* Subtle empty hint — shown after start modal is dismissed */}
+            {startModalDismissed &&
+              lines.length === 1 &&
               lines[0].type === "lyric" &&
               (lines[0] as LyricLine).text === "" &&
               (lines[0] as LyricLine).chords.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-14 gap-7 text-center">
-                  {/* Icon */}
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 text-indigo-400">
-                      <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
-                    </svg>
-                  </div>
-
-                  {/* Heading */}
-                  <div className="space-y-1.5">
-                    <p className="text-lg font-semibold text-zinc-800">Start your chord sheet</p>
-                    <p className="text-sm text-zinc-400">
-                      Search any song by name, import existing chords, or type below.
-                    </p>
-                  </div>
-
-                  {/* Action cards */}
-                  <div className="flex gap-3 w-full max-w-xs">
-                    {/* AI Search — primary */}
-                    <button
-                      onClick={() => setShowImport("search")}
-                      className="flex-1 flex flex-col items-center gap-2 px-4 py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-md transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
-                      </svg>
-                      <span className="text-sm font-semibold">Search a song</span>
-                      <span className="text-xs text-indigo-200 leading-snug">Find any song's chords with AI</span>
-                    </button>
-
-                    {/* Import — secondary */}
-                    <button
-                      onClick={() => setShowImport("text")}
-                      className="flex-1 flex flex-col items-center gap-2 px-4 py-5 bg-white hover:bg-zinc-50 text-zinc-700 rounded-2xl border border-zinc-200 shadow-sm transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8l-3-3m3 3l3-3" />
-                      </svg>
-                      <span className="text-sm font-semibold">Import</span>
-                      <span className="text-xs text-zinc-400 leading-snug">Text · Image · Clipboard</span>
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-zinc-300">or type lyrics directly in the editor below</p>
-                </div>
+                <p className="text-center text-sm text-zinc-300 py-10">
+                  Type your first lyric line below, or use the menu to search / import.
+                </p>
               )}
 
             {mounted ? (
@@ -861,6 +827,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
       {/* Print view — invisible on screen, rendered by @media print */}
       <PrintView title={title} artist={artist} lines={displayLines} songStyle={songStyle} watermark />
+
+      {/* Start modal — full-page overlay for blank new songs */}
+      {mounted && !startModalDismissed && (
+        <StartModal
+          onSearch={() => { setStartModalDismissed(true); setShowImport("search"); }}
+          onImport={() => { setStartModalDismissed(true); setShowImport("text"); }}
+          onWriteMyself={() => setStartModalDismissed(true)}
+        />
+      )}
 
       {/* Import modal */}
       {showImport && (
