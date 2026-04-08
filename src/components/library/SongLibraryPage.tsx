@@ -396,16 +396,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {isLoggedIn && (
           <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
             <div className="px-3 pb-3">
-              <Link
-                href="/editor/new"
-                className="flex items-center justify-center gap-1.5 w-full text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
-                  <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
-                </svg>
-                New Song
-              </Link>
-            </div>
 
             <button
               onClick={() => selectCategory(null)}
@@ -551,6 +541,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 className="w-full max-w-xs text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
               />
               <div className="flex-1" />
+              <Link
+                href="/editor/new"
+                className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
+                  <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
+                </svg>
+                New Song
+              </Link>
               {/* List / Grid toggle */}
               {!loading && (
                 <div className="flex items-center gap-0.5 bg-white border border-zinc-200 rounded-lg p-0.5 shrink-0">
