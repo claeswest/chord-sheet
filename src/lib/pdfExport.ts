@@ -15,16 +15,18 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
   // A4 at 96 dpi ≈ 794 px wide
   const A4_PX_WIDTH = 794;
 
-  // Create a temporary off-screen wrapper that has real layout
+  // Create a temporary off-screen wrapper that has real layout.
+  // No padding here — margins are added by html2pdf itself.
   const wrapper = document.createElement("div");
   wrapper.style.cssText = [
     "position:absolute",
     "top:-99999px",
     "left:0",
     `width:${A4_PX_WIDTH}px`,
-    "background:#fff",
-    "-webkit-print-color-adjust:exact",
-    "print-color-adjust:exact",
+    "margin:0",
+    "padding:0",
+    "border:none",
+    "background:transparent",
   ].join(";");
 
   // Deep-clone the portal content (already has all inline styles / class names)
@@ -32,6 +34,8 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
   clone.style.display  = "block";
   clone.style.position = "static";
   clone.style.width    = "100%";
+  clone.style.margin   = "0";
+  clone.style.padding  = "0";
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
