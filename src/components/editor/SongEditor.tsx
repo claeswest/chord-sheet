@@ -32,6 +32,7 @@ import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
+import { downloadPdf } from "@/lib/pdfExport";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -57,6 +58,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const [shareFlash, setShareFlash] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
   const [showOverflow, setShowOverflow] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
   // ── History (undo / redo) ────────────────────────────────────────────────────
   const MAX_HISTORY = 100;
@@ -580,10 +582,25 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
                   Play <span className="ml-auto text-xs text-zinc-400 font-mono">[P]</span>
                 </button>
-                <button onClick={() => { window.print(); setShowOverflow(false); }}
-                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3Zm-3 11H8v-5h8v5Zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-1-9H6v4h12V3Z"/></svg>
-                  Print
+                <button
+                  disabled={pdfLoading}
+                  onClick={async () => {
+                    setShowOverflow(false);
+                    setPdfLoading(true);
+                    try {
+                      await downloadPdf(`${title || "chord-sheet"}.pdf`);
+                    } finally {
+                      setPdfLoading(false);
+                    }
+                  }}
+                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors disabled:opacity-40"
+                >
+                  {pdfLoading ? (
+                    <svg className="w-4 h-4 text-zinc-400 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3Zm-3 11H8v-5h8v5Zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-1-9H6v4h12V3Z"/></svg>
+                  )}
+                  {pdfLoading ? "Generating PDF…" : "Download PDF"}
                 </button>
               </div>
             )}
