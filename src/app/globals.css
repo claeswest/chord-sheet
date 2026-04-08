@@ -31,15 +31,17 @@ body {
 
 /* ── Print styles ─────────────────────────────────────────────────────────── */
 
+/* @page must be at the top level (not inside @media print) for Chrome to
+   reliably apply margins and size to every page of the PDF. */
+@page {
+  size: A4;
+  margin: 18mm 18mm 24mm 18mm;
+}
+
 /* Hide on screen */
 #print-view { display: none; }
 
 @media print {
-  @page {
-    size: A4;
-    margin: 18mm 18mm 24mm 18mm;
-  }
-
   /* #print-view is portalled to <body> directly, so hiding all body
      children and then specifically showing #print-view is reliable. */
   body > * {

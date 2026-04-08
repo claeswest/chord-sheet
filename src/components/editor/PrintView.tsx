@@ -37,10 +37,10 @@ export default function PrintView({ title, artist, lines, watermark = true, song
     if (!s.backgroundImage) return;
     const el = document.createElement("style");
     el.id = "print-full-bleed";
-    el.textContent = `@media print {
+    el.textContent = `
       @page { margin: 0; }
-      #print-view { padding: 18mm 18mm 24mm 18mm !important; }
-    }`;
+      @media print { #print-view { padding: 18mm 18mm 24mm 18mm !important; } }
+    `;
     document.head.appendChild(el);
     return () => el.remove();
   }, [s.backgroundImage]);
