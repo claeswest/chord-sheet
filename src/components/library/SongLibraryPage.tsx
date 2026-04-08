@@ -395,8 +395,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Sidebar — logged-in users only */}
         {isLoggedIn && (
           <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
-            <div className="px-3 pb-3">
-
             <button
               onClick={() => selectCategory(null)}
               className={`flex items-center justify-between pl-3 pr-4 py-2 text-sm w-full text-left transition-colors border-l-4 ${
