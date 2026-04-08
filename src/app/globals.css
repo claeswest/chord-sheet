@@ -42,6 +42,11 @@ body {
 
   /* Hide everything, then reveal only the print view and its children.
      visibility can be overridden by children; display cannot when a parent is hidden. */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -49,10 +54,12 @@ body {
   #print-view {
     visibility: visible;
     display: block;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
+    height: auto;
+    overflow: visible;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12pt;
     color: #000;
