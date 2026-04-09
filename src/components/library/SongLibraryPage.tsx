@@ -107,6 +107,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [showAddSubCategory, setShowAddSubCategory] = useState<string | null>(null); // parentId
+  const [newSubCategoryName, setNewSubCategoryName] = useState("");
 
   // Drag and drop — category assignment
   const [dragSongId, setDragSongId] = useState<string | null>(null);
@@ -179,6 +181,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     setCategories((prev) => [...prev, cat]);
   };
 
+  const handleCreateSubCategory = async (parentId: string) => {
+    const name = newSubCategoryName.trim();
+    setNewSubCategoryName("");
+    setShowAddSubCategory(null);
+    if (!name) return;
+    const cat = await createCategory(name, parentId);
+    setCategories((prev) => [...prev, cat]);
+  };
+
   const startRename = (cat: DbCategory) => {
     setEditingCategoryId(cat.id);
     setEditingCategoryName(cat.name);
@@ -193,10 +204,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   };
 
   const handleDeleteCategory = async (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-    setSongs((prev) => prev.map((s) => ({ ...s, categoryIds: s.categoryIds.filter((cid) => cid !== id) })));
-    if (selectedCategoryId === id) setSelectedCategoryId(null);
-    await deleteCategory(id);
+    // Collect the category + all its children so local state stays consistent
+    const childIds = categories.filter((c) => c.parentId === id).map((c) => c.id);
+    const allIds = [id, ...childIds];
+    setCategories((prev) => prev.filter((c) => !allIds.includes(c.id)));
+    setSongs((prev) => prev.map((s) => ({ ...s, categoryIds: s.categoryIds.filter((cid) => !allIds.includes(cid)) })));
+    if (selectedCategoryId && allIds.includes(selectedCategoryId)) setSelectedCategoryId(null);
+    await deleteCategory(id); // DB cascade removes children automatically
   };
 
   // ── Drag and drop ────────────────────────────────────────────────────────────
@@ -301,9 +315,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   };
 
   // ── Filtering ────────────────────────────────────────────────────────────────
+  // When a parent category is selected, also include songs from its subcategories
+  const selectedChildIds = selectedCategoryId
+    ? categories.filter((c) => c.parentId === selectedCategoryId).map((c) => c.id)
+    : [];
+
   const filtered = songs
     .filter((s) => {
-      if (selectedCategoryId && !s.categoryIds.includes(selectedCategoryId)) return false;
+      if (selectedCategoryId) {
+        const inSelected = s.categoryIds.includes(selectedCategoryId);
+        const inChild = selectedChildIds.some((id) => s.categoryIds.includes(id));
+        if (!inSelected && !inChild) return false;
+      }
       const q = search.toLowerCase();
       return !q || s.title.toLowerCase().includes(q) || (s.artist ?? "").toLowerCase().includes(q);
     })
@@ -412,83 +435,146 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
 
             <div className="flex-1 overflow-y-auto pb-2">
-              {categories.map((cat) => (
-                <div
-                  key={cat.id}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
-                  onDragLeave={(e) => {
-                    // Only clear when the pointer actually leaves this element,
-                    // not when it moves over a child element inside it.
-                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                      setDragOverCategoryId(null);
-                    }
-                  }}
-                  onDrop={(e) => handleDrop(e, cat.id)}
-                  className={`group flex items-center gap-1 pl-3 pr-4 transition-all duration-100 border-l-4 ${
-                    dragSongId ? "py-3" : "py-1.5"
-                  } ${
-                    dragOverCategoryId === cat.id
-                      ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400 border-l-transparent"
-                      : dragSongId
-                      ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
-                      : selectedCategoryId === cat.id
-                      ? `bg-white/20 ${getCatColor(cat.id, categories).sidebarSelected}`
-                      : "hover:bg-white/10 border-l-transparent"
-                  }`}
-                >
-                  {editingCategoryId === cat.id ? (
-                    <input
-                      autoFocus
-                      value={editingCategoryName}
-                      onChange={(e) => setEditingCategoryName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleRenameCategory(cat.id);
-                        if (e.key === "Escape") setEditingCategoryId(null);
-                      }}
-                      onBlur={() => handleRenameCategory(cat.id)}
-                      className="flex-1 text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
-                      onDoubleClick={() => startRename(cat)}
-                      className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${
-                        selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"
+              {/* Render parent categories, each followed by their subcategories */}
+              {categories.filter((c) => !c.parentId).map((cat) => {
+                const children = categories.filter((c) => c.parentId === cat.id);
+                // Count: songs directly in parent + songs in any child
+                const allChildIds = children.map((c) => c.id);
+                const totalCount = songs.filter((s) =>
+                  s.categoryIds.includes(cat.id) || allChildIds.some((cid) => s.categoryIds.includes(cid))
+                ).length;
+
+                return (
+                  <div key={cat.id}>
+                    {/* Parent category row */}
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
+                      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
+                      onDrop={(e) => handleDrop(e, cat.id)}
+                      className={`group flex items-center gap-1 pl-3 pr-2 transition-all duration-100 border-l-4 ${
+                        dragSongId ? "py-3" : "py-1.5"
+                      } ${
+                        dragOverCategoryId === cat.id
+                          ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400 border-l-transparent"
+                          : dragSongId
+                          ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
+                          : selectedCategoryId === cat.id
+                          ? `bg-white/20 ${getCatColor(cat.id, categories).sidebarSelected}`
+                          : "hover:bg-white/10 border-l-transparent"
                       }`}
-                      title="Double-click to rename"
                     >
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
-                      {cat.name}
-                    </button>
-                  )}
-                  <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{cat.songIds.length}</span>
-                  {/* Rename */}
-                  <button
-                    onClick={() => startRename(cat)}
-                    className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
-                    title="Rename category"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
-                    </svg>
-                  </button>
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDeleteCategory(cat.id)}
-                    className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
-                    title="Delete category"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+                      {editingCategoryId === cat.id ? (
+                        <input autoFocus value={editingCategoryName}
+                          onChange={(e) => setEditingCategoryName(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(cat.id); if (e.key === "Escape") setEditingCategoryId(null); }}
+                          onBlur={() => handleRenameCategory(cat.id)}
+                          className="flex-1 text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
+                          onDoubleClick={() => startRename(cat)}
+                          className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"}`}
+                          title="Double-click to rename"
+                        >
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
+                          {cat.name}
+                        </button>
+                      )}
+                      <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{totalCount}</span>
+                      {/* Add subcategory */}
+                      <button onClick={() => { setShowAddSubCategory(cat.id); setNewSubCategoryName(""); }}
+                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0 ml-0.5"
+                        title="Add subcategory">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg>
+                      </button>
+                      {/* Rename */}
+                      <button onClick={() => startRename(cat)}
+                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
+                        title="Rename">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+                      </button>
+                      {/* Delete */}
+                      <button onClick={() => handleDeleteCategory(cat.id)}
+                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                        title="Delete">×</button>
+                    </div>
+
+                    {/* Subcategory rows */}
+                    {children.map((sub) => (
+                      <div key={sub.id}>
+                        <div
+                          onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(sub.id); }}
+                          onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
+                          onDrop={(e) => handleDrop(e, sub.id)}
+                          className={`group flex items-center gap-1 pl-8 pr-2 transition-all duration-100 border-l-4 border-l-transparent ${
+                            dragSongId ? "py-2.5" : "py-1"
+                          } ${
+                            dragOverCategoryId === sub.id
+                              ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400"
+                              : dragSongId
+                              ? "bg-white/5 ring-1 ring-inset ring-white/10"
+                              : selectedCategoryId === sub.id
+                              ? "bg-white/15"
+                              : "hover:bg-white/10"
+                          }`}
+                        >
+                          <span className="text-white/20 text-xs shrink-0 mr-0.5">↳</span>
+                          {editingCategoryId === sub.id ? (
+                            <input autoFocus value={editingCategoryName}
+                              onChange={(e) => setEditingCategoryName(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(sub.id); if (e.key === "Escape") setEditingCategoryId(null); }}
+                              onBlur={() => handleRenameCategory(sub.id)}
+                              className="flex-1 text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
+                            />
+                          ) : (
+                            <button
+                              onClick={() => selectCategory(sub.id === selectedCategoryId ? null : sub.id)}
+                              onDoubleClick={() => startRename(sub)}
+                              className={`flex-1 text-left text-xs truncate min-w-0 ${selectedCategoryId === sub.id ? "text-white font-semibold" : "text-white/50"}`}
+                              title="Double-click to rename"
+                            >
+                              {sub.name}
+                            </button>
+                          )}
+                          <span className="text-xs bg-white/10 text-white/30 px-1.5 py-0.5 rounded-full shrink-0">{sub.songIds.length}</span>
+                          {/* Rename */}
+                          <button onClick={() => startRename(sub)}
+                            className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
+                            title="Rename">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+                          </button>
+                          {/* Delete */}
+                          <button onClick={() => handleDeleteCategory(sub.id)}
+                            className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                            title="Delete">×</button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add subcategory input */}
+                    {showAddSubCategory === cat.id && (
+                      <div className="pl-8 pr-3 py-1">
+                        <input autoFocus value={newSubCategoryName}
+                          onChange={(e) => setNewSubCategoryName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleCreateSubCategory(cat.id);
+                            if (e.key === "Escape") { setShowAddSubCategory(null); setNewSubCategoryName(""); }
+                          }}
+                          onBlur={() => { if (newSubCategoryName.trim()) handleCreateSubCategory(cat.id); else setShowAddSubCategory(null); }}
+                          placeholder="Subcategory name…"
+                          className="w-full text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* Add category row */}
               {showAddCategory ? (
-                <div className="pl-3 pr-4 py-1.5">
-                  <input
-                    autoFocus
-                    value={newCategoryName}
+                <div className="pl-3 pr-4 py-1.5 mt-1">
+                  <input autoFocus value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleCreateCategory();
@@ -500,8 +586,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   />
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowAddCategory(true)}
+                <button onClick={() => setShowAddCategory(true)}
                   className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors border-l-4 border-l-transparent mt-1"
                 >
                   <span className="w-4 h-4 rounded-full shrink-0 bg-white/10 flex items-center justify-center text-white/60 text-base leading-none">+</span>

@@ -2,6 +2,7 @@ export interface DbCategory {
   id: string;
   name: string;
   order: number;
+  parentId: string | null;
   songIds: string[];
 }
 
@@ -11,11 +12,11 @@ export async function fetchCategories(): Promise<DbCategory[]> {
   return res.json();
 }
 
-export async function createCategory(name: string): Promise<DbCategory> {
+export async function createCategory(name: string, parentId?: string | null): Promise<DbCategory> {
   const res = await fetch("/api/categories", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, parentId: parentId ?? null }),
   });
   if (!res.ok) throw new Error("Failed to create category");
   return res.json();

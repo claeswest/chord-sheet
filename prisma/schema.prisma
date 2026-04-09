@@ -94,10 +94,13 @@ model Category {
   userId    String
   name      String
   order     Int      @default(0)
+  parentId  String?
   createdAt DateTime @default(now())
 
-  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  songs SongCategory[]
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  songs    SongCategory[]
+  parent   Category?      @relation("Subcategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[]     @relation("Subcategories")
 
   @@index([userId])
 }
