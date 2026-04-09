@@ -522,14 +522,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
-        {isLoggedIn && (
-          <>
-            <div className="w-px h-5 bg-white/20" />
-            <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
-              ← Songs <kbd className="text-xs text-white/30 font-mono">[S]</kbd>
-            </Link>
-          </>
-        )}
+        <>
+          <div className="w-px h-5 bg-white/20" />
+          <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+            ← Songs {isLoggedIn && <kbd className="text-xs text-white/30 font-mono">[S]</kbd>}
+          </Link>
+        </>
         <div className="flex items-center gap-2 ml-auto">
           {/* Undo / Redo */}
           <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
