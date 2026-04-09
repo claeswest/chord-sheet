@@ -688,7 +688,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </svg>
                         <div>
                           <p className="text-sm font-medium text-zinc-500">No songs in <span className="text-zinc-700">"{catName}"</span> yet</p>
-                          <p className="text-xs mt-1 text-zinc-400">Drag a song from the list here, or pick a song and drop it onto this category in the sidebar.</p>
+                          <p className="text-xs mt-1 text-zinc-400">Go to <span className="font-medium text-zinc-500">All Songs</span>, then drag a song and drop it onto this category in the sidebar.</p>
                         </div>
                       </div>
                     );
