@@ -342,7 +342,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu((v) => !v)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-2 rounded-lg px-2 py-0.5 hover:bg-white/10 transition-colors"
             >
               {userImage
                 ? <img src={userImage} alt={userName ?? ""} className="w-7 h-7 rounded-full ring-1 ring-white/20" />
