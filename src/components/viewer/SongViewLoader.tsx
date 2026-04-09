@@ -61,7 +61,7 @@ export default function SongViewLoader() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <div className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center gap-4 shrink-0">
+      <div className="bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center gap-4 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>

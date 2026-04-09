@@ -518,7 +518,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Toolbar */}
-      <header className="flex items-center gap-3 px-6 py-3 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
+      <header className="flex items-center gap-3 px-6 h-14 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
