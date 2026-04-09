@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WelcomeModal from "./WelcomeModal";
+import GuestImportBanner from "./GuestImportBanner";
 import { encodeSong } from "@/lib/songUrl";
 import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, type DbSong } from "@/lib/songDb";
 import { listSongs, deleteSong } from "@/lib/storage";
@@ -47,6 +48,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [importBannerKey, setImportBannerKey] = useState(0); // bump to re-evaluate after import
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "title" | "artist" | null>(null);
@@ -612,6 +614,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 </span>
               )}
             </div>
+
+            {/* Guest song import banner — shown to logged-in users who have orphaned localStorage songs */}
+            {isLoggedIn && !loading && typeof window !== "undefined" && !localStorage.getItem("guestImportDismissed") && (
+              <GuestImportBanner
+                key={importBannerKey}
+                onImported={() => {
+                  setImportBannerKey((k) => k + 1);
+                  // Re-fetch songs from DB so the newly imported songs appear
+                  fetchSongs().then((db) =>
+                    setSongs(db.map((s) => ({ ...s, categoryIds: s.categoryIds ?? [], source: "db" as const })))
+                  );
+                }}
+              />
+            )}
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-24 gap-5">
