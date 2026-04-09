@@ -51,6 +51,12 @@ export default function LoginPage() {
         <p className="text-xs text-zinc-300 mt-8">
           By signing in you agree to our terms of service
         </p>
+
+        <div className="mt-6 pt-6 border-t border-zinc-100">
+          <Link href="/songs" className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
+            ← Continue without an account
+          </Link>
+        </div>
       </div>
     </div>
   );
