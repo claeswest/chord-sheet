@@ -9,6 +9,7 @@ interface Props {
   section: SectionHeader;
   onUpdate: (label: string) => void;
   onDelete: () => void;
+  onDuplicate: () => void;
   color?: string;
   fontSize?: number;
   bold?: boolean;
@@ -17,7 +18,7 @@ interface Props {
   showDivider?: boolean;
 }
 
-export default function SectionHeaderBlock({ section, onUpdate, onDelete, color = "#4f46e5", fontSize = 11, bold = true, italic = false, align = "left", showDivider = true }: Props) {
+export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDuplicate, color = "#4f46e5", fontSize = 11, bold = true, italic = false, align = "left", showDivider = true }: Props) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,6 +79,17 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, color 
         <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
       )}
 
+      <button
+        onClick={onDuplicate}
+        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-indigo-600 transition-opacity rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
+        tabIndex={-1}
+        title="Duplicate section"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+      </button>
       <button
         onClick={onDelete}
         className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-red-500 transition-opacity rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"

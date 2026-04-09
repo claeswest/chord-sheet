@@ -269,6 +269,21 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     });
   }, [pushSnap]);
 
+  const duplicateLine = useCallback((id: string) => {
+    setLines((prev) => {
+      const idx = prev.findIndex((l) => l.id === id);
+      if (idx === -1) return prev;
+      const original = prev[idx];
+      const copy: SongLine = original.type === "lyric"
+        ? { ...original, id: genId(), chords: (original as LyricLine).chords.map((c) => ({ ...c, id: genId() })) }
+        : { ...original, id: genId() };
+      const next = [...prev];
+      next.splice(idx + 1, 0, copy);
+      pushSnap(next);
+      return next;
+    });
+  }, [pushSnap]);
+
   const deleteLine = useCallback((id: string) => {
     setLines((prev) => {
       if (prev.length === 1) return prev;
@@ -481,6 +496,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         onDeleteChord={(cid) => deleteChord(line.id, cid)}
         onAddLineAfter={() => addLineAfter(line.id)}
         onDelete={() => deleteLine(line.id)}
+        onDuplicate={() => duplicateLine(line.id)}
         songStyle={songStyle}
       />
     ) : (
@@ -488,6 +504,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         section={line as SectionHeader}
         onUpdate={(label) => updateSection(line.id, label)}
         onDelete={() => deleteLine(line.id)}
+        onDuplicate={() => duplicateLine(line.id)}
         color={songStyle.section?.color ?? songStyle.chords.color ?? "#4f46e5"}
         fontSize={songStyle.section?.fontSize ?? 11}
         bold={songStyle.section?.bold ?? true}
