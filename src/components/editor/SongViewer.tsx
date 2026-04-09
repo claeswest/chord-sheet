@@ -168,7 +168,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
 
   return (
     <div
-      className="relative flex flex-col h-screen"
+      className="relative flex flex-col flex-1 min-h-0"
       style={backgroundStyle(s)}
       onMouseMove={() => setShowControls(true)}
     >

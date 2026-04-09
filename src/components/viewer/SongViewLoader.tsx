@@ -60,8 +60,8 @@ export default function SongViewLoader() {
   const editUrl = `/editor/new?song=${encoded}`;
 
   return (
-    <div>
-      <div className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center gap-4">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <div className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center gap-4 shrink-0">
         <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
