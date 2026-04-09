@@ -590,15 +590,45 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-zinc-400">
                 {songs.length === 0 ? (
-                  /* Library is totally empty */
-                  <>
-                    <p className="text-base font-medium mb-2">No songs yet</p>
-                    <p className="text-sm mb-6">Create your first chord sheet to get started.</p>
-                    <Link href="/editor/new"
-                      className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                      + New Song
-                    </Link>
-                  </>
+                  /* Library is totally empty — welcoming empty state */
+                  <div className="flex flex-col items-center py-16 gap-6 max-w-md mx-auto text-center">
+                    {/* Bouncing notes */}
+                    <div className="flex items-end gap-3 mb-2">
+                      {[0, 1, 2].map((i) => (
+                        <svg key={i} viewBox="0 0 24 24" fill="currentColor"
+                          className="w-7 h-7 text-indigo-300"
+                          style={{ animation: "noteJump 1.1s ease-in-out infinite", animationDelay: `${i * 0.18}s` }}>
+                          <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
+                        </svg>
+                      ))}
+                      <style>{`@keyframes noteJump{0%,100%{transform:translateY(0);opacity:0.5}40%{transform:translateY(-10px);opacity:1}60%{transform:translateY(-6px);opacity:0.9}}`}</style>
+                    </div>
+
+                    <div>
+                      <p className="text-xl font-semibold text-zinc-800 mb-2">Welcome to ChordSheetCreator</p>
+                      <p className="text-sm text-zinc-400 leading-relaxed">
+                        Search any song by name and get a full chord sheet in seconds — or import, paste, or write one from scratch.
+                      </p>
+                    </div>
+
+                    {/* Three quick-start options */}
+                    <div className="flex flex-col gap-2 w-full max-w-xs">
+                      <Link href="/editor/new"
+                        className="flex items-center gap-3 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors">
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35"/>
+                        </svg>
+                        Search a song with AI
+                      </Link>
+                      <Link href="/editor/new"
+                        className="flex items-center gap-3 px-4 py-3 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium rounded-xl border border-zinc-200 transition-colors">
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                        Start a blank chord sheet
+                      </Link>
+                    </div>
+                  </div>
                 ) : selectedCategoryId && !search ? (
                   /* Named category is empty — show drag hint */
                   (() => {
