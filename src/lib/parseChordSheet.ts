@@ -24,12 +24,31 @@ function isChordLine(line: string): boolean {
   return chordChars / nonWhitespace > 0.6;
 }
 
-/** Known section header keywords */
-const SECTION_RE =
+/** Known section header keywords (any language welcome via the bracket rule below) */
+const SECTION_KEYWORD_RE =
   /^\s*\[?(?:intro|verse\s*\d*|pre-?chorus|chorus|bridge|outro|solo|interlude|instrumental|hook|refrain|tag|coda|breakdown)\]?\s*$/i;
 
+/**
+ * Also treat any line that is ENTIRELY wrapped in [brackets] as a section,
+ * as long as it is short (≤ 30 chars inside) and doesn't look like an inline
+ * chord annotation (i.e. content doesn't start with a chord root A-G).
+ * Catches e.g. [Refräng], [Vers 1], [Brygga], [Omkvæd] etc.
+ */
+const BRACKETED_LABEL_RE = /^\[([^\]]{1,30})\]$/;
+
 function isSectionHeader(line: string): boolean {
-  return SECTION_RE.test(line);
+  const trimmed = line.trim();
+  if (SECTION_KEYWORD_RE.test(trimmed)) return true;
+  const m = trimmed.match(BRACKETED_LABEL_RE);
+  if (m) {
+    // Exclude if it looks like a chord: starts with A-G optionally followed by chord suffix
+    const inner = m[1].trim();
+    if (/^[A-G][#b]?(maj|min|m|dim|aug|sus|add|\d|\/|$)/i.test(inner)) return false;
+    // Exclude if it contains multiple words that look like lyrics (> 4 words)
+    if (inner.split(/\s+/).length > 4) return false;
+    return true;
+  }
+  return false;
 }
 
 /**
