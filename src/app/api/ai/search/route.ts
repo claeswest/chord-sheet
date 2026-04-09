@@ -29,6 +29,8 @@ SECTION LABELS — put on their own line, no brackets:
   Outro
 
 RULES:
+- If the request includes an artist name, ALWAYS transcribe that specific artist's version — never a cover or a different song with the same title
+- If multiple songs share the same title and no artist is specified, pick the most globally well-known / most-streamed version
 - Include all major sections (intro, verses, choruses, bridge, outro if applicable)
 - Use standard chord notation: Am, G7, Cmaj7, D/F#, Bb, F#m, Dsus2, etc.
 - If the song has a capo, note it on the first line as: Capo {fret}
