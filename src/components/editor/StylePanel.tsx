@@ -107,6 +107,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [bgLoading, setBgLoading] = useState(false);
   const [bgError, setBgError] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
+  const [showBgPopup, setShowBgPopup] = useState(false);
   const [bgStyle, setBgStyle] = useState<BgStyleId>("abstract");
 
   const handleAiStyle = async () => {
@@ -159,6 +160,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       const compressed = await compressImage(data.image);
       onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
       setBgPrompt(data.prompt ?? "");
+      setShowBgPopup(true);
     } catch (e: any) {
       setBgError(e?.message ?? "Network error");
     } finally {
@@ -173,7 +175,38 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const overlayOpacity = style.overlayOpacity ?? 0.5;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-zinc-50">
+    <div className="flex-1 overflow-y-auto bg-zinc-50 relative">
+
+      {/* ── Background generated popup ── */}
+      {showBgPopup && style.backgroundImage && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden">
+            {/* Image preview */}
+            <div className="w-full h-32 overflow-hidden">
+              <img src={style.backgroundImage} alt="Generated background" className="w-full h-full object-cover" />
+            </div>
+            {/* Content */}
+            <div className="px-4 py-4 space-y-3">
+              {bgPrompt && (
+                <div>
+                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Image description</p>
+                  <p className="text-xs text-zinc-600 leading-relaxed italic">"{bgPrompt}"</p>
+                </div>
+              )}
+              <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2.5">
+                <p className="text-xs font-semibold text-indigo-700 mb-0.5">Tip: use the Fade slider</p>
+                <p className="text-xs text-indigo-600 leading-snug">Drag it to blend the image softly behind your lyrics — lower values show more of the image, higher values make the text easier to read.</p>
+              </div>
+              <button
+                onClick={() => setShowBgPopup(false)}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Style with AI — always visible ── */}
       <div className="px-4 py-3 border-b border-zinc-200">
