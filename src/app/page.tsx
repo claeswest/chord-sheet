@@ -17,7 +17,7 @@ const features = [
   {
     icon: "✦",
     title: "AI Song Search",
-    description: "Type a song name and artist — AI searches the web and returns a ready-to-use chord sheet in seconds.",
+    description: "Type a song name and artist — AI knows millions of songs and returns a ready-to-use chord sheet in seconds.",
   },
   {
     icon: "🎸",
@@ -68,7 +68,7 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/login" className="hover:text-zinc-900 transition-colors">Sign in</Link>
-                <Link href="/login" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
+                <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
                   Get started free
                 </Link>
               </>
