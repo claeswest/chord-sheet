@@ -24,6 +24,7 @@ interface Props {
   lines: SongLine[];
   onEdit?: () => void;
   songStyle?: SongStyle;
+  songId?: string;
 }
 
 const SPEED_PX_PER_TICK: Record<number, number> = {
@@ -35,15 +36,18 @@ const SPEED_PX_PER_TICK: Record<number, number> = {
 const MAX_SPEED = 20;
 const TICK_MS = 40; // ~25fps
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollAccRef = useRef(0); // accumulates sub-pixel amounts
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
+  const speedKey = songId ? `scrollSpeed:${songId}` : null;
+  const savedSpeed = speedKey ? Number(localStorage.getItem(speedKey) ?? 3) : 3;
+
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(4);
+  const [speed, setSpeed] = useState(isNaN(savedSpeed) ? 3 : savedSpeed);
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -52,6 +56,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle }: 
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust;
   const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust;
   const titleSize = (s.title.fontSize ?? 20) + sizeAdjust;
+
+  // Persist speed to localStorage whenever it changes
+  useEffect(() => {
+    if (speedKey) localStorage.setItem(speedKey, String(speed));
+  }, [speed, speedKey]);
 
   // Load any Google Fonts on mount/change
   // [E] = back to edit, [P] = stay / already in play (no-op here)

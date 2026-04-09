@@ -477,6 +477,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         lines={displayLines}
         onEdit={() => setViewMode(false)}
         songStyle={songStyle}
+        songId={songId}
       />
     );
   }

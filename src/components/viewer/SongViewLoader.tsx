@@ -75,6 +75,7 @@ export default function SongViewLoader() {
         artist={song.artist}
         lines={song.lines}
         songStyle={songStyle}
+        songId={song.id}
         onEdit={() => router.push(editUrl)}
       />
     </div>
