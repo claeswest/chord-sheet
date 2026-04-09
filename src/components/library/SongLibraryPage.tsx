@@ -387,12 +387,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             )}
           </div>
-        ) : (
-          <Link href="/login"
-            className="text-sm text-indigo-300 font-medium hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors">
-            Sign in to sync →
-          </Link>
-        )}
+        ) : null}
       </header>
 
       <div className="flex flex-1">
@@ -518,33 +513,56 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </div>
           </>) : (
             /* Guest — sign-in pitch */
-            <div className="flex flex-col flex-1 px-5 py-6 gap-5">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">Your account</p>
-                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 space-y-3">
-                  {[
-                    { icon: "☁️", text: "Songs synced across all your devices" },
-                    { icon: "🖼️", text: "AI background images saved with your songs" },
-                    { icon: "📂", text: "Organise songs into categories" },
-                    { icon: "🔗", text: "Share songs via a public link" },
-                  ].map(({ icon, text }) => (
-                    <div key={text} className="flex items-start gap-2.5">
-                      <span className="text-base leading-none shrink-0 mt-0.5">{icon}</span>
-                      <span className="text-sm text-white/60 leading-snug">{text}</span>
-                    </div>
-                  ))}
+            <div className="flex flex-col flex-1 items-stretch justify-center px-5 py-8 gap-6">
+              {/* Heading */}
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center mx-auto mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-indigo-300">
+                    <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4Z"/>
+                  </svg>
                 </div>
+                <p className="text-sm font-semibold text-white/80">Save more with an account</p>
+                <p className="text-xs text-white/35 mt-1">Free · no credit card needed</p>
               </div>
 
+              {/* Benefits */}
+              <div className="space-y-3">
+                {([
+                  {
+                    text: "Songs synced across all your devices",
+                    icon: <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/>,
+                  },
+                  {
+                    text: "AI background images saved with your song",
+                    icon: <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z"/>,
+                  },
+                  {
+                    text: "Organise songs into categories",
+                    icon: <path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2Z"/>,
+                  },
+                  {
+                    text: "Share songs via a public link",
+                    icon: <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92Z"/>,
+                  },
+                ] as { text: string; icon: React.ReactNode }[]).map(({ text, icon }) => (
+                  <div key={text} className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-indigo-300">
+                        {icon}
+                      </svg>
+                    </div>
+                    <span className="text-sm text-white/55 leading-snug">{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 w-full bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium rounded-xl px-4 py-2.5 transition-colors"
+                className="flex items-center justify-center w-full bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition-colors"
               >
                 Sign in or create account
               </Link>
-              <p className="text-xs text-white/25 text-center -mt-2 leading-snug">
-                Free to use · no credit card needed
-              </p>
             </div>
           )}
         </aside>
