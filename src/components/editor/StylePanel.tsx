@@ -104,6 +104,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [theme, setTheme] = useState("");
+  const [showStylePopup, setShowStylePopup] = useState(false);
   const [bgLoading, setBgLoading] = useState(false);
   const [bgError, setBgError] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
@@ -133,6 +134,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       onChange({ ...style, ...data.style });
       setTheme(data.theme ?? "");
       setTab("text");
+      setShowStylePopup(true);
     } catch {
       setAiError("Network error");
     } finally {
@@ -177,6 +179,45 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   return (
     <div className="flex-1 overflow-y-auto bg-zinc-50 relative">
 
+      {/* ── Style with AI popup ── */}
+      {showStylePopup && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden">
+            {/* Colour preview strip using generated background + text colours */}
+            <div
+              className="w-full h-14 flex items-center justify-center gap-3 px-4"
+              style={{ background: style.background ?? "#ffffff" }}
+            >
+              <span style={{ color: style.title?.color ?? "#18181b", fontFamily: style.title?.fontFamily, fontSize: 15, fontWeight: "bold" }}>
+                {songTitle || "Title"}
+              </span>
+              <span style={{ color: style.lyrics?.color ?? "#27272a", fontFamily: style.lyrics?.fontFamily, fontSize: 12 }}>
+                {songArtist || "Artist"}
+              </span>
+            </div>
+            {/* Content */}
+            <div className="px-4 py-4 space-y-3">
+              {theme && (
+                <div>
+                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Style theme</p>
+                  <p className="text-xs text-zinc-600 leading-relaxed italic">"{theme}"</p>
+                </div>
+              )}
+              <div className="bg-violet-50 border border-violet-100 rounded-lg px-3 py-2.5">
+                <p className="text-xs font-semibold text-violet-700 mb-0.5">Fonts & colours updated</p>
+                <p className="text-xs text-violet-600 leading-snug">Head to the <span className="font-semibold">Text tab</span> to fine-tune fonts, sizes and colours to your liking.</p>
+              </div>
+              <button
+                onClick={() => setShowStylePopup(false)}
+                className="w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Background generated popup ── */}
       {showBgPopup && style.backgroundImage && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -220,7 +261,6 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
           ) : "✦ Style with AI"}
         </button>
         {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
-        {theme && <p className="text-xs text-violet-700 bg-violet-50 border border-violet-100 rounded px-2 py-1.5 mt-2 leading-relaxed">{theme}</p>}
       </div>
 
       {/* ── Sub-tabs — sticky so always visible while scrolling ── */}
