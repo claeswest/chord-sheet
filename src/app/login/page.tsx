@@ -55,7 +55,7 @@ export default function LoginPage() {
 
         <div className="mt-6 pt-6 border-t border-zinc-100">
           <Link href="/songs" className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
-            ← Continue without an account
+            Continue without an account
           </Link>
         </div>
       </div>
