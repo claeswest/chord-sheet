@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Nunito } from "next/font/google";
 import "./globals.css";
 
 const geist = Geist({
@@ -7,8 +7,14 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+});
+
 export const metadata: Metadata = {
-  title: "ChordSheetCreator — Create & Share Chord Sheets",
+  title: "ChordSheetMaker — Create & Share Chord Sheets",
   description:
     "The easiest way to create, edit, and share chord sheets. Drag-and-drop chords over lyrics, auto-scroll in performance mode, and export to PDF.",
 };
@@ -19,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
+    <html lang="en" className={`${geist.variable} ${nunito.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-white text-zinc-900">
         {children}
       </body>

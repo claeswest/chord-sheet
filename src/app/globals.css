@@ -126,7 +126,7 @@ body {
 
   /* Watermark — fixed so it appears on every printed page */
   #print-view.watermarked::after {
-    content: "ChordSheetCreator.com";
+    content: "ChordSheetMaker.ai";
     position: fixed;
     bottom: 8mm;
     right: 14mm;

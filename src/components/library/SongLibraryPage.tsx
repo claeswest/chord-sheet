@@ -109,6 +109,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showAddSubCategory, setShowAddSubCategory] = useState<string | null>(null); // parentId
   const [newSubCategoryName, setNewSubCategoryName] = useState("");
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const toggleCollapse = (id: string) =>
+    setCollapsedCategories((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
 
   // Drag and drop — category assignment
   const [dragSongId, setDragSongId] = useState<string | null>(null);
@@ -356,8 +359,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
       {/* Header */}
       <header className="bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center shrink-0">
-        <Link href="/" className="text-sm font-bold tracking-tight text-white">
-          Chord<span className="text-indigo-400">SheetCreator</span>
+        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+          ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
         <div className="flex-1" />
         {isLoggedIn ? (
@@ -471,15 +474,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           className="flex-1 text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
                         />
                       ) : (
-                        <button
-                          onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
-                          onDoubleClick={() => startRename(cat)}
-                          className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"}`}
-                          title="Double-click to rename"
-                        >
-                          <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
-                          {cat.name}
-                        </button>
+                        <>
+                          <span className="w-4 h-4 shrink-0 flex items-center justify-center">
+                            {children.length > 0 && (
+                              <button onClick={() => toggleCollapse(cat.id)} className="text-white/60 hover:text-white transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 transition-transform duration-150 ${collapsedCategories.has(cat.id) ? "-rotate-90" : ""}`}><path d="M7 10l5 5 5-5H7Z"/></svg>
+                              </button>
+                            )}
+                          </span>
+                          <button
+                            onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
+                            onDoubleClick={() => startRename(cat)}
+                            className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"}`}
+                            title="Double-click to rename"
+                          >
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
+                            {cat.name}
+                          </button>
+                        </>
                       )}
                       <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{totalCount}</span>
                       {/* Add subcategory */}
@@ -500,71 +512,73 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         title="Delete">×</button>
                     </div>
 
-                    {/* Subcategory rows */}
-                    {children.map((sub) => (
-                      <div key={sub.id}>
-                        <div
-                          onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(sub.id); }}
-                          onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
-                          onDrop={(e) => handleDrop(e, sub.id)}
-                          className={`group flex items-center gap-1 pl-8 pr-2 transition-all duration-100 border-l-4 border-l-transparent ${
-                            dragSongId ? "py-2.5" : "py-1"
-                          } ${
-                            dragOverCategoryId === sub.id
-                              ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400"
-                              : dragSongId
-                              ? "bg-white/5 ring-1 ring-inset ring-white/10"
-                              : selectedCategoryId === sub.id
-                              ? "bg-white/15"
-                              : "hover:bg-white/10"
-                          }`}
-                        >
-                          <span className="text-white/20 text-xs shrink-0 mr-0.5">↳</span>
-                          {editingCategoryId === sub.id ? (
-                            <input autoFocus value={editingCategoryName}
-                              onChange={(e) => setEditingCategoryName(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(sub.id); if (e.key === "Escape") setEditingCategoryId(null); }}
-                              onBlur={() => handleRenameCategory(sub.id)}
-                              className="flex-1 text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
-                            />
-                          ) : (
-                            <button
-                              onClick={() => selectCategory(sub.id === selectedCategoryId ? null : sub.id)}
-                              onDoubleClick={() => startRename(sub)}
-                              className={`flex-1 text-left text-xs truncate min-w-0 ${selectedCategoryId === sub.id ? "text-white font-semibold" : "text-white/50"}`}
-                              title="Double-click to rename"
-                            >
-                              {sub.name}
+                    {/* Subcategory rows + add input — wrapped in a tree-line container */}
+                    {!collapsedCategories.has(cat.id) && (children.length > 0 || showAddSubCategory === cat.id) && (
+                      <div className="ml-9 border-l border-white/20 mb-2">
+                        {children.map((sub) => (
+                          <div key={sub.id}
+                            onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(sub.id); }}
+                            onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
+                            onDrop={(e) => handleDrop(e, sub.id)}
+                            className={`group flex items-center gap-1 pl-4 pr-2 transition-all duration-100 ${
+                              dragSongId ? "py-2" : "py-1"
+                            } ${
+                              dragOverCategoryId === sub.id
+                                ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400"
+                                : dragSongId
+                                ? "bg-white/5 ring-1 ring-inset ring-white/10"
+                                : selectedCategoryId === sub.id
+                                ? "bg-white/15"
+                                : "hover:bg-white/10"
+                            }`}
+                          >
+                            {editingCategoryId === sub.id ? (
+                              <input autoFocus value={editingCategoryName}
+                                onChange={(e) => setEditingCategoryName(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(sub.id); if (e.key === "Escape") setEditingCategoryId(null); }}
+                                onBlur={() => handleRenameCategory(sub.id)}
+                                className="flex-1 text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
+                              />
+                            ) : (
+                              <button
+                                onClick={() => selectCategory(sub.id === selectedCategoryId ? null : sub.id)}
+                                onDoubleClick={() => startRename(sub)}
+                                className={`flex-1 flex items-center gap-1.5 text-left text-xs truncate min-w-0 ${selectedCategoryId === sub.id ? "text-white font-semibold" : "text-white/50"}`}
+                                title="Double-click to rename"
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getCatColor(sub.id, categories).dot}`} />
+                                {sub.name}
+                              </button>
+                            )}
+                            <span className="text-xs bg-white/10 text-white/30 px-1.5 py-0.5 rounded-full shrink-0">{sub.songIds.length}</span>
+                            {/* Rename */}
+                            <button onClick={() => startRename(sub)}
+                              className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
+                              title="Rename">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
                             </button>
-                          )}
-                          <span className="text-xs bg-white/10 text-white/30 px-1.5 py-0.5 rounded-full shrink-0">{sub.songIds.length}</span>
-                          {/* Rename */}
-                          <button onClick={() => startRename(sub)}
-                            className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
-                            title="Rename">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
-                          </button>
-                          {/* Delete */}
-                          <button onClick={() => handleDeleteCategory(sub.id)}
-                            className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
-                            title="Delete">×</button>
-                        </div>
-                      </div>
-                    ))}
+                            {/* Delete */}
+                            <button onClick={() => handleDeleteCategory(sub.id)}
+                              className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                              title="Delete">×</button>
+                          </div>
+                        ))}
 
-                    {/* Add subcategory input */}
-                    {showAddSubCategory === cat.id && (
-                      <div className="pl-8 pr-3 py-1">
-                        <input autoFocus value={newSubCategoryName}
-                          onChange={(e) => setNewSubCategoryName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleCreateSubCategory(cat.id);
-                            if (e.key === "Escape") { setShowAddSubCategory(null); setNewSubCategoryName(""); }
-                          }}
-                          onBlur={() => { if (newSubCategoryName.trim()) handleCreateSubCategory(cat.id); else setShowAddSubCategory(null); }}
-                          placeholder="Subcategory name…"
-                          className="w-full text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
+                        {/* Add subcategory input */}
+                        {showAddSubCategory === cat.id && (
+                        <div className="pl-3 pr-3 py-1">
+                          <input autoFocus value={newSubCategoryName}
+                            onChange={(e) => setNewSubCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleCreateSubCategory(cat.id);
+                              if (e.key === "Escape") { setShowAddSubCategory(null); setNewSubCategoryName(""); }
+                            }}
+                            onBlur={() => { if (newSubCategoryName.trim()) handleCreateSubCategory(cat.id); else setShowAddSubCategory(null); }}
+                            placeholder="Subcategory name…"
+                            className="w-full text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
                         />
+                        </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -653,7 +667,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
         {/* Main content */}
         <main className="flex-1 px-6 py-6 min-w-0">
-          <div className="max-w-4xl">
+          <div>
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
             <div className={`sticky top-0 z-10 bg-white pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 transition-opacity duration-200 ${loading ? "invisible" : ""}`}>
               <input
@@ -877,19 +891,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  <button onClick={() => handleSortClick("title")} className="flex-1 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("title")} className="w-96 shrink-0 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Song
                     {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0 hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[180px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-36 shrink-0">Categories</span>}
-                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors">
+                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-64 shrink-0">Categories</span>}
+                  <div className="flex-1" />
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 ml-4 hover:text-zinc-800 transition-colors">
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
+                  <div className="hidden lg:block w-16 shrink-0" />
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
@@ -930,7 +946,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       }}
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
-                      className={`group relative flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-indigo-50/30 ${
+                      className={`group relative flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-indigo-50/60 ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
@@ -951,11 +967,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       )}
 
                       {/* Title */}
-                      <Link href={viewUrl} className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold truncate" style={{ color: titleColor }}>
+                      <Link href={viewUrl} className="w-96 shrink-0 min-w-0 group/title">
+                        <div className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                           {song.title || "Untitled Song"}
                         </div>
-                        {/* Artist shown as subtitle on mobile only (hidden when Artist column is visible) */}
                         {song.artist && (
                           <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
                             {song.artist}
@@ -963,15 +978,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         )}
                       </Link>
 
-                      {/* Artist column */}
-                      <div className="hidden sm:block w-36 shrink-0 text-xs truncate" style={{ color: artistColor }}>
+                      {/* Artist */}
+                      <div className="hidden sm:block w-[180px] shrink-0 text-xs truncate text-zinc-500">
                         {song.artist || <span className="text-zinc-300">—</span>}
                       </div>
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-wrap gap-1 w-36 shrink-0">
-                        {song.categoryIds.map((catId) => {
+                        <div className="hidden lg:flex flex-wrap gap-1 w-64 shrink-0">
+                          {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
                             const color = getCatColor(catId, categories);
@@ -994,24 +1009,29 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Date ↔ Actions (swap on hover) */}
-                      <div className="relative shrink-0 hidden md:flex items-center justify-end w-32">
-                        {/* Date — fades out on hover */}
-                        <span className="text-xs text-zinc-400 whitespace-nowrap group-hover:opacity-0 transition-opacity">
+                      {/* Spacer */}
+                      <div className="flex-1" />
+
+                      {/* Date */}
+                      <div className="hidden md:flex shrink-0 items-center justify-end w-32 ml-4">
+                        <span className="text-xs text-zinc-400 whitespace-nowrap tabular-nums">
                           {formatDate(song.updatedAt)}
                         </span>
-                        {/* Actions — fades in on hover, sits over the date */}
-                        <div className="absolute inset-0 flex items-center gap-0.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      </div>
+
+                      {/* Actions — grouped pill */}
+                      <div className="hidden lg:flex shrink-0 items-center w-16 justify-end">
+                        <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
                         {/* View */}
                         <Link href={viewUrl} title="View"
-                          className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
                           </svg>
                         </Link>
                         {/* Edit */}
                         <Link href={editUrl} title="Edit"
-                          className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
                           </svg>
@@ -1020,7 +1040,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {song.source === "db" && (
                           <button onClick={() => handleDuplicate(song)} disabled={isDuplicating}
                             title="Duplicate"
-                            className="p-1.5 rounded text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-30">
+                            className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors disabled:opacity-30">
                             {isDuplicating ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 animate-spin">
                                 <path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8Z"/>
@@ -1036,7 +1056,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {selectedCategoryId && (
                           <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
                             title="Remove from this category"
-                            className="p-1.5 rounded text-zinc-400 hover:text-orange-500 hover:bg-orange-50 transition-colors">
+                            className="p-1.5 rounded-md text-zinc-500 hover:text-orange-500 hover:bg-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                               <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-4 8H8v-2h8v2Z"/>
                             </svg>
@@ -1045,13 +1065,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         {/* Delete */}
                         <button onClick={() => setConfirmDelete({ id: song.id, title: song.title, source: song.source })}
                           title="Delete song permanently"
-                          className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                          className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
                           </svg>
                         </button>
-                        </div>{/* end actions */}
-                      </div>{/* end date↔actions */}
+                        </div>
+                      </div>{/* end actions */}
                     </div>
                   );
                 })}

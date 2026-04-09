@@ -55,8 +55,8 @@ export default async function HomePage() {
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
         <div className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-          <span className="text-xl font-bold tracking-tight text-zinc-900">
-            ChordSheet<span className="text-indigo-600">Creator</span>
+          <span className="text-xl font-extrabold tracking-tight text-zinc-900" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-indigo-600">Maker</span>
           </span>
           <nav className="flex items-center gap-6 text-sm text-zinc-600">
             <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
@@ -120,56 +120,26 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Chord sheet preview card — floats at bottom of hero */}
-          <div className="relative w-full max-w-2xl mx-auto">
-            <div
-              className="rounded-t-2xl shadow-2xl overflow-hidden"
-              style={{
-                background: "linear-gradient(rgba(140,160,175,0.55), rgba(140,160,175,0.55)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80') center/cover no-repeat",
-                padding: "2.5rem 3rem",
-              }}
-            >
-              <div className="text-center mb-8">
-                <div style={{ fontFamily: "Georgia, serif", fontSize: 26, fontStyle: "italic", color: "#f0f4f8" }}>
-                  Regn hos mig (blue)
-                </div>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "rgba(240,244,248,0.65)", marginTop: 5 }}>
-                  Orup
-                </div>
-              </div>
-              <div style={{ fontFamily: "Georgia, serif", color: "rgba(240,244,248,0.55)", fontSize: 11, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 10 }}>
-                Verse
-              </div>
-              <div className="mb-1" style={{ fontFamily: "Georgia, serif" }}>
-                <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
-                  <span style={{ marginRight: "4.5rem" }}>C</span>
-                  <span style={{ marginRight: "7rem" }}>Am7</span>
-                </div>
-                <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
-                  Jag har hört på radion idag att vi har solsken
-                </div>
-              </div>
-              <div style={{ fontFamily: "Georgia, serif" }}>
-                <div style={{ fontSize: 12, color: "#e05555", letterSpacing: "0.05em" }}>
-                  <span style={{ marginRight: "2rem" }}>Fmaj</span>
-                  <span style={{ marginRight: "3.5rem" }}>G</span>
-                  <span>C</span>
-                </div>
-                <div style={{ fontSize: 15, color: "rgba(240,244,248,0.9)", lineHeight: 1.6 }}>
-                  Det låter väldigt underligt för jag har bara regn hos mig.
-                </div>
-              </div>
+          {/* Hero photo */}
+          <div className="relative w-full max-w-3xl mx-auto">
+            <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
+              <img
+                src="/hero-photo.jpg"
+                alt="Guitarist using ChordSheetMaker on a laptop"
+                className="w-full object-cover"
+                style={{ maxHeight: 480 }}
+              />
             </div>
-            {/* Fade bottom edge into white */}
-            <div className="h-16 w-full" style={{
-              background: "linear-gradient(to bottom, rgba(36,36,62,0) 0%, #ffffff 100%)",
+            {/* Fade bottom edge into section background */}
+            <div className="absolute bottom-0 left-0 right-0 h-24" style={{
+              background: "linear-gradient(to bottom, transparent 0%, #24243e 100%)",
             }} />
           </div>
         </section>
 
         {/* Caption */}
-        <p className="text-center text-xs text-zinc-400 -mt-4 mb-16 px-4">
-          ↑ Real chord sheet created in ChordSheetCreator — background image and styling generated with AI
+        <p className="text-center text-xs text-zinc-400 mt-3 mb-16 px-4">
+          Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
         </p>
 
         {/* ── 3 quick highlights ──────────────────────────────────────────── */}
@@ -285,7 +255,7 @@ export default async function HomePage() {
             Ready to play?
           </h2>
           <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed">
-            Join musicians who use ChordSheetCreator to create, organise, and perform their songs.
+            Join musicians who use ChordSheetMaker to create, organise, and perform their songs.
           </p>
           <Link
             href="/songs"
@@ -298,7 +268,7 @@ export default async function HomePage() {
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-zinc-100 px-6 py-8 text-center text-sm text-zinc-400">
-        © {new Date().getFullYear()} ChordSheetCreator.com — Built for musicians
+        © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
       </footer>
 
       <ScrollToTop />

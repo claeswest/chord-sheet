@@ -196,7 +196,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
       {/* ── Style with AI popup ── */}
       {showStylePopup && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden">
             {/* Colour preview strip using generated background + text colours */}
             <div
@@ -235,7 +235,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
       {/* ── Background generated popup ── */}
       {showBgPopup && style.backgroundImage && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden">
             {/* Image preview */}
             <div className="w-full h-32 overflow-hidden">
@@ -249,9 +249,18 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                   <p className="text-xs text-zinc-600 leading-relaxed italic">"{bgPrompt}"</p>
                 </div>
               )}
-              <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2.5">
-                <p className="text-xs font-semibold text-indigo-700 mb-0.5">Tip: use the Fade slider</p>
-                <p className="text-xs text-indigo-600 leading-snug">Drag it to blend the image softly behind your lyrics — lower values show more of the image, higher values make the text easier to read.</p>
+              <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-3">
+                <div className="flex justify-between items-center mb-1.5">
+                  <p className="text-xs font-semibold text-indigo-700">Fade</p>
+                  <span className="text-xs text-indigo-500 font-mono">{Math.round(overlayOpacity * 100)}%</span>
+                </div>
+                <input
+                  type="range" min={0} max={100}
+                  value={Math.round(overlayOpacity * 100)}
+                  onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })}
+                  className="w-full accent-indigo-500"
+                />
+                <p className="text-xs text-indigo-400 mt-1.5 leading-snug">Lower = more image, higher = easier to read text.</p>
               </div>
               <button
                 onClick={() => setShowBgPopup(false)}
