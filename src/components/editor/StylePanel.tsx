@@ -225,6 +225,20 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             ))}
           </div>
 
+          {/* Guest notice — always visible at top of background section */}
+          {!isLoggedIn && (
+            <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-3">
+              <span className="text-sm leading-none shrink-0 mt-0.5">⚠️</span>
+              <div>
+                <p className="text-xs font-medium text-amber-800 leading-snug mb-0.5">Background images won't be saved</p>
+                <p className="text-xs text-amber-700 leading-snug mb-1.5">You can still generate one and it'll look great, but it will be lost when you close this tab. Sign in to keep it.</p>
+                <Link href="/login" className="text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">
+                  Sign in to save it →
+                </Link>
+              </div>
+            </div>
+          )}
+
           {style.backgroundImage ? (
             <>
               <div className="relative mb-2 rounded overflow-hidden" style={{ height: 80 }}>
@@ -239,18 +253,6 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                 <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
               </div>
               {bgPrompt && <p className="text-xs text-zinc-400 italic leading-relaxed mb-2">{bgPrompt}</p>}
-              {!isLoggedIn && (
-                <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-2">
-                  <span className="text-base leading-none shrink-0">⚠️</span>
-                  <div>
-                    <p className="text-xs font-medium text-amber-800 leading-snug mb-0.5">This image won't be saved</p>
-                    <p className="text-xs text-amber-700 leading-snug mb-1.5">Background images are only kept for signed-in users. Your lyrics and chords are safe, but the image will be lost when you close this tab.</p>
-                    <Link href="/login" className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900">
-                      Sign in to save it →
-                    </Link>
-                  </div>
-                </div>
-              )}
               <button onClick={handleAiBackground} disabled={bgLoading}
                 className="w-full flex items-center justify-center gap-1 text-xs text-violet-600 border border-violet-200 hover:border-violet-400 hover:bg-violet-50 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
