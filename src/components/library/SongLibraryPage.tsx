@@ -616,7 +616,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </div>
 
             {/* Guest song import banner — shown to logged-in users who have orphaned localStorage songs */}
-            {isLoggedIn && !loading && typeof window !== "undefined" && !localStorage.getItem("guestImportDismissed") && (
+            {isLoggedIn && !loading && typeof window !== "undefined" && !sessionStorage.getItem("guestImportSnoozed") && (
               <GuestImportBanner
                 key={importBannerKey}
                 onImported={() => {

@@ -39,9 +39,16 @@ export default function GuestImportBanner({ onImported }: Props) {
     }
   };
 
-  const handleDismiss = () => {
-    // Mark dismissed so the banner won't reappear
-    localStorage.setItem("guestImportDismissed", "true");
+  // "Not now" hides the banner for this session only — songs stay in localStorage
+  // and the banner comes back next visit so the user gets another chance.
+  const handleSnooze = () => {
+    sessionStorage.setItem("guestImportSnoozed", "true");
+    setState("done");
+  };
+
+  // "×" deletes the guest songs and never asks again.
+  const handleDiscard = () => {
+    for (const song of songs) deleteSong(song.id);
     setState("done");
   };
 
@@ -84,13 +91,11 @@ export default function GuestImportBanner({ onImported }: Props) {
                 Adding…
               </>
             ) : (
-              <>
-                {count === 1 ? "Add song to my account" : `Add ${count} songs to my account`}
-              </>
+              count === 1 ? "Add song to my account" : `Add ${count} songs to my account`
             )}
           </button>
           <button
-            onClick={handleDismiss}
+            onClick={handleSnooze}
             className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
           >
             Not now
@@ -98,11 +103,11 @@ export default function GuestImportBanner({ onImported }: Props) {
         </div>
       </div>
 
-      {/* Dismiss × */}
+      {/* × discards the guest songs permanently */}
       <button
-        onClick={handleDismiss}
+        onClick={handleDiscard}
         className="text-zinc-300 hover:text-zinc-500 transition-colors shrink-0 mt-0.5 text-lg leading-none"
-        title="Dismiss"
+        title="Discard guest songs"
       >
         ×
       </button>
