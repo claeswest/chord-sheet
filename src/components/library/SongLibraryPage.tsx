@@ -396,9 +396,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar — logged-in users only */}
-        {isLoggedIn && (
-          <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
+        {/* Sidebar — always visible; guests see a sign-in pitch instead of categories */}
+        <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
+        {isLoggedIn ? (<>
             <button
               onClick={() => selectCategory(null)}
               className={`flex items-center gap-2 pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
@@ -516,8 +516,38 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               )}
 
             </div>
-          </aside>
-        )}
+          </>) : (
+            /* Guest — sign-in pitch */
+            <div className="flex flex-col flex-1 px-5 py-6 gap-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">Your account</p>
+                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 space-y-3">
+                  {[
+                    { icon: "☁️", text: "Songs synced across all your devices" },
+                    { icon: "🖼️", text: "AI background images saved with your songs" },
+                    { icon: "📂", text: "Organise songs into categories" },
+                    { icon: "🔗", text: "Share songs via a public link" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} className="flex items-start gap-2.5">
+                      <span className="text-base leading-none shrink-0 mt-0.5">{icon}</span>
+                      <span className="text-sm text-white/60 leading-snug">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2 w-full bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium rounded-xl px-4 py-2.5 transition-colors"
+              >
+                Sign in or create account
+              </Link>
+              <p className="text-xs text-white/25 text-center -mt-2 leading-snug">
+                Free to use · no credit card needed
+              </p>
+            </div>
+          )}
+        </aside>
 
         {/* Main content */}
         <main className="flex-1 px-6 py-6 min-w-0">
