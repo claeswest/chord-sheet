@@ -333,10 +333,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
       {/* Header */}
       <header className="bg-[#302b63] border-b border-white/10 px-6 py-3 flex items-center shrink-0">
-        <Link href="/" className="flex items-center gap-2 text-sm font-bold tracking-tight text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-indigo-400 shrink-0">
-            <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
-          </svg>
+        <Link href="/" className="text-sm font-bold tracking-tight text-white">
           Chord<span className="text-indigo-400">SheetCreator</span>
         </Link>
         <div className="flex-1" />
