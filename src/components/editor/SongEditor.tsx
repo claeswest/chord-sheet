@@ -831,6 +831,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               onChange={setSongStyle}
               songTitle={title}
               songArtist={artist}
+              isLoggedIn={isLoggedIn}
               lyricsText={lines
                 .filter((l) => l.type === "lyric")
                 .map((l) => (l.type === "lyric" ? l.text : ""))

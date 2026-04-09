@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@/lib/imageUtils";
@@ -11,6 +12,7 @@ interface Props {
   songTitle?: string;
   songArtist?: string;
   lyricsText?: string;
+  isLoggedIn?: boolean;
 }
 
 function TextSection({
@@ -97,7 +99,7 @@ const BG_STYLES = [
 type BgStyleId = (typeof BG_STYLES)[number]["id"];
 type StyleTab = "background" | "text";
 
-export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText }: Props) {
+export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText, isLoggedIn = false }: Props) {
   const [tab, setTab] = useState<StyleTab>("background");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -237,6 +239,18 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                 <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
               </div>
               {bgPrompt && <p className="text-xs text-zinc-400 italic leading-relaxed mb-2">{bgPrompt}</p>}
+              {!isLoggedIn && (
+                <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-2">
+                  <span className="text-base leading-none shrink-0">⚠️</span>
+                  <div>
+                    <p className="text-xs font-medium text-amber-800 leading-snug mb-0.5">This image won't be saved</p>
+                    <p className="text-xs text-amber-700 leading-snug mb-1.5">Background images are only kept for signed-in users. Your lyrics and chords are safe, but the image will be lost when you close this tab.</p>
+                    <Link href="/login" className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900">
+                      Sign in to save it →
+                    </Link>
+                  </div>
+                </div>
+              )}
               <button onClick={handleAiBackground} disabled={bgLoading}
                 className="w-full flex items-center justify-center gap-1 text-xs text-violet-600 border border-violet-200 hover:border-violet-400 hover:bg-violet-50 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
