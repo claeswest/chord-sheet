@@ -891,17 +891,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  <button onClick={() => handleSortClick("title")} className="w-96 shrink-0 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("title")} className="flex-1 min-w-0 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Song
                     {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[180px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[150px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-64 shrink-0">Categories</span>}
-                  <div className="flex-1" />
-                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 ml-4 hover:text-zinc-800 transition-colors">
+                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[200px] shrink-0">Categories</span>}
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-28 shrink-0 hover:text-zinc-800 transition-colors">
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
@@ -966,8 +965,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Title */}
-                      <Link href={viewUrl} className="w-96 shrink-0 min-w-0 group/title">
+                      {/* Title — flex-1 so it takes all remaining space */}
+                      <Link href={viewUrl} className="flex-1 min-w-0 group/title">
                         <div className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                           {song.title || "Untitled Song"}
                         </div>
@@ -979,13 +978,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </Link>
 
                       {/* Artist */}
-                      <div className="hidden sm:block w-[180px] shrink-0 text-xs truncate text-zinc-500">
+                      <div className="hidden sm:block w-[150px] shrink-0 text-xs truncate text-zinc-500">
                         {song.artist || <span className="text-zinc-300">—</span>}
                       </div>
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-wrap gap-1 w-64 shrink-0">
+                        <div className="hidden lg:flex flex-wrap gap-1 w-[200px] shrink-0">
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -1009,11 +1008,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Spacer */}
-                      <div className="flex-1" />
-
                       {/* Date */}
-                      <div className="hidden md:flex shrink-0 items-center justify-end w-32 ml-4">
+                      <div className="hidden md:flex shrink-0 items-center justify-end w-28">
                         <span className="text-xs text-zinc-400 whitespace-nowrap tabular-nums">
                           {formatDate(song.updatedAt)}
                         </span>
