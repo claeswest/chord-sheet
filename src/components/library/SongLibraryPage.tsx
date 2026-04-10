@@ -951,7 +951,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
 
-                  const titleColor = "#18181b";
+                  const titleColor = "#3f3f46";
                   const artistColor = "#71717a";
                   const rowBg = song.style?.background;
 
