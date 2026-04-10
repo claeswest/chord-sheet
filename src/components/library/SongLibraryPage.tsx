@@ -896,11 +896,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     Song
                     {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[150px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[190px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[260px] shrink-0">Categories</span>}
+                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[320px] shrink-0">Categories</span>}
                   <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors">
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
@@ -979,13 +979,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </Link>
 
                       {/* Artist */}
-                      <div className="hidden sm:block w-[150px] shrink-0 text-xs truncate text-zinc-500">
+                      <div className="hidden sm:block w-[190px] shrink-0 text-xs truncate text-zinc-500">
                         {song.artist || <span className="text-zinc-300">—</span>}
                       </div>
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-nowrap gap-1 w-[260px] shrink-0 overflow-hidden">
+                        <div className="hidden lg:flex flex-nowrap gap-1 w-[320px] shrink-0 overflow-hidden">
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
