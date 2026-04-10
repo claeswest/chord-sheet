@@ -918,12 +918,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                     </button>
                   </div>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[190px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[190px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors p-0">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
                   {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[320px] shrink-0">Categories</span>}
-                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors p-0">
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
