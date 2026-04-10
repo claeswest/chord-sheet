@@ -247,6 +247,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const sectionCount = preview.filter((l) => l.type === "section").length;
 
   const showReview = cleaned && !aiLoading;
+  const searchOnly = defaultTab === "search";
 
   return (
     <div
@@ -258,16 +259,22 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
           <div>
-            <h2 className="text-base font-semibold text-zinc-900">Import chord sheet</h2>
+            <h2 className="text-base font-semibold text-zinc-900">
+              {searchOnly ? "Search a song" : "Import chord sheet"}
+            </h2>
             {!showReview && (
-              <p className="text-xs text-zinc-400 mt-0.5">Search with AI, paste text, or upload a photo.</p>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                {searchOnly
+                  ? "AI searches the web for chords and formats the result."
+                  : "Search with AI, paste text, or upload a photo."}
+              </p>
             )}
           </div>
           <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 text-lg leading-none px-1">✕</button>
         </div>
 
-        {/* Tabs — hidden during review */}
-        {!showReview && (
+        {/* Tabs — hidden during review and in search-only mode */}
+        {!showReview && !searchOnly && (
           <div className="flex border-b border-zinc-100 px-6">
             {(["search", "text", "image"] as const).map((t) => (
               <button
