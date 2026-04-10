@@ -327,7 +327,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           <div className="flex flex-col flex-1 p-5 gap-4 bg-white">
 
             {tab === "search" && (
-              <>
+              <div className="flex-1 flex flex-col justify-center gap-4 py-4">
                 {searchError && (
                   <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{searchError}</p>
                 )}
@@ -339,18 +339,18 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                     placeholder="e.g. Yesterday Beatles, Creep Radiohead…"
                     spellCheck={false}
-                    className="flex-1 border border-zinc-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-400 transition-colors"
+                    className="flex-1 border border-zinc-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-indigo-400 transition-colors"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={!query.trim() || searchLoading}
-                    className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                   >
                     {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400">AI does its best, but results may not be perfect — give it a quick look and adjust as needed.</p>
-              </>
+                <p className="text-xs text-zinc-400 text-center">AI does its best, but results may not be perfect — give it a quick look and adjust as needed.</p>
+              </div>
             )}
 
             {tab === "text" && (
