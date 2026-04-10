@@ -1009,7 +1009,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           style={{
   color: rowBg ? (isDarkColour(rowBg) ? "#a8a29e" : rowBg) : "#e4e4e7",
   opacity: rowBg ? 1 : 0.8,
-  filter: rowBg && !isDarkColour(rowBg) ? "saturate(1.4) brightness(0.85)" : undefined,
+  filter: rowBg && !isDarkColour(rowBg) ? "saturate(1.6)" : undefined,
 }}
                         >
                           𝄞
