@@ -295,21 +295,26 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         {/* ── Review view ── */}
         {showReview ? (
           <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Song identity */}
-            <div className="flex items-start justify-between px-6 py-5 border-b border-zinc-100">
-              <div>
-                {meta.title
-                  ? <><div className="text-xl font-semibold text-zinc-900">{meta.title}</div>
-                      {meta.artist && <div className="text-sm text-zinc-400 mt-1">{meta.artist}</div>}</>
-                  : <div className="text-sm text-zinc-400 italic">No title detected</div>
-                }
+            {/* Success banner */}
+            <div className="px-6 pt-5 pb-4 border-b border-zinc-100">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold shrink-0">✓</span>
+                <span className="text-xs font-medium text-emerald-600">
+                  {meta.title
+                    ? <>Found chords for <span className="font-semibold">{meta.title}</span></>
+                    : "Chords found"}
+                </span>
+                <button
+                  onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
+                  className="ml-auto text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
+                >
+                  ✎ Edit
+                </button>
               </div>
-              <button
-                onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
-                className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0 ml-4 mt-1"
-              >
-                ✎ Edit
-              </button>
+              <div className="text-xl font-semibold text-zinc-900">
+                {meta.title ?? <span className="italic text-zinc-400">Untitled</span>}
+              </div>
+              {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}
             </div>
             {/* Full-width chord preview */}
             <div className="flex-1 overflow-y-auto px-8 py-6">
