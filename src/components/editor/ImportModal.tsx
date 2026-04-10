@@ -42,7 +42,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
       {filtered.map((line) => {
         if (line.type === "section") {
           return (
-            <div key={line.id} className="pt-6 pb-1 first:pt-2">
+            <div key={line.id} className="pt-6 pb-1 first:pt-2 border-t border-zinc-100 first:border-t-0">
               <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">
                 {line.label}
               </span>
@@ -317,7 +317,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
               {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}
             </div>
             {/* Chord preview */}
-            <div className="flex-1 overflow-y-auto px-8 pt-4 pb-6">
+            <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8">
               <ChordPreview preview={preview} />
             </div>
           </div>
