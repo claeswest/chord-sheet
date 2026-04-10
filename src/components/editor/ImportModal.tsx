@@ -373,7 +373,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                       onPaste={() => { pendingAutoClean.current = true; }}
                       placeholder="Paste chord sheet here — AI will clean it automatically."
                       spellCheck={false}
-                      className="flex-1 text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[280px]"
+                      className="flex-1 text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 placeholder:text-center placeholder:text-base min-h-[280px]"
                     />
                   </>
                 )}
