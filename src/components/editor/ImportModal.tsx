@@ -358,8 +358,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                 {aiLoading ? (
                   <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 text-center">
                     <style>{`@keyframes wave { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(30deg)} }`}</style>
-                    <span style={{ fontSize: 40, display: "inline-block", transformOrigin: "bottom right", animation: "wave 0.8s ease-in-out infinite" }}>🪄</span>
-                    <p className="text-sm font-medium text-zinc-600">Cleaning up the chord sheet…</p>
+                    <span style={{ fontSize: 40, display: "inline-block", transformOrigin: "bottom right", animation: "wave 1.4s ease-in-out infinite" }}>🪄</span>
+                    <p className="text-sm font-medium text-zinc-600">AI is cleaning up the chord sheet…</p>
                     <p className="text-xs text-zinc-400">This usually takes a few seconds</p>
                   </div>
                 ) : (
