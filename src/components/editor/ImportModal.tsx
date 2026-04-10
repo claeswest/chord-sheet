@@ -37,23 +37,25 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
       {preview.map((line) => {
         if (line.type === "section") {
           return (
-            <div key={line.id} className="pt-4 pb-0.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">
+            <div key={line.id} className="pt-6 pb-1">
+              <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">
                 {line.label}
               </span>
             </div>
           );
         }
+        // Skip empty lines — they add visual noise without value
+        if (!line.text.trim() && line.chords.length === 0) return null;
         const hasChords = line.chords.length > 0;
         return (
-          <div key={line.id} className="relative" style={{ paddingTop: hasChords ? "1.2em" : 0 }}>
+          <div key={line.id} className="relative mb-0.5" style={{ paddingTop: hasChords ? "1.4em" : 0 }}>
             {hasChords && (
-              <div className="absolute top-0 left-0 text-xs font-bold text-indigo-500 whitespace-nowrap">
+              <div className="absolute top-0 left-0 text-xs font-semibold text-indigo-500 tracking-wide whitespace-nowrap">
                 {line.chords.map((c) => c.chord).join("  ")}
               </div>
             )}
-            <div className="text-xs text-zinc-700 leading-relaxed whitespace-pre">
-              {line.text || <span className="text-zinc-300">‹empty line›</span>}
+            <div className="text-sm text-zinc-800 leading-snug whitespace-pre">
+              {line.text}
             </div>
           </div>
         );
@@ -242,9 +244,6 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   };
 
   const lyricCount = preview.filter((l) => l.type === "lyric").length;
-  const chordCount = preview
-    .filter((l) => l.type === "lyric")
-    .reduce((sum, l) => sum + (l.type === "lyric" ? l.chords.length : 0), 0);
   const sectionCount = preview.filter((l) => l.type === "section").length;
 
   const showReview = cleaned && !aiLoading;
@@ -289,26 +288,21 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         {/* ── Review view ── */}
         {showReview ? (
           <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Song identity + actions */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+            {/* Song identity */}
+            <div className="flex items-start justify-between px-6 py-5 border-b border-zinc-100">
               <div>
                 {meta.title
-                  ? <><div className="text-lg font-semibold text-zinc-900">{meta.title}</div>
-                      {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}</>
+                  ? <><div className="text-xl font-semibold text-zinc-900">{meta.title}</div>
+                      {meta.artist && <div className="text-sm text-zinc-400 mt-1">{meta.artist}</div>}</>
                   : <div className="text-sm text-zinc-400 italic">No title detected</div>
                 }
               </div>
-              <div className="flex items-center gap-4 shrink-0 ml-4">
-                <span className="text-xs text-zinc-400">
-                  {lyricCount} lines · {chordCount} chords · {sectionCount} sections
-                </span>
-                <button
-                  onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
-                  className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
-                >
-                  ✎ Edit
-                </button>
-              </div>
+              <button
+                onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
+                className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0 ml-4 mt-1"
+              >
+                ✎ Edit
+              </button>
             </div>
             {/* Full-width chord preview */}
             <div className="flex-1 overflow-y-auto px-8 py-6">
