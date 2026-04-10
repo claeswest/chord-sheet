@@ -694,12 +694,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 px-6 py-6 min-w-0">
+        <main className="flex-1 px-6 pt-3 pb-6 min-w-0">
           <div>
             {/* Sentinel: when this leaves the viewport the search bar is "stuck" */}
             <div ref={sentinelRef} className="h-0" />
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
-            <div className={`sticky top-0 z-20 bg-white ${searchBarStuck ? "pt-4" : "pt-1"} pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 border-b border-zinc-100 shadow-sm transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
+            <div className={`sticky top-0 z-20 bg-white ${searchBarStuck ? "pt-4" : "pt-0"} pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 border-b border-zinc-100 shadow-sm transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
               <div className="relative w-full max-w-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none">
                   <path d="M10.5 2a8.5 8.5 0 1 0 5.262 15.176l3.53 3.531a1 1 0 0 0 1.415-1.414l-3.53-3.53A8.5 8.5 0 0 0 10.5 2Zm-6.5 8.5a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/>
