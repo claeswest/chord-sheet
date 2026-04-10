@@ -10,30 +10,24 @@ interface Props {
 
 export default function StartModal({ onSearch, onImport, onWriteMyself }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md px-6">
-      <div className="w-full max-w-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
 
-        {/* Header */}
-        <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-5">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-indigo-400">
-              <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-zinc-900">New chord sheet</h2>
-          <p className="text-zinc-500 mt-1.5 text-sm">How do you want to start?</p>
+        {/* Header — dark navy, matches ImportModal */}
+        <div className="px-6 py-5" style={{ background: "#302b63" }}>
+          <h2 className="text-lg font-semibold text-white">New chord sheet</h2>
+          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>How do you want to start?</p>
         </div>
 
         {/* Options */}
-        <div className="space-y-3">
+        <div className="p-4 space-y-2">
 
-          {/* Search */}
           <button
             onClick={onSearch}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
+            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
           >
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
               </svg>
@@ -42,18 +36,17 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
               <p className="font-semibold text-sm">Find a song</p>
               <p className="text-xs text-zinc-400 mt-0.5">Search by artist and title · AI powered</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
-          {/* Import */}
           <button
             onClick={onImport}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
+            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
           >
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
               </svg>
             </div>
@@ -61,18 +54,17 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
               <p className="font-semibold text-sm">Import chord sheet</p>
               <p className="text-xs text-zinc-400 mt-0.5">Paste text · Upload image · Clipboard</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
-          {/* Write myself */}
           <button
             onClick={onWriteMyself}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
+            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
           >
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
             </div>
@@ -80,7 +72,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
               <p className="font-semibold text-sm">I'll write it myself</p>
               <p className="text-xs text-zinc-400 mt-0.5">Start with a blank editor</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
@@ -88,7 +80,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
         </div>
 
         {/* Back link */}
-        <div className="mt-8 text-center">
+        <div className="pb-4 text-center">
           <Link
             href="/songs"
             className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors inline-flex items-center gap-1.5"
