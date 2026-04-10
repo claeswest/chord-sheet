@@ -684,13 +684,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           <div>
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
             <div className={`sticky top-0 z-10 bg-white pt-1 pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 transition-opacity duration-200 ${loading ? "invisible" : ""}`}>
-              <input
-                ref={searchRef}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search songs…"
-                className="w-full max-w-xs text-sm bg-white border border-zinc-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-400 transition-colors"
-              />
+              <div className="relative w-full max-w-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none">
+                  <path d="M10.5 2a8.5 8.5 0 1 0 5.262 15.176l3.53 3.531a1 1 0 0 0 1.415-1.414l-3.53-3.53A8.5 8.5 0 0 0 10.5 2Zm-6.5 8.5a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/>
+                </svg>
+                <input
+                  ref={searchRef}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search songs…"
+                  className="w-full text-sm bg-white border border-zinc-200 rounded-lg pl-9 pr-4 py-2 outline-none focus:border-indigo-400 transition-colors"
+                />
+              </div>
               <div className="flex-1" />
               <Link
                 href="/editor/new"
