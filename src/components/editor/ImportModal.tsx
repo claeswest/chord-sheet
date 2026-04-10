@@ -304,12 +304,6 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     ? <>Found chords for <span className="font-semibold">{meta.title}</span></>
                     : "Chords found"}
                 </span>
-                <button
-                  onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
-                  className="ml-auto text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
-                >
-                  ✎ Edit
-                </button>
               </div>
               <div className="text-xl font-semibold text-zinc-900">
                 {meta.title ?? <span className="italic text-zinc-400">Untitled</span>}
