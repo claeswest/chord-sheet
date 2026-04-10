@@ -32,6 +32,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const [aiError, setAiError] = useState("");
   const [meta, setMeta] = useState<ImportMeta>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pendingAutoClean = useRef(false);
 
   // Search tab state
   const [query, setQuery] = useState("");
@@ -54,9 +55,14 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   useEffect(() => {
     if (text.trim()) {
       setPreview(parseChordSheet(text));
+      if (pendingAutoClean.current) {
+        pendingAutoClean.current = false;
+        handleAiClean(text);
+      }
     } else {
       setPreview([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
   useEffect(() => {
@@ -80,15 +86,16 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  const handleAiClean = async () => {
-    if (!text.trim()) return;
+  const handleAiClean = async (textOverride?: string) => {
+    const input = textOverride ?? text;
+    if (!input.trim()) return;
     setAiLoading(true);
     setAiError("");
     try {
       const res = await fetch("/api/ai/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: input }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -340,7 +347,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   ref={textareaRef}
                   value={text}
                   onChange={(e) => { setText(e.target.value); setMeta({}); }}
-                  placeholder={`Paste chord sheet here…\n\nTip: paste raw text from any chord website,\nthen click ✦ AI Clean to format it automatically.`}
+                  onPaste={() => { pendingAutoClean.current = true; }}
+                  placeholder={`Paste chord sheet here — AI will clean it automatically.`}
                   spellCheck={false}
                   className="flex-1 text-sm font-mono text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[240px]"
                 />
