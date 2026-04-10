@@ -51,6 +51,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
         }
         if (!line.text.trim() && line.chords.length === 0) return null;
         const hasChords = line.chords.length > 0;
+        const hasText = line.text.trim().length > 0;
         return (
           <div key={line.id} className="relative mb-0.5" style={{ paddingTop: hasChords ? "1.4em" : 0 }}>
             {hasChords && (
@@ -58,9 +59,11 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
                 {line.chords.map((c) => c.chord).join("  ")}
               </div>
             )}
-            <div className="text-sm text-zinc-700 leading-snug whitespace-pre">
-              {line.text}
-            </div>
+            {hasText && (
+              <div className="text-sm text-zinc-700 leading-snug whitespace-pre">
+                {line.text}
+              </div>
+            )}
           </div>
         );
       })}
