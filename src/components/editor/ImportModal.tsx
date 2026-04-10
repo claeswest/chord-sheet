@@ -32,19 +32,10 @@ function Spinner({ size = 4 }: { size?: number }) {
 }
 
 function ChordPreview({ preview }: { preview: SongLine[] }) {
-  // Collapse consecutive empty lines into at most one
-  let lastWasEmpty = false;
-  const filtered = preview.filter((line) => {
-    if (line.type === "section") { lastWasEmpty = false; return true; }
-    const isEmpty = !line.text.trim() && line.chords.length === 0;
-    if (isEmpty) {
-      if (lastWasEmpty) return false;
-      lastWasEmpty = true;
-    } else {
-      lastWasEmpty = false;
-    }
-    return true;
-  });
+  // Strip all empty lines — section headers already provide spacing via pt-6
+  const filtered = preview.filter((line) =>
+    line.type === "section" || line.text.trim() || line.chords.length > 0
+  );
 
   return (
     <div className="space-y-0">
