@@ -51,8 +51,8 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Import chord sheet</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Paste text · Upload image · Clipboard</p>
+              <p className="font-semibold text-sm">Import from web or photo</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Paste text or upload a photo</p>
             </div>
             <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
