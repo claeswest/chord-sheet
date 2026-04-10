@@ -32,9 +32,23 @@ function Spinner({ size = 4 }: { size?: number }) {
 }
 
 function ChordPreview({ preview }: { preview: SongLine[] }) {
+  // Collapse consecutive empty lines into at most one
+  let lastWasEmpty = false;
+  const filtered = preview.filter((line) => {
+    if (line.type === "section") { lastWasEmpty = false; return true; }
+    const isEmpty = !line.text.trim() && line.chords.length === 0;
+    if (isEmpty) {
+      if (lastWasEmpty) return false;
+      lastWasEmpty = true;
+    } else {
+      lastWasEmpty = false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-0">
-      {preview.map((line) => {
+      {filtered.map((line) => {
         if (line.type === "section") {
           return (
             <div key={line.id} className="pt-6 pb-1">
@@ -313,7 +327,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
               {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}
             </div>
             {/* Chord preview */}
-            <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="flex-1 overflow-y-auto px-8 pt-4 pb-6">
               <ChordPreview preview={preview} />
             </div>
           </div>
