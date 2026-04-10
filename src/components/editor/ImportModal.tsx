@@ -363,15 +363,6 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleAiClean()}
-                        disabled={!text.trim()}
-                        className="flex items-center gap-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        ✦ AI Clean
-                      </button>
-                    </div>
                     {aiError && (
                       <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{aiError}</p>
                     )}
