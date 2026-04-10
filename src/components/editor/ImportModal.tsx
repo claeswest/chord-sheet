@@ -186,6 +186,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         return;
       }
       const data = await res.json();
+      pendingAutoClean.current = true;
       setText(data.text ?? "");
       setMeta({
         title: data.title && data.title !== "Unknown" ? data.title : undefined,
