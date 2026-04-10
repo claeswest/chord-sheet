@@ -349,7 +349,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400">Always double-check chords before a gig.</p>
+                <p className="text-xs text-zinc-400">AI does its best, but results may not be perfect — give it a quick look and adjust as needed.</p>
               </>
             )}
 
