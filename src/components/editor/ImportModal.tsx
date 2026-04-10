@@ -443,16 +443,17 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           </div>
         )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-100 bg-white">
-<button
-            onClick={handleImport}
-            disabled={preview.length === 0 || aiLoading}
-            className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <span className="text-base leading-none">♪</span> Import
-          </button>
-        </div>
+        {/* Footer — only shown when there is something to import */}
+        {preview.length > 0 && !aiLoading && (
+          <div className="flex items-center justify-end px-6 py-4 border-t border-zinc-100 bg-white">
+            <button
+              onClick={handleImport}
+              className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg transition-colors"
+            >
+              <span className="text-base leading-none">♪</span> Import
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
