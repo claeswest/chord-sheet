@@ -992,7 +992,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             return (
                               <span
                                 key={catId}
-                                className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}
+                                className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${color.chip}`}
                               >
                                 {cat.name}
                                 <button
