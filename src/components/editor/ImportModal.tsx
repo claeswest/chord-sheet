@@ -269,7 +269,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {searchOnly
-                  ? "Find any song's chords — just type artist and title."
+                  ? "Type artist and song below — AI does the rest."
                   : "Search with AI, paste text, or upload a photo."}
               </p>
             </div>
