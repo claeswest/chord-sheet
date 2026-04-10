@@ -906,7 +906,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
-              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mt-4">
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
