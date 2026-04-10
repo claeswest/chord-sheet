@@ -1007,8 +1007,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         <span
                           className="shrink-0 text-4xl leading-none select-none"
                           style={{
-  color: rowBg ?? "#e4e4e7",
-  opacity: rowBg ? (isDarkColour(rowBg) ? 0.85 : 1) : 0.8,
+  color: rowBg ? (isDarkColour(rowBg) ? "#a8a29e" : rowBg) : "#e4e4e7",
+  opacity: rowBg ? 1 : 0.8,
   filter: rowBg && !isDarkColour(rowBg) ? "saturate(1.4) brightness(0.85)" : undefined,
 }}
                         >
