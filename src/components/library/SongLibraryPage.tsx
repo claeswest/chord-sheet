@@ -952,11 +952,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
-                      {/* Left-edge accent bar — song colour takes priority over category colour */}
+                      {/* Left-edge accent bar at reduced opacity so dark colours don't dominate */}
                       {rowBg ? (
-                        <div className="absolute left-0 top-0 bottom-0 w-2" style={{ backgroundColor: rowBg }} />
+                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: rowBg, opacity: 0.35 }} />
                       ) : firstCatAccent ? (
-                        <div className={`absolute left-0 top-0 bottom-0 w-2 ${firstCatAccent}`} />
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 opacity-35 ${firstCatAccent}`} />
                       ) : null}
 
                       {/* Drag handle */}
@@ -968,8 +968,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Title — flex-1 so it takes all remaining space */}
                       <Link href={viewUrl} className="flex-1 min-w-0 group/title">
-                        <div className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
-                          {song.title || "Untitled Song"}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {/* Colour dot — full colour, small, sits before title */}
+                          {rowBg && (
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: rowBg }} />
+                          )}
+                          <span className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
+                            {song.title || "Untitled Song"}
+                          </span>
                         </div>
                         {song.artist && (
                           <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
