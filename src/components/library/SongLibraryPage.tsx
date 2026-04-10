@@ -910,10 +910,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  <button onClick={() => handleSortClick("title")} className="flex-1 min-w-0 flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
-                    Song
-                    {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
-                  </button>
+                  {/* Invisible clef spacer so SONG label aligns with title text */}
+                  <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                    <span className="shrink-0 text-4xl leading-none select-none invisible" aria-hidden>𝄞</span>
+                    <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                      Song
+                      {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                    </button>
+                  </div>
                   <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[190px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
@@ -982,26 +986,25 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Title — flex-1 so it takes all remaining space */}
-                      <Link href={viewUrl} className="flex-1 min-w-0 group/title">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          {/* G-clef in song colour — placeholder keeps spacing even when no colour set */}
-                          <span
-                            className="shrink-0 text-4xl leading-none select-none"
-                            style={{ color: rowBg ?? "#e4e4e7", opacity: rowBg ? (isDarkColour(rowBg) ? 0.4 : 1) : 0.5 }}
-                          >
-                            𝄞
-                          </span>
-                          <span className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
+                      {/* Title — flex-1 wrapper keeps clef + link together */}
+                      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                        <span
+                          className="shrink-0 text-4xl leading-none select-none"
+                          style={{ color: rowBg ?? "#e4e4e7", opacity: rowBg ? (isDarkColour(rowBg) ? 0.4 : 1) : 0.5 }}
+                        >
+                          𝄞
+                        </span>
+                        <Link href={viewUrl} className="min-w-0 group/title">
+                          <div className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
-                          </span>
-                        </div>
-                        {song.artist && (
-                          <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
-                            {song.artist}
                           </div>
-                        )}
-                      </Link>
+                          {song.artist && (
+                            <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
+                              {song.artist}
+                            </div>
+                          )}
+                        </Link>
+                      </div>
 
                       {/* Artist */}
                       <div className="hidden sm:block w-[190px] shrink-0 text-xs truncate text-zinc-500">
