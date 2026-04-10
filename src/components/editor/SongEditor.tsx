@@ -412,6 +412,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     persistSong({ flash: true });
   }, [persistSong]);
 
+  // Keep ref in sync so auto-save effect always calls the latest persistSong
+  // without needing it in the deps array (prevents spurious saves on router refresh)
+  const persistSongRef = useRef(persistSong);
+  persistSongRef.current = persistSong;
+
   // Auto-save: debounce 1s after any content change, skip initial render
   useEffect(() => {
     if (isFirstRender.current) {
@@ -424,14 +429,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     }
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(async () => {
-      await persistSong();
+      await persistSongRef.current();
       setAutoSaved(true);
       setTimeout(() => setAutoSaved(false), 2000);
     }, 1000);
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [title, artist, lines, songId, songStyle, persistSong]);
+  }, [title, artist, lines, songId, songStyle]);
 
   const handleLoad = useCallback((song: StoredSong) => {
     setSongId(song.id);
