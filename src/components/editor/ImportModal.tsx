@@ -42,7 +42,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
       {filtered.map((line) => {
         if (line.type === "section") {
           return (
-            <div key={line.id} className="pt-6 pb-1 first:pt-2 border-t border-zinc-100 first:border-t-0">
+            <div key={line.id} className="pt-6 pb-1 first:pt-2">
               <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">
                 {line.label}
               </span>
