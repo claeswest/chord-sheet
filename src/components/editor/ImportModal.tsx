@@ -298,7 +298,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   tab === t ? "border-indigo-600 text-indigo-600" : "border-transparent text-zinc-400 hover:text-zinc-600"
                 }`}
               >
-                {t === "text"  && "Paste text"}
+                {t === "text"  && "📋 Paste text"}
                 {t === "image" && "📷 Upload image"}
               </button>
             ))}
@@ -366,18 +366,21 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     {aiError && (
                       <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{aiError}</p>
                     )}
-                    <div className="relative flex-1 min-h-[280px]">
+                    <div className="relative flex-1 min-h-[220px]">
                       <textarea
                         ref={textareaRef}
                         value={text}
                         onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
                         onPaste={() => { pendingAutoClean.current = true; }}
                         spellCheck={false}
-                        className="absolute inset-0 w-full h-full text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed"
+                        className="absolute inset-0 w-full h-full text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-300 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed"
                       />
                       {!text && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <p className="text-base text-zinc-300 text-center px-6">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                          <svg className="w-7 h-7 text-zinc-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                          <p className="text-sm text-zinc-300 text-center px-6">
                             Paste chord sheet here —<br />AI will clean it automatically.
                           </p>
                         </div>
