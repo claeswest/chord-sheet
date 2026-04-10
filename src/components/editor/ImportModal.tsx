@@ -357,9 +357,9 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
               <>
                 {aiLoading ? (
                   <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 text-center">
-                    <style>{`@keyframes sweep { 0%,100%{transform:rotate(-20deg) translateX(-4px)} 50%{transform:rotate(20deg) translateX(4px)} }`}</style>
-                    <span style={{ fontSize: 40, display: "inline-block", animation: "sweep 0.9s ease-in-out infinite" }}>🧹</span>
-                    <p className="text-sm font-medium text-zinc-600">Sweeping up the chord sheet…</p>
+                    <style>{`@keyframes wave { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(30deg)} }`}</style>
+                    <span style={{ fontSize: 40, display: "inline-block", transformOrigin: "bottom right", animation: "wave 0.8s ease-in-out infinite" }}>🪄</span>
+                    <p className="text-sm font-medium text-zinc-600">Cleaning up the chord sheet…</p>
                     <p className="text-xs text-zinc-400">This usually takes a few seconds</p>
                   </div>
                 ) : (
