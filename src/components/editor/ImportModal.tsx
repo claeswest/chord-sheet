@@ -269,7 +269,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {searchOnly
-                  ? "AI searches the web for chords and formats the result."
+                  ? "Find any song's chords — just type artist and title."
                   : "Search with AI, paste text, or upload a photo."}
               </p>
             </div>
@@ -349,9 +349,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400">
-                  AI searches the web for chords and formats the result. Always double-check before a gig.
-                </p>
+                <p className="text-xs text-zinc-400">Always double-check chords before a gig.</p>
               </>
             )}
 
