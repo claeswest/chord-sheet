@@ -144,10 +144,10 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
       }
       const data = await res.json();
       setText(data.text ?? "");
-      setMeta({
-        title: data.title && data.title !== "Unknown" ? data.title : undefined,
-        artist: data.artist || undefined,
-      });
+      setMeta(prev => ({
+        title: (data.title && data.title !== "Unknown") ? data.title : prev.title,
+        artist: data.artist || prev.artist,
+      }));
       setCleaned(true);
     } catch {
       setAiError("Network error — check your connection");
