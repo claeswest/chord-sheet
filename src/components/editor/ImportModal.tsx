@@ -337,7 +337,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     value={query}
                     onChange={(e) => { setQuery(e.target.value); setSearchError(""); }}
                     onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-                    placeholder="e.g. The Beatles Let It Be"
+                    placeholder="e.g. Oasis Wonderwall"
                     spellCheck={false}
                     className="flex-1 border border-zinc-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-indigo-400 transition-colors"
                   />
