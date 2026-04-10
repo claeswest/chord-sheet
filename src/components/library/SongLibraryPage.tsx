@@ -12,6 +12,19 @@ import {
   addSongToCategory, removeSongFromCategory, reorderSongsInCategory, type DbCategory,
 } from "@/lib/categoryDb";
 
+/** Returns true if a hex colour is dark (luminance < 0.18) */
+function isDarkColour(hex: string): boolean {
+  const clean = hex.replace("#", "");
+  if (clean.length !== 6) return false;
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  // Relative luminance (WCAG formula)
+  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return luminance < 0.18;
+}
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -967,9 +980,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {/* Title — flex-1 so it takes all remaining space */}
                       <Link href={viewUrl} className="flex-1 min-w-0 group/title">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          {/* Colour dot — full colour, small, sits before title */}
+                          {/* Colour dot — dimmed for dark colours, full opacity otherwise */}
                           {rowBg && (
-                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: rowBg }} />
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: rowBg, opacity: isDarkColour(rowBg) ? 0.4 : 1 }}
+                            />
                           )}
                           <span className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
