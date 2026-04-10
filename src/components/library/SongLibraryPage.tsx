@@ -1011,7 +1011,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           𝄞
                         </span>
                         <Link href={viewUrl} className="min-w-0 group/title">
-                          <div className="text-sm truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
+                          <div className="text-sm font-medium truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
                           </div>
                           {song.artist && (
