@@ -8,12 +8,14 @@ import type { SongStyle } from "@/lib/songStyle";
 
 // Reuse a single canvas context across all measurements
 let _ctx: CanvasRenderingContext2D | null = null;
-function getCtx(): CanvasRenderingContext2D {
+function getCtx(): CanvasRenderingContext2D | null {
+  if (typeof document === "undefined") return null;
   if (!_ctx) _ctx = document.createElement("canvas").getContext("2d")!;
   return _ctx;
 }
 function measureWidth(text: string, size: number, family: string): number {
   const ctx = getCtx();
+  if (!ctx) return 0;
   ctx.font = `${size}px ${family}`;
   return ctx.measureText(text).width;
 }
