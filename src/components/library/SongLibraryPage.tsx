@@ -927,7 +927,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  <div className="hidden lg:block w-[120px] shrink-0" />
+                  <div className="hidden lg:block w-[120px] shrink-0 ml-4" />
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
