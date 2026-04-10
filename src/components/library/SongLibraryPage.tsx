@@ -952,11 +952,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
-                      {/* Left-edge accent bar at reduced opacity so dark colours don't dominate */}
-                      {rowBg ? (
-                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: rowBg, opacity: 0.35 }} />
-                      ) : firstCatAccent ? (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 opacity-35 ${firstCatAccent}`} />
+                      {/* Left-edge accent bar — category colour only (song colour shown via dot instead) */}
+                      {!rowBg && firstCatAccent ? (
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${firstCatAccent}`} />
                       ) : null}
 
                       {/* Drag handle */}
