@@ -997,7 +997,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Drag handle */}
                       {isLoggedIn && (
-                        <div className="w-3 shrink-0 text-zinc-300 group-hover:text-zinc-500 cursor-grab active:cursor-grabbing transition-colors select-none text-xs leading-none">
+                        <div className="w-3 shrink-0 text-zinc-400 group-hover:text-zinc-600 cursor-grab active:cursor-grabbing transition-colors select-none text-sm leading-none">
                           ⠿
                         </div>
                       )}
@@ -1006,7 +1006,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       <div className="flex-1 min-w-0 flex items-center gap-1.5">
                         <span
                           className="shrink-0 text-4xl leading-none select-none"
-                          style={{ color: rowBg ?? "#e4e4e7", opacity: rowBg ? (isDarkColour(rowBg) ? 0.4 : 1) : 0.75 }}
+                          style={{ color: rowBg ?? "#e4e4e7", opacity: rowBg ? (isDarkColour(rowBg) ? 0.4 : 1) : 0.8 }}
                         >
                           𝄞
                         </span>
