@@ -44,7 +44,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const speedKey = songId ? `scrollSpeed:${songId}` : null;
-  const savedSpeed = speedKey ? Number(localStorage.getItem(speedKey) ?? 3) : 3;
+  const savedSpeed = speedKey && typeof window !== "undefined" ? Number(localStorage.getItem(speedKey) ?? 3) : 3;
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(isNaN(savedSpeed) ? 3 : savedSpeed);
