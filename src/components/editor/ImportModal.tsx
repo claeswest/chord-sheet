@@ -265,7 +265,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           {!showReview ? (
             <div>
               <h2 className="text-base font-semibold text-white">
-                {searchOnly ? "Search a song" : "Import chord sheet"}
+                {searchOnly ? "Find a song" : "Import chord sheet"}
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {searchOnly
