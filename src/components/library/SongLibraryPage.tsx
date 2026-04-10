@@ -984,7 +984,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       }}
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
-                      className={`group relative flex items-center gap-4 px-5 py-4 transition-colors hover:bg-indigo-50/60 ${
+                      onClick={() => window.location.href = viewUrl}
+                      className={`group relative flex items-center gap-4 px-5 py-4 transition-colors hover:bg-indigo-50/60 cursor-pointer ${
                         idx !== 0 ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
@@ -1033,7 +1034,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-nowrap gap-1 w-[320px] shrink-0 overflow-hidden">
+                        <div className="hidden lg:flex flex-nowrap gap-1 w-[320px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -1065,7 +1066,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </div>
 
                       {/* Actions — grouped pill */}
-                      <div className="hidden lg:flex shrink-0 items-center justify-end ml-4 w-[120px]">
+                      <div className="hidden lg:flex shrink-0 items-center justify-end ml-4 w-[120px]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
                         {/* View */}
                         <Link href={viewUrl} title="View"
