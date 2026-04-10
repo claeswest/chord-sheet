@@ -60,7 +60,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
               </div>
             )}
             {hasText && (
-              <div className="text-sm text-zinc-700 leading-snug whitespace-pre">
+              <div className="text-sm text-zinc-700 leading-snug whitespace-pre-wrap">
                 {line.text}
               </div>
             )}
