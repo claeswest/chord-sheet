@@ -22,7 +22,6 @@ const EXAMPLE = `Verse 1
 Chorus
 [C]The [G]sound of [Am]silence`;
 
-// Shared spinner SVG
 function Spinner({ size = 4 }: { size?: number }) {
   return (
     <svg className={`w-${size} h-${size} animate-spin`} viewBox="0 0 24 24" fill="none">
@@ -32,9 +31,7 @@ function Spinner({ size = 4 }: { size?: number }) {
   );
 }
 
-// Chord preview renderer (shared between split and full-width modes)
 function ChordPreview({ preview }: { preview: SongLine[] }) {
-  if (preview.length === 0) return null;
   return (
     <div className="space-y-0">
       {preview.map((line) => {
@@ -68,7 +65,6 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
 export default function ImportModal({ onImport, onClose, defaultTab = "search" }: Props) {
   const [tab, setTab] = useState<"search" | "text" | "image">(defaultTab);
 
-  // Text tab state
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<SongLine[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
@@ -78,13 +74,11 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pendingAutoClean = useRef(false);
 
-  // Search tab state
   const [query, setQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Image tab state
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrError, setOcrError] = useState("");
@@ -119,7 +113,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     if (tab !== "image") return;
     const handler = (e: ClipboardEvent) => {
       const items = Array.from(e.clipboardData?.items ?? []);
-      const imageItem = items.find((item) => item.type.startsWith("image/"));
+      const imageItem = items.find((i) => i.type.startsWith("image/"));
       if (!imageItem) return;
       e.preventDefault();
       const file = imageItem.getAsFile();
@@ -166,10 +160,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
       return;
     }
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setImageSrc(e.target?.result as string);
-      setOcrError("");
-    };
+    reader.onload = (e) => { setImageSrc(e.target?.result as string); setOcrError(""); };
     reader.readAsDataURL(file);
   };
 
@@ -247,10 +238,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   };
 
   const handleImport = () => {
-    if (preview.length > 0) {
-      onImport(preview, meta);
-      onClose();
-    }
+    if (preview.length > 0) { onImport(preview, meta); onClose(); }
   };
 
   const lyricCount = preview.filter((l) => l.type === "lyric").length;
@@ -259,41 +247,35 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     .reduce((sum, l) => sum + (l.type === "lyric" ? l.chords.length : 0), 0);
   const sectionCount = preview.filter((l) => l.type === "section").length;
 
-  // After a successful clean, show full-width review instead of split
-  const showCleanedView = tab === "text" && cleaned && !aiLoading;
-  const showSplit = !showCleanedView && tab !== "search";
+  const showReview = cleaned && !aiLoading;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
           <div>
             <h2 className="text-base font-semibold text-zinc-900">Import chord sheet</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Search with AI, paste text, or upload a photo.
-            </p>
+            {!showReview && (
+              <p className="text-xs text-zinc-400 mt-0.5">Search with AI, paste text, or upload a photo.</p>
+            )}
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 text-lg leading-none px-1">
-            ✕
-          </button>
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 text-lg leading-none px-1">✕</button>
         </div>
 
-        {/* Tabs — hidden in cleaned review mode */}
-        {!showCleanedView && (
+        {/* Tabs — hidden during review */}
+        {!showReview && (
           <div className="flex border-b border-zinc-100 px-6">
             {(["search", "text", "image"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`text-sm font-medium px-1 py-3 mr-6 border-b-2 transition-colors ${
-                  tab === t
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-zinc-400 hover:text-zinc-700"
+                  tab === t ? "border-indigo-600 text-indigo-600" : "border-transparent text-zinc-400 hover:text-zinc-700"
                 }`}
               >
                 {t === "search" && "✦ AI Search"}
@@ -304,195 +286,151 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           </div>
         )}
 
-        {/* ── Cleaned review view ── */}
-        {showCleanedView ? (
+        {/* ── Review view ── */}
+        {showReview ? (
           <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Song identity bar */}
+            {/* Song identity + actions */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
               <div>
-                {meta.title ? (
-                  <>
-                    <div className="text-lg font-semibold text-zinc-900">{meta.title}</div>
-                    {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}
-                  </>
-                ) : (
-                  <div className="text-sm text-zinc-400 italic">No title detected</div>
-                )}
+                {meta.title
+                  ? <><div className="text-lg font-semibold text-zinc-900">{meta.title}</div>
+                      {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}</>
+                  : <div className="text-sm text-zinc-400 italic">No title detected</div>
+                }
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 shrink-0 ml-4">
                 <span className="text-xs text-zinc-400">
                   {lyricCount} lines · {chordCount} chords · {sectionCount} sections
                 </span>
                 <button
                   onClick={() => { setCleaned(false); setTimeout(() => textareaRef.current?.focus(), 50); }}
-                  className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors flex items-center gap-1"
+                  className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
                 >
-                  ✎ Edit text
+                  ✎ Edit
                 </button>
               </div>
             </div>
-
-            {/* Full-width preview */}
+            {/* Full-width chord preview */}
             <div className="flex-1 overflow-y-auto px-8 py-6">
               <ChordPreview preview={preview} />
             </div>
           </div>
 
         ) : (
-          /* ── Normal editing view ── */
-          <div className={`flex flex-1 overflow-hidden ${showSplit ? "divide-x divide-zinc-100" : ""}`}>
+          /* ── Input views (all full-width) ── */
+          <div className="flex flex-col flex-1 p-5 gap-4">
 
-            {/* Left / main pane */}
-            <div className="flex flex-col flex-1 p-5 gap-4">
-
-              {tab === "search" && (
-                <>
-                  {searchError && (
-                    <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">
-                      {searchError}
-                    </p>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      ref={searchInputRef}
-                      value={query}
-                      onChange={(e) => { setQuery(e.target.value); setSearchError(""); }}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-                      placeholder="e.g. Yesterday Beatles, Creep Radiohead…"
-                      spellCheck={false}
-                      className="flex-1 border border-zinc-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-400 transition-colors"
-                    />
-                    <button
-                      onClick={handleSearch}
-                      disabled={!query.trim() || searchLoading}
-                      className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium shrink-0"
-                    >
-                      {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
-                    </button>
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    AI searches the web for chords and formats the result. You&apos;ll get to review it before importing. Always double-check before a gig.
-                  </p>
-                </>
-              )}
-
-              {tab === "text" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => { setText(EXAMPLE); setMeta({}); setCleaned(false); }}
-                      className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                    >
-                      Load example
-                    </button>
-                    <button
-                      onClick={() => handleAiClean()}
-                      disabled={!text.trim() || aiLoading}
-                      className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                    >
-                      {aiLoading ? <><Spinner size={3} /> Cleaning…</> : <>✦ AI Clean</>}
-                    </button>
-                  </div>
-
-                  {aiError && (
-                    <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">
-                      {aiError}
-                    </p>
-                  )}
-
-                  <textarea
-                    ref={textareaRef}
-                    value={text}
-                    onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
-                    onPaste={() => { pendingAutoClean.current = true; }}
-                    placeholder="Paste chord sheet here — AI will clean it automatically."
+            {tab === "search" && (
+              <>
+                {searchError && (
+                  <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">{searchError}</p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    ref={searchInputRef}
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setSearchError(""); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                    placeholder="e.g. Yesterday Beatles, Creep Radiohead…"
                     spellCheck={false}
-                    className="flex-1 text-sm font-mono text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[240px]"
+                    className="flex-1 border border-zinc-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-400 transition-colors"
                   />
-                </>
-              )}
-
-              {tab === "image" && (
-                <>
-                  {ocrError && (
-                    <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">
-                      {ocrError}
-                    </p>
-                  )}
-                  <div
-                    onClick={() => !imageSrc && fileInputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={handleDrop}
-                    className={`flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors min-h-[240px] ${
-                      dragOver
-                        ? "border-indigo-400 bg-indigo-50"
-                        : imageSrc
-                        ? "border-zinc-200 bg-zinc-50 cursor-default"
-                        : "border-zinc-200 bg-zinc-50 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer"
-                    }`}
-                  >
-                    {imageSrc ? (
-                      <div className="flex flex-col items-center gap-3 w-full h-full p-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={imageSrc} alt="Chord sheet preview" className="max-h-52 max-w-full object-contain rounded-lg shadow-sm" />
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setImageSrc(null); setOcrError(""); }}
-                          className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                        >
-                          Remove image
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-center px-6">
-                        <span className="text-3xl">📷</span>
-                        <p className="text-sm font-medium text-zinc-600">Click to upload, drag &amp; drop, or paste</p>
-                        <p className="text-xs text-zinc-400">JPG, PNG, WEBP — or just Ctrl+V / ⌘V a copied image</p>
-                      </div>
-                    )}
-                  </div>
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   <button
-                    onClick={handleOcrRead}
-                    disabled={!imageSrc || ocrLoading}
-                    className="flex items-center justify-center gap-2 text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                    onClick={handleSearch}
+                    disabled={!query.trim() || searchLoading}
+                    className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium shrink-0"
                   >
-                    {ocrLoading ? <><Spinner size={4} /> Reading with AI…</> : <>✦ Read with AI</>}
+                    {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
-                </>
-              )}
-            </div>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  AI searches the web for chords and formats the result. Always double-check before a gig.
+                </p>
+              </>
+            )}
 
-            {/* Preview pane (text + image tabs only) */}
-            {showSplit && (
-              <div className="flex flex-col flex-1 p-5 gap-3 overflow-hidden">
+            {tab === "text" && (
+              <>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-zinc-500">Preview</span>
-                  {preview.length > 0 && (
-                    <span className="text-xs text-zinc-400">
-                      {lyricCount} lines · {chordCount} chords · {sectionCount} sections
-                    </span>
-                  )}
+                  <button
+                    onClick={() => { setText(EXAMPLE); setMeta({}); setCleaned(false); }}
+                    className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                  >
+                    Load example
+                  </button>
+                  <button
+                    onClick={() => handleAiClean()}
+                    disabled={!text.trim() || aiLoading}
+                    className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                  >
+                    {aiLoading ? <><Spinner size={3} /> Cleaning…</> : <>✦ AI Clean</>}
+                  </button>
                 </div>
-                <div className="flex-1 overflow-y-auto bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 font-mono text-sm">
-                  {preview.length === 0 ? (
-                    <p className="text-zinc-300 text-xs">
-                      {tab === "image" && !text
-                        ? "Upload an image and click ✦ Read with AI — parsed output will appear here."
-                        : "Parsed output will appear here as you type…"}
-                    </p>
+                {aiError && (
+                  <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">{aiError}</p>
+                )}
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
+                  onPaste={() => { pendingAutoClean.current = true; }}
+                  placeholder="Paste chord sheet here — AI will clean it automatically."
+                  spellCheck={false}
+                  className="flex-1 text-sm font-mono text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[280px]"
+                />
+              </>
+            )}
+
+            {tab === "image" && (
+              <>
+                {ocrError && (
+                  <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">{ocrError}</p>
+                )}
+                <div
+                  onClick={() => !imageSrc && fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  className={`flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors min-h-[240px] ${
+                    dragOver ? "border-indigo-400 bg-indigo-50"
+                    : imageSrc ? "border-zinc-200 bg-zinc-50 cursor-default"
+                    : "border-zinc-200 bg-zinc-50 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer"
+                  }`}
+                >
+                  {imageSrc ? (
+                    <div className="flex flex-col items-center gap-3 w-full h-full p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageSrc} alt="Chord sheet" className="max-h-64 max-w-full object-contain rounded-lg shadow-sm" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setImageSrc(null); setOcrError(""); }}
+                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        Remove image
+                      </button>
+                    </div>
                   ) : (
-                    <ChordPreview preview={preview} />
+                    <div className="flex flex-col items-center gap-2 text-center px-6">
+                      <span className="text-3xl">📷</span>
+                      <p className="text-sm font-medium text-zinc-600">Click to upload, drag &amp; drop, or paste</p>
+                      <p className="text-xs text-zinc-400">JPG, PNG, WEBP — or Ctrl+V / ⌘V a copied image</p>
+                    </div>
                   )}
                 </div>
-              </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                <button
+                  onClick={handleOcrRead}
+                  disabled={!imageSrc || ocrLoading}
+                  className="flex items-center justify-center gap-2 text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                >
+                  {ocrLoading ? <><Spinner size={4} /> Reading with AI…</> : <>✦ Read with AI</>}
+                </button>
+              </>
             )}
           </div>
         )}
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-100 bg-zinc-50 rounded-b-2xl">
-          {/* Cleaning spinner shown in footer during auto-clean */}
           {aiLoading && (
             <span className="flex items-center gap-1.5 text-xs text-zinc-400 mr-auto">
               <Spinner size={3} /> Cleaning with AI…
