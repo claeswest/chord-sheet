@@ -349,7 +349,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400 text-center">Results may need a tweak — AI isn&apos;t always perfect.</p>
+                <p className="text-xs text-zinc-400">Results may need a tweak — AI isn&apos;t always perfect.</p>
               </div>
             )}
 
