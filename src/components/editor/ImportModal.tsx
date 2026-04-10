@@ -265,12 +265,12 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           {!showReview ? (
             <div>
               <h2 className="text-base font-semibold text-white">
-                {searchOnly ? "Find a song" : "Import chord sheet"}
+                {searchOnly ? "Find a song" : "Import from web or photo"}
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {searchOnly
                   ? "Type artist and song below — AI does the rest."
-                  : "Search with AI, paste text, or upload a photo."}
+                  : "Paste chords from a website or upload a photo."}
               </p>
             </div>
           ) : (
