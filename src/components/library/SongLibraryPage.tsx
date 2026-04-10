@@ -13,7 +13,8 @@ import {
 } from "@/lib/categoryDb";
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 // One palette entry per category slot — full Tailwind class strings so purging works
