@@ -287,10 +287,10 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           </button>
         </div>
 
-        {/* Tabs — only for import mode */}
+        {/* Tabs — only for import mode, no AI Search tab here */}
         {!showReview && !searchOnly && (
           <div className="flex border-b border-zinc-100 px-6 bg-white">
-            {(["search", "text", "image"] as const).map((t) => (
+            {(["text", "image"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -298,9 +298,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   tab === t ? "border-indigo-600 text-indigo-600" : "border-transparent text-zinc-400 hover:text-zinc-600"
                 }`}
               >
-                {t === "search" && "✦ AI Search"}
-                {t === "text"   && "Paste text"}
-                {t === "image"  && "📷 Upload image"}
+                {t === "text"  && "Paste text"}
+                {t === "image" && "📷 Upload image"}
               </button>
             ))}
           </div>
