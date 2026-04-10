@@ -256,21 +256,21 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col max-h-[90vh]">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-          <div>
-            <h2 className="text-base font-semibold text-zinc-900">
-              {searchOnly ? "Search a song" : "Import chord sheet"}
-            </h2>
-            {!showReview && (
+        {/* Header — hidden during review, close button always present */}
+        <div className={`flex items-center justify-between px-6 border-b border-zinc-100 ${showReview ? "py-3" : "py-4"}`}>
+          {!showReview && (
+            <div>
+              <h2 className="text-base font-semibold text-zinc-900">
+                {searchOnly ? "Search a song" : "Import chord sheet"}
+              </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
                 {searchOnly
                   ? "AI searches the web for chords and formats the result."
                   : "Search with AI, paste text, or upload a photo."}
               </p>
-            )}
-          </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 text-lg leading-none px-1">✕</button>
+            </div>
+          )}
+          <button onClick={onClose} className={`text-zinc-400 hover:text-zinc-700 text-lg leading-none px-1 ${showReview ? "" : "ml-auto"}`}>✕</button>
         </div>
 
         {/* Tabs — hidden during review and in search-only mode */}
