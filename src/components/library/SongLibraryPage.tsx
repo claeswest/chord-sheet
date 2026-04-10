@@ -1017,7 +1017,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </div>
 
                       {/* Actions — grouped pill */}
-                      <div className="hidden lg:flex shrink-0 items-center justify-end">
+                      <div className="hidden lg:flex shrink-0 items-center justify-end ml-4">
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
                         {/* View */}
                         <Link href={viewUrl} title="View"
