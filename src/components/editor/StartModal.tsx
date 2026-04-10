@@ -69,8 +69,8 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">I'll write it myself</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Start with a blank editor</p>
+              <p className="font-semibold text-sm">Start with a blank sheet</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Type your own chords and lyrics</p>
             </div>
             <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
