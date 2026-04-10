@@ -15,21 +15,15 @@ export default function SongViewLoader() {
   const song = encoded ? decodeSong(encoded) : null;
 
   const [ready, setReady] = useState(false);
-  const [songStyle, setSongStyle] = useState<SongStyle | undefined>(() => {
-    // Seed backgroundImage from sessionStorage cache so it's visible immediately
-    const base = song?.style;
-    const id = song?.id;
-    if (id && typeof sessionStorage !== "undefined") {
-      const cached = sessionStorage.getItem(`bgImg:${id}`);
-      if (cached) return { ...(base ?? {} as SongStyle), backgroundImage: cached };
-    }
-    return base;
-  });
+  const [songStyle, setSongStyle] = useState<SongStyle | undefined>(song?.style);
 
   // Fetch full style (incl. backgroundImage) from DB if we have an ID
   useEffect(() => {
     const id = song?.id;
     if (!id) { setReady(true); return; }
+    // Seed from sessionStorage cache immediately so background shows without waiting for fetch
+    const cached = sessionStorage.getItem(`bgImg:${id}`);
+    if (cached) setSongStyle(prev => ({ ...(prev ?? {} as SongStyle), backgroundImage: cached }));
     fetch(`/api/songs/${id}`, { cache: "no-store" })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
