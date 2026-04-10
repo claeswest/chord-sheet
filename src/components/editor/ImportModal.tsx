@@ -306,7 +306,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         {showReview ? (
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Song identity */}
-            <div className="px-6 py-5 border-b border-zinc-100">
+            <div className="px-6 py-3 border-b border-zinc-100">
               <div className="text-xl font-semibold text-zinc-900">
                 {meta.title ?? <span className="italic text-zinc-400">Untitled</span>}
               </div>
@@ -452,9 +452,9 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           <button
             onClick={handleImport}
             disabled={preview.length === 0 || aiLoading}
-            className="text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Import
+            <span className="text-base leading-none">♪</span> Import
           </button>
         </div>
       </div>
