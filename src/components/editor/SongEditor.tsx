@@ -417,12 +417,18 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
   const persistSongRef = useRef(persistSong);
   persistSongRef.current = persistSong;
 
+  // Track start modal state via ref so auto-save can read it without being a dep
+  const startModalDismissedRef = useRef(startModalDismissed);
+  startModalDismissedRef.current = startModalDismissed;
+
   // Auto-save: debounce 1s after any content change, skip initial render
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
+    // Don't auto-save before the user has made any choice on the start modal
+    if (!startModalDismissedRef.current) return;
     if (suppressAutoSave.current) {
       suppressAutoSave.current = false;
       return;
