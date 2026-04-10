@@ -276,11 +276,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           ) : (
             <div className="flex items-center gap-2">
               <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-400/20 text-emerald-300 text-xs font-bold shrink-0">✓</span>
-              <span className="text-sm font-medium text-white/80">
-                {meta.title
-                  ? <>Found chords for <span className="font-semibold text-white">{meta.title}</span></>
-                  : "Chords found"}
-              </span>
+              <span className="text-sm font-medium text-white/80">Chords found</span>
             </div>
           )}
           <button
