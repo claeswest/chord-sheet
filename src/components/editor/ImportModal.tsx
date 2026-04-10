@@ -363,13 +363,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => { setText(EXAMPLE); setMeta({}); setCleaned(false); }}
-                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                      >
-                        Load example
-                      </button>
+                    <div className="flex justify-end">
                       <button
                         onClick={() => handleAiClean()}
                         disabled={!text.trim()}
