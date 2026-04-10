@@ -980,15 +980,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {/* Title — flex-1 so it takes all remaining space */}
                       <Link href={viewUrl} className="flex-1 min-w-0 group/title">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          {/* G-clef in song colour — dimmed for dark colours */}
-                          {rowBg && (
-                            <span
-                              className="shrink-0 text-4xl leading-none select-none"
-                              style={{ color: rowBg, opacity: isDarkColour(rowBg) ? 0.4 : 1 }}
-                            >
-                              𝄞
-                            </span>
-                          )}
+                          {/* G-clef in song colour — placeholder keeps spacing even when no colour set */}
+                          <span
+                            className="shrink-0 text-4xl leading-none select-none"
+                            style={{ color: rowBg ?? "transparent", opacity: rowBg ? (isDarkColour(rowBg) ? 0.4 : 1) : 1 }}
+                          >
+                            𝄞
+                          </span>
                           <span className="text-sm font-semibold truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
                           </span>
