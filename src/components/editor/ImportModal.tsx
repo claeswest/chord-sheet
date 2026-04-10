@@ -352,33 +352,44 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
 
             {tab === "text" && (
               <>
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => { setText(EXAMPLE); setMeta({}); setCleaned(false); }}
-                    className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                  >
-                    Load example
-                  </button>
-                  <button
-                    onClick={() => handleAiClean()}
-                    disabled={!text.trim() || aiLoading}
-                    className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                  >
-                    {aiLoading ? <><Spinner size={3} /> Cleaning…</> : <>✦ AI Clean</>}
-                  </button>
-                </div>
-                {aiError && (
-                  <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">{aiError}</p>
+                {aiLoading ? (
+                  /* Cleaning in progress — hide raw text, show a friendly wait state */
+                  <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 text-center">
+                    <Spinner size={5} />
+                    <p className="text-sm font-medium text-zinc-600">Cleaning up the chord sheet…</p>
+                    <p className="text-xs text-zinc-400">This usually takes a few seconds</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => { setText(EXAMPLE); setMeta({}); setCleaned(false); }}
+                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        Load example
+                      </button>
+                      <button
+                        onClick={() => handleAiClean()}
+                        disabled={!text.trim()}
+                        className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                      >
+                        ✦ AI Clean
+                      </button>
+                    </div>
+                    {aiError && (
+                      <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded px-3 py-2">{aiError}</p>
+                    )}
+                    <textarea
+                      ref={textareaRef}
+                      value={text}
+                      onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
+                      onPaste={() => { pendingAutoClean.current = true; }}
+                      placeholder="Paste chord sheet here — AI will clean it automatically."
+                      spellCheck={false}
+                      className="flex-1 text-sm font-mono text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[280px]"
+                    />
+                  </>
                 )}
-                <textarea
-                  ref={textareaRef}
-                  value={text}
-                  onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
-                  onPaste={() => { pendingAutoClean.current = true; }}
-                  placeholder="Paste chord sheet here — AI will clean it automatically."
-                  spellCheck={false}
-                  className="flex-1 text-sm font-mono text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 min-h-[280px]"
-                />
               </>
             )}
 
@@ -432,12 +443,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-100 bg-zinc-50 rounded-b-2xl">
-          {aiLoading && (
-            <span className="flex items-center gap-1.5 text-xs text-zinc-400 mr-auto">
-              <Spinner size={3} /> Cleaning with AI…
-            </span>
-          )}
-          <button
+<button
             onClick={onClose}
             className="text-sm text-zinc-500 hover:text-zinc-800 px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
           >
