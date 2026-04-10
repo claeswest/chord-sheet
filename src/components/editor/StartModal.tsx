@@ -30,19 +30,19 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
           {/* Search */}
           <button
             onClick={onSearch}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors text-left shadow-md group"
+            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-white/80 hover:bg-white text-zinc-800 border border-zinc-200 transition-colors text-left shadow-sm group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">Find a song</p>
-              <p className="text-xs text-indigo-200 mt-0.5">Find any song's chords with AI</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Search by artist and title · AI powered</p>
             </div>
-            <svg className="w-4 h-4 text-white/50 group-hover:text-white/80 transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
