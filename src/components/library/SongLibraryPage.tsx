@@ -900,7 +900,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
                   {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[200px] shrink-0">Categories</span>}
-                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-28 shrink-0 hover:text-zinc-800 transition-colors">
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 justify-end text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors">
                     Updated
                     {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
@@ -984,7 +984,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-wrap gap-1 w-[200px] shrink-0">
+                        <div className="hidden lg:flex flex-nowrap gap-1 w-[200px] shrink-0 overflow-hidden">
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -1009,7 +1009,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       )}
 
                       {/* Date */}
-                      <div className="hidden md:flex shrink-0 items-center justify-end w-28">
+                      <div className="hidden md:flex shrink-0 items-center justify-end w-32">
                         <span className="text-xs text-zinc-400 whitespace-nowrap tabular-nums">
                           {formatDate(song.updatedAt)}
                         </span>
