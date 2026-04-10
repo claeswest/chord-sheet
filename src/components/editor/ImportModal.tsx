@@ -366,15 +366,23 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     {aiError && (
                       <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{aiError}</p>
                     )}
-                    <textarea
-                      ref={textareaRef}
-                      value={text}
-                      onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
-                      onPaste={() => { pendingAutoClean.current = true; }}
-                      placeholder="Paste chord sheet here — AI will clean it automatically."
-                      spellCheck={false}
-                      className="flex-1 text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed placeholder:text-zinc-300 placeholder:text-center placeholder:text-base min-h-[280px]"
-                    />
+                    <div className="relative flex-1 min-h-[280px]">
+                      <textarea
+                        ref={textareaRef}
+                        value={text}
+                        onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
+                        onPaste={() => { pendingAutoClean.current = true; }}
+                        spellCheck={false}
+                        className="absolute inset-0 w-full h-full text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed"
+                      />
+                      {!text && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <p className="text-base text-zinc-300 text-center px-6">
+                            Paste chord sheet here —<br />AI will clean it automatically.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
               </>
