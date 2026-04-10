@@ -983,7 +983,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           {/* G-clef in song colour — dimmed for dark colours */}
                           {rowBg && (
                             <span
-                              className="shrink-0 text-base leading-none select-none"
+                              className="shrink-0 text-2xl leading-none select-none"
                               style={{ color: rowBg, opacity: isDarkColour(rowBg) ? 0.4 : 1 }}
                             >
                               𝄞
