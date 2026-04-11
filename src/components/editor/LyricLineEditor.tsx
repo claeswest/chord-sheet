@@ -115,7 +115,6 @@ export default function LyricLineEditor({
       if (activeChord) {
         const pos = pxToCharPos(line.text, px);
         onAddChord(pos, activeChord);
-        onClearActiveChord();
         return;
       }
 
@@ -193,11 +192,13 @@ export default function LyricLineEditor({
   })();
 
   return (
-    <div className="group/line relative py-0.5">
+    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-zinc-100">
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
-        className="relative h-6 cursor-crosshair select-none"
+        className={`relative cursor-crosshair select-none overflow-hidden transition-all duration-150 ${
+          line.chords.length > 0 || addingAtPx !== null ? "h-6" : "h-0 group-hover/line:h-6"
+        }`}
         onClick={handleChordAreaClick}
         title={activeChord ? `Click to place "${activeChord}"` : "Click to add a chord"}
       >
@@ -205,9 +206,10 @@ export default function LyricLineEditor({
           <div
             key={chord.id}
             data-chord-token
-            className="absolute top-0"
+            className="group/chord absolute top-0 flex items-center"
             style={{ left: chordDisplayPositions.get(chord.id) ?? chordLeftPx(chord.position) }}
             onMouseDown={(e) => {
+              if ((e.target as HTMLElement).closest("[data-chord-delete]")) return;
               e.preventDefault();
               e.stopPropagation();
               draggingRef.current = {
@@ -248,23 +250,37 @@ export default function LyricLineEditor({
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <span
-                className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
-                style={{
-                  fontSize: chordSize,
-                  fontFamily: chordFont,
-                  fontWeight: songStyle?.chords?.bold !== false ? "bold" : "normal",
-                  fontStyle: songStyle?.chords?.italic ? "italic" : "normal",
-                  color: chordColor,
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setEditingChordId(chord.id);
-                }}
-                title="Drag to move · Double-click to edit"
-              >
-                {chord.chord}
-              </span>
+              <>
+                <span
+                  className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
+                  style={{
+                    fontSize: chordSize,
+                    fontFamily: chordFont,
+                    fontWeight: songStyle?.chords?.bold !== false ? "bold" : "normal",
+                    fontStyle: songStyle?.chords?.italic ? "italic" : "normal",
+                    color: chordColor,
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setEditingChordId(chord.id);
+                  }}
+                  title="Drag to move · Double-click to edit"
+                >
+                  {chord.chord}
+                </span>
+                <button
+                  data-chord-delete
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); onDeleteChord(chord.id); }}
+                  className="opacity-0 group-hover/chord:opacity-100 transition-opacity text-zinc-400 hover:text-red-500 leading-none ml-0.5"
+                  title="Remove chord"
+                  tabIndex={-1}
+                >
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M1 1l8 8M9 1l-8 8"/>
+                  </svg>
+                </button>
+              </>
             )}
           </div>
         ))}
@@ -296,7 +312,7 @@ export default function LyricLineEditor({
           value={line.text}
           onChange={(e) => onUpdate(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type lyrics here…"
+          placeholder={line.chords.length > 0 ? "" : "Type lyrics here…"}
           spellCheck={false}
           className="flex-1 bg-transparent outline-none placeholder:text-zinc-300 py-0.5 leading-5"
           style={{
@@ -311,7 +327,7 @@ export default function LyricLineEditor({
         />
         <button
           onClick={onDuplicate}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-indigo-600 transition-opacity shrink-0 rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Duplicate line"
         >
@@ -322,7 +338,7 @@ export default function LyricLineEditor({
         </button>
         <button
           onClick={onDelete}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-red-500 transition-opacity shrink-0 rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-red-500 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Delete line"
         >

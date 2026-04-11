@@ -37,7 +37,6 @@ import { downloadPdf } from "@/lib/pdfExport";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
-const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chorus", "Solo"];
 
 interface SongEditorProps {
   initialSong?: SharedSong | null;
@@ -46,7 +45,7 @@ interface SongEditorProps {
 
 export default function SongEditor({ initialSong, isLoggedIn = false }: SongEditorProps = {}) {
   const router = useRouter();
-  const [title, setTitle] = useState(initialSong?.title ?? "Untitled Song");
+  const [title, setTitle] = useState(initialSong?.title ?? "");
   const [artist, setArtist] = useState(initialSong?.artist ?? "");
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
@@ -112,6 +111,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     })()
   );
   useEffect(() => setMounted(true), []);
+
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  // Auto-focus the title when a blank new song opens (after start modal is dismissed)
+  useEffect(() => {
+    if (isBlankNew && startModalDismissed) {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select();
+    }
+  }, [isBlankNew, startModalDismissed]);
 
   // ── Snapshot helpers ─────────────────────────────────────────────────────────
 
@@ -454,7 +462,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
 
   const handleNew = useCallback(() => {
     setSongId(genId());
-    setTitle("Untitled Song");
+    setTitle("");
     setArtist("");
     setLines([{ id: genId(), type: "lyric", text: "", chords: [] }]);
     setSemitones(0);
@@ -601,11 +609,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               title="More options"
             >•••</button>
             {showOverflow && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50">
+              <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50">
+                <button onClick={() => { setShowImport("search"); setShowOverflow(false); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"/></svg>
+                  Find a song
+                </button>
                 <button onClick={() => { setShowImport("text"); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M19 9h-4V3H9v6H5l7 7 7-7ZM5 18v2h14v-2H5Z"/></svg>
-                  Import
+                  Import from web or photo
                 </button>
                 <button onClick={() => { setShowFindReplace(true); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
@@ -721,10 +734,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             {/* Title & artist — editable inline */}
             <div className="mb-10 text-center">
               <input
+                ref={titleInputRef}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onFocus={(e) => e.target.select()}
-                placeholder="Untitled Song"
+                placeholder="Song title"
                 className="w-full bg-transparent border-none outline-none text-center"
                 style={{
                   fontFamily: songStyle.title.fontFamily,
@@ -752,15 +766,19 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 }}
               />
             </div>
-            {/* Subtle empty hint — shown after start modal is dismissed */}
+            {/* Ghost example — shown on blank canvas after start modal dismissed */}
             {startModalDismissed &&
               lines.length === 1 &&
               lines[0].type === "lyric" &&
               (lines[0] as LyricLine).text === "" &&
               (lines[0] as LyricLine).chords.length === 0 && (
-                <p className="text-center text-sm text-zinc-300 py-10">
-                  Type your first lyric line below, or use the menu to search / import.
-                </p>
+                <div className="opacity-20 pointer-events-none select-none py-4 pl-1">
+                  <div className="relative h-6">
+                    <span className="absolute top-0 text-xs font-mono text-indigo-500" style={{ left: 0 }}>Am</span>
+                    <span className="absolute top-0 text-xs font-mono text-indigo-500" style={{ left: "6.5ch" }}>G</span>
+                  </div>
+                  <div className="text-sm font-mono text-zinc-700 leading-snug">This is an example line</div>
+                </div>
               )}
 
             {mounted ? (
@@ -790,14 +808,18 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             )}
 
             {/* Bottom controls */}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-6">
-              <button
-                onClick={() => addLineAfter(lastLineId)}
-                className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors"
-              >
-                + Line
-              </button>
-              {SECTION_LABELS.map((label) => (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-6">
+              {["Verse", "Chorus", "Bridge"].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => addSectionAfter(lastLineId, label)}
+                  className="text-sm text-zinc-500 hover:text-indigo-600 transition-colors"
+                >
+                  + {label}
+                </button>
+              ))}
+              <span className="text-zinc-200 select-none">|</span>
+              {["Intro", "Outro", "Pre-Chorus", "Solo"].map((label) => (
                 <button
                   key={label}
                   onClick={() => addSectionAfter(lastLineId, label)}
@@ -874,7 +896,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
             if (meta?.title && meta.title !== "Unknown") setTitle(meta.title);
             if (meta?.artist) setArtist(meta.artist);
           }}
-          onClose={() => setShowImport(false)}
+          onClose={() => {
+            setShowImport(false);
+            // If the song is still blank, go back to the library
+            const stillBlank = !title && !artist &&
+              lines.length === 1 && lines[0].type === "lyric" &&
+              (lines[0] as LyricLine).text === "" &&
+              (lines[0] as LyricLine).chords.length === 0;
+            if (stillBlank) router.push("/songs");
+          }}
         />
       )}
 

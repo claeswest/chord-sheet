@@ -403,8 +403,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   onDrop={handleDrop}
                   className={`flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors min-h-[240px] ${
                     dragOver ? "border-indigo-400 bg-indigo-50"
-                    : imageSrc ? "border-zinc-200 bg-zinc-50 cursor-default"
-                    : "border-zinc-200 bg-zinc-50 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer"
+                    : imageSrc ? "border-zinc-300 bg-zinc-50 cursor-default"
+                    : "border-zinc-300 bg-zinc-50 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer"
                   }`}
                 >
                   {imageSrc ? (
@@ -419,10 +419,14 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-center px-6">
-                      <span className="text-3xl">📷</span>
-                      <p className="text-sm font-medium text-zinc-600">Click to upload, drag &amp; drop, or paste</p>
-                      <p className="text-xs text-zinc-400">JPG, PNG, WEBP — or Ctrl+V / ⌘V a copied image</p>
+                    <div className="flex flex-col items-center gap-3 text-center px-6">
+                      <svg className="w-10 h-10 text-zinc-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 20.25h18A1.75 1.75 0 0022.75 18.5V5.75A1.75 1.75 0 0021 4H3A1.75 1.75 0 001.25 5.75v12.75A1.75 1.75 0 003 20.25zM8.25 9.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-zinc-600">Click to upload, drag &amp; drop, or paste</p>
+                        <p className="text-xs text-zinc-400 mt-1">JPG, PNG, WEBP · or paste with Ctrl+V / ⌘V</p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -430,9 +434,9 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                 <button
                   onClick={handleOcrRead}
                   disabled={!imageSrc || ocrLoading}
-                  className="flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {ocrLoading ? <><Spinner size={4} /> Reading with AI…</> : <>✦ Read with AI</>}
+                  {ocrLoading ? <><Spinner size={4} /> Scanning with AI…</> : <>🪄 Scan with AI</>}
                 </button>
               </>
             )}
