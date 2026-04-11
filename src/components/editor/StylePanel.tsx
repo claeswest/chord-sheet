@@ -13,6 +13,7 @@ interface Props {
   songArtist?: string;
   lyricsText?: string;
   isLoggedIn?: boolean;
+  activeTab?: "background" | "text";
 }
 
 function TextSection({
@@ -28,8 +29,6 @@ function TextSection({
 
   return (
     <div className="py-3 border-b border-zinc-100 last:border-0">
-      <p className="text-xs font-bold text-zinc-800 uppercase tracking-wide mb-2">{label}</p>
-
       <select
         value={currentFont.name}
         onChange={(e) => {
@@ -66,11 +65,12 @@ function TextSection({
             value.italic ? "bg-indigo-600 border-indigo-600 text-white" : "bg-white border-zinc-200 text-zinc-500 hover:border-indigo-300"
           }`}
         >I</button>
+        <span className="text-xs text-zinc-400 ml-auto shrink-0">Color</span>
         <input
           type="color"
           value={value.color ?? "#000000"}
           onChange={(e) => onChange({ ...value, color: e.target.value })}
-          className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 ml-auto"
+          className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5"
           title={value.color ?? "#000000"}
         />
       </div>
@@ -112,10 +112,9 @@ const BG_STYLES = [
 ] as const;
 
 type BgStyleId = (typeof BG_STYLES)[number]["id"];
-type StyleTab = "background" | "text";
 
-export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText, isLoggedIn = false }: Props) {
-  const [tab, setTab] = useState<StyleTab>("background");
+export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText, isLoggedIn = false, activeTab = "background" }: Props) {
+  const tab = activeTab;
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [theme, setTheme] = useState("");
@@ -125,6 +124,9 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [bgPrompt, setBgPrompt] = useState("");
   const [showBgPopup, setShowBgPopup] = useState(false);
   const [bgStyle, setBgStyle] = useState<BgStyleId>("abstract");
+  const [showStylePicker, setShowStylePicker] = useState(false);
+  const [editingElement, setEditingElement] = useState<"title"|"artist"|"lyrics"|"chords"|"sections"|null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const handleAiStyle = async () => {
     setAiLoading(true);
@@ -148,7 +150,6 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       });
       onChange({ ...style, ...data.style });
       setTheme(data.theme ?? "");
-      setTab("text");
       setShowStylePopup(true);
     } catch {
       setAiError("Network error");
@@ -193,6 +194,37 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
   return (
     <div className="flex-1 overflow-y-auto bg-zinc-50 relative">
+
+      {/* ── Background style picker modal ── */}
+      {showStylePicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between" style={{ background: "#302b63" }}>
+              <div>
+                <h2 className="text-sm font-semibold text-white">Choose a background style</h2>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>AI will generate an image in this style</p>
+              </div>
+              <button onClick={() => setShowStylePicker(false)} className="text-white/50 hover:text-white transition-colors text-xl leading-none">×</button>
+            </div>
+            <div className="p-4 grid grid-cols-4 gap-2 max-h-[60vh] overflow-y-auto">
+              {BG_STYLES.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setBgStyle(s.id); setShowStylePicker(false); }}
+                  className={`flex flex-col items-center gap-1 px-2 py-3 rounded-xl border text-xs transition-colors ${
+                    bgStyle === s.id
+                      ? "border-violet-400 bg-violet-50 text-violet-700 font-semibold"
+                      : "border-zinc-200 bg-white text-zinc-600 hover:border-violet-300 hover:bg-violet-50"
+                  }`}
+                >
+                  <span className="text-2xl leading-none">{s.emoji}</span>
+                  <span className="leading-tight text-center">{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Style with AI popup ── */}
       {showStylePopup && (
@@ -245,13 +277,13 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             <div className="px-4 py-4 space-y-3">
               {bgPrompt && (
                 <div>
-                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Image description</p>
-                  <p className="text-xs text-zinc-600 leading-relaxed italic">"{bgPrompt}"</p>
+                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Background description</p>
+                  <p className="text-sm text-zinc-600 leading-relaxed italic">"{bgPrompt}"</p>
                 </div>
               )}
               <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-3">
                 <div className="flex justify-between items-center mb-1.5">
-                  <p className="text-xs font-semibold text-indigo-700">Fade</p>
+                  <p className="text-xs font-semibold text-indigo-700">Dim background</p>
                   <span className="text-xs text-indigo-500 font-mono">{Math.round(overlayOpacity * 100)}%</span>
                 </div>
                 <input
@@ -260,7 +292,10 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                   onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })}
                   className="w-full accent-indigo-500"
                 />
-                <p className="text-xs text-indigo-400 mt-1.5 leading-snug">Lower = more image, higher = easier to read text.</p>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-xs text-indigo-400">← Background visible</span>
+                  <span className="text-xs text-indigo-400">Text readable →</span>
+                </div>
               </div>
               <button
                 onClick={() => setShowBgPopup(false)}
@@ -273,135 +308,220 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         </div>
       )}
 
-      {/* ── Style with AI — always visible ── */}
-      <div className="px-4 py-3 border-b border-zinc-200">
-        <button
-          onClick={handleAiStyle}
-          disabled={aiLoading}
-          className="w-full flex items-center justify-center gap-1.5 text-xs bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-        >
-          {aiLoading ? (
-            <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
-          ) : "✦ Style with AI"}
-        </button>
-        {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
-      </div>
-
-      {/* ── Sub-tabs — sticky so always visible while scrolling ── */}
-      <div className="flex border-b border-zinc-200 bg-zinc-50">
-        <button
-          onClick={() => setTab("background")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${tab === "background" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-zinc-400 hover:text-zinc-600"}`}
-        >Background</button>
-        <button
-          onClick={() => setTab("text")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${tab === "text" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-zinc-400 hover:text-zinc-600"}`}
-        >Text</button>
-      </div>
+      {/* ── Style with AI — shown on Text tab ── */}
+      {tab === "text" && (
+        <div className="px-4 pt-3 pb-1">
+          <button
+            onClick={handleAiStyle}
+            disabled={aiLoading}
+            className="w-full flex items-center justify-center gap-1.5 text-xs border border-violet-300 text-violet-600 bg-violet-50 px-3 py-2 rounded-lg hover:bg-violet-100 hover:border-violet-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+          >
+            {aiLoading ? (
+              <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
+            ) : "✦ Style with AI"}
+          </button>
+          {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
+        </div>
+      )}
 
       {/* ── Background tab ── */}
-      <div className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-4"}>
-        <div>
-          <p className="text-xs font-bold text-zinc-800 uppercase tracking-wide mb-2">Color</p>
-          <div className="flex items-center gap-2">
-            <input type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="w-8 h-7 rounded border border-zinc-200 cursor-pointer p-0.5" />
+      <div className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-2"}>
+
+          {/* Page color row */}
+          <button
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-zinc-200 bg-white hover:border-zinc-300 transition-colors text-left"
+            onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
+          >
+            <span className="flex items-center gap-2 text-xs text-zinc-700">
+              <span className="w-4 h-4 rounded border border-zinc-200 shrink-0" style={{ background: bg }} />
+              <span className="font-medium">Page color</span>
+            </span>
             <span className="text-xs text-zinc-400 font-mono">{bg}</span>
-          </div>
-        </div>
+            <input id="bg-color-input" type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="sr-only" />
+          </button>
 
-        <div>
-          <p className="text-xs font-bold text-zinc-800 uppercase tracking-wide mb-2">AI Background Image</p>
-          <div className="grid grid-cols-3 gap-1 mb-3">
-            {BG_STYLES.map((s) => (
-              <button key={s.id} onClick={() => setBgStyle(s.id)}
-                className={`flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg border text-xs transition-colors ${bgStyle === s.id ? "border-violet-400 bg-violet-50 text-violet-700 font-medium" : "border-zinc-200 bg-white text-zinc-500 hover:border-violet-200"}`}
-              >
-                <span className="text-base leading-none">{s.emoji}</span>
-                <span className="leading-none">{s.label}</span>
-              </button>
-            ))}
+          {/* AI background card — style picker + generate grouped together */}
+          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+
+            {/* Style picker row */}
+            <button
+              onClick={() => setShowStylePicker(true)}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs text-zinc-700">
+                <span className="text-base leading-none">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
+                <span className="font-medium">{BG_STYLES.find(s => s.id === bgStyle)?.label}</span>
+              </span>
+              <span className="text-xs text-zinc-400">Change ›</span>
+            </button>
+
+            {/* Image preview + controls (when image exists) */}
+            {style.backgroundImage && (
+              <div className="border-b border-zinc-100">
+                <div className="relative rounded overflow-hidden mx-2 mt-2" style={{ height: 70 }}>
+                  <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
+                  <button onClick={removeBackground} className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded text-xs" title="Remove">×</button>
+                </div>
+                <div className="px-3 py-2.5">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-xs font-semibold text-indigo-700">Dim background</label>
+                    <span className="text-xs text-indigo-500 font-mono">{Math.round(overlayOpacity * 100)}%</span>
+                  </div>
+                  <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
+                  <div className="flex justify-between mt-1.5">
+                    <span className="text-xs text-indigo-400">← Background visible</span>
+                    <span className="text-xs text-indigo-400">Text readable →</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Generate / Regenerate button */}
+            <button onClick={handleAiBackground} disabled={bgLoading}
+              className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 transition-colors disabled:opacity-40 font-medium text-violet-600 hover:bg-violet-50"
+            >
+              {bgLoading
+                ? <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
+                : style.backgroundImage ? "↺ Regenerate" : "✦ Generate background image"}
+            </button>
           </div>
 
-          {/* Guest notice — always visible at top of background section */}
+          {bgError && <p className="text-xs text-red-500 mt-2">{bgError}</p>}
+
+          {/* Guest notice */}
           {!isLoggedIn && (
-            <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-3">
+            <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
               <span className="text-sm leading-none shrink-0 mt-0.5">⚠️</span>
               <div>
                 <p className="text-xs font-medium text-amber-800 leading-snug mb-0.5">Background images won't be saved</p>
-                <p className="text-xs text-amber-700 leading-snug mb-1.5">You can still generate one and it'll look great, but it will be lost when you close this tab. Sign in to keep it.</p>
-                <Link href="/login" className="text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">
-                  Sign in to save it →
-                </Link>
+                <p className="text-xs text-amber-700 leading-snug mb-1.5">Sign in to keep your generated background.</p>
+                <Link href="/login" className="text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">Sign in →</Link>
               </div>
             </div>
           )}
-
-          {style.backgroundImage ? (
-            <>
-              <div className="relative mb-2 rounded overflow-hidden" style={{ height: 80 }}>
-                <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
-                <button onClick={removeBackground} className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded text-xs" title="Remove">×</button>
-              </div>
-              <div className="mb-2">
-                <div className="flex justify-between mb-1">
-                  <label className="text-xs text-zinc-400">Fade</label>
-                  <span className="text-xs text-zinc-400 font-mono">{Math.round(overlayOpacity * 100)}%</span>
-                </div>
-                <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
-              </div>
-              {bgPrompt && <p className="text-xs text-zinc-400 italic leading-relaxed mb-2">{bgPrompt}</p>}
-              <button onClick={handleAiBackground} disabled={bgLoading}
-                className="w-full flex items-center justify-center gap-1 text-xs text-violet-600 border border-violet-200 hover:border-violet-400 hover:bg-violet-50 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-              >
-                {bgLoading ? <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</> : "↺ Regenerate"}
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={handleAiBackground} disabled={bgLoading}
-                className="w-full flex items-center justify-center gap-1.5 text-xs bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-40 font-medium"
-              >
-                {bgLoading ? <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</> : "✦ Generate Background"}
-              </button>
-              {bgError && <p className="text-xs text-red-500 mt-2">{bgError}</p>}
-            </>
-          )}
-        </div>
       </div>
 
       {/* ── Text tab ── */}
-      <div className={tab !== "text" ? "hidden" : "px-4 py-1"}>
-        <TextSection label="Title"   value={style.title}                        onChange={(v) => onChange({ ...style, title: v })} />
-        <TextSection label="Artist"  value={style.artist ?? DEFAULT_STYLE.artist} onChange={(v) => onChange({ ...style, artist: v })} />
-        <TextSection label="Lyrics"  value={style.lyrics}                       onChange={(v) => onChange({ ...style, lyrics: v })} />
-        <TextSection label="Chords"  value={style.chords}                       onChange={(v) => onChange({ ...style, chords: v })} />
-        <TextSection label="Sections" value={style.section ?? DEFAULT_STYLE.section!} onChange={(v) => onChange({ ...style, section: v })} />
+      {tab === "text" && (() => {
+        const ELEMENTS = [
+          { key: "title"    as const, label: "Title",    value: style.title,                          set: (v: TextStyle) => onChange({ ...style, title: v }) },
+          { key: "artist"   as const, label: "Artist",   value: style.artist ?? DEFAULT_STYLE.artist!, set: (v: TextStyle) => onChange({ ...style, artist: v }) },
+          { key: "lyrics"   as const, label: "Lyrics",   value: style.lyrics,                         set: (v: TextStyle) => onChange({ ...style, lyrics: v }) },
+          { key: "chords"   as const, label: "Chords",   value: style.chords,                         set: (v: TextStyle) => onChange({ ...style, chords: v }) },
+          { key: "sections" as const, label: "Sections", value: style.section ?? DEFAULT_STYLE.section!, set: (v: TextStyle) => onChange({ ...style, section: v }) },
+        ];
+        const active = ELEMENTS.find(e => e.key === editingElement);
+        return (
+          <>
+            {/* ── Text style editor modal ── */}
+            {editingElement && active && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                  {/* Header */}
+                  <div className="px-5 py-4 flex items-center justify-between" style={{ background: "#302b63" }}>
+                    <h2 className="text-sm font-semibold text-white">{active.label}</h2>
+                    <button onClick={() => setEditingElement(null)} className="text-white/50 hover:text-white transition-colors text-xl leading-none">×</button>
+                  </div>
+                  {/* Controls */}
+                  <div className="px-5 py-4">
+                    <TextSection label={active.label} value={active.value} onChange={active.set} />
+                    {editingElement === "title" && (
+                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-zinc-400 shrink-0">Align</span>
+                          <div className="flex rounded border border-zinc-200 overflow-hidden">
+                            {(["left", "center"] as const).map((a) => (
+                              <button key={a} onClick={() => onChange({ ...style, titleAlign: a })}
+                                className={`px-2.5 py-1 text-xs transition-colors ${(style.titleAlign ?? "center") === a ? "bg-indigo-600 text-white" : "bg-white text-zinc-500 hover:bg-zinc-50"}`}
+                              >{a === "left" ? "Left" : "Center"}</button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {editingElement === "sections" && (
+                      <div className="mt-3 pt-3 border-t border-zinc-100 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-zinc-400 shrink-0">Align</span>
+                          <div className="flex rounded border border-zinc-200 overflow-hidden">
+                            {(["left", "center"] as const).map((a) => (
+                              <button key={a} onClick={() => onChange({ ...style, sectionAlign: a })}
+                                className={`px-2.5 py-1 text-xs transition-colors ${(style.sectionAlign ?? "left") === a ? "bg-indigo-600 text-white" : "bg-white text-zinc-500 hover:bg-zinc-50"}`}
+                              >{a === "left" ? "Left" : "Center"}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-zinc-400 shrink-0">Divider line</span>
+                          <button onClick={() => onChange({ ...style, sectionDivider: !(style.sectionDivider ?? true) })}
+                            className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${(style.sectionDivider ?? true) ? "bg-indigo-500" : "bg-zinc-200"}`}
+                          >
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${(style.sectionDivider ?? true) ? "translate-x-4" : "translate-x-0"}`} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-5 pb-4">
+                    <button onClick={() => setEditingElement(null)}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                    >Done</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-        <div className="py-3 border-b border-zinc-100">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-zinc-400 shrink-0">Align</span>
-            <div className="flex rounded border border-zinc-200 overflow-hidden">
-              {(["left", "center"] as const).map((a) => (
-                <button key={a} onClick={() => onChange({ ...style, sectionAlign: a })}
-                  className={`px-2.5 py-1 text-xs transition-colors ${(style.sectionAlign ?? "left") === a ? "bg-indigo-600 text-white" : "bg-white text-zinc-500 hover:bg-zinc-50"}`}
-                >{a === "left" ? "Left" : "Center"}</button>
-              ))}
+            {/* ── Compact preview rows ── */}
+            <div className="px-4 py-2">
+              {ELEMENTS.map(e => {
+                const font = fontByStack(e.value.fontFamily ?? "");
+                const previewStyle = {
+                  fontFamily: e.value.fontFamily,
+                  fontSize: Math.min(e.value.fontSize ?? 14, 15),
+                  color: e.value.color ?? "#000",
+                  fontWeight: e.value.bold ? "700" : "400",
+                  fontStyle: e.value.italic ? "italic" : "normal",
+                } as const;
+                return (
+                  <button key={e.key} onClick={() => setEditingElement(e.key)}
+                    className="w-full flex items-center gap-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-zinc-100 rounded-lg px-2 -mx-2 transition-colors group text-left"
+                  >
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate" style={previewStyle}>{e.label}</span>
+                      <span className="block text-[10px] text-zinc-400 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] text-zinc-400 font-mono">{e.value.color ?? "#000000"}</span>
+                      <span className="w-5 h-5 rounded border border-zinc-200" style={{ background: e.value.color ?? "#000" }} />
+                    </span>
+                    <span className="text-xs text-zinc-300 group-hover:text-zinc-600 transition-colors shrink-0">›</span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 shrink-0">Divider line</span>
-            <button onClick={() => onChange({ ...style, sectionDivider: !(style.sectionDivider ?? true) })}
-              className={`w-8 h-4 rounded-full transition-colors relative ${(style.sectionDivider ?? true) ? "bg-indigo-500" : "bg-zinc-200"}`}
-            >
-              <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${(style.sectionDivider ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
-            </button>
-          </div>
-        </div>
 
-        <div className="py-3">
-          <button onClick={reset} className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors">Reset to defaults</button>
-        </div>
-      </div>
+            <div className="px-4 pb-4 pt-3 border-t border-zinc-100">
+              {confirmReset ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-zinc-500 shrink-0">Reset all text styles?</span>
+                  <button
+                    onClick={() => { reset(); setConfirmReset(false); }}
+                    className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors px-3 py-1.5 rounded-lg shrink-0"
+                  >Reset</button>
+                  <button
+                    onClick={() => setConfirmReset(false)}
+                    className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
+                  >Cancel</button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmReset(true)} className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">
+                  ↺ Restore default styles
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

@@ -17,6 +17,7 @@ export interface SongStyle {
   background?: string;
   backgroundImage?: string;   // base64 data URL, not included in share URLs
   overlayOpacity?: number;    // 0–1, default 0.5
+  titleAlign?: "left" | "center";
   sectionAlign?: "left" | "center";
   sectionDivider?: boolean;
 }
@@ -30,6 +31,7 @@ export const DEFAULT_STYLE: SongStyle = {
   chords:         { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
   section:        { fontFamily: MONO_STACK, fontSize: 11, color: "#4f46e5", bold: true,  italic: false },
   background:     "#ffffff",
+  titleAlign:     "center",
   sectionAlign:   "left",
   sectionDivider: true,
 };

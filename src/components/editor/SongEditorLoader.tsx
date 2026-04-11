@@ -8,9 +8,10 @@ import { decodeSong, type SharedSong } from "@/lib/songUrl";
 
 interface Props {
   isLoggedIn: boolean;
+  hasSongs?: boolean;
 }
 
-export default function SongEditorLoader({ isLoggedIn }: Props) {
+export default function SongEditorLoader({ isLoggedIn, hasSongs = false }: Props) {
   const searchParams = useSearchParams();
   const [ready, setReady] = useState(false);
 
@@ -22,5 +23,5 @@ export default function SongEditorLoader({ isLoggedIn }: Props) {
 
   const encoded = searchParams.get("song");
   const initialSong: SharedSong | null = encoded ? decodeSong(encoded) : null;
-  return <SongEditor initialSong={initialSong} isLoggedIn={isLoggedIn} />;
+  return <SongEditor initialSong={initialSong} isLoggedIn={isLoggedIn} hasSongs={hasSongs} />;
 }

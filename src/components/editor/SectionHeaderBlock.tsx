@@ -10,6 +10,8 @@ interface Props {
   onUpdate: (label: string) => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  onAddLineAfter: () => void;
+  onAddSectionAfter: (label: string) => void;
   color?: string;
   fontSize?: number;
   bold?: boolean;
@@ -18,8 +20,9 @@ interface Props {
   showDivider?: boolean;
 }
 
-export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDuplicate, color = "#4f46e5", fontSize = 11, bold = true, italic = false, align = "left", showDivider = true }: Props) {
+export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDuplicate, onAddLineAfter, onAddSectionAfter, color = "#4f46e5", fontSize = 11, bold = true, italic = false, align = "left", showDivider = true }: Props) {
   const [editing, setEditing] = useState(false);
+  const [showSectionPicker, setShowSectionPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const commit = (val: string) => {
@@ -29,7 +32,7 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
   };
 
   return (
-    <div className="group/section flex items-center gap-3 pt-6 pb-1">
+    <div className="group/section flex items-center gap-3 pt-6 pb-1 px-1 rounded-lg transition-colors hover:bg-zinc-100">
       {editing ? (
         <>
           <input
@@ -79,9 +82,51 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
         <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
       )}
 
+      {/* Add line below */}
+      <button
+        onClick={onAddLineAfter}
+        className="opacity-0 group-hover/section:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
+        tabIndex={-1}
+        title="Add lyric line below"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+
+      {/* Add section below */}
+      <div className="relative opacity-0 group-hover/section:opacity-100 transition-all shrink-0">
+        <button
+          onClick={() => setShowSectionPicker((v) => !v)}
+          className="text-zinc-400 hover:text-indigo-600 transition-colors rounded-md p-1"
+          tabIndex={-1}
+          title="Insert section below"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <path d="M12 12v4M10 14h4"/>
+          </svg>
+        </button>
+        {showSectionPicker && (
+          <div className="absolute right-0 bottom-full mb-1 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50 flex flex-col min-w-[120px]">
+            {QUICK_LABELS.map((label) => (
+              <button
+                key={label}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { onAddSectionAfter(label); setShowSectionPicker(false); }}
+                className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-indigo-600 transition-colors"
+              >
+                + {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <button
         onClick={onDuplicate}
-        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-indigo-600 transition-opacity rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
+        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
         tabIndex={-1}
         title="Duplicate section"
       >
@@ -92,7 +137,7 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
       </button>
       <button
         onClick={onDelete}
-        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-500 hover:text-red-500 transition-opacity rounded-md bg-white/80 shadow-sm border border-zinc-200 p-1"
+        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-red-500 transition-all rounded-md p-1"
         tabIndex={-1}
         title="Delete section"
       >

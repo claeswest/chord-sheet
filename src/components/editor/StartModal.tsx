@@ -6,9 +6,11 @@ interface Props {
   onSearch: () => void;
   onImport: () => void;
   onWriteMyself: () => void;
+  showDemo?: boolean;
+  onDemo?: () => void;
 }
 
-export default function StartModal({ onSearch, onImport, onWriteMyself }: Props) {
+export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo = false, onDemo }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
@@ -78,6 +80,18 @@ export default function StartModal({ onSearch, onImport, onWriteMyself }: Props)
           </button>
 
         </div>
+
+        {/* Demo link — only for first-time users */}
+        {showDemo && onDemo && (
+          <div className="px-4 pb-2 text-center">
+            <button
+              onClick={onDemo}
+              className="text-xs text-indigo-400 hover:text-indigo-600 transition-colors"
+            >
+              ✦ Explore with a demo song
+            </button>
+          </div>
+        )}
 
         {/* Back link */}
         <div className="pb-4 text-center">

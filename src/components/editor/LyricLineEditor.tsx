@@ -15,6 +15,7 @@ interface Props {
   onMoveChord: (chordId: string, position: number) => void;
   onDeleteChord: (chordId: string) => void;
   onAddLineAfter: () => void;
+  onAddSectionAfter: (label: string) => void;
   onDelete: () => void;
   onDuplicate: () => void;
   songStyle?: SongStyle;
@@ -27,6 +28,8 @@ function measureWidth(text: string, size: number, family: string): number {
   return ctx.measureText(text).width;
 }
 
+const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chorus", "Solo"];
+
 export default function LyricLineEditor({
   line,
   activeChord,
@@ -37,6 +40,7 @@ export default function LyricLineEditor({
   onMoveChord,
   onDeleteChord,
   onAddLineAfter,
+  onAddSectionAfter,
   onDelete,
   onDuplicate,
   songStyle,
@@ -55,6 +59,12 @@ export default function LyricLineEditor({
   const [addingAtPx, setAddingAtPx] = useState<number | null>(null);
   const [addingText, setAddingText] = useState("");
   const addingInputRef = useRef<HTMLInputElement>(null);
+
+  // Ghost chord preview — tracks mouse X while activeChord is set
+  const [chordHoverPx, setChordHoverPx] = useState<number | null>(null);
+
+  // Section picker popup
+  const [showSectionPicker, setShowSectionPicker] = useState(false);
 
   // Chord being edited inline
   const [editingChordId, setEditingChordId] = useState<string | null>(null);
@@ -196,10 +206,16 @@ export default function LyricLineEditor({
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
-        className={`relative cursor-crosshair select-none overflow-hidden transition-all duration-150 ${
+        className={`relative select-none overflow-hidden transition-all duration-150 ${
           line.chords.length > 0 || addingAtPx !== null ? "h-6" : "h-0 group-hover/line:h-6"
-        }`}
+        } ${activeChord ? "cursor-none" : "cursor-crosshair"}`}
         onClick={handleChordAreaClick}
+        onMouseMove={(e) => {
+          if (!activeChord) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          setChordHoverPx(e.clientX - rect.left);
+        }}
+        onMouseLeave={() => setChordHoverPx(null)}
         title={activeChord ? `Click to place "${activeChord}"` : "Click to add a chord"}
       >
         {line.chords.map((chord) => (
@@ -302,6 +318,22 @@ export default function LyricLineEditor({
             onClick={(e) => e.stopPropagation()}
           />
         )}
+
+        {/* Ghost chord — follows cursor when activeChord is set */}
+        {activeChord && chordHoverPx !== null && (
+          <span
+            className="absolute top-0 pointer-events-none opacity-70"
+            style={{
+              left: chordLeftPx(pxToCharPos(line.text, chordHoverPx)),
+              fontSize: chordSize,
+              fontFamily: chordFont,
+              fontWeight: "bold",
+              color: chordColor,
+            }}
+          >
+            {activeChord}
+          </span>
+        )}
       </div>
 
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
@@ -325,6 +357,46 @@ export default function LyricLineEditor({
             margin: 0,
           }}
         />
+        {/* Add line below */}
+        <button
+          onClick={onAddLineAfter}
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          tabIndex={-1}
+          title="Add line below (Enter)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        {/* Section insert */}
+        <div className="relative opacity-0 group-hover/line:opacity-100 transition-all shrink-0">
+          <button
+            onClick={() => setShowSectionPicker((v) => !v)}
+            className="text-zinc-400 hover:text-indigo-600 transition-colors rounded-md p-1"
+            tabIndex={-1}
+            title="Insert section below"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path d="M12 12v4M10 14h4"/>
+            </svg>
+          </button>
+          {showSectionPicker && (
+            <div className="absolute right-0 bottom-full mb-1 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50 flex flex-col min-w-[120px]">
+              {SECTION_LABELS.map((label) => (
+                <button
+                  key={label}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onAddSectionAfter(label); setShowSectionPicker(false); }}
+                  className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-indigo-600 transition-colors"
+                >
+                  + {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           onClick={onDuplicate}
           className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"

@@ -28,7 +28,7 @@ import StylePanel from "./StylePanel";
 import { transposeSong, transposeChord, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import StartModal from "./StartModal";
-import { saveSong, type StoredSong } from "@/lib/storage";
+import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
@@ -37,13 +37,51 @@ import { downloadPdf } from "@/lib/pdfExport";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
+const DEMO_SONG = {
+  title: "Demo Song",
+  artist: "ChordSheetMaker",
+  lines: [
+    { id: "ds1", type: "section" as const, label: "Verse" },
+    { id: "ds2", type: "lyric" as const, text: "Walking down the road at night", chords: [
+      { id: "dc1", chord: "Am", position: 0 },
+      { id: "dc2", chord: "G",  position: 13 },
+      { id: "dc3", chord: "C",  position: 20 },
+    ]},
+    { id: "ds3", type: "lyric" as const, text: "Looking for a guiding light", chords: [
+      { id: "dc4", chord: "Am", position: 0 },
+      { id: "dc5", chord: "F",  position: 11 },
+      { id: "dc6", chord: "G",  position: 21 },
+    ]},
+    { id: "ds4", type: "section" as const, label: "Chorus" },
+    { id: "ds5", type: "lyric" as const, text: "Every step is leading somewhere", chords: [
+      { id: "dc7",  chord: "F",  position: 0 },
+      { id: "dc8",  chord: "G",  position: 11 },
+      { id: "dc9",  chord: "Am", position: 21 },
+    ]},
+    { id: "ds6", type: "lyric" as const, text: "Carry on, there's magic in the air", chords: [
+      { id: "dc10", chord: "F", position: 0 },
+      { id: "dc11", chord: "C", position: 10 },
+      { id: "dc12", chord: "G", position: 27 },
+    ]},
+    { id: "ds7", type: "section" as const, label: "Bridge" },
+    { id: "ds8", type: "lyric" as const, text: "Hold on tight, don't let go", chords: [
+      { id: "dc13", chord: "Em", position: 0 },
+      { id: "dc14", chord: "Am", position: 15 },
+    ]},
+    { id: "ds9", type: "lyric" as const, text: "Feel the rhythm, let it flow", chords: [
+      { id: "dc15", chord: "Em", position: 0 },
+      { id: "dc16", chord: "G",  position: 15 },
+    ]},
+  ] as SongLine[],
+};
 
 interface SongEditorProps {
   initialSong?: SharedSong | null;
   isLoggedIn?: boolean;
+  hasSongs?: boolean;
 }
 
-export default function SongEditor({ initialSong, isLoggedIn = false }: SongEditorProps = {}) {
+export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs = false }: SongEditorProps = {}) {
   const router = useRouter();
   const [title, setTitle] = useState(initialSong?.title ?? "");
   const [artist, setArtist] = useState(initialSong?.artist ?? "");
@@ -88,7 +126,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
     }
     return base;
   });
-  const [rightPanel, setRightPanel] = useState<"chords" | "style">("chords");
+  const [rightPanel, setRightPanel] = useState<"chords" | "background" | "text">("chords");
   // Always-current snapshot of song data — updated every render so effects can read
   // latest values without adding them as deps (avoids stale closures).
   const latestSongRef = useRef({ title, artist, lines, songId, songStyle });
@@ -515,6 +553,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         onMoveChord={(cid, pos) => moveChord(line.id, cid, pos)}
         onDeleteChord={(cid) => deleteChord(line.id, cid)}
         onAddLineAfter={() => addLineAfter(line.id)}
+        onAddSectionAfter={(label) => addSectionAfter(line.id, label)}
         onDelete={() => deleteLine(line.id)}
         onDuplicate={() => duplicateLine(line.id)}
         songStyle={songStyle}
@@ -525,6 +564,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         onUpdate={(label) => updateSection(line.id, label)}
         onDelete={() => deleteLine(line.id)}
         onDuplicate={() => duplicateLine(line.id)}
+        onAddLineAfter={() => addLineAfter(line.id)}
+        onAddSectionAfter={(label) => addSectionAfter(line.id, label)}
         color={songStyle.section?.color ?? songStyle.chords.color ?? "#4f46e5"}
         fontSize={songStyle.section?.fontSize ?? 11}
         bold={songStyle.section?.bold ?? true}
@@ -732,14 +773,20 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
         <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
           <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
             {/* Title & artist — editable inline */}
-            <div className="mb-10 text-center">
+            <div
+              className="mb-10"
+              style={{
+                textAlign: songStyle.titleAlign ?? "center",
+                paddingLeft: (songStyle.titleAlign ?? "center") === "left" ? 28 : 0,
+              }}
+            >
               <input
                 ref={titleInputRef}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onFocus={(e) => e.target.select()}
                 placeholder="Song title"
-                className="w-full bg-transparent border-none outline-none text-center"
+                className="w-full bg-transparent border-none outline-none"
                 style={{
                   fontFamily: songStyle.title.fontFamily,
                   fontSize: songStyle.title.fontSize,
@@ -748,6 +795,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                   color: songStyle.title.color ?? "#18181b",
                   lineHeight: 1.2,
                   opacity: title ? 1 : 0.35,
+                  textAlign: songStyle.titleAlign ?? "center",
                 }}
               />
               <input
@@ -755,7 +803,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                 onChange={(e) => setArtist(e.target.value)}
                 onFocus={(e) => e.target.select()}
                 placeholder="Artist"
-                className="w-full bg-transparent border-none outline-none text-center mt-1"
+                className="w-full bg-transparent border-none outline-none mt-1"
                 style={{
                   fontFamily: songStyle.artist?.fontFamily ?? songStyle.lyrics.fontFamily,
                   fontSize: songStyle.artist?.fontSize ?? 13,
@@ -763,6 +811,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
                   fontStyle: songStyle.artist?.italic ? "italic" : "normal",
                   color: songStyle.artist?.color ?? "#71717a",
                   opacity: artist ? 1 : 0.35,
+                  textAlign: songStyle.titleAlign ?? "center",
                 }}
               />
             </div>
@@ -807,50 +856,23 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               ))
             )}
 
-            {/* Bottom controls */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-6">
-              {["Verse", "Chorus", "Bridge"].map((label) => (
-                <button
-                  key={label}
-                  onClick={() => addSectionAfter(lastLineId, label)}
-                  className="text-sm text-zinc-500 hover:text-indigo-600 transition-colors"
-                >
-                  + {label}
-                </button>
-              ))}
-              <span className="text-zinc-200 select-none">|</span>
-              {["Intro", "Outro", "Pre-Chorus", "Solo"].map((label) => (
-                <button
-                  key={label}
-                  onClick={() => addSectionAfter(lastLineId, label)}
-                  className="text-sm text-zinc-400 hover:text-indigo-600 transition-colors"
-                >
-                  + {label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* Right panel with tabs */}
         <div className="w-80 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden">
           <div className="flex border-b border-zinc-200 shrink-0 bg-zinc-50">
-            <button
-              onClick={() => setRightPanel("chords")}
-              className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                rightPanel === "chords" ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
-              }`}
-            >
-              Chords
-            </button>
-            <button
-              onClick={() => setRightPanel("style")}
-              className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                rightPanel === "style" ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
-              }`}
-            >
-              Style
-            </button>
+            {(["chords", "background", "text"] as const).map((panel) => (
+              <button
+                key={panel}
+                onClick={() => setRightPanel(panel)}
+                className={`flex-1 py-2 text-xs font-medium transition-colors capitalize ${
+                  rightPanel === panel ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
+                }`}
+              >
+                {panel === "chords" ? "Chords" : panel === "background" ? "Background" : "Text"}
+              </button>
+            ))}
           </div>
           {rightPanel === "chords" ? (
             <ChordPalette
@@ -865,6 +887,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
               songTitle={title}
               songArtist={artist}
               isLoggedIn={isLoggedIn}
+              activeTab={rightPanel}
               lyricsText={lines
                 .filter((l) => l.type === "lyric")
                 .map((l) => (l.type === "lyric" ? l.text : ""))
@@ -884,6 +907,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false }: SongEdit
           onSearch={() => { setStartModalDismissed(true); setShowImport("search"); }}
           onImport={() => { setStartModalDismissed(true); setShowImport("text"); }}
           onWriteMyself={() => setStartModalDismissed(true)}
+          showDemo={!hasSongs && (isLoggedIn ? true : listSongs().length === 0)}
+          onDemo={() => {
+            setTitle(DEMO_SONG.title);
+            setArtist(DEMO_SONG.artist);
+            setLines(DEMO_SONG.lines);
+            historyStack.current = [DEMO_SONG.lines];
+            setHistoryPos(0);
+            setStartModalDismissed(true);
+          }}
         />
       )}
 
