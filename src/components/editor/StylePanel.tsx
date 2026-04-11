@@ -321,68 +321,82 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             ) : "✦ Style with AI"}
           </button>
           {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
+          <div className="flex items-center gap-2 mt-3">
+            <div className="flex-1 h-px bg-zinc-200" />
+            <span className="text-[10px] text-zinc-400">or customise below</span>
+            <div className="flex-1 h-px bg-zinc-200" />
+          </div>
         </div>
       )}
 
       {/* ── Background tab ── */}
       <div className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-2"}>
 
-          {/* Page color row */}
-          <button
-            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-zinc-200 bg-white hover:border-zinc-300 transition-colors text-left"
-            onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
-          >
-            <span className="flex items-center gap-2 text-xs text-zinc-700">
-              <span className="w-4 h-4 rounded border border-zinc-200 shrink-0" style={{ background: bg }} />
-              <span className="font-medium">Page color</span>
-            </span>
-            <span className="text-xs text-zinc-400 font-mono">{bg}</span>
-            <input id="bg-color-input" type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="sr-only" />
-          </button>
-
-          {/* AI background card — style picker + generate grouped together */}
+          {/* Single grouped card — page colour + AI background */}
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+
+            {/* Page color row */}
+            <button
+              className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-zinc-50 transition-colors text-left"
+              onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
+            >
+              <span className="w-5 h-5 rounded-full border border-zinc-200 shadow-sm shrink-0" style={{ background: bg }} />
+              <span className="text-xs font-medium text-zinc-700 flex-1">Page color</span>
+              <span className="text-[11px] text-zinc-400 font-mono">{bg}</span>
+              <input id="bg-color-input" type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="sr-only" />
+            </button>
 
             {/* Style picker row */}
             <button
               onClick={() => setShowStylePicker(true)}
-              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
+              className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
             >
-              <span className="flex items-center gap-2 text-xs text-zinc-700">
-                <span className="text-base leading-none">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
-                <span className="font-medium">{BG_STYLES.find(s => s.id === bgStyle)?.label}</span>
-              </span>
-              <span className="text-xs text-zinc-400">Change ›</span>
+              <span className="text-base leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
+              <span className="text-xs font-medium text-zinc-700 flex-1">Image style</span>
+              <span className="text-[11px] text-zinc-400">{BG_STYLES.find(s => s.id === bgStyle)?.label} ›</span>
             </button>
 
-            {/* Image preview + controls (when image exists) */}
+            {/* Image preview + dim slider (when image exists) */}
             {style.backgroundImage && (
               <div className="border-b border-zinc-100">
-                <div className="relative rounded overflow-hidden mx-2 mt-2" style={{ height: 70 }}>
+                {/* Preview */}
+                <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
                   <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
-                  <button onClick={removeBackground} className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded text-xs" title="Remove">×</button>
+                  <button
+                    onClick={removeBackground}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-lg text-base leading-none transition-colors"
+                    title="Remove background"
+                  >×</button>
                 </div>
-                <div className="px-3 py-2.5">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-semibold text-indigo-700">Dim background</label>
-                    <span className="text-xs text-indigo-500 font-mono">{Math.round(overlayOpacity * 100)}%</span>
+                {/* Dim slider — inset tray */}
+                <div className="mx-3 my-2.5 bg-zinc-50 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center mb-1.5">
+                    <span className="text-xs text-zinc-500 flex-1">Dim</span>
+                    <span className="text-xs font-mono text-zinc-500 tabular-nums">{Math.round(overlayOpacity * 100)}%</span>
                   </div>
-                  <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
-                  <div className="flex justify-between mt-1.5">
-                    <span className="text-xs text-indigo-400">← Background visible</span>
-                    <span className="text-xs text-indigo-400">Text readable →</span>
+                  <input
+                    type="range" min={0} max={100}
+                    value={Math.round(overlayOpacity * 100)}
+                    onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })}
+                    className="w-full accent-indigo-500"
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-zinc-400">← Show image</span>
+                    <span className="text-[10px] text-zinc-400">Readable text →</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Generate / Regenerate button */}
+            {/* Generate / Regenerate button — matches "Style with AI" style */}
             <button onClick={handleAiBackground} disabled={bgLoading}
               className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 transition-colors disabled:opacity-40 font-medium text-violet-600 hover:bg-violet-50"
             >
               {bgLoading
                 ? <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
-                : style.backgroundImage ? "↺ Regenerate" : "✦ Generate background image"}
+                : style.backgroundImage
+                  ? <><span className="text-sm leading-none">↺</span> Regenerate background</>
+                  : <><span>✦</span> Generate background image</>}
             </button>
           </div>
 
@@ -473,34 +487,36 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* ── Compact preview rows ── */}
             <div className="px-4 py-2">
-              {ELEMENTS.map(e => {
-                const font = fontByStack(e.value.fontFamily ?? "");
-                const previewStyle = {
-                  fontFamily: e.value.fontFamily,
-                  fontSize: Math.min(e.value.fontSize ?? 14, 15),
-                  color: e.value.color ?? "#000",
-                  fontWeight: e.value.bold ? "700" : "400",
-                  fontStyle: e.value.italic ? "italic" : "normal",
-                } as const;
-                return (
-                  <button key={e.key} onClick={() => setEditingElement(e.key)}
-                    className="w-full flex items-center gap-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-zinc-100 rounded-lg px-2 -mx-2 transition-colors group text-left"
-                  >
-                    <span className="flex-1 min-w-0">
-                      <span className="block truncate" style={previewStyle}>{e.label}</span>
-                      <span className="block text-[10px] text-zinc-400 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
-                    </span>
-                    <span className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-zinc-400 font-mono">{e.value.color ?? "#000000"}</span>
-                      <span className="w-5 h-5 rounded border border-zinc-200" style={{ background: e.value.color ?? "#000" }} />
-                    </span>
-                    <span className="text-xs text-zinc-300 group-hover:text-zinc-600 transition-colors shrink-0">›</span>
-                  </button>
-                );
-              })}
+              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+                {ELEMENTS.map(e => {
+                  const font = fontByStack(e.value.fontFamily ?? "");
+                  const previewStyle = {
+                    fontFamily: e.value.fontFamily,
+                    fontSize: Math.min(e.value.fontSize ?? 14, 15),
+                    color: e.value.color ?? "#000",
+                    fontWeight: e.value.bold ? "700" : "400",
+                    fontStyle: e.value.italic ? "italic" : "normal",
+                  } as const;
+                  return (
+                    <button key={e.key} onClick={() => setEditingElement(e.key)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition-colors group text-left"
+                    >
+                      <span className="flex-1 min-w-0">
+                        <span className="block truncate" style={previewStyle}>{e.label}</span>
+                        <span className="block text-[10px] text-zinc-400 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
+                      </span>
+                      <span className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-zinc-400 font-mono">{e.value.color ?? "#000000"}</span>
+                        <span className="w-4 h-4 rounded-full border border-white shadow-sm shrink-0" style={{ background: e.value.color ?? "#000" }} />
+                      </span>
+                      <span className="text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors shrink-0 px-1">›</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="px-4 pb-4 pt-3 border-t border-zinc-100">
+            <div className="px-4 pb-4 pt-2">
               {confirmReset ? (
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-zinc-500 shrink-0">Reset all text styles?</span>

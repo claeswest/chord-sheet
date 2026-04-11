@@ -878,6 +878,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <ChordPalette
               activeChord={activeChord}
               onSelectChord={setActiveChord}
+              songChords={Array.from(new Set(
+                lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
+              ))}
               asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
             />
           ) : (
