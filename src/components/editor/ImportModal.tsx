@@ -280,7 +280,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
             </div>
           )}
           <button
-            onClick={onClose}
+            onClick={() => onClose()}
             className="text-white/40 hover:text-white transition-colors text-lg leading-none px-1 ml-auto"
           >
             ✕
