@@ -860,8 +860,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
 
         {/* Right panel with tabs */}
-        <div className="w-80 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden">
-          <div className="flex border-b border-zinc-200 shrink-0 bg-zinc-50">
+        <div className="w-80 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden bg-white">
+          <div className="flex border-b border-zinc-200 shrink-0 bg-white">
             {(["chords", "background", "text"] as const).map((panel) => (
               <button
                 key={panel}

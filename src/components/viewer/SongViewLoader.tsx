@@ -55,7 +55,7 @@ export default function SongViewLoader() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
-      <div className="absolute top-0 left-0 right-0 z-10 bg-[#302b63]/60 backdrop-blur-md border-b border-white/10 px-6 h-14 flex items-center gap-4">
+      <div className="absolute top-0 left-0 right-0 z-50 bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center gap-4">
         <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
@@ -71,6 +71,7 @@ export default function SongViewLoader() {
         songStyle={songStyle}
         songId={song.id}
         onEdit={() => router.push(editUrl)}
+        loading={!ready}
       />
     </div>
   );

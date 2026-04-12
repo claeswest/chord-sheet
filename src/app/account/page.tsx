@@ -2,66 +2,152 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { planFromUser, PLANS, Plan } from "@/lib/plans";
+import { planFromUser, PLANS, Plan, canUseFeature } from "@/lib/plans";
+
+const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
+  { key: "songLimit",       label: "Unlimited songs"     },
+  { key: "pdfExport",       label: "PDF export"          },
+  { key: "sharing",         label: "Public sharing"      },
+  { key: "setlists",        label: "Setlists & folders"  },
+  { key: "chordTranspose",  label: "Chord transposition" },
+  { key: "prioritySupport", label: "Priority support"    },
+];
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      image: true,
-      plan: true,
-      stripeSubscriptionId: true,
-      stripeCurrentPeriodEnd: true,
-      createdAt: true,
-    },
-  });
+  const [user, songCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true, email: true, image: true, plan: true,
+        stripeSubscriptionId: true, stripeCurrentPeriodEnd: true, createdAt: true,
+      },
+    }),
+    prisma.song.count({ where: { userId: session.user.id } }),
+  ]);
 
   if (!user) redirect("/login");
 
   const plan = planFromUser(user) as Plan;
   const planConfig = PLANS[plan];
   const isPaid = plan !== "free";
+  const songLimit = planConfig.features.songLimit;
+
+  const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+
+  const renewsOn = user.stripeCurrentPeriodEnd
+    ? new Date(user.stripeCurrentPeriodEnd).toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric",
+      })
+    : null;
+
+  const activeFeatures = FEATURE_ROWS.filter(({ key }) => canUseFeature(plan, key));
+  const lockedFeatures = FEATURE_ROWS.filter(({ key }) => !canUseFeature(plan, key));
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <header className="bg-[#302b63] border-b border-white/10 px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="text-sm font-bold tracking-tight text-white">
-          Chord<span className="text-indigo-400">SheetCreator</span>
+    <div className="min-h-screen" style={{ background: "#f0f0f5" }}>
+
+      {/* ── Nav — solid bar, matches /songs exactly ─────────────────────── */}
+      <header className="bg-[#302b63] border-b border-white/10 flex items-center px-6 h-14 shrink-0">
+        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+          ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
-        <div className="w-px h-5 bg-white/20" />
+        <div className="w-px h-5 bg-white/20 mx-4" />
         <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors">
-          ← Songs
+          ← My songs
         </Link>
+        <div className="flex-1" />
+        {user.image ? (
+          <img src={user.image} alt={user.name ?? ""} className="w-7 h-7 rounded-full ring-1 ring-white/20" />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+            {user.name?.[0]}
+          </div>
+        )}
       </header>
 
-      <div className="max-w-lg mx-auto px-6 py-12 space-y-6">
-        {/* Profile card */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex items-center gap-5">
-          {user.image ? (
-            <img src={user.image} alt={user.name ?? ""} className="w-16 h-16 rounded-full" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl font-bold">
-              {user.name?.[0] ?? "?"}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div
+        className="relative pb-20"
+        style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
+      >
+        {/* Glow */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.35) 0%, transparent 70%)",
+        }} />
+
+        {/* Profile */}
+        <div className="relative max-w-2xl mx-auto px-6 pt-10 pb-2 flex flex-col items-center text-center">
+          {/* Avatar */}
+          <div className="relative mb-4">
+            {user.image ? (
+              <img src={user.image} alt={user.name ?? ""} className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50" />
+            ) : (
+              <div className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50 bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
+                {user.name?.[0] ?? "?"}
+              </div>
+            )}
+            <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow ${
+              isPaid ? "bg-indigo-500 text-white" : "bg-zinc-600 text-zinc-200"
+            }`}>
+              {planConfig.name}
+            </span>
+          </div>
+
+          <h1 className="text-2xl font-extrabold text-white tracking-tight mt-2 mb-1">
+            {user.name ?? "—"}
+          </h1>
+          <p className="text-white/50 text-sm mb-3">{user.email}</p>
+          <span className="inline-flex items-center gap-1.5 bg-white/10 text-white/50 text-xs px-3 py-1 rounded-full border border-white/10">
+            <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Member since {memberSince}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Stat tiles — overlapping hero ───────────────────────────────── */}
+      <div className="max-w-2xl mx-auto px-6 -mt-10 relative z-10">
+        <div className="grid grid-cols-2 gap-3">
+
+          {/* Songs tile — indigo tint to match its partner */}
+          <div
+            className="rounded-2xl px-6 py-5 shadow-lg shadow-black/20 text-center ring-1 ring-white/15"
+            style={{ background: "linear-gradient(135deg, #2d2a6e 0%, #3d3a9e 100%)" }}
+          >
+            <div className="text-4xl font-extrabold text-white tabular-nums leading-none">{songCount}</div>
+            <div className="text-xs text-indigo-300 mt-2 font-medium">
+              {songLimit === true ? "Songs created" : `Songs · ${songLimit} max`}
             </div>
-          )}
-          <div>
-            <div className="text-lg font-semibold text-zinc-900">{user.name ?? "—"}</div>
-            <div className="text-sm text-zinc-500">{user.email}</div>
-            <div className="text-xs text-zinc-300 mt-1">
-              Member since {new Date(user.createdAt).toLocaleDateString()}
+          </div>
+
+          {/* Plan tile */}
+          <div
+            className="rounded-2xl px-6 py-5 shadow-lg shadow-indigo-900/30 text-center"
+            style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)" }}
+          >
+            <div className="text-2xl font-extrabold text-white leading-none">
+              {plan === "lifetime" ? "Lifetime" : planConfig.name}
+            </div>
+            <div className="text-xs text-indigo-200 mt-2 font-medium">
+              {plan === "lifetime" ? "Forever ✦" : isPaid ? `$${planConfig.price}/mo` : "Free plan"}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── Cards ────────────────────────────────────────────────────────── */}
+      <div className="max-w-2xl mx-auto px-6 pt-5 pb-16 space-y-4">
 
         {/* Plan card */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-zinc-900">Current plan</h2>
+        <div className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-zinc-900">Your plan</h2>
             <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
               isPaid ? "bg-indigo-100 text-indigo-700" : "bg-zinc-100 text-zinc-500"
             }`}>
@@ -69,47 +155,88 @@ export default async function AccountPage() {
             </span>
           </div>
 
+          {/* Active features */}
+          <div className="px-6 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2.5">
+            {activeFeatures.map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2 text-sm text-zinc-700">
+                <span className="w-5 h-5 flex items-center justify-center rounded-full text-xs shrink-0 bg-indigo-100 text-indigo-600 font-bold">✓</span>
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Locked features — free plan upsell */}
+          {!isPaid && lockedFeatures.length > 0 && (
+            <div className="mx-6 mb-4 rounded-xl bg-zinc-50 border border-dashed border-zinc-200 px-4 py-3">
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Unlock with Pro</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+                {lockedFeatures.map(({ key, label }) => (
+                  <div key={key} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <span className="w-5 h-5 flex items-center justify-center rounded-full text-xs shrink-0 bg-zinc-100 text-zinc-300">—</span>
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Billing / CTA */}
           {isPaid ? (
-            <div className="space-y-2 text-sm text-zinc-600">
-              <div className="flex justify-between">
+            <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 space-y-2.5 text-sm">
+              <div className="flex justify-between text-zinc-500">
                 <span>Price</span>
-                <span className="font-medium text-zinc-900">
+                <span className="font-semibold text-zinc-900">
                   ${planConfig.price}{plan === "monthly" ? "/mo" : plan === "yearly" ? "/yr" : " once"}
                 </span>
               </div>
-              {user.stripeCurrentPeriodEnd && plan !== "lifetime" && (
-                <div className="flex justify-between">
-                  <span>Renews</span>
-                  <span className="font-medium text-zinc-900">
-                    {new Date(user.stripeCurrentPeriodEnd).toLocaleDateString()}
-                  </span>
+              {renewsOn && plan !== "lifetime" && (
+                <div className="flex justify-between text-zinc-500">
+                  <span>Next renewal</span>
+                  <span className="font-semibold text-zinc-900">{renewsOn}</span>
+                </div>
+              )}
+              {plan === "lifetime" && (
+                <div className="flex justify-between text-zinc-500">
+                  <span>Access</span>
+                  <span className="font-semibold text-indigo-600">Lifetime ✦</span>
                 </div>
               )}
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-zinc-500">
-                You&apos;re on the free plan — limited to 20 songs.
+            <div
+              className="px-6 py-5 border-t border-zinc-100 flex items-center justify-between gap-4"
+              style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)" }}
+            >
+              <p className="text-sm text-zinc-600 leading-snug">
+                Unlock unlimited songs, PDF export, sharing and more.
               </p>
               <Link
                 href="/pricing"
-                className="inline-block text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow shadow-indigo-300"
               >
-                Upgrade plan
+                Upgrade →
               </Link>
             </div>
           )}
         </div>
 
-        {/* Sign out */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold text-zinc-900 mb-4">Account</h2>
-          <a
-            href="/api/auth/signout"
-            className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors"
-          >
-            Sign out
-          </a>
+        {/* Account card */}
+        <div className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-zinc-100">
+            <h2 className="text-sm font-semibold text-zinc-900">Account</h2>
+          </div>
+          <div className="px-6 py-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-zinc-700">Sign out</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Returns you to the login page</p>
+            </div>
+            <a
+              href="/api/auth/signout"
+              className="shrink-0 text-sm border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 px-4 py-2 rounded-full font-medium transition-colors"
+            >
+              Sign out
+            </a>
+          </div>
         </div>
       </div>
     </div>

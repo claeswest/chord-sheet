@@ -77,6 +77,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
           fontWeight: s.title.bold !== false ? "bold" : "normal",
           fontStyle:  s.title.italic ? "italic" : "normal",
           color:      s.title.color ?? "#18181b",
+          textAlign:  s.titleAlign ?? "center",
         }}
       >
         {title || "Untitled Song"}
@@ -91,6 +92,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
             fontWeight: s.artist?.bold ? "bold" : "normal",
             fontStyle:  s.artist?.italic ? "italic" : "normal",
             color:      s.artist?.color ?? "#555",
+            textAlign:  s.titleAlign ?? "center",
           }}
         >
           {artist}

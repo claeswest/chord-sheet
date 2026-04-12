@@ -3,7 +3,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { SongLine } from "@/types/song";
-import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
+import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
+import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 
 // Reuse a single canvas context across all measurements
@@ -27,6 +28,7 @@ interface Props {
   onEdit?: () => void;
   songStyle?: SongStyle;
   songId?: string;
+  loading?: boolean; // parent can keep overlay up while fetching data
 }
 
 const SPEED_PX_PER_TICK: Record<number, number> = {
@@ -38,7 +40,7 @@ const SPEED_PX_PER_TICK: Record<number, number> = {
 const MAX_SPEED = 20;
 const TICK_MS = 40; // ~25fps
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -53,6 +55,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [fontSeq, setFontSeq] = useState(0); // increments when fonts finish loading → re-measures chords
+  const [imgLoaded, setImgLoaded] = useState(false); // true once bg <img> is painted
+  const bgImgRef = useRef<HTMLImageElement>(null);
 
   const s = songStyle ?? DEFAULT_STYLE;
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust;
@@ -63,6 +68,17 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   useEffect(() => {
     if (speedKey) localStorage.setItem(speedKey, String(speed));
   }, [speed, speedKey]);
+
+  // Re-measure chord positions once all fonts have finished loading.
+  // Without this, chords are positioned using fallback-font metrics and then
+  // jump ~1 second later when the real Google Font renders.
+  useEffect(() => {
+    const handler = () => setFontSeq(n => n + 1);
+    document.fonts.addEventListener("loadingdone", handler);
+    // Also trigger immediately in case fonts are already loaded
+    document.fonts.ready.then(handler);
+    return () => document.fonts.removeEventListener("loadingdone", handler);
+  }, []);
 
   // Load any Google Fonts on mount/change
   // [E] = back to edit, [P] = stay / already in play (no-op here)
@@ -158,6 +174,18 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // Reset and re-check whenever background image changes.
+  // Base64 data URLs load synchronously — onLoad fires before React attaches
+  // the handler. So we also check img.complete after mount.
+  useEffect(() => {
+    setImgLoaded(false);
+    if (!s.backgroundImage) { setImgLoaded(true); return; }
+    // If the <img> element is already decoded (data URL), mark ready immediately
+    if (bgImgRef.current?.complete) {
+      setImgLoaded(true);
+    }
+  }, [s.backgroundImage]);
+
   const togglePlay = useCallback(() => {
     setPlaying((p) => !p);
     setShowControls(true);
@@ -179,12 +207,54 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
   return (
     <div
-      className="relative flex flex-col flex-1 min-h-0"
+      className="relative isolate flex flex-col flex-1 min-h-0"
       style={backgroundStyle(s)}
       onMouseMove={() => setShowControls(true)}
     >
+      {/* ── Background image — fades IN on load, crossfading with the overlay ── */}
+      {s.backgroundImage && (
+        <>
+          <img
+            ref={bgImgRef}
+            key={s.backgroundImage}
+            src={s.backgroundImage}
+            alt=""
+            aria-hidden
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{
+              opacity: imgLoaded ? 1 : 0,
+              transition: "opacity 600ms ease",
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundColor: hexToRgba(s.background ?? "#ffffff", s.overlayOpacity ?? 0.5),
+              opacity: imgLoaded ? 1 : 0,
+              transition: "opacity 600ms ease",
+            }}
+          />
+        </>
+      )}
+
+      {/* ── Loading overlay — crossfades OUT as image fades IN ── */}
+      {(s.backgroundImage || loading) && (
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none"
+          style={{
+            background: "#0a0818",
+            opacity: (loading || !imgLoaded) ? 1 : 0,
+            transition: "opacity 600ms ease",
+          }}
+        >
+          <LoadingNotes overlay label="Loading…" />
+        </div>
+      )}
+
       {/* Scrollable content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto relative z-20">
         <div className="max-w-2xl mx-auto px-10 pt-16 pb-40">
           {/* Song header */}
           <div className="mb-10 text-center">
@@ -251,6 +321,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                   {/* Chord row */}
                   {hasChords && (() => {
                     // Compute overlap-free display positions
+                    // fontSeq is read here so chord positions are recalculated after fonts load
+                    void fontSeq;
                     const CHORD_GAP = 6;
                     const lyricFam = s.lyrics.fontFamily ?? MONO_STACK;
                     const chordFam = s.chords.fontFamily ?? MONO_STACK;
@@ -314,7 +386,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
       {/* Controls overlay */}
       <div
-        className={`fixed bottom-0 left-0 right-0 transition-opacity duration-500 ${
+        className={`fixed bottom-0 left-0 right-0 z-30 transition-opacity duration-500 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >

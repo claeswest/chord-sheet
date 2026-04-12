@@ -126,7 +126,29 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [bgStyle, setBgStyle] = useState<BgStyleId>("abstract");
   const [showStylePicker, setShowStylePicker] = useState(false);
   const [editingElement, setEditingElement] = useState<"title"|"artist"|"lyrics"|"chords"|"sections"|null>(null);
+  const [imageSource, setImageSource] = useState<"ai"|"upload"|null>(null);
+  const [bgMode, setBgMode] = useState<"ai"|"upload">("ai");
   const [confirmReset, setConfirmReset] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const applyUploadedImage = async (dataUrl: string) => {
+    const compressed = await compressImage(dataUrl);
+    onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
+    setImageSource("upload");
+  };
+
+  const handleImageFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => applyUploadedImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  // Paste image anywhere on the background tab
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith("image/"));
+    if (item) { const file = item.getAsFile(); if (file) handleImageFile(file); }
+  };
 
   const handleAiStyle = async () => {
     setAiLoading(true);
@@ -177,6 +199,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       if (!data.image) { setBgError(data.error ?? "No image returned"); return; }
       const compressed = await compressImage(data.image);
       onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
+      setImageSource("ai");
       setBgPrompt(data.prompt ?? "");
       setShowBgPopup(true);
     } catch (e: any) {
@@ -186,14 +209,14 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
     }
   };
 
-  const removeBackground = () => { onChange({ ...style, backgroundImage: undefined }); setBgPrompt(""); };
+  const removeBackground = () => { onChange({ ...style, backgroundImage: undefined }); setBgPrompt(""); setImageSource(null); };
   const reset = () => { onChange(DEFAULT_STYLE); setTheme(""); setBgPrompt(""); };
 
   const bg = style.background ?? "#ffffff";
   const overlayOpacity = style.overlayOpacity ?? 0.5;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-zinc-50 relative">
+    <div className="flex-1 overflow-y-auto relative bg-zinc-50">
 
       {/* ── Background style picker modal ── */}
       {showStylePicker && (
@@ -330,14 +353,15 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       )}
 
       {/* ── Background tab ── */}
-      <div className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-2"}>
+      <div
+        className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-4"}
+        onPaste={handlePaste}
+      >
 
-          {/* Single grouped card — page colour + AI background */}
+          {/* ── Page color ── */}
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-
-            {/* Page color row */}
             <button
-              className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-zinc-50 transition-colors text-left"
+              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-50 transition-colors text-left"
               onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
             >
               <span className="w-5 h-5 rounded-full border border-zinc-200 shadow-sm shrink-0" style={{ background: bg }} />
@@ -345,62 +369,121 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
               <span className="text-[11px] text-zinc-400 font-mono">{bg}</span>
               <input id="bg-color-input" type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="sr-only" />
             </button>
+          </div>
 
-            {/* Style picker row */}
-            <button
-              onClick={() => setShowStylePicker(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
-            >
-              <span className="text-base leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
-              <span className="text-xs font-medium text-zinc-700 flex-1">Image style</span>
-              <span className="text-[11px] text-zinc-400">{BG_STYLES.find(s => s.id === bgStyle)?.label} ›</span>
-            </button>
+          {/* ── Background image — segmented toggle ── */}
+          <div>
+            {/* Toggle */}
+            <div className="flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 mb-2">
+              <button onClick={() => setBgMode("ai")}
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${bgMode === "ai" ? "bg-white text-zinc-800 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+              >✦ Generate with AI</button>
+              <button onClick={() => setBgMode("upload")}
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${bgMode === "upload" ? "bg-white text-zinc-800 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+              >
+                <span className="flex items-center justify-center gap-1">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12h.008v.008H13.5V12zm-4.5 4.5h.008v.008H9V16.5zM3.75 20.25h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12.75c0 .828.672 1.5 1.5 1.5z" />
+                  </svg>
+                  Upload image
+                </span>
+              </button>
+            </div>
 
-            {/* Image preview + dim slider (when image exists) */}
-            {style.backgroundImage && (
-              <div className="border-b border-zinc-100">
-                {/* Preview */}
-                <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
-                  <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
-                  <button
-                    onClick={removeBackground}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-lg text-base leading-none transition-colors"
-                    title="Remove background"
-                  >×</button>
-                </div>
-                {/* Dim slider — inset tray */}
-                <div className="mx-3 my-2.5 bg-zinc-50 rounded-lg px-3 py-2.5">
-                  <div className="flex items-center mb-1.5">
-                    <span className="text-xs text-zinc-500 flex-1">Dim</span>
-                    <span className="text-xs font-mono text-zinc-500 tabular-nums">{Math.round(overlayOpacity * 100)}%</span>
+            {/* AI panel */}
+            {bgMode === "ai" && (
+              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+                <button onClick={() => setShowStylePicker(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
+                >
+                  <span className="text-base leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
+                  <span className="text-xs font-medium text-zinc-700 flex-1">Image style</span>
+                  <span className="text-[11px] text-zinc-400">{BG_STYLES.find(s => s.id === bgStyle)?.label} ›</span>
+                </button>
+                {style.backgroundImage && (
+                  <div className="border-b border-zinc-100">
+                    <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
+                      <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
+                      <button onClick={removeBackground} className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-lg text-base leading-none transition-colors">×</button>
+                    </div>
+                    <div className="mx-3 my-2.5 bg-zinc-50 rounded-lg px-3 py-2.5">
+                      <div className="flex items-center mb-1.5">
+                        <span className="text-xs text-zinc-500 flex-1">Dim</span>
+                        <span className="text-xs font-mono text-zinc-500 tabular-nums">{Math.round(overlayOpacity * 100)}%</span>
+                      </div>
+                      <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[10px] text-zinc-400">← Show image</span>
+                        <span className="text-[10px] text-zinc-400">Readable text →</span>
+                      </div>
+                    </div>
                   </div>
-                  <input
-                    type="range" min={0} max={100}
-                    value={Math.round(overlayOpacity * 100)}
-                    onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })}
-                    className="w-full accent-indigo-500"
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-zinc-400">← Show image</span>
-                    <span className="text-[10px] text-zinc-400">Readable text →</span>
-                  </div>
-                </div>
+                )}
+                <button onClick={handleAiBackground} disabled={bgLoading}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-3 transition-colors disabled:opacity-40 font-semibold text-violet-600 hover:bg-violet-50 text-sm"
+                >
+                  {bgLoading
+                    ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
+                    : imageSource === "ai" ? <>↺ Regenerate</>
+                    : imageSource === "upload" ? <>✦ Replace with AI image</>
+                    : <>✦ Generate background image</>}
+                </button>
               </div>
             )}
 
-            {/* Generate / Regenerate button — matches "Style with AI" style */}
-            <button onClick={handleAiBackground} disabled={bgLoading}
-              className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 transition-colors disabled:opacity-40 font-medium text-violet-600 hover:bg-violet-50"
-            >
-              {bgLoading
-                ? <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
-                : style.backgroundImage
-                  ? <><span className="text-sm leading-none">↺</span> Regenerate background</>
-                  : <><span>✦</span> Generate background image</>}
-            </button>
+            {/* Upload panel */}
+            {bgMode === "upload" && (
+              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+                {style.backgroundImage && (
+                  <>
+                    <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
+                      <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
+                      <button onClick={removeBackground} className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-lg text-base leading-none transition-colors">×</button>
+                    </div>
+                    <div className="mx-3 mt-2 mb-3 bg-zinc-50 rounded-lg px-3 py-2.5">
+                      <div className="flex items-center mb-1.5">
+                        <span className="text-xs text-zinc-500 flex-1">Dim</span>
+                        <span className="text-xs font-mono text-zinc-500 tabular-nums">{Math.round(overlayOpacity * 100)}%</span>
+                      </div>
+                      <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-indigo-500" />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[10px] text-zinc-400">← Show image</span>
+                        <span className="text-[10px] text-zinc-400">Readable text →</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-zinc-100" />
+                  </>
+                )}
+                <div
+                  onClick={() => (document.getElementById("bg-upload-input") as HTMLInputElement)?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragOver(false); const file = e.dataTransfer.files[0]; if (file) handleImageFile(file); }}
+                  className={`mx-3 my-3 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center gap-3 px-4 py-3 ${
+                    dragOver ? "border-indigo-400 bg-indigo-50 scale-[0.98]" : "border-zinc-200 hover:border-indigo-300 hover:bg-indigo-50"
+                  }`}
+                >
+                  <svg className={`w-5 h-5 shrink-0 ${dragOver ? "text-indigo-400" : "text-zinc-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    {dragOver
+                      ? <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                      : <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12h.008v.008H13.5V12zm-4.5 4.5h.008v.008H9V16.5zM3.75 20.25h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12.75c0 .828.672 1.5 1.5 1.5z" />
+                    }
+                  </svg>
+                  <div>
+                    <p className="text-xs font-semibold text-zinc-600">
+                      {dragOver ? "Drop to use this image" : imageSource === "upload" ? "Replace image" : "Drop or click to browse"}
+                    </p>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">Also supports Ctrl+V paste</p>
+                  </div>
+                </div>
+                <input id="bg-upload-input" type="file" accept="image/*" className="sr-only"
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageFile(file); e.target.value = ""; }}
+                />
+              </div>
+            )}
           </div>
 
-          {bgError && <p className="text-xs text-red-500 mt-2">{bgError}</p>}
+          {bgError && <p className="text-xs text-red-500">{bgError}</p>}
 
           {/* Guest notice */}
           {!isLoggedIn && (

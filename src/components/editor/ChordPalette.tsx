@@ -191,7 +191,7 @@ export default function ChordPalette({ activeChord, onSelectChord, songChords = 
         </div>
 
         {/* ── Tip ── */}
-        <p className="text-xs text-zinc-300">💡 Drag to reposition · Double-click to rename</p>
+        <p className="text-xs text-zinc-400">💡 Drag to reposition · Double-click to rename</p>
 
       </div>
     </aside>
