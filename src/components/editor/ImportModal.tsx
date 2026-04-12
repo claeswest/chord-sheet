@@ -11,7 +11,7 @@ interface ImportMeta {
 
 interface Props {
   onImport: (lines: SongLine[], meta?: ImportMeta) => void;
-  onClose: () => void;
+  onClose: (didImport?: boolean) => void;
   defaultTab?: "search" | "text" | "image";
 }
 
@@ -247,7 +247,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   };
 
   const handleImport = () => {
-    if (preview.length > 0) { onImport(preview, meta); onClose(); }
+    if (preview.length > 0) { onImport(preview, meta); onClose(true); }
   };
 
   const showReview = cleaned && !aiLoading;
