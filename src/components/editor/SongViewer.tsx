@@ -242,9 +242,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       {/* ── Loading overlay — crossfades OUT as image fades IN ── */}
       {(s.backgroundImage || loading) && (
         <div
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none"
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none"
           style={{
-            background: "#0a0818",
+            background: "rgba(48, 43, 99, 0.85)",
             opacity: (loading || !imgLoaded) ? 1 : 0,
             transition: "opacity 600ms ease",
           }}
@@ -329,9 +329,14 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     const raw = line.chords.map((c) => ({
                       id: c.id,
                       chord: c.chord,
-                      px: line.text
-                        ? measureWidth(line.text.slice(0, c.position), lyricSize, lyricFam)
-                        : c.position * measureWidth("M", lyricSize, lyricFam),
+                      px: (() => {
+                        const charW = measureWidth("M", lyricSize, lyricFam);
+                        if (!line.text) return c.position * charW;
+                        if (c.position >= line.text.length) {
+                          return measureWidth(line.text, lyricSize, lyricFam) + (c.position - line.text.length) * charW;
+                        }
+                        return measureWidth(line.text.slice(0, c.position), lyricSize, lyricFam);
+                      })(),
                     }));
                     raw.sort((a, b) => a.px - b.px);
                     let prevRight = -Infinity;

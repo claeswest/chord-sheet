@@ -1,4 +1,4 @@
-export type Plan = "free" | "monthly" | "yearly" | "lifetime";
+export type Plan = "free" | "monthly" | "yearly" | "lifetime"; // lifetime hidden for now
 
 export interface PlanConfig {
   name: string;
@@ -95,12 +95,32 @@ export function planFromUser(user: {
   plan?: string | null;
   stripeSubscriptionId?: string | null;
   stripeCurrentPeriodEnd?: Date | null;
+  stripeSubscriptionStatus?: string | null;
 }): Plan {
   const raw = user.plan ?? "free";
-  // For recurring plans, verify subscription is still active
   if (raw === "monthly" || raw === "yearly") {
-    if (!user.stripeSubscriptionId || !user.stripeCurrentPeriodEnd) return "free";
+    if (!user.stripeSubscriptionId) return "free";
+    // Trialing users get full plan access
+    if (user.stripeSubscriptionStatus === "trialing") return raw as Plan;
+    // Active subscriptions must not be expired
+    if (!user.stripeCurrentPeriodEnd) return "free";
     if (user.stripeCurrentPeriodEnd < new Date()) return "free";
   }
   return raw as Plan;
+}
+
+export function isOnTrial(user: {
+  stripeSubscriptionStatus?: string | null;
+  stripeCurrentPeriodEnd?: Date | null;
+}): boolean {
+  return user.stripeSubscriptionStatus === "trialing";
+}
+
+export function trialDaysRemaining(user: {
+  stripeSubscriptionStatus?: string | null;
+  stripeCurrentPeriodEnd?: Date | null;
+}): number | null {
+  if (!isOnTrial(user) || !user.stripeCurrentPeriodEnd) return null;
+  const ms = user.stripeCurrentPeriodEnd.getTime() - Date.now();
+  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
 }

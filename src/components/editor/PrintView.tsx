@@ -135,7 +135,10 @@ export default function PrintView({ title, artist, lines, watermark = true, song
             {hasChords && (
               <div className="print-chord-row">
                 {line.chords.map((chord) => {
-                  const leftPx = measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily);
+                  const charW = measureWidth("M", lyricFontPx, lyricFamily);
+                  const leftPx = chord.position >= line.text.length
+                    ? measureWidth(line.text, lyricFontPx, lyricFamily) + (chord.position - line.text.length) * charW
+                    : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily);
                   return (
                     <span
                       key={chord.id}

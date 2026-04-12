@@ -13,6 +13,7 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
 {
   "theme": "1-2 sentences describing the visual theme and why it suits the song",
   "background": "#hexcolor",
+  "titleAlign": <"left" or "center" — center suits anthems/ballads, left suits intimate/folk/personal songs>,
   "title": {
     "fontName": "choose the most fitting font from the list above",
     "fontSize": <integer 18–36, pick what suits the song's drama/energy>,
@@ -46,7 +47,9 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
     "fontSize": <integer 10–13, section headers are labels so slightly smaller>,
     "color": "#hexcolor — often matches or complements the chord color",
     "bold": <true or false — usually bold for clear section labels>,
-    "italic": <true or false>
+    "italic": <true or false>,
+    "align": <"left" or "center" — left is standard, center suits theatrical/choral arrangements>,
+    "divider": <true or false — true adds a subtle line under section headers; false is cleaner/minimal>
   }
 }
 
@@ -59,6 +62,8 @@ Design guidelines:
 - The title font can be expressive and dramatic; lyrics font should prioritize readability
 - Vary font sizes meaningfully: a dramatic rock anthem title might be 32px, a delicate folk ballad title might be 20px
 - Use bold/italic purposefully: bold adds weight and power, italic adds elegance and motion
+- titleAlign: center is the classic choice; left feels more personal and intimate
+- section divider: use true for structured songs with many sections, false for minimal/clean aesthetics
 - Be creative and make every field reflect the song's character`;
 
 export async function POST(req: NextRequest) {
@@ -118,15 +123,20 @@ export async function POST(req: NextRequest) {
     italic: s.italic,
   });
 
+  const sec = parsed.section ?? parsed.chords;
+
   return NextResponse.json({
     theme: parsed.theme ?? "",
     style: {
-      background: parsed.background ?? "#ffffff",
+      background:     parsed.background ?? "#ffffff",
+      titleAlign:     parsed.titleAlign === "left" ? "left" : "center",
+      sectionAlign:   sec?.align === "center" ? "center" : "left",
+      sectionDivider: sec?.divider !== false,
       title:   toStyle(parsed.title),
-      artist:  toStyle(parsed.artist ?? parsed.lyrics),  // fall back to lyrics style if missing
+      artist:  toStyle(parsed.artist ?? parsed.lyrics),
       lyrics:  toStyle(parsed.lyrics),
       chords:  toStyle(parsed.chords),
-      section: toStyle(parsed.section ?? parsed.chords),  // fall back to chords style if missing
+      section: toStyle(sec),
     },
   });
 }

@@ -2,7 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { planFromUser, PLANS, Plan, canUseFeature } from "@/lib/plans";
+import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
+import UserMenu from "@/components/ui/UserMenu";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
   { key: "songLimit",       label: "Unlimited songs"     },
@@ -22,7 +23,8 @@ export default async function AccountPage() {
       where: { id: session.user.id },
       select: {
         name: true, email: true, image: true, plan: true,
-        stripeSubscriptionId: true, stripeCurrentPeriodEnd: true, createdAt: true,
+        stripeSubscriptionId: true, stripeCurrentPeriodEnd: true,
+        stripeSubscriptionStatus: true, createdAt: true,
       },
     }),
     prisma.song.count({ where: { userId: session.user.id } }),
@@ -33,6 +35,8 @@ export default async function AccountPage() {
   const plan = planFromUser(user) as Plan;
   const planConfig = PLANS[plan];
   const isPaid = plan !== "free";
+  const onTrial = isOnTrial(user);
+  const daysLeft = trialDaysRemaining(user);
   const songLimit = planConfig.features.songLimit;
 
   const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -61,13 +65,7 @@ export default async function AccountPage() {
           ← My songs
         </Link>
         <div className="flex-1" />
-        {user.image ? (
-          <img src={user.image} alt={user.name ?? ""} className="w-7 h-7 rounded-full ring-1 ring-white/20" />
-        ) : (
-          <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-            {user.name?.[0]}
-          </div>
-        )}
+        <UserMenu userName={user.name} userImage={user.image} />
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -85,7 +83,7 @@ export default async function AccountPage() {
           {/* Avatar */}
           <div className="relative mb-4">
             {user.image ? (
-              <img src={user.image} alt={user.name ?? ""} className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50" />
+              <img src={user.image} alt={user.name ?? ""} referrerPolicy="no-referrer" className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50" />
             ) : (
               <div className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50 bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
                 {user.name?.[0] ?? "?"}
@@ -132,10 +130,10 @@ export default async function AccountPage() {
             style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)" }}
           >
             <div className="text-2xl font-extrabold text-white leading-none">
-              {plan === "lifetime" ? "Lifetime" : planConfig.name}
+              {planConfig.name}
             </div>
             <div className="text-xs text-indigo-200 mt-2 font-medium">
-              {plan === "lifetime" ? "Forever ✦" : isPaid ? `$${planConfig.price}/mo` : "Free plan"}
+              {isPaid ? `$${planConfig.price}/mo` : "Free plan"}
             </div>
           </div>
         </div>
@@ -148,12 +146,34 @@ export default async function AccountPage() {
         <div className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Your plan</h2>
-            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-              isPaid ? "bg-indigo-100 text-indigo-700" : "bg-zinc-100 text-zinc-500"
-            }`}>
-              {planConfig.name}
-            </span>
+            <div className="flex items-center gap-2">
+              {onTrial && (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-700">
+                  Trial — {daysLeft}d left
+                </span>
+              )}
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                isPaid ? "bg-indigo-100 text-indigo-700" : "bg-zinc-100 text-zinc-500"
+              }`}>
+                {planConfig.name}
+              </span>
+            </div>
           </div>
+
+          {/* Trial notice */}
+          {onTrial && (
+            <div className="mx-6 mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-3">
+              <span className="text-lg">⏳</span>
+              <div>
+                <p className="text-sm font-semibold text-amber-800">
+                  Your free trial ends in {daysLeft} day{daysLeft !== 1 ? "s" : ""}
+                </p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  You won&apos;t be charged until your trial ends. Cancel anytime before then.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Active features */}
           <div className="px-6 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2.5">
@@ -186,19 +206,27 @@ export default async function AccountPage() {
               <div className="flex justify-between text-zinc-500">
                 <span>Price</span>
                 <span className="font-semibold text-zinc-900">
-                  ${planConfig.price}{plan === "monthly" ? "/mo" : plan === "yearly" ? "/yr" : " once"}
+                  {onTrial ? "Free during trial" : `$${planConfig.price}${plan === "monthly" ? "/mo" : "/yr"}`}
                 </span>
               </div>
-              {renewsOn && plan !== "lifetime" && (
+              {renewsOn && (
                 <div className="flex justify-between text-zinc-500">
-                  <span>Next renewal</span>
+                  <span>{onTrial ? "Trial ends" : "Next renewal"}</span>
                   <span className="font-semibold text-zinc-900">{renewsOn}</span>
                 </div>
               )}
-              {plan === "lifetime" && (
-                <div className="flex justify-between text-zinc-500">
-                  <span>Access</span>
-                  <span className="font-semibold text-indigo-600">Lifetime ✦</span>
+              {/* Upgrade to yearly upsell for monthly subscribers */}
+              {plan === "monthly" && !onTrial && (
+                <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
+                  <p className="text-xs text-zinc-500 leading-snug">
+                    Save 27% and get priority support with the yearly plan.
+                  </p>
+                  <Link
+                    href="/pricing"
+                    className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shadow shadow-indigo-200"
+                  >
+                    Upgrade to yearly →
+                  </Link>
                 </div>
               )}
             </div>

@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
     customer: customerId,
     mode: planConfig.isRecurring ? "subscription" : "payment",
     line_items: [{ price: planConfig.stripePriceId, quantity: 1 }],
+    // 7-day free trial for all recurring plans
+    ...(planConfig.isRecurring && {
+      subscription_data: { trial_period_days: 7 },
+    }),
     success_url: `${baseUrl}/pricing?success=true`,
     cancel_url: `${baseUrl}/pricing`,
     metadata: { userId: session.user.id, plan },

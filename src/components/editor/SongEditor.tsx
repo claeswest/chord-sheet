@@ -931,14 +931,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             if (meta?.title && meta.title !== "Unknown") setTitle(meta.title);
             if (meta?.artist) setArtist(meta.artist);
           }}
-          onClose={() => {
+          onClose={(didImport) => {
             setShowImport(false);
-            // If the song is still blank, go back to the library
-            const stillBlank = !title && !artist &&
-              lines.length === 1 && lines[0].type === "lyric" &&
-              (lines[0] as LyricLine).text === "" &&
-              (lines[0] as LyricLine).chords.length === 0;
-            if (stillBlank) router.push("/songs");
+            // Only redirect if the user closed without importing anything
+            if (!didImport) {
+              const stillBlank = !title && !artist &&
+                lines.length === 1 && lines[0].type === "lyric" &&
+                (lines[0] as LyricLine).text === "" &&
+                (lines[0] as LyricLine).chords.length === 0;
+              if (stillBlank) router.push("/songs");
+            }
           }}
         />
       )}

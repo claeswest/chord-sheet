@@ -1,12 +1,31 @@
 import { signIn } from "@/lib/auth";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   return (
-    <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-10 w-full max-w-sm text-center">
+    <div
+      className="min-h-screen flex items-center justify-center px-6"
+      style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
+    >
+      {/* Glow */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* White card */}
+      <div className="relative z-10 bg-white rounded-2xl shadow-2xl shadow-black/40 p-10 w-full max-w-sm text-center">
+
+        {/* Logo */}
         <div className="text-2xl font-bold tracking-tight mb-1">
-          Chord<span className="text-indigo-600">SheetCreator</span>
+          Chord<span className="text-indigo-600">SheetMaker</span>
         </div>
         <p className="text-sm text-zinc-400 mb-8">Sign in to save and access your songs</p>
 
@@ -14,7 +33,8 @@ export default function LoginPage() {
           <form
             action={async () => {
               "use server";
-              await signIn("google", { redirectTo: "/songs" });
+              const { next } = await searchParams;
+              await signIn("google", { redirectTo: next ?? "/songs" });
             }}
           >
             <button
@@ -34,7 +54,8 @@ export default function LoginPage() {
           <form
             action={async () => {
               "use server";
-              await signIn("github", { redirectTo: "/songs" });
+              const { next } = await searchParams;
+              await signIn("github", { redirectTo: next ?? "/songs" });
             }}
           >
             <button

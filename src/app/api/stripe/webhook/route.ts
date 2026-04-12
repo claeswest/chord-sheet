@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
           plan,
           stripeSubscriptionId: sub.id,
           stripePriceId: priceId,
-          stripeCurrentPeriodEnd: new Date(sub.items.data[0].current_period_end * 1000),
+          stripeSubscriptionStatus: sub.status, // trialing | active | past_due | canceled
+          stripeCurrentPeriodEnd: new Date(
+            (sub.trial_end ?? sub.items.data[0].current_period_end) * 1000
+          ),
         },
       });
       break;
@@ -82,6 +85,7 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: null,
           stripePriceId: null,
           stripeCurrentPeriodEnd: null,
+          stripeSubscriptionStatus: null,
         },
       });
       break;

@@ -23,10 +23,11 @@ model User {
   plan                   String    @default("free")
 
   // Stripe subscription
-  stripeCustomerId       String?   @unique
-  stripeSubscriptionId   String?   @unique
-  stripePriceId          String?
-  stripeCurrentPeriodEnd DateTime?
+  stripeCustomerId         String?   @unique
+  stripeSubscriptionId     String?   @unique
+  stripePriceId            String?
+  stripeCurrentPeriodEnd   DateTime?
+  stripeSubscriptionStatus String?   // trialing | active | past_due | canceled
 
   accounts   Account[]
   sessions   Session[]

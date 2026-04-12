@@ -1,9 +1,10 @@
 import Link from "next/link";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import FeatureCard from "@/components/ui/FeatureCard";
 import { auth } from "@/lib/auth";
 import { PLANS, type Plan } from "@/lib/plans";
 
-const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly", "lifetime"];
+const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
   songLimit: "Songs",
   chordTranspose: "Chord transposition",
@@ -18,31 +19,55 @@ const features = [
     icon: "✦",
     title: "AI Song Search",
     description: "Type a song name and artist — AI knows millions of songs and returns a ready-to-use chord sheet in seconds.",
+    hex: "#6366f1",
+    iconBg: "rgba(99,102,241,0.12)",
+    cardBg: "rgba(99,102,241,0.04)",
+    glow: "rgba(99,102,241,0.18)",
   },
   {
     icon: "🎸",
     title: "Drag-and-Drop Chords",
     description: "Grab any chord and drop it above the exact lyric syllable where the change happens. No manual spacing.",
+    hex: "#3b82f6",
+    iconBg: "rgba(59,130,246,0.12)",
+    cardBg: "rgba(59,130,246,0.04)",
+    glow: "rgba(59,130,246,0.18)",
   },
   {
     icon: "📷",
     title: "Photo & Image Import",
     description: "Snap a photo of a paper chord sheet. AI reads it and turns it into a fully editable digital sheet.",
+    hex: "#14b8a6",
+    iconBg: "rgba(20,184,166,0.12)",
+    cardBg: "rgba(20,184,166,0.04)",
+    glow: "rgba(20,184,166,0.18)",
   },
   {
     icon: "🎨",
     title: "AI Background & Styling",
     description: "Generate atmospheric background images matched to your song's mood — abstract, landscape, vintage, concert and more.",
+    hex: "#f59e0b",
+    iconBg: "rgba(245,158,11,0.12)",
+    cardBg: "rgba(245,158,11,0.04)",
+    glow: "rgba(245,158,11,0.18)",
   },
   {
     icon: "▶️",
     title: "Auto-Scroll Performance Mode",
     description: "Hands-free teleprompter scroll at the exact speed you need. Control with keyboard — perfect on stage.",
+    hex: "#10b981",
+    iconBg: "rgba(16,185,129,0.12)",
+    cardBg: "rgba(16,185,129,0.04)",
+    glow: "rgba(16,185,129,0.18)",
   },
   {
     icon: "📄",
     title: "Print & PDF Export",
     description: "Print straight from the browser or export a clean PDF. Organize songs into setlists for your gigs.",
+    hex: "#f43f5e",
+    iconBg: "rgba(244,63,94,0.12)",
+    cardBg: "rgba(244,63,94,0.04)",
+    glow: "rgba(244,63,94,0.18)",
   },
 ];
 
@@ -79,14 +104,12 @@ export default async function HomePage() {
 
       <main className="flex-1">
 
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
+        {/* ── Hero + Highlights (one dark section, zero seam) ──────────────── */}
         <section
-          className="relative flex flex-col items-center text-center px-6 pt-24 pb-0 overflow-hidden"
-          style={{
-            background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-          }}
+          className="relative flex flex-col items-center text-center px-6 pt-24 pb-16 overflow-hidden"
+          style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #1a1640 100%)" }}
         >
-          {/* Subtle radial glow */}
+          {/* Radial glow */}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
           }} />
@@ -121,7 +144,7 @@ export default async function HomePage() {
           </div>
 
           {/* Hero photo */}
-          <div className="relative w-full max-w-3xl mx-auto">
+          <div className="relative w-full max-w-3xl mx-auto mb-4">
             <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
               <img
                 src="/hero-photo.jpg"
@@ -130,145 +153,238 @@ export default async function HomePage() {
                 style={{ maxHeight: 480 }}
               />
             </div>
-            {/* Fade bottom edge into section background */}
-            <div className="absolute bottom-0 left-0 right-0 h-24" style={{
-              background: "linear-gradient(to bottom, transparent 0%, #24243e 100%)",
+            {/* Fade bottom of photo into section bg */}
+            <div className="absolute bottom-0 left-0 right-0 h-40" style={{
+              background: "linear-gradient(to bottom, transparent 0%, #1a1640 100%)",
             }} />
           </div>
-        </section>
 
-        {/* Caption */}
-        <p className="text-center text-xs text-zinc-400 mt-3 mb-16 px-4">
-          Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
-        </p>
-
-        {/* ── 3 quick highlights ──────────────────────────────────────────── */}
-        <section className="max-w-4xl mx-auto px-6 mb-24">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              { icon: "⚡", title: "Instant AI import", body: "Search a song name and get a complete chord sheet in seconds — no copying, no pasting." },
-              { icon: "🎯", title: "Precise chord placement", body: "Drag chords to the exact syllable. What you see in the editor is what you perform." },
-              { icon: "🎤", title: "Built for the stage", body: "Auto-scroll teleprompter mode with keyboard speed control keeps your hands free." },
-            ].map((h) => (
-              <div key={h.title} className="flex flex-col items-center text-center p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
-                <span className="text-3xl mb-3">{h.icon}</span>
-                <h3 className="font-semibold text-zinc-900 mb-2 text-sm">{h.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{h.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Features ─────────────────────────────────────────────────────── */}
-        <section id="features" className="px-6 py-24 max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-zinc-900 mb-3">
-            Everything you need
-          </h2>
-          <p className="text-center text-zinc-400 mb-16 max-w-xl mx-auto">
-            Built for musicians who want to focus on playing, not formatting.
+          {/* Caption */}
+          <p className="relative text-xs text-white/25 mb-12">
+            Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="group bg-white rounded-2xl p-6 border border-zinc-100 hover:border-indigo-200 hover:shadow-md transition-all"
-              >
-                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-50 text-xl mb-4 group-hover:bg-indigo-100 transition-colors">
-                  {f.icon}
-                </div>
-                <h3 className="font-semibold text-zinc-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{f.description}</p>
+
+          {/* 3 highlights — same section, same bg, zero seam */}
+          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: "⚡", title: "Instant AI import",       body: "Search a song name and get a complete chord sheet in seconds — no copying, no pasting." },
+              { icon: "🎯", title: "Precise chord placement", body: "Drag chords to the exact syllable. What you see in the editor is what you perform."     },
+              { icon: "▶️", title: "Follow along, hands-free",  body: "Press play and the sheet scrolls at your pace — just focus on the music. No tapping, no losing your place mid-song."       },
+            ].map((h) => (
+              <div key={h.title} className="flex flex-col items-center text-center px-6 py-8 rounded-2xl"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
+                <span className="text-4xl mb-4">{h.icon}</span>
+                <h3 className="font-bold text-white mb-2">{h.title}</h3>
+                <p className="text-sm text-white/50 leading-relaxed">{h.body}</p>
               </div>
             ))}
           </div>
+          {/* Features heading — inside the dark section so no hard cut */}
+          <div id="features" className="relative w-full max-w-6xl mx-auto pt-16 pb-2">
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">
+              Everything you need
+            </h2>
+            <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-lg">
+              Built for musicians who want to focus on playing, not formatting.
+            </p>
+          </div>
         </section>
 
-        {/* ── Pricing ──────────────────────────────────────────────────────── */}
-        <section id="pricing" className="px-6 py-24" style={{ background: "linear-gradient(180deg, #f8f8ff 0%, #ffffff 100%)" }}>
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-center text-zinc-900 mb-3">Simple pricing</h2>
-            <p className="text-center text-zinc-400 mb-16">Start free. Upgrade when you need more.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {PLAN_ORDER.map((planKey) => {
-                const plan = PLANS[planKey];
-                const isPopular = planKey === "yearly";
-                return (
-                  <div
-                    key={planKey}
-                    className={`relative bg-white rounded-2xl border p-6 flex flex-col shadow-sm ${
-                      isPopular ? "border-indigo-500 ring-2 ring-indigo-500 shadow-indigo-100 shadow-md" : "border-zinc-200"
-                    }`}
-                  >
-                    {isPopular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
-                        Most popular
-                      </div>
-                    )}
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-zinc-900">{plan.name}</h3>
-                      <div className="mt-2 flex items-end gap-1">
-                        <span className="text-3xl font-bold text-zinc-900">${plan.price}</span>
-                        {planKey === "monthly"  && <span className="text-zinc-400 text-sm mb-1">/mo</span>}
-                        {planKey === "yearly"   && <span className="text-zinc-400 text-sm mb-1">/yr</span>}
-                        {planKey === "lifetime" && <span className="text-zinc-400 text-sm mb-1"> once</span>}
-                      </div>
-                      <p className="text-zinc-400 text-sm mt-1">{plan.description}</p>
-                    </div>
-                    <ul className="space-y-2 flex-1 mb-6 text-sm">
-                      {Object.entries(FEATURE_LABELS).map(([key, label]) => {
-                        const val = plan.features[key as keyof typeof plan.features];
-                        const active = val !== false && val !== 0;
-                        return (
-                          <li key={key} className={`flex items-center gap-2 ${active ? "text-zinc-700" : "text-zinc-300"}`}>
-                            <span className={`w-4 text-center font-semibold ${active ? "text-indigo-500" : ""}`}>
-                              {val === true ? "✓" : val === false ? "—" : String(val)}
-                            </span>
-                            <span>{key === "songLimit" ? (val === true ? "Unlimited songs" : `Up to ${val} songs`) : label}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <Link
-                      href={planKey === "free" ? "/songs" : "/pricing"}
-                      className={`block text-center px-6 py-2.5 rounded-full text-sm font-medium transition-colors ${
-                        isPopular
-                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                          : planKey === "free"
-                          ? "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-                          : "bg-zinc-900 text-white hover:bg-zinc-700"
-                      }`}
-                    >
-                      {planKey === "free" ? "Get started free" : "Upgrade"}
-                    </Link>
-                  </div>
-                );
-              })}
+        {/* ── Features cards — light background ────────────────────────────── */}
+        <section className="px-6 pt-10 pb-12" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {features.map((f) => (
+                <FeatureCard key={f.title} {...f} />
+              ))}
             </div>
           </div>
         </section>
 
+        {/* ── Pricing ──────────────────────────────────────────────────────── */}
+        <section id="pricing" className="relative px-6 pt-16 pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
+          {/* Radial glow */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
+          }} />
+          <div className="relative max-w-5xl mx-auto">
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Pricing</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">Plans &amp; pricing</h2>
+            <p className="text-center text-zinc-400 mb-12">Start free. Upgrade when you&apos;re ready.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+              {PLAN_ORDER.map((planKey) => {
+                const plan = PLANS[planKey];
+                const isPopular = planKey === "yearly";
+                const isFree = planKey === "free";
+                return (
+                  <div
+                    key={planKey}
+                    className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm min-h-[480px] ${
+                      isPopular
+                        ? "ring-2 ring-indigo-500 shadow-indigo-100 shadow-md"
+                        : "border border-zinc-200"
+                    }`}
+                  >
+                    {/* Top banner */}
+                    {isPopular && (
+                      <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
+                        Most popular
+                      </div>
+                    )}
+
+                    <div className="px-6 pt-6 pb-4">
+                      <h2 className="text-base font-semibold text-zinc-400 mb-3 uppercase tracking-wide text-xs">{plan.name}</h2>
+                      {isFree ? (
+                        <div className="text-4xl font-extrabold text-zinc-900 mb-1">Free</div>
+                      ) : (
+                        <div className="flex items-end gap-1 mb-1">
+                          <span className="text-4xl font-extrabold text-zinc-900">${plan.price}</span>
+                          <span className="text-zinc-400 text-sm mb-1.5">
+                            {planKey === "monthly" ? "/mo" : "/yr"}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-zinc-400">{plan.description}</p>
+                        {planKey === "yearly" && (
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">Save 27%</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="px-6 py-4 border-t border-zinc-100 flex-1">
+                      <ul className="space-y-2.5">
+                        {Object.keys(FEATURE_LABELS).filter((key) => {
+                          const val = plan.features[key as keyof typeof plan.features];
+                          const active = val !== false && val !== 0;
+                          return isFree ? true : active;
+                        }).map((key) => {
+                          const label = FEATURE_LABELS[key];
+                          const val = plan.features[key as keyof typeof plan.features];
+                          const active = val !== false && val !== 0;
+                          return (
+                            <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-300"}`}>
+                              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
+                                active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-300"
+                              }`}>
+                                {active ? "✓" : "—"}
+                              </span>
+                              {key === "songLimit"
+                                ? val === true ? "Unlimited songs" : `Up to ${val} songs`
+                                : label}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    <div className="px-6 pb-6 pt-4 border-t border-zinc-100 space-y-2">
+                      <Link
+                        href={isFree ? "/songs" : "/pricing"}
+                        className={`block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                          isPopular
+                            ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
+                            : isFree
+                            ? "border border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+                            : "bg-zinc-900 text-white hover:bg-zinc-700"
+                        }`}
+                      >
+                        {isFree ? "Get started free" : "Start 7-day free trial →"}
+                      </Link>
+                      {!isFree && (
+                        <p className="text-center text-[11px] text-zinc-400">
+                          7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-center text-xs text-white/30 mt-8">
+              Secure payments via Stripe · Cancel anytime · No hidden fees
+            </p>
+          </div>
+        </section>
+
         {/* ── CTA ──────────────────────────────────────────────────────────── */}
-        <section className="px-6 py-24 text-center" style={{
-          background: "linear-gradient(160deg, #0f0c29 0%, #302b63 100%)",
-        }}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready to play?
-          </h2>
-          <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed">
-            Join musicians who use ChordSheetMaker to create, organise, and perform their songs.
-          </p>
-          <Link
-            href="/songs"
-            className="inline-block bg-indigo-500 hover:bg-indigo-400 text-white px-10 py-4 rounded-full text-base font-semibold transition-colors shadow-lg shadow-indigo-900/50"
-          >
-            Create your first chord sheet →
-          </Link>
+        <div style={{ background: "rgba(99,102,241,0.25)", height: 1 }} />
+        <section
+          className="relative px-6 py-28 text-center overflow-hidden"
+          style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
+        >
+          {/* Radial glow */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "radial-gradient(ellipse 70% 50% at 50% 80%, rgba(99,102,241,0.3) 0%, transparent 70%)",
+          }} />
+
+          {/* Floating decorative notes */}
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
+            {[
+              { ch: "♩", top: "22%", left: "7%",   size: 52, opacity: 0.12 },
+              { ch: "♫", top: "58%", left: "4%",   size: 68, opacity: 0.09 },
+              { ch: "♪", top: "35%", right: "6%",  size: 46, opacity: 0.10 },
+              { ch: "♬", top: "68%", right: "8%",  size: 64, opacity: 0.09 },
+              { ch: "♩", top: "15%", right: "20%", size: 36, opacity: 0.07 },
+              { ch: "♫", top: "78%", left: "18%",  size: 40, opacity: 0.07 },
+            ].map((n, i) => (
+              <span key={i} className="absolute text-white" style={{
+                top: n.top,
+                left: "left" in n ? n.left : undefined,
+                right: "right" in n ? n.right : undefined,
+                fontSize: n.size,
+                opacity: n.opacity,
+                transform: `rotate(${i % 2 === 0 ? -15 : 12}deg)`,
+              }}>{n.ch}</span>
+            ))}
+          </div>
+
+          <div className="relative max-w-2xl mx-auto">
+            <span className="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 border border-indigo-500/30">
+              Get started free
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
+              Your songs deserve<br />a better home.
+            </h2>
+            <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
+              Create, style and perform your chord sheets — from any device, any stage.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/songs"
+                className="inline-block bg-indigo-500 hover:bg-indigo-400 text-white px-10 py-4 rounded-full text-base font-semibold transition-colors shadow-xl shadow-indigo-900/60"
+              >
+                {session ? "Go to my songs →" : "Start for free →"}
+              </Link>
+              {!session && (
+                <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
+                  See pricing
+                </Link>
+              )}
+            </div>
+            {!session && (
+              <p className="mt-4 text-xs text-white/30">No credit card required · Free forever plan available</p>
+            )}
+          </div>
         </section>
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-zinc-100 px-6 py-8 text-center text-sm text-zinc-400">
-        © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
+      <footer style={{ background: "#0f0c29" }} className="border-t border-white/5 px-6 py-10">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <span className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-indigo-400">Maker</span>
+          </span>
+          <nav className="flex items-center gap-6 text-xs text-white/30">
+            <Link href="#features" className="hover:text-white/60 transition-colors">Features</Link>
+            <Link href="#pricing"  className="hover:text-white/60 transition-colors">Pricing</Link>
+            <Link href="/songs"    className="hover:text-white/60 transition-colors">App</Link>
+          </nav>
+          <p className="text-xs text-white/20">
+            © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
+          </p>
+        </div>
       </footer>
 
       <ScrollToTop />

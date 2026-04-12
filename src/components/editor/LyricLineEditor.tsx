@@ -105,6 +105,13 @@ export default function LyricLineEditor({
   }, []);
 
   function pxToCharPos(text: string, px: number): number {
+    const textWidth = text ? measureWidth(text, lyricSize, lyricFont) : 0;
+    if (px > textWidth) {
+      // Beyond the last character — extend using "M" width as a unit
+      const charWidth = measureWidth("M", lyricSize, lyricFont);
+      const extra = Math.round((px - textWidth) / charWidth);
+      return text.length + Math.max(1, extra);
+    }
     let best = 0, bestDist = Infinity;
     for (let i = 0; i <= text.length; i++) {
       const w = measureWidth(text.slice(0, i), lyricSize, lyricFont);
@@ -176,10 +183,13 @@ export default function LyricLineEditor({
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   const chordLeftPx = (position: number) => {
+    const charWidth = measureWidth("M", lyricSize, lyricFont);
     if (!line.text) {
-      // No lyric text — treat position as a character column index
-      const charWidth = measureWidth("M", lyricSize, lyricFont);
       return position * charWidth;
+    }
+    if (position >= line.text.length) {
+      const textWidth = measureWidth(line.text, lyricSize, lyricFont);
+      return textWidth + (position - line.text.length) * charWidth;
     }
     return measureWidth(line.text.slice(0, position), lyricSize, lyricFont);
   };
@@ -206,7 +216,7 @@ export default function LyricLineEditor({
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
-        className={`relative select-none overflow-hidden transition-all duration-150 ${
+        className={`relative w-full select-none transition-all duration-150 ${
           line.chords.length > 0 || addingAtPx !== null ? "h-6" : "h-0 group-hover/line:h-6"
         } ${activeChord ? "cursor-none" : "cursor-crosshair"}`}
         onClick={handleChordAreaClick}
