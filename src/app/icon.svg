@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Indigo rounded-square background -->
+  <rect width="32" height="32" rx="8" fill="#4f46e5"/>
+
+  <!-- Eighth note: head + stem + flag -->
+  <!-- Note head (tilted ellipse) -->
+  <ellipse cx="11.5" cy="23" rx="5.5" ry="4" fill="white" transform="rotate(-20 11.5 23)"/>
+  <!-- Stem -->
+  <rect x="16.2" y="7" width="2.4" height="17.5" rx="1.2" fill="white"/>
+  <!-- Flag -->
+  <path d="M18.6 7 C23 9 25 14 21 20" stroke="white" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
