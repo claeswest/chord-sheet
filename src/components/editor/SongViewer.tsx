@@ -56,6 +56,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playingRef = useRef(false);
   const [fontSeq, setFontSeq] = useState(0); // increments when fonts finish loading → re-measures chords
   const [imgLoaded, setImgLoaded] = useState(false); // true once bg <img> is painted
   const bgImgRef = useRef<HTMLImageElement>(null);
@@ -120,12 +122,27 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     }
   }, [playing]);
 
-  // Auto-hide controls after 3s of playing
+  // Keep playingRef in sync so revealControls closure is always fresh
+  useEffect(() => { playingRef.current = playing; }, [playing]);
+
+  // Show controls and (re)start the 3s hide timer — only hides when playing
+  const revealControls = useCallback(() => {
+    setShowControls(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (playingRef.current) {
+      hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+    }
+  }, []);
+
+  // When play starts, kick off the timer; when it stops, always show controls
   useEffect(() => {
-    if (!playing) { setShowControls(true); return; }
-    const t = setTimeout(() => setShowControls(false), 3000);
-    return () => clearTimeout(t);
-  }, [playing]);
+    if (playing) {
+      revealControls();
+    } else {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      setShowControls(true);
+    }
+  }, [playing, revealControls]);
 
   // Scroll loop
   useEffect(() => {
@@ -153,28 +170,28 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       if (e.code === "Space") {
         e.preventDefault();
         setPlaying((p) => !p);
-        setShowControls(true);
+        revealControls();
       } else if (e.code === "ArrowRight") {
         e.preventDefault();
         setSpeed((s) => Math.min(MAX_SPEED, s + 1));
-        setShowControls(true);
+        revealControls();
       } else if (e.code === "ArrowLeft") {
         e.preventDefault();
         setSpeed((s) => Math.max(1, s - 1));
-        setShowControls(true);
+        revealControls();
       } else if (e.key === "+" || e.key === "=") {
         e.preventDefault();
         setSizeAdjust((s) => Math.min(14, s + 1));
-        setShowControls(true);
+        revealControls();
       } else if (e.key === "-") {
         e.preventDefault();
         setSizeAdjust((s) => Math.max(-6, s - 1));
-        setShowControls(true);
+        revealControls();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [revealControls]);
 
   // Reset and re-check whenever background image changes.
   // Base64 data URLs load synchronously — onLoad fires before React attaches
@@ -190,8 +207,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
   const togglePlay = useCallback(() => {
     setPlaying((p) => !p);
-    setShowControls(true);
-  }, []);
+    revealControls();
+  }, [revealControls]);
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -211,7 +228,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     <div
       className="relative isolate flex flex-col flex-1 min-h-0"
       style={backgroundStyle(s)}
-      onMouseMove={() => setShowControls(true)}
+      onMouseMove={revealControls}
     >
       {/* ── Background image — fades IN on load, crossfading with the overlay ── */}
       {s.backgroundImage && (
@@ -461,7 +478,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               min={1}
               max={MAX_SPEED}
               value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
+              onChange={(e) => { setSpeed(Number(e.target.value)); revealControls(); }}
               className="w-28 accent-indigo-400"
               title="← → to adjust"
             />
@@ -472,7 +489,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           {/* Font size */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setSizeAdjust(s => Math.max(-6, s - 1))}
+              onClick={() => { setSizeAdjust(s => Math.max(-6, s - 1)); revealControls(); }}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
               title="− to shrink"
             >
@@ -480,7 +497,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             </button>
             <span className="text-white/50 text-xs w-6 text-center tabular-nums">{lyricSize}</span>
             <button
-              onClick={() => setSizeAdjust(s => Math.min(14, s + 1))}
+              onClick={() => { setSizeAdjust(s => Math.min(14, s + 1)); revealControls(); }}
               className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
               title="+ to grow"
             >
