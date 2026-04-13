@@ -6,6 +6,7 @@ import SongViewer from "@/components/editor/SongViewer";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
 import type { SongStyle } from "@/lib/songStyle";
+import Link from "next/link";
 
 export default function SongViewLoader() {
   const searchParams = useSearchParams();
