@@ -151,24 +151,26 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                   {/* Plan name — fixed height */}
                   <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
 
-                  {/* Price — fixed height so all cards align */}
-                  <div className="h-11 flex items-end">
+                  {/* Price row — fixed height */}
+                  <div className="h-11 flex items-end gap-2">
                     {isFree ? (
                       <span className="text-4xl font-extrabold text-zinc-900">Free</span>
                     ) : (
-                      <div className="flex items-end gap-1">
-                        <span className="text-4xl font-extrabold text-zinc-900">${plan.price}</span>
-                        <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
-                      </div>
+                      <>
+                        <div className="flex items-end gap-1">
+                          <span className="text-4xl font-extrabold text-zinc-900">${plan.price}</span>
+                          <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
+                        </div>
+                        {planKey === "yearly" && (
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save 27%</span>
+                        )}
+                      </>
                     )}
                   </div>
 
-                  {/* Description + badge — fixed height */}
-                  <div className="h-7 flex items-center gap-2 mt-1">
+                  {/* Description — fixed height, single line */}
+                  <div className="h-6 flex items-center mt-1">
                     <p className="text-xs text-zinc-400">{plan.description}</p>
-                    {planKey === "yearly" && (
-                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap">Save 27%</span>
-                    )}
                   </div>
                 </div>
 
