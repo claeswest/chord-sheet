@@ -148,7 +148,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // Keyboard shortcuts: Space = play/pause, +/=/ArrowRight = faster, -/ArrowLeft = slower
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target !== document.body) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.code === "Space") {
         e.preventDefault();
         setPlaying((p) => !p);
@@ -434,7 +435,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
           {/* Play / Pause */}
           <button
-            onClick={togglePlay}
+            onClick={(e) => { togglePlay(); (e.currentTarget as HTMLButtonElement).blur(); }}
             className="w-11 h-11 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transition-colors"
             title="Space to toggle"
           >
