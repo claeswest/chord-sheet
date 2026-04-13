@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { SongLine } from "@/types/song";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
@@ -386,6 +387,31 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Top bar — fades with controls */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-30 transition-opacity duration-500 ${
+          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center gap-4 px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
+          {/* Logo */}
+          <span className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-indigo-400">Maker</span>
+          </span>
+          <div className="flex-1" />
+          {/* Songs link */}
+          <Link
+            href="/songs"
+            className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Songs
+          </Link>
         </div>
       </div>
 
