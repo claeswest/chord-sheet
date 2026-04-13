@@ -6,7 +6,6 @@ import SongViewer from "@/components/editor/SongViewer";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
 import type { SongStyle } from "@/lib/songStyle";
-import Link from "next/link";
 
 export default function SongViewLoader() {
   const searchParams = useSearchParams();
@@ -55,15 +54,6 @@ export default function SongViewLoader() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
-      <div className="absolute top-0 left-0 right-0 z-50 bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center gap-4">
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
-        </Link>
-        <div className="w-px h-5 bg-white/20" />
-        <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors">
-          ← Songs
-        </Link>
-      </div>
       <SongViewer
         title={song.title}
         artist={song.artist}
