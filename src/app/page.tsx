@@ -226,11 +226,13 @@ export default async function HomePage() {
                         : "border border-zinc-200"
                     }`}
                   >
-                    {/* Top banner */}
-                    {isPopular && (
+                    {/* Top banner — always rendered so content aligns across all cards */}
+                    {isPopular ? (
                       <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
                         Most popular
                       </div>
+                    ) : (
+                      <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
                     )}
 
                     <div className="px-6 pt-6 pb-4">
