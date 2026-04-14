@@ -132,7 +132,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     setShowControls(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     if (playingRef.current) {
-      hideTimerRef.current = setTimeout(() => setShowControls(false), 1500);
+      hideTimerRef.current = setTimeout(() => setShowControls(false), 1000);
     }
   }, []);
 
