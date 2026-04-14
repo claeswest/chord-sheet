@@ -416,9 +416,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       >
         <div className="flex items-center gap-4 px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo */}
-          <span className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+          <Link href="/" className="text-base font-extrabold tracking-tight text-white drop-shadow hover:opacity-80 transition-opacity" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-400">Maker</span>
-          </span>
+          </Link>
           <div className="flex-1" />
           {/* Songs link */}
           <Link
