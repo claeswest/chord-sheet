@@ -235,7 +235,7 @@ export default function LyricLineEditor({
   })();
 
   return (
-    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-[#302b63]/15">
+    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-[#302b63]/15 border-l-2 border-transparent hover:border-[#302b63]/40">
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
@@ -272,7 +272,7 @@ export default function LyricLineEditor({
               <input
                 autoFocus
                 defaultValue={chord.chord}
-                className="w-16 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm"
+                className="w-16 font-bold text-[#302b63] bg-[#302b63]/10 border border-[#302b63]/30 rounded px-1 outline-none shadow-sm"
                 style={{
                   fontSize: chordSize,
                   fontFamily: chordFont,
@@ -346,7 +346,7 @@ export default function LyricLineEditor({
               if (e.key === "Escape") setAddingAtPx(null);
             }}
             placeholder="Am"
-            className="absolute top-0 w-14 font-bold text-indigo-700 bg-white border border-indigo-400 rounded px-1 outline-none shadow-sm z-10"
+            className="absolute top-0 w-14 font-bold text-[#302b63] bg-[#302b63]/10 border border-[#302b63]/30 rounded px-1 outline-none shadow-sm z-10"
             style={{ fontSize: chordSize, left: addingAtPx, fontFamily: chordFont }}
             onClick={(e) => e.stopPropagation()}
           />
