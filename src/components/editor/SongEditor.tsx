@@ -100,7 +100,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const [mounted, setMounted] = useState(false);
   const [songId, setSongId] = useState(() => initialSong?.id ?? genId());
   const [saveFlash, setSaveFlash] = useState(false);
-  const [shareFlash, setShareFlash] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
   const [showOverflow, setShowOverflow] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -419,25 +418,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   // ── Save / Load ──────────────────────────────────────────────────────────────
 
-  const [shareLoading, setShareLoading] = useState(false);
-
-  const handleShare = useCallback(async () => {
-    setShareLoading(true);
-    try {
-      const res = await fetch("/api/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, artist, lines, style: songStyle }),
-      });
-      const { token } = await res.json();
-      const url = `${window.location.origin}/share/${token}`;
-      await navigator.clipboard.writeText(url);
-      setShareFlash(true);
-      setTimeout(() => setShareFlash(false), 2000);
-    } finally {
-      setShareLoading(false);
-    }
-  }, [title, artist, lines, songStyle]);
 
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
     if (isLoggedIn) {
@@ -721,35 +701,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
                 <line x1="12" y1="11" x2="12" y2="17"/>
                 <polyline points="9 14 12 17 15 14"/>
-              </svg>
-            )}
-          </button>
-
-          {/* Share */}
-          <button
-            onClick={handleShare}
-            disabled={shareLoading}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 ${
-              shareFlash
-                ? "text-green-300 bg-white/10"
-                : "text-white/50 hover:text-white hover:bg-white/10"
-            }`}
-            title="Copy shareable link"
-          >
-            {shareFlash ? (
-              /* checkmark when copied */
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : shareLoading ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
-            ) : (
-              /* link/chain icon */
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg>
             )}
           </button>
