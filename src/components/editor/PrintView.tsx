@@ -127,36 +127,50 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         }
 
         const hasChords = line.chords.length > 0;
+        const isChordOnly = hasChords && !line.text;
+
+        const chordSpans = line.chords.map((chord) => {
+          const charW = measureWidth("M", lyricFontPx, lyricFamily);
+          const leftPx = chord.position >= line.text.length
+            ? measureWidth(line.text, lyricFontPx, lyricFamily) + (chord.position - line.text.length) * charW
+            : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily);
+          return (
+            <span
+              key={chord.id}
+              className="print-chord"
+              style={{
+                left:       leftPx,
+                fontSize:   `${chordPt}pt`,
+                fontFamily: chordFamily,
+                fontWeight: s.chords.bold !== false ? "bold" : "normal",
+                fontStyle:  s.chords.italic ? "italic" : "normal",
+                color:      s.chords.color ?? "#4f46e5",
+              }}
+            >
+              {chord.chord}
+            </span>
+          );
+        });
+
+        if (isChordOnly) {
+          // Chord-only line: just the chord row, no lyric block below
+          return (
+            <div
+              key={line.id}
+              style={{ position: "relative", height: `${chordPt * 1.6}pt`, marginBottom: "2pt" }}
+            >
+              {chordSpans}
+            </div>
+          );
+        }
+
         return (
           <div
             key={line.id}
             className={`print-lyric-block${hasChords ? "" : " no-chords"}`}
           >
             {hasChords && (
-              <div className="print-chord-row">
-                {line.chords.map((chord) => {
-                  const charW = measureWidth("M", lyricFontPx, lyricFamily);
-                  const leftPx = chord.position >= line.text.length
-                    ? measureWidth(line.text, lyricFontPx, lyricFamily) + (chord.position - line.text.length) * charW
-                    : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily);
-                  return (
-                    <span
-                      key={chord.id}
-                      className="print-chord"
-                      style={{
-                        left:       leftPx,
-                        fontSize:   `${chordPt}pt`,
-                        fontFamily: chordFamily,
-                        fontWeight: s.chords.bold !== false ? "bold" : "normal",
-                        fontStyle:  s.chords.italic ? "italic" : "normal",
-                        color:      s.chords.color ?? "#4f46e5",
-                      }}
-                    >
-                      {chord.chord}
-                    </span>
-                  );
-                })}
-              </div>
+              <div className="print-chord-row">{chordSpans}</div>
             )}
             <div
               className="print-lyric"
@@ -168,7 +182,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
                 color:      s.lyrics.color ?? "#27272a",
               }}
             >
-              {line.text || "\u00A0"}
+              {line.text}
             </div>
           </div>
         );
