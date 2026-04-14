@@ -163,7 +163,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
         ctx.drawImage(contentCanvas, 0, srcY, PAGE_W_PX, srcH, 0, PADDING_PX, PAGE_W_PX, srcH);
       }
 
-      pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.97), "JPEG", 0, 0, A4_W_MM, A4_H_MM);
+      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, 0, A4_W_MM, A4_H_MM);
     }
 
     pdf.save(filename);
