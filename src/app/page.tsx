@@ -202,6 +202,32 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* ── Examples ─────────────────────────────────────────────────────── */}
+        <section className="px-6 py-16" style={{ background: "linear-gradient(180deg, #f0efff 0%, #e8e6ff 100%)" }}>
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-extrabold text-center text-zinc-800 mb-2">See what you can create</h2>
+            <p className="text-center text-zinc-500 mb-10 text-sm">Real chord sheets made with ChordSheetMaker — backgrounds, fonts and colours all customised with AI.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-2xl overflow-hidden shadow-xl border border-white/60">
+                <img src="/example1.png" alt="Hotel California by Eagles — example chord sheet" className="w-full object-cover" />
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-3 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-zinc-700">Hotel California</span>
+                  <span className="text-zinc-400 text-xs">·</span>
+                  <span className="text-xs text-zinc-500">Eagles</span>
+                </div>
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-xl border border-white/60">
+                <img src="/example2.png" alt="Perfect by Ed Sheeran — example chord sheet" className="w-full object-cover" />
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-3 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-zinc-700">Perfect</span>
+                  <span className="text-zinc-400 text-xs">·</span>
+                  <span className="text-xs text-zinc-500">Ed Sheeran</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
         <section id="pricing" className="relative px-6 pt-16 pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
           {/* Radial glow */}
