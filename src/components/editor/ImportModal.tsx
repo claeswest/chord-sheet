@@ -226,12 +226,15 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setSearchError(body.error ?? "Search failed");
+        if (res.status === 404 || data.notFound) {
+          setSearchError("Song not found — try a different title or artist name");
+        } else {
+          setSearchError(data.error ?? "Search failed");
+        }
         return;
       }
-      const data = await res.json();
       pendingAutoClean.current = true;
       setText(data.text ?? "");
       setMeta({

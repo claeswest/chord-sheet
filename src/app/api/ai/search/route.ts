@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PROMPT = `You are an expert musician and chord transcriber with deep knowledge of popular songs across all genres and eras.
 
-The user wants a chord sheet for a specific song. Transcribe it from memory as accurately as you can.
+The user wants a chord sheet for a specific song.
 
-Return EXACTLY this format — no extra text, no markdown:
+CRITICAL RULE — NO HALLUCINATION:
+- Only return a chord sheet if you are CERTAIN you know the real lyrics and chords for this exact song.
+- If you are not sure, if the song is too obscure, or if you would have to guess or invent ANY lyrics or chords — respond with exactly: NOT_FOUND
+- Do NOT make up, approximate, or invent lyrics or chords. A wrong answer is worse than no answer.
+- If the song exists but you only know part of it, respond with: NOT_FOUND
+
+If you are certain, return EXACTLY this format — no extra text, no markdown:
 
 Title: {full song title}
 Artist: {artist / band name}
@@ -34,7 +40,6 @@ RULES:
 - Include all major sections (intro, verses, choruses, bridge, outro if applicable)
 - Use standard chord notation: Am, G7, Cmaj7, D/F#, Bb, F#m, Dsus2, etc.
 - If the song has a capo, note it on the first line as: Capo {fret}
-- If you are not confident about a song or it is very obscure, say so in a note at the top but still do your best
 - No markdown, no explanations, no extra text outside the format above`;
 
 export async function POST(req: NextRequest) {
@@ -74,6 +79,11 @@ export async function POST(req: NextRequest) {
   console.log("Gemini search response — parts count:", parts.length);
   console.log("Gemini search response — raw length:", raw.length);
   if (!raw) console.error("Gemini search empty response — full data:", JSON.stringify(data).slice(0, 2000));
+
+  // If the AI couldn't find the song, return a clear not-found response
+  if (raw.trim().startsWith("NOT_FOUND") || raw.trim() === "NOT_FOUND") {
+    return NextResponse.json({ notFound: true }, { status: 404 });
+  }
 
   // Parse Title / Artist from first few lines (same logic as /api/ai/parse)
   const rawLines = raw.split(/\r?\n/);
