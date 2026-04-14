@@ -336,7 +336,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             {lines.map((line) => {
               if (line.type === "section") {
                 const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
-                const sectionSize = s.section?.fontSize ?? (lyricSize - 3);
+                const sectionSize = (s.section?.fontSize ?? (s.lyrics.fontSize ?? 14) - 3) + sizeAdjust;
                 const sectionBold = s.section?.bold ?? true;
                 const sectionItalic = s.section?.italic ?? false;
                 const align = s.sectionAlign ?? "left";
