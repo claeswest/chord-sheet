@@ -153,13 +153,28 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         });
 
         if (isChordOnly) {
-          // Chord-only line: just the chord row, no lyric block below
+          // Chord-only line: inline flow — no absolute positioning, no lyric block
           return (
-            <div
-              key={line.id}
-              style={{ position: "relative", height: `${chordPt * 1.6}pt`, marginBottom: "2pt" }}
-            >
-              {chordSpans}
+            <div key={line.id} style={{ marginBottom: "4pt" }}>
+              {line.chords
+                .slice()
+                .sort((a, b) => a.position - b.position)
+                .map((chord) => (
+                  <span
+                    key={chord.id}
+                    style={{
+                      display:     "inline-block",
+                      marginRight: "1em",
+                      fontSize:    `${chordPt}pt`,
+                      fontFamily:  chordFamily,
+                      fontWeight:  s.chords.bold !== false ? "bold" : "normal",
+                      fontStyle:   s.chords.italic ? "italic" : "normal",
+                      color:       s.chords.color ?? "#4f46e5",
+                    }}
+                  >
+                    {chord.chord}
+                  </span>
+                ))}
             </div>
           );
         }
