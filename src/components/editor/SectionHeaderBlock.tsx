@@ -32,7 +32,7 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
   };
 
   return (
-    <div className="group/section flex items-center gap-3 pt-6 pb-1 px-1 rounded-lg transition-colors hover:bg-white/40">
+    <div className="group/section flex items-center gap-3 pt-6 pb-1 px-1 rounded-lg transition-colors hover:bg-white/20">
       {editing ? (
         <>
           <input

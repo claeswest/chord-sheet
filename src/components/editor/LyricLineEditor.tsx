@@ -235,7 +235,7 @@ export default function LyricLineEditor({
   })();
 
   return (
-    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-white/40">
+    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-white/20">
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
