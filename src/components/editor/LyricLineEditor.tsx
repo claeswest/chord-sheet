@@ -369,6 +369,11 @@ export default function LyricLineEditor({
         )}
       </div>
 
+      {/* Divider between chord row and lyric row */}
+      {(line.chords.length > 0 || addingAtPx !== null) && (
+        <div className="w-full h-px bg-[#302b63]/10 mb-0.5" />
+      )}
+
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1">
         <input
