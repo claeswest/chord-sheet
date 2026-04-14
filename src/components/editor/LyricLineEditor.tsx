@@ -301,7 +301,7 @@ export default function LyricLineEditor({
             ) : (
               <>
                 <span
-                  className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-[#302b63]/15 rounded"
+                  className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-white/50 rounded"
                   style={{
                     fontSize: chordSize,
                     fontFamily: chordFont,
