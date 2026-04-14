@@ -153,10 +153,23 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         });
 
         if (isChordOnly) {
-          // Chord-only line: same structure as regular lines but no lyric div
+          // Chord-only line: identical structure to regular lines, but lyric text is invisible
+          // This ensures html2canvas renders chords in the same layout context as working lines
           return (
             <div key={line.id} className="print-lyric-block">
               <div className="print-chord-row">{chordSpans}</div>
+              <div
+                className="print-lyric"
+                style={{
+                  fontSize:   `${lyricPt}pt`,
+                  fontFamily: lyricFamily,
+                  color:      "transparent",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                }}
+              >
+                &nbsp;
+              </div>
             </div>
           );
         }
