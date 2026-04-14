@@ -56,6 +56,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [sizeAdjust, setSizeAdjust] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [shareFlash, setShareFlash] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
   const [fontSeq, setFontSeq] = useState(0); // increments when fonts finish loading → re-measures chords
@@ -209,6 +211,30 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     setPlaying((p) => !p);
     revealControls();
   }, [revealControls]);
+
+  const handleShare = useCallback(async () => {
+    // If already on a share page, just copy the current URL
+    if (window.location.pathname.startsWith("/share/")) {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareFlash(true);
+      setTimeout(() => setShareFlash(false), 2000);
+      return;
+    }
+    setShareLoading(true);
+    try {
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, artist, lines, style: songStyle }),
+      });
+      const { token } = await res.json();
+      await navigator.clipboard.writeText(`${window.location.origin}/share/${token}`);
+      setShareFlash(true);
+      setTimeout(() => setShareFlash(false), 2000);
+    } finally {
+      setShareLoading(false);
+    }
+  }, [title, artist, lines, songStyle]);
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -449,6 +475,34 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               ← Edit <kbd className="text-xs text-white/40 font-mono">[E]</kbd>
             </button>
           )}
+
+          {/* Share / copy link */}
+          <button
+            onClick={handleShare}
+            disabled={shareLoading}
+            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-2 disabled:opacity-50 ${
+              shareFlash
+                ? "text-green-300 border-green-400/40"
+                : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
+            }`}
+            title="Copy shareable link"
+          >
+            {shareFlash ? (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : shareLoading ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            )}
+            {shareFlash ? "Copied!" : "Share"}
+          </button>
 
           {/* Play / Pause */}
           <button
