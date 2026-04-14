@@ -16,11 +16,13 @@ interface Props {
 
 export default function ShareViewer({ title, artist, lines, style }: Props) {
   return (
-    <SongViewer
-      title={title}
-      artist={artist}
-      lines={lines}
-      songStyle={style}
-    />
+    <div className="h-screen flex flex-col overflow-hidden">
+      <SongViewer
+        title={title}
+        artist={artist}
+        lines={lines}
+        songStyle={style}
+      />
+    </div>
   );
 }
