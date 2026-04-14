@@ -70,29 +70,52 @@ export default function LyricLineEditor({
   const [editingChordId, setEditingChordId] = useState<string | null>(null);
 
   // Drag state via refs to avoid stale closures
+  // startMouseX = clientX when drag began; startPixelX = chord's pixel position at that moment
   const draggingRef = useRef<{
     chordId: string;
-    startX: number;
-    startPos: number;
+    startMouseX: number;
+    startPixelX: number;
   } | null>(null);
   const onMoveChordRef = useRef(onMoveChord);
   useEffect(() => { onMoveChordRef.current = onMoveChord; }, [onMoveChord]);
 
-  // Keep style refs up to date for use in event handlers
+  // Keep style + text refs up to date for use in event handlers
   const lyricSizeRef = useRef(lyricSize);
   const lyricFontRef = useRef(lyricFont);
+  const lineTextRef  = useRef(line.text);
   useEffect(() => { lyricSizeRef.current = lyricSize; }, [lyricSize]);
   useEffect(() => { lyricFontRef.current = lyricFont; }, [lyricFont]);
+  useEffect(() => { lineTextRef.current  = line.text;  }, [line.text]);
 
   // Global mouse listeners for drag
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const d = draggingRef.current;
       if (!d || !chordAreaRef.current) return;
-      const charWidth = measureWidth("M", lyricSizeRef.current, lyricFontRef.current);
-      const dx = e.clientX - d.startX;
-      const newPos = Math.max(0, d.startPos + Math.round(dx / charWidth));
-      onMoveChordRef.current(d.chordId, newPos);
+      const size = lyricSizeRef.current;
+      const font = lyricFontRef.current;
+      const text = lineTextRef.current;
+      const charW = measureWidth("M", size, font);
+
+      // Target pixel = where the chord should be now
+      const targetPx = d.startPixelX + (e.clientX - d.startMouseX);
+
+      // Map pixel → character position (same logic as pxToCharPos)
+      let newPos: number;
+      const textWidth = text ? measureWidth(text, size, font) : 0;
+      if (targetPx > textWidth) {
+        const extra = Math.round((targetPx - textWidth) / charW);
+        newPos = text.length + Math.max(0, extra);
+      } else {
+        let best = 0, bestDist = Infinity;
+        for (let i = 0; i <= text.length; i++) {
+          const w = measureWidth(text.slice(0, i), size, font);
+          const dist = Math.abs(w - targetPx);
+          if (dist < bestDist) { bestDist = dist; best = i; }
+        }
+        newPos = best;
+      }
+      onMoveChordRef.current(d.chordId, Math.max(0, newPos));
     };
     const handleMouseUp = () => { draggingRef.current = null; };
 
@@ -240,8 +263,8 @@ export default function LyricLineEditor({
               e.stopPropagation();
               draggingRef.current = {
                 chordId: chord.id,
-                startX: e.clientX,
-                startPos: chord.position,
+                startMouseX: e.clientX,
+                startPixelX: chordLeftPx(chord.position),
               };
             }}
           >
