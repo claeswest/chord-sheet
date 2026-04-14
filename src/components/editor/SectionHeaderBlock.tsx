@@ -82,69 +82,72 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
         <div className="flex-1 h-px" style={{ background: color, opacity: 0.25 }} />
       )}
 
-      {/* Add line below */}
-      <button
-        onClick={onAddLineAfter}
-        className="opacity-0 group-hover/section:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
-        tabIndex={-1}
-        title="Add lyric line below"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-      </button>
-
-      {/* Add section below */}
-      <div className="relative opacity-0 group-hover/section:opacity-100 transition-all shrink-0">
+      {/* Action icons — always pushed to the right */}
+      <div className="ml-auto flex items-center shrink-0">
+        {/* Add line below */}
         <button
-          onClick={() => setShowSectionPicker((v) => !v)}
-          className="text-zinc-400 hover:text-indigo-600 transition-colors rounded-md p-1"
+          onClick={onAddLineAfter}
+          className="opacity-0 group-hover/section:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
           tabIndex={-1}
-          title="Insert section below"
+          title="Add lyric line below"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="1"/>
-            <path d="M12 12v4M10 14h4"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14"/>
           </svg>
         </button>
-        {showSectionPicker && (
-          <div className="absolute right-0 bottom-full mb-1 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50 flex flex-col min-w-[120px]">
-            {QUICK_LABELS.map((label) => (
-              <button
-                key={label}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { onAddSectionAfter(label); setShowSectionPicker(false); }}
-                className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-indigo-600 transition-colors"
-              >
-                + {label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
 
-      <button
-        onClick={onDuplicate}
-        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
-        tabIndex={-1}
-        title="Duplicate section"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" />
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-        </svg>
-      </button>
-      <button
-        onClick={onDelete}
-        className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-red-500 transition-all rounded-md p-1"
-        tabIndex={-1}
-        title="Delete section"
-      >
-        <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M2 2l8 8M10 2l-8 8"/>
-        </svg>
-      </button>
+        {/* Add section below */}
+        <div className="relative opacity-0 group-hover/section:opacity-100 transition-all shrink-0">
+          <button
+            onClick={() => setShowSectionPicker((v) => !v)}
+            className="text-zinc-400 hover:text-indigo-600 transition-colors rounded-md p-1"
+            tabIndex={-1}
+            title="Insert section below"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path d="M12 12v4M10 14h4"/>
+            </svg>
+          </button>
+          {showSectionPicker && (
+            <div className="absolute right-0 bottom-full mb-1 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50 flex flex-col min-w-[120px]">
+              {QUICK_LABELS.map((label) => (
+                <button
+                  key={label}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onAddSectionAfter(label); setShowSectionPicker(false); }}
+                  className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-indigo-600 transition-colors"
+                >
+                  + {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onDuplicate}
+          className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all rounded-md p-1"
+          tabIndex={-1}
+          title="Duplicate section"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </button>
+        <button
+          onClick={onDelete}
+          className="opacity-0 group-hover/section:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-red-500 transition-all rounded-md p-1"
+          tabIndex={-1}
+          title="Delete section"
+        >
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M2 2l8 8M10 2l-8 8"/>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
