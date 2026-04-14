@@ -414,16 +414,16 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <div className="flex items-center gap-4 px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
+        <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo */}
-          <Link href="/songs" className="text-base font-extrabold tracking-tight text-white hover:opacity-80 transition-opacity px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
+          <Link href="/songs" className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-300">Maker</span>
           </Link>
           <div className="flex-1" />
           {/* Songs link */}
           <Link
             href="/songs"
-            className="text-white/90 hover:opacity-80 transition-opacity text-sm font-semibold px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm flex items-center gap-1.5"
+            className="text-sm font-bold text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-sm flex items-center gap-1.5"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
