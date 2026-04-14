@@ -371,7 +371,7 @@ export default function LyricLineEditor({
 
       {/* Divider between chord row and lyric row */}
       {(line.chords.length > 0 || addingAtPx !== null) && (
-        <div className="w-full h-px bg-[#302b63]/10 mb-0.5" />
+        <div className="w-full h-px bg-[#302b63]/10 mb-0.5 opacity-0 group-hover/line:opacity-100 transition-opacity" />
       )}
 
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
