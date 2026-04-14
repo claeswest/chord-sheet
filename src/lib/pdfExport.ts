@@ -76,10 +76,10 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
 
   const A4_W_CSS = Math.round(A4_W_MM * (DPI / 25.4));
 
-  // Build clone off-screen to the left (fixed top:0 so Y coords are valid)
+  // Build clone off-screen above the viewport (left:0 so X coords stay positive)
   const wrapper = document.createElement("div");
   wrapper.style.cssText = [
-    "position:fixed", "top:0", `left:-${A4_W_CSS + 200}px`,
+    "position:fixed", "left:0", "top:-99999px",
     `width:${A4_W_CSS}px`, "pointer-events:none",
     "margin:0", "padding:0", "border:none", "background:transparent", "overflow:visible",
   ].join(";");
@@ -113,7 +113,7 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       width:           A4_W_CSS,
       windowWidth:     A4_W_CSS,
       scrollX:         0,
-      scrollY:         0,
+      scrollY:         99999,
       backgroundColor: null,
     });
 
