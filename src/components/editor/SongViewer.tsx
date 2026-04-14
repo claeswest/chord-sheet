@@ -423,7 +423,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           {/* Songs link */}
           <Link
             href="/songs"
-            className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5"
+            className="text-white/90 hover:opacity-80 transition-opacity text-sm font-semibold px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm flex items-center gap-1.5"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
