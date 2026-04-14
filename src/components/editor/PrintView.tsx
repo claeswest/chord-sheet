@@ -153,28 +153,10 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         });
 
         if (isChordOnly) {
-          // Chord-only line: inline flow — no absolute positioning, no lyric block
+          // Chord-only line: same structure as regular lines but no lyric div
           return (
-            <div key={line.id} style={{ marginBottom: "4pt" }}>
-              {line.chords
-                .slice()
-                .sort((a, b) => a.position - b.position)
-                .map((chord) => (
-                  <span
-                    key={chord.id}
-                    style={{
-                      display:     "inline-block",
-                      marginRight: "1em",
-                      fontSize:    `${chordPt}pt`,
-                      fontFamily:  chordFamily,
-                      fontWeight:  s.chords.bold !== false ? "bold" : "normal",
-                      fontStyle:   s.chords.italic ? "italic" : "normal",
-                      color:       s.chords.color ?? "#4f46e5",
-                    }}
-                  >
-                    {chord.chord}
-                  </span>
-                ))}
+            <div key={line.id} className="print-lyric-block">
+              <div className="print-chord-row">{chordSpans}</div>
             </div>
           );
         }
