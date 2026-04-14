@@ -22,6 +22,7 @@ export default function ShareViewer({ title, artist, lines, style }: Props) {
         artist={artist}
         lines={lines}
         songStyle={style}
+        isShared
       />
     </div>
   );

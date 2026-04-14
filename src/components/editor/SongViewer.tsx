@@ -30,6 +30,7 @@ interface Props {
   songStyle?: SongStyle;
   songId?: string;
   loading?: boolean; // parent can keep overlay up while fetching data
+  isShared?: boolean; // hides the share button on public share pages
 }
 
 const SPEED_PX_PER_TICK: Record<number, number> = {
@@ -41,7 +42,7 @@ const SPEED_PX_PER_TICK: Record<number, number> = {
 const MAX_SPEED = 20;
 const TICK_MS = 40; // ~25fps
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -476,8 +477,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             </button>
           )}
 
-          {/* Share / copy link */}
-          <button
+          {/* Share / copy link — hidden on public share pages */}
+          {!isShared && <button
             onClick={handleShare}
             disabled={shareLoading}
             className={`text-sm px-3 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-2 disabled:opacity-50 ${
@@ -502,7 +503,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               </svg>
             )}
             {shareFlash ? "Copied!" : "Share"}
-          </button>
+          </button>}
 
           {/* Play / Pause */}
           <button
