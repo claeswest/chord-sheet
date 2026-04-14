@@ -301,7 +301,7 @@ export default function LyricLineEditor({
             ) : (
               <>
                 <span
-                  className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-indigo-50 rounded"
+                  className="whitespace-nowrap cursor-grab active:cursor-grabbing px-0.5 hover:bg-[#302b63]/15 rounded"
                   style={{
                     fontSize: chordSize,
                     fontFamily: chordFont,
@@ -321,7 +321,7 @@ export default function LyricLineEditor({
                   data-chord-delete
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => { e.stopPropagation(); onDeleteChord(chord.id); }}
-                  className="opacity-0 group-hover/chord:opacity-100 transition-opacity text-zinc-400 hover:text-red-500 leading-none ml-0.5"
+                  className="opacity-0 group-hover/chord:opacity-100 transition-opacity text-zinc-600 hover:text-red-500 leading-none ml-0.5"
                   title="Remove chord"
                   tabIndex={-1}
                 >
@@ -393,7 +393,7 @@ export default function LyricLineEditor({
         {/* Add line below */}
         <button
           onClick={onAddLineAfter}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Add line below (Enter)"
         >
@@ -405,7 +405,7 @@ export default function LyricLineEditor({
         <div className="relative opacity-0 group-hover/line:opacity-100 transition-all shrink-0">
           <button
             onClick={() => setShowSectionPicker((v) => !v)}
-            className="text-zinc-400 hover:text-indigo-600 transition-colors rounded-md p-1"
+            className="text-zinc-600 hover:text-indigo-600 transition-colors rounded-md p-1"
             tabIndex={-1}
             title="Insert section below"
           >
@@ -432,7 +432,7 @@ export default function LyricLineEditor({
         </div>
         <button
           onClick={onDuplicate}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Duplicate line"
         >
@@ -443,7 +443,7 @@ export default function LyricLineEditor({
         </button>
         <button
           onClick={onDelete}
-          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-400 hover:text-red-500 transition-all shrink-0 rounded-md p-1"
+          className="opacity-0 group-hover/line:opacity-100 group-hover/row:opacity-100 text-zinc-600 hover:text-red-500 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Delete line"
         >
