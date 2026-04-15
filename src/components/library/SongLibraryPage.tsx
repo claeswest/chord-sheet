@@ -129,6 +129,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   // Expanded row menu (small screens)
   const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
 
+  // Sidebar open/close
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   // Ensure drag highlight never gets stuck if the browser skips onDragEnd
   useEffect(() => {
     const clear = () => { setDragSongId(null); setDragOverSongId(null); setDragOverCategoryId(null); };
@@ -387,7 +390,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       )}
 
       {/* Header */}
-      <header className="bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center shrink-0">
+      <header className="bg-[#302b63] border-b border-white/10 px-4 h-14 flex items-center gap-3 shrink-0">
+        {isLoggedIn && (
+          <button
+            onClick={() => setSidebarOpen((o) => !o)}
+            className="p-1.5 rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <path d="M3 18h18v-2H3v2Zm0-5h18v-2H3v2Zm0-7v2h18V6H3Z"/>
+            </svg>
+          </button>
+        )}
         <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
@@ -396,8 +410,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar — always visible; guests see a sign-in pitch instead of categories */}
-        <aside className="w-96 shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3">
+        {/* Sidebar — collapsible */}
+        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-56" : "w-0 py-0 border-r-0"}`}>
         {isLoggedIn ? (<>
             <button
               onClick={() => selectCategory(null)}
