@@ -164,20 +164,20 @@ export default async function HomePage() {
             Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
           </p>
 
-          {/* 3 highlights — horizontal on mobile, vertical on sm+ */}
-          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* 3 highlights — horizontal until md, then 3-column vertical */}
+          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { icon: "⚡", title: "Instant AI import",       body: "Search a song name and get a complete chord sheet in seconds — no copying, no pasting." },
               { icon: "🎯", title: "Precise chord placement", body: "Drag chords to the exact syllable. What you see in the editor is what you perform."     },
               { icon: "▶️", title: "Follow along, hands-free",  body: "Press play and the sheet scrolls at your pace — just focus on the music. No tapping, no losing your place mid-song." },
             ].map((h) => (
               <div key={h.title}
-                className="flex flex-row sm:flex-col items-center gap-4 sm:gap-0 text-left sm:text-center px-4 sm:px-6 py-4 sm:py-8 rounded-2xl"
+                className="flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl"
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
-                <span className="text-3xl sm:text-4xl sm:mb-4 shrink-0">{h.icon}</span>
+                <span className="text-3xl md:text-4xl md:mb-4 shrink-0">{h.icon}</span>
                 <div>
-                  <h3 className="font-bold text-white mb-1 sm:mb-2 text-sm sm:text-base">{h.title}</h3>
-                  <p className="text-xs sm:text-sm text-white/50 leading-relaxed">{h.body}</p>
+                  <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
+                  <p className="text-xs md:text-sm text-white/50 leading-relaxed">{h.body}</p>
                 </div>
               </div>
             ))}
