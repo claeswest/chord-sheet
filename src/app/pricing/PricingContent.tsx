@@ -75,9 +75,9 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
         {userName && <UserMenu userName={userName} userImage={userImage} />}
       </header>
 
-      {/* Hero */}
+      {/* Hero — extra bottom padding so cards overlap nicely */}
       <div
-        className="relative py-12 text-center px-6"
+        className="relative py-14 pb-20 text-center px-6"
         style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
       >
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -111,7 +111,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
       </div>
 
       {/* Cards */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 -mt-8 pb-10">
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 -mt-10 pb-12">
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-6 text-center">{error}</p>
         )}
@@ -126,128 +126,129 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
             return (
               <div
                 key={planKey}
-                className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm md:min-h-[480px] ${
+                className={`relative bg-white rounded-2xl flex flex-col overflow-hidden transition-all ${
                   isPopular
-                    ? "ring-2 ring-indigo-500 shadow-indigo-100 shadow-md"
+                    ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-100 md:-mt-4 md:mb-4"
                     : isCurrent
-                    ? "ring-2 ring-emerald-400"
-                    : "border border-zinc-200"
+                    ? "ring-2 ring-emerald-400 shadow-md md:min-h-[460px]"
+                    : "border border-zinc-200 shadow-sm md:min-h-[460px]"
                 }`}
               >
-                {/* Top banner — always rendered to keep content aligned across all cards */}
-                {isCurrent ? (
-                  <div className="bg-emerald-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
-                    Your current plan
-                  </div>
-                ) : isPopular ? (
-                  <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
-                    Most popular
-                  </div>
-                ) : (
-                  <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
-                )}
+                  {/* Top banner */}
+                  {isCurrent ? (
+                    <div className="bg-emerald-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
+                      Your current plan
+                    </div>
+                  ) : isPopular ? (
+                    <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
+                      Most popular
+                    </div>
+                  ) : (
+                    <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
+                  )}
 
-                <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4">
-                  {/* Plan name — fixed height */}
-                  <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
+                  <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 text-center">
+                    <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
 
-                  {/* Price row — fixed height */}
-                  <div className="h-11 flex items-end gap-2">
-                    {isFree ? (
-                      <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">Free</span>
+                    <div className="h-11 flex items-end justify-center gap-2">
+                      {isFree ? (
+                        <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">Free</span>
+                      ) : (
+                        <>
+                          <div className="flex items-end gap-1">
+                            <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">${plan.price}</span>
+                            <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
+                          </div>
+                          {planKey === "yearly" && (
+                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save 27%</span>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="h-6 flex items-center justify-center mt-1">
+                      <p className="text-xs text-zinc-400">{plan.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Features — all plans show all 6 rows for visual consistency */}
+                  <div className="px-4 sm:px-6 py-4 border-t border-zinc-100 flex-1">
+                    <ul className="space-y-2.5">
+                      {FEATURES.map(({ key, label }) => {
+                        const val = plan.features[key as keyof typeof plan.features];
+                        const active = val !== false && val !== 0;
+                        return (
+                          <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-300"}`}>
+                            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
+                              active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-300"
+                            }`}>
+                              {active ? "✓" : "—"}
+                            </span>
+                            {key === "songLimit"
+                              ? val === true ? "Unlimited songs" : `Up to ${val} songs`
+                              : label}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-4 border-t border-zinc-100 space-y-2">
+                    {isCurrent ? (
+                      <Link
+                        href="/account"
+                        className="block w-full text-center py-2.5 rounded-full text-sm font-medium border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      >
+                        Manage plan
+                      </Link>
+                    ) : isFree ? (
+                      <Link
+                        href="/songs"
+                        className="block w-full text-center py-2.5 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                      >
+                        Get started free
+                      </Link>
                     ) : (
                       <>
-                        <div className="flex items-end gap-1">
-                          <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">${plan.price}</span>
-                          <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
-                        </div>
-                        {planKey === "yearly" && (
-                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save 27%</span>
+                        <button
+                          onClick={() => handleUpgrade(planKey)}
+                          disabled={loading === planKey}
+                          className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors disabled:opacity-50 ${
+                            isPopular
+                              ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
+                              : "bg-zinc-900 text-white hover:bg-zinc-700"
+                          }`}
+                        >
+                          {loading === planKey
+                            ? "Redirecting…"
+                            : currentPlan !== "free"
+                            ? `Upgrade to ${planKey} →`
+                            : "Start 7-day free trial →"}
+                        </button>
+                        {currentPlan === "free" && (
+                          <p className="text-center text-[11px] text-zinc-400">
+                            7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
+                          </p>
                         )}
                       </>
                     )}
                   </div>
-
-                  {/* Description — fixed height, single line */}
-                  <div className="h-6 flex items-center mt-1">
-                    <p className="text-xs text-zinc-400">{plan.description}</p>
-                  </div>
                 </div>
-
-                <div className="px-4 sm:px-6 py-4 border-t border-zinc-100 flex-1">
-                  <ul className="space-y-2.5">
-                    {FEATURES.filter(({ key }) => {
-                      // Hide locked features on paid plans — only show as upsell on free
-                      const val = plan.features[key as keyof typeof plan.features];
-                      const active = val !== false && val !== 0;
-                      return isFree ? true : active;
-                    }).map(({ key, label }) => {
-                      const val = plan.features[key as keyof typeof plan.features];
-                      const active = val !== false && val !== 0;
-                      return (
-                        <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-300"}`}>
-                          <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
-                            active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-300"
-                          }`}>
-                            {active ? "✓" : "—"}
-                          </span>
-                          {key === "songLimit"
-                            ? val === true ? "Unlimited songs" : `Up to ${val} songs`
-                            : label}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-
-                <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-4 border-t border-zinc-100 space-y-2">
-                  {isCurrent ? (
-                    <Link
-                      href="/account"
-                      className="block w-full text-center py-2.5 rounded-full text-sm font-medium border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
-                    >
-                      Manage plan
-                    </Link>
-                  ) : isFree ? (
-                    <Link
-                      href="/songs"
-                      className="block w-full text-center py-2.5 rounded-full text-sm font-medium border border-zinc-200 text-zinc-500 hover:bg-zinc-50 transition-colors"
-                    >
-                      Get started free
-                    </Link>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => handleUpgrade(planKey)}
-                        disabled={loading === planKey}
-                        className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors disabled:opacity-50 ${
-                          isPopular
-                            ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                            : "bg-zinc-900 text-white hover:bg-zinc-700"
-                        }`}
-                      >
-                        {loading === planKey
-                          ? "Redirecting…"
-                          : currentPlan !== "free"
-                          ? `Upgrade to ${planKey} →`
-                          : "Start 7-day free trial →"}
-                      </button>
-                      {currentPlan === "free" && (
-                        <p className="text-center text-[11px] text-zinc-400">
-                          7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
 
-        <p className="text-center text-xs text-zinc-400 mt-8">
-          Secure payments via Stripe · Cancel anytime · No hidden fees
-        </p>
+        {/* Trust line */}
+        <div className="flex items-center justify-center gap-2 mt-10 text-sm text-zinc-500">
+          <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Secure payments via Stripe</span>
+          <span className="text-zinc-300">·</span>
+          <span>Cancel anytime</span>
+          <span className="text-zinc-300">·</span>
+          <span>No hidden fees</span>
+        </div>
       </div>
     </div>
   );
