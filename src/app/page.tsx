@@ -265,8 +265,8 @@ export default async function HomePage() {
           <div className="relative max-w-5xl mx-auto">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Pricing</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">Plans &amp; pricing</h2>
-            <p className="text-center text-zinc-400 mb-12">Start free. Upgrade when you&apos;re ready.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            <p className="text-center text-zinc-400 mb-8 sm:mb-12">Start free. Upgrade when you&apos;re ready.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
               {PLAN_ORDER.map((planKey) => {
                 const plan = PLANS[planKey];
                 const isPopular = planKey === "yearly";
@@ -316,7 +316,7 @@ export default async function HomePage() {
                     </div>
 
                     <div className="px-6 py-4 border-t border-zinc-100 flex-1 flex flex-col items-center sm:items-start">
-                      <ul className="space-y-2.5 w-full max-w-[200px] sm:max-w-none">
+                      <ul className="space-y-2.5 w-full max-w-[240px] sm:max-w-none">
                         {Object.keys(FEATURE_LABELS).filter((key) => {
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
