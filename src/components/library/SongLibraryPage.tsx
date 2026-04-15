@@ -126,6 +126,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   // Drag and drop — reorder within category
   const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
 
+  // Ensure drag highlight never gets stuck if the browser skips onDragEnd
+  useEffect(() => {
+    const clear = () => { setDragSongId(null); setDragOverSongId(null); setDragOverCategoryId(null); };
+    window.addEventListener("dragend", clear);
+    window.addEventListener("drop", clear);
+    return () => { window.removeEventListener("dragend", clear); window.removeEventListener("drop", clear); };
+  }, []);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
