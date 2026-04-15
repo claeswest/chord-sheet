@@ -854,16 +854,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                     </button>
                   </div>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[190px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors p-0">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[160px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors p-0">
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[320px] shrink-0">Categories</span>}
-                  <button onClick={() => handleSortClick("date")} className="hidden md:flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider w-32 shrink-0 hover:text-zinc-800 transition-colors p-0">
-                    Updated
-                    {sortBy === "date" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
-                  </button>
-                  <div className="hidden lg:block w-[120px] shrink-0 ml-4" />
+                  {isLoggedIn && <span className="hidden xl:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[280px] shrink-0">Categories</span>}
+                  <div className="hidden xl:block w-[100px] shrink-0 ml-4" />
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
@@ -952,13 +948,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </div>
 
                       {/* Artist */}
-                      <div className="hidden sm:block w-[190px] shrink-0 text-xs truncate text-zinc-500">
+                      <div className="hidden sm:block w-[160px] shrink-0 text-xs truncate text-zinc-500">
                         {song.artist || <span className="text-zinc-300">—</span>}
                       </div>
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-nowrap gap-1 w-[320px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="hidden xl:flex flex-nowrap gap-1 w-[280px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -982,15 +978,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* Date */}
-                      <div className="hidden md:flex shrink-0 items-center w-32">
-                        <span className="text-xs text-zinc-400 whitespace-nowrap tabular-nums">
-                          {formatDate(song.updatedAt)}
-                        </span>
-                      </div>
-
                       {/* Actions — grouped pill */}
-                      <div className="hidden lg:flex shrink-0 items-center justify-end ml-4 w-[120px]" onClick={(e) => e.stopPropagation()}>
+                      <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
                         {/* View */}
                         <Link href={viewUrl} title="View"
