@@ -129,28 +129,42 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         const hasChords = line.chords.length > 0;
         const isChordOnly = hasChords && !line.text;
 
-        const chordSpans = line.chords.map((chord) => {
-          const charW = measureWidth("M", lyricFontPx, lyricFamily);
-          const leftPx = chord.position >= line.text.length
+        // Compute raw positions from lyric offsets, then push overlapping chords rightward
+        const CHORD_GAP = 6;
+        const chordFontPx = chordPt * PT_TO_PX;
+        const charW = measureWidth("M", lyricFontPx, lyricFamily);
+        const rawPositions = line.chords.map((chord) => ({
+          id: chord.id,
+          chord: chord.chord,
+          px: chord.position >= line.text.length
             ? measureWidth(line.text, lyricFontPx, lyricFamily) + (chord.position - line.text.length) * charW
-            : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily);
-          return (
-            <span
-              key={chord.id}
-              className="print-chord"
-              style={{
-                left:       leftPx,
-                fontSize:   `${chordPt}pt`,
-                fontFamily: chordFamily,
-                fontWeight: s.chords.bold !== false ? "bold" : "normal",
-                fontStyle:  s.chords.italic ? "italic" : "normal",
-                color:      s.chords.color ?? "#4f46e5",
-              }}
-            >
-              {chord.chord}
-            </span>
-          );
-        });
+            : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily),
+        }));
+        rawPositions.sort((a, b) => a.px - b.px);
+        let prevRight = -Infinity;
+        const positions = new Map<string, number>();
+        for (const item of rawPositions) {
+          const x = Math.max(item.px, prevRight + CHORD_GAP);
+          positions.set(item.id, x);
+          prevRight = x + measureWidth(item.chord, chordFontPx, chordFamily);
+        }
+
+        const chordSpans = line.chords.map((chord) => (
+          <span
+            key={chord.id}
+            className="print-chord"
+            style={{
+              left:       positions.get(chord.id) ?? 0,
+              fontSize:   `${chordPt}pt`,
+              fontFamily: chordFamily,
+              fontWeight: s.chords.bold !== false ? "bold" : "normal",
+              fontStyle:  s.chords.italic ? "italic" : "normal",
+              color:      s.chords.color ?? "#4f46e5",
+            }}
+          >
+            {chord.chord}
+          </span>
+        ));
 
         if (isChordOnly) {
           // Chord-only line: identical structure to regular lines, but lyric text is invisible

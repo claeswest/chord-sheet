@@ -8,6 +8,7 @@ import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/son
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
+import PrintView from "./PrintView";
 
 // Reuse a single canvas context across all measurements
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -584,6 +585,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           </div>
         </div>
       </div>
+
+      {/* Hidden print view — required for PDF export */}
+      <PrintView title={title} artist={artist} lines={lines} songStyle={songStyle} watermark />
 
       {/* Scroll to top button — appears once scrolled down */}
       <button

@@ -411,7 +411,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
       <div className="flex flex-1">
         {/* Sidebar — collapsible */}
-        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-56" : "w-0 py-0 border-r-0"}`}>
+        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-56 xl:w-96" : "w-0 py-0 border-r-0"}`}>
         {isLoggedIn ? (<>
             <button
               onClick={() => selectCategory(null)}
