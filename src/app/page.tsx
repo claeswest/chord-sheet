@@ -106,7 +106,7 @@ export default async function HomePage() {
 
         {/* ── Hero + Highlights (one dark section, zero seam) ──────────────── */}
         <section
-          className="relative flex flex-col items-center text-center px-6 pt-24 pb-16 overflow-hidden"
+          className="relative flex flex-col items-center text-center px-5 sm:px-6 pt-14 sm:pt-24 pb-10 sm:pb-16 overflow-hidden"
           style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #1a1640 100%)" }}
         >
           {/* Radial glow */}
@@ -114,30 +114,30 @@ export default async function HomePage() {
             background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
           }} />
 
-          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 border border-indigo-500/30">
+          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30">
             For guitarists, pianists, vocalists & bands
           </span>
 
-          <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight mb-6 max-w-4xl">
+          <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
             Chord sheets,{" "}
             <span className="text-indigo-400">done right</span>
           </h1>
 
-          <p className="relative text-lg sm:text-xl text-zinc-300 max-w-2xl mb-10 leading-relaxed">
+          <p className="relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
             Search any song with AI, drag chords above lyrics, style with generated backgrounds,
             and perform with hands-free auto-scroll — all in your browser.
           </p>
 
-          <div className="relative flex flex-col sm:flex-row gap-4 mb-16">
+          <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
             <Link
               href="/songs"
-              className="bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-full text-base font-semibold transition-colors shadow-lg shadow-indigo-900/50"
+              className="bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors shadow-lg shadow-indigo-900/50 text-center"
             >
               Start for free
             </Link>
             <Link
               href="#features"
-              className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm"
+              className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
             >
               See how it works
             </Link>
@@ -149,50 +149,53 @@ export default async function HomePage() {
               <img
                 src="/hero-photo.jpg"
                 alt="Guitarist using ChordSheetMaker on a laptop"
-                className="w-full object-cover"
-                style={{ maxHeight: 480 }}
+                className="w-full object-cover max-h-48 sm:max-h-none"
+                style={{ objectPosition: "center 20%" }}
               />
             </div>
             {/* Fade bottom of photo into section bg */}
-            <div className="absolute bottom-0 left-0 right-0 h-40" style={{
+            <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-40" style={{
               background: "linear-gradient(to bottom, transparent 0%, #1a1640 100%)",
             }} />
           </div>
 
           {/* Caption */}
-          <p className="relative text-xs text-white/25 mb-12">
+          <p className="relative text-xs text-white/25 mb-8 sm:mb-12">
             Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
           </p>
 
-          {/* 3 highlights — same section, same bg, zero seam */}
-          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* 3 highlights — horizontal on mobile, vertical on sm+ */}
+          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { icon: "⚡", title: "Instant AI import",       body: "Search a song name and get a complete chord sheet in seconds — no copying, no pasting." },
               { icon: "🎯", title: "Precise chord placement", body: "Drag chords to the exact syllable. What you see in the editor is what you perform."     },
-              { icon: "▶️", title: "Follow along, hands-free",  body: "Press play and the sheet scrolls at your pace — just focus on the music. No tapping, no losing your place mid-song."       },
+              { icon: "▶️", title: "Follow along, hands-free",  body: "Press play and the sheet scrolls at your pace — just focus on the music. No tapping, no losing your place mid-song." },
             ].map((h) => (
-              <div key={h.title} className="flex flex-col items-center text-center px-6 py-8 rounded-2xl"
+              <div key={h.title}
+                className="flex flex-row sm:flex-col items-center gap-4 sm:gap-0 text-left sm:text-center px-4 sm:px-6 py-4 sm:py-8 rounded-2xl"
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
-                <span className="text-4xl mb-4">{h.icon}</span>
-                <h3 className="font-bold text-white mb-2">{h.title}</h3>
-                <p className="text-sm text-white/50 leading-relaxed">{h.body}</p>
+                <span className="text-3xl sm:text-4xl sm:mb-4 shrink-0">{h.icon}</span>
+                <div>
+                  <h3 className="font-bold text-white mb-1 sm:mb-2 text-sm sm:text-base">{h.title}</h3>
+                  <p className="text-xs sm:text-sm text-white/50 leading-relaxed">{h.body}</p>
+                </div>
               </div>
             ))}
           </div>
           {/* Features heading — inside the dark section so no hard cut */}
-          <div id="features" className="relative w-full max-w-6xl mx-auto pt-16 pb-2">
+          <div id="features" className="relative w-full max-w-6xl mx-auto pt-12 sm:pt-16 pb-2">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">
               Everything you need
             </h2>
-            <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-lg">
+            <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-base sm:text-lg">
               Built for musicians who want to focus on playing, not formatting.
             </p>
           </div>
         </section>
 
         {/* ── Features cards — light background ────────────────────────────── */}
-        <section className="px-6 pt-10 pb-12" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
+        <section className="px-4 sm:px-6 pt-8 sm:pt-10 pb-10 sm:pb-12" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {features.map((f) => (
@@ -203,7 +206,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── Examples ─────────────────────────────────────────────────────── */}
-        <section className="relative px-6 py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
+        <section className="relative px-4 sm:px-6 py-14 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
           <div className="relative max-w-5xl mx-auto">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Examples</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">See what you can create</h2>
@@ -254,7 +257,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
-        <section id="pricing" className="relative px-6 pt-16 pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
+        <section id="pricing" className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
           {/* Radial glow */}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
@@ -370,7 +373,7 @@ export default async function HomePage() {
         {/* ── CTA ──────────────────────────────────────────────────────────── */}
         <div style={{ background: "rgba(99,102,241,0.25)", height: 1 }} />
         <section
-          className="relative px-6 py-28 text-center overflow-hidden"
+          className="relative px-5 sm:px-6 py-16 sm:py-28 text-center overflow-hidden"
           style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
         >
           {/* Radial glow */}

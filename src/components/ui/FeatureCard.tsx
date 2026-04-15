@@ -17,7 +17,7 @@ export default function FeatureCard({ icon, title, description, hex, iconBg, car
 
   return (
     <div
-      className="group relative rounded-2xl p-7 border border-white/80 hover:-translate-y-1 transition-all duration-200 overflow-hidden cursor-default"
+      className="group relative rounded-2xl p-5 sm:p-7 border border-white/80 hover:-translate-y-1 transition-all duration-200 overflow-hidden cursor-default"
       style={{
         background: `linear-gradient(135deg, #ffffff 60%, ${cardBg})`,
         boxShadow: hovered
