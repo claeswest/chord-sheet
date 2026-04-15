@@ -289,11 +289,11 @@ export default async function HomePage() {
                       <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
                     )}
 
-                    <div className="px-6 pt-6 pb-4">
+                    <div className="px-6 pt-6 pb-4 text-center sm:text-left">
                       <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
 
                       {/* Price row — fixed height */}
-                      <div className="h-11 flex items-end gap-2">
+                      <div className="h-11 flex items-end gap-2 justify-center sm:justify-start">
                         {isFree ? (
                           <span className="text-4xl font-extrabold text-zinc-900">Free</span>
                         ) : (
@@ -310,13 +310,13 @@ export default async function HomePage() {
                       </div>
 
                       {/* Description — fixed height, single line */}
-                      <div className="h-6 flex items-center mt-1">
+                      <div className="h-6 flex items-center mt-1 justify-center sm:justify-start">
                         <p className="text-xs text-zinc-400">{plan.description}</p>
                       </div>
                     </div>
 
-                    <div className="px-6 py-4 border-t border-zinc-100 flex-1">
-                      <ul className="space-y-2.5">
+                    <div className="px-6 py-4 border-t border-zinc-100 flex-1 flex flex-col items-center sm:items-start">
+                      <ul className="space-y-2.5 w-full max-w-[200px] sm:max-w-none">
                         {Object.keys(FEATURE_LABELS).filter((key) => {
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
