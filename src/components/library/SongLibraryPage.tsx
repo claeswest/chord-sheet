@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WelcomeModal from "./WelcomeModal";
 import GuestImportBanner from "./GuestImportBanner";
@@ -125,6 +125,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
   // Drag and drop — reorder within category
   const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
+
+  // Expanded row menu (small screens)
+  const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
 
   // Ensure drag highlight never gets stuck if the browser skips onDragEnd
   useEffect(() => {
@@ -887,8 +890,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   const firstChord = allLines.find((l: any) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
 
                   return (
+                    <React.Fragment key={song.id}>
                     <div
-                      key={song.id}
                       draggable={isLoggedIn}
                       onDragStart={(e) => handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
@@ -902,7 +905,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       onDrop={(e) => handleDropOnSong(e, song.id)}
                       onClick={() => window.location.href = viewUrl}
                       className={`group relative flex items-center gap-4 px-5 py-4 transition-colors hover:bg-indigo-50/60 cursor-pointer ${
-                        idx !== 0 ? "border-t border-zinc-100" : ""
+                        idx !== 0 || expandedSongId !== null ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
@@ -978,6 +981,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
+                      {/* ⋯ button — visible below xl */}
+                      {isLoggedIn && (
+                        <button
+                          className="xl:hidden shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                          title="More options"
+                          onClick={(e) => { e.stopPropagation(); setExpandedSongId(expandedSongId === song.id ? null : song.id); }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                            <path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                          </svg>
+                        </button>
+                      )}
+
                       {/* Actions — grouped pill */}
                       <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
@@ -1032,6 +1048,59 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       </div>{/* end actions */}
                     </div>
+
+                    {/* Expanded panel — edit/duplicate/delete + categories (< xl only) */}
+                    {expandedSongId === song.id && (
+                      <div className="xl:hidden border-t border-zinc-100 bg-zinc-50/80 px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <Link href={editUrl}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-sm"
+                            onClick={() => setExpandedSongId(null)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
+                            </svg>
+                            Edit
+                          </Link>
+                          {song.source === "db" && (
+                            <button
+                              onClick={() => { handleDuplicate(song); setExpandedSongId(null); }}
+                              disabled={isDuplicating}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-sm disabled:opacity-40">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
+                              </svg>
+                              Duplicate
+                            </button>
+                          )}
+                          <button
+                            onClick={() => { setConfirmDelete({ id: song.id, title: song.title, source: song.source }); setExpandedSongId(null); }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                              <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                        {/* Categories */}
+                        {song.categoryIds.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {song.categoryIds.map((catId) => {
+                              const cat = categories.find((c) => c.id === catId);
+                              if (!cat) return null;
+                              const color = getCatColor(catId, categories);
+                              return (
+                                <span key={catId} className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}>
+                                  {cat.name}
+                                  <button onClick={() => handleRemoveFromCategory(song.id, catId)} className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity">×</button>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </div>
