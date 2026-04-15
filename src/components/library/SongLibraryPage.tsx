@@ -12,6 +12,7 @@ import {
   addSongToCategory, removeSongFromCategory, reorderSongsInCategory, type DbCategory,
 } from "@/lib/categoryDb";
 import LoadingNotes from "@/components/ui/LoadingNotes";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
 
 /** Returns true if a hex colour is dark (luminance < 0.18) */
@@ -411,7 +412,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
       <div className="flex flex-1">
         {/* Sidebar — collapsible */}
-        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-56 xl:w-96" : "w-0 py-0 border-r-0"}`}>
+        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-64 xl:w-80" : "w-0 py-0 border-r-0"}`}>
         {isLoggedIn ? (<>
             <button
               onClick={() => selectCategory(null)}
@@ -487,7 +488,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                           </button>
                         </>
                       )}
-                      <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{totalCount}</span>
                       {/* Add subcategory */}
                       <button onClick={() => { setShowAddSubCategory(cat.id); setNewSubCategoryName(""); }}
                         className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0 ml-0.5"
@@ -504,6 +504,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       <button onClick={() => handleDeleteCategory(cat.id)}
                         className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
                         title="Delete">×</button>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-white/10 text-white/50`}>{totalCount}</span>
                     </div>
 
                     {/* Subcategory rows + add input — wrapped in a tree-line container */}
@@ -544,7 +545,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                                 {sub.name}
                               </button>
                             )}
-                            <span className="text-xs bg-white/10 text-white/30 px-1.5 py-0.5 rounded-full shrink-0">{sub.songIds.length}</span>
                             {/* Rename */}
                             <button onClick={() => startRename(sub)}
                               className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
@@ -555,6 +555,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             <button onClick={() => handleDeleteCategory(sub.id)}
                               className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
                               title="Delete">×</button>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-white/10 text-white/50`}>{sub.songIds.length}</span>
                           </div>
                         ))}
 
@@ -700,11 +701,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     </svg>
                   </button>
                 </div>
-              )}
-              {!loading && (
-                <span className="text-sm font-medium text-zinc-500 shrink-0">
-                  {filtered.length} {filtered.length === 1 ? "song" : "songs"}
-                </span>
               )}
             </div>
 
@@ -1148,6 +1144,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           </div>
         </div>
       )}
+
+      <ScrollToTop />
 
       {/* Toast notification */}
       <div

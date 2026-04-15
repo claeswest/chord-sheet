@@ -555,20 +555,27 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   return (
     <div className="flex flex-col h-screen bg-white">
+      {/* Small-screen warning banner */}
+      <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
+        <svg className="w-5 h-5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        </svg>
+        <span>The editor works best on a larger screen — chord placement requires a mouse.</span>
+      </div>
+
       {/* Toolbar */}
       <header className="flex items-center gap-3 px-6 h-14 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-white shrink-0" style={{ fontFamily: "var(--font-nunito)" }}>
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
         <>
-          <div className="w-px h-5 bg-white/20" />
-          <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
-            ← Songs {isLoggedIn && <kbd className="text-xs text-white/30 font-mono">[S]</kbd>}
+          <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
+            ← Songs {isLoggedIn && <kbd className="hidden sm:inline text-xs text-white/30 font-mono">[S]</kbd>}
           </Link>
         </>
         <div className="flex items-center gap-2 ml-auto">
           {/* Undo / Redo */}
-          <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
+          <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
             <button
               onClick={undo}
               disabled={historyPos <= 0}
@@ -591,10 +598,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </button>
           </div>
 
-          <div className="w-px h-5 bg-white/20" />
 
           {/* Transpose: − key + */}
-          <div className="flex items-center border border-white/20 rounded-lg overflow-hidden">
+          <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
             <button
               onClick={() => setSemitones((s) => s - 1)}
               className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-base font-medium"
@@ -618,7 +624,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             >+</button>
           </div>
 
-          <div className="w-px h-5 bg-white/20" />
 
           {/* Overflow menu — Import, Replace, View, Print, New */}
           <div className="relative" ref={overflowRef}>

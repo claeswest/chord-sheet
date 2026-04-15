@@ -64,10 +64,10 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
 
       {/* Header */}
       <header className="bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center gap-4 shrink-0">
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
+        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
-        <div className="w-px h-5 bg-white/20" />
+        <div className="hidden sm:block w-px h-5 bg-white/20" />
         <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors">
           ← Songs
         </Link>
@@ -111,12 +111,12 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
       </div>
 
       {/* Cards */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-6 -mt-8 pb-10">
+      <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 -mt-8 pb-10">
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-6 text-center">{error}</p>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
           {PLAN_ORDER.map((planKey) => {
             const plan = PLANS[planKey];
             const isPopular = planKey === "yearly";
@@ -126,7 +126,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
             return (
               <div
                 key={planKey}
-                className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm min-h-[480px] ${
+                className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm md:min-h-[480px] ${
                   isPopular
                     ? "ring-2 ring-indigo-500 shadow-indigo-100 shadow-md"
                     : isCurrent
@@ -147,18 +147,18 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                   <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
                 )}
 
-                <div className="px-6 pt-6 pb-4">
+                <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4">
                   {/* Plan name — fixed height */}
                   <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
 
                   {/* Price row — fixed height */}
                   <div className="h-11 flex items-end gap-2">
                     {isFree ? (
-                      <span className="text-4xl font-extrabold text-zinc-900">Free</span>
+                      <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">Free</span>
                     ) : (
                       <>
                         <div className="flex items-end gap-1">
-                          <span className="text-4xl font-extrabold text-zinc-900">${plan.price}</span>
+                          <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">${plan.price}</span>
                           <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
                         </div>
                         {planKey === "yearly" && (
@@ -174,7 +174,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                   </div>
                 </div>
 
-                <div className="px-6 py-4 border-t border-zinc-100 flex-1">
+                <div className="px-4 sm:px-6 py-4 border-t border-zinc-100 flex-1">
                   <ul className="space-y-2.5">
                     {FEATURES.filter(({ key }) => {
                       // Hide locked features on paid plans — only show as upsell on free
@@ -200,7 +200,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                   </ul>
                 </div>
 
-                <div className="px-6 pb-6 pt-4 border-t border-zinc-100 space-y-2">
+                <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-4 border-t border-zinc-100 space-y-2">
                   {isCurrent ? (
                     <Link
                       href="/account"

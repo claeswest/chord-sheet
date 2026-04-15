@@ -99,6 +99,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "e" || e.key === "E") onEdit();
       if (e.key === "s" || e.key === "S") router.push("/songs");
+      if (e.key === "t" || e.key === "T") scrollToTop();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -136,7 +137,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     setShowControls(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     if (playingRef.current) {
-      hideTimerRef.current = setTimeout(() => setShowControls(false), 1000);
+      hideTimerRef.current = setTimeout(() => setShowControls(false), 800);
     }
   }, []);
 
@@ -304,7 +305,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
       {/* Scrollable content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto relative z-20">
-        <div className="max-w-2xl mx-auto px-10 pt-16 pb-40">
+        <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64">
           {/* Song header */}
           <div className="mb-10 text-center">
             <h1
@@ -440,9 +441,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
       {/* Top bar — fades with controls */}
       <div
-        className={`fixed top-0 left-0 right-0 z-30 transition-opacity duration-500 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-30 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ transition: showControls ? "opacity 200ms ease-in" : "opacity 1200ms ease-out" }}
       >
         <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo */}
@@ -465,124 +465,137 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
       {/* Controls overlay */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-30 transition-opacity duration-500 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed bottom-0 left-0 right-0 z-30 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ transition: showControls ? "opacity 200ms ease-in" : "opacity 1200ms ease-out" }}
       >
-        <div className="flex items-center justify-center gap-4 px-6 py-4 bg-gradient-to-t from-black/60 to-transparent">
-          {/* Edit button — hidden on public share pages */}
-          {onEdit && (
-            <button
-              onClick={onEdit}
-              className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-2"
-            >
-              ← Edit <kbd className="text-xs text-white/40 font-mono">[E]</kbd>
-            </button>
-          )}
+        {/* Gentle gradient fade — covers just enough above the buttons */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent pointer-events-none" style={{ top: "-64px" }} />
+        <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-4 sm:px-6 sm:py-5">
 
-          {/* Share / copy link — hidden on public share pages */}
-          {!isShared && <button
-            onClick={handleShare}
-            disabled={shareLoading}
-            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-2 disabled:opacity-50 ${
-              shareFlash
-                ? "text-green-300 border-green-400/40"
-                : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
-            }`}
-            title="Copy shareable link"
-          >
-            {shareFlash ? (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : shareLoading ? (
-              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-            )}
-            {shareFlash ? "Copied!" : "Share"}
-          </button>}
-
-          {/* PDF download */}
-          <button
-            onClick={async () => { setPdfLoading(true); try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); } }}
-            disabled={pdfLoading}
-            className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-2 disabled:opacity-50"
-            title="Download PDF"
-          >
-            {pdfLoading ? (
-              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 2h10l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
-                <polyline points="15 2 15 7 20 7"/>
-                <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
-                <line x1="12" y1="11" x2="12" y2="17"/>
-                <polyline points="9 14 12 17 15 14"/>
-              </svg>
-            )}
-            PDF
-          </button>
-
-          {/* Play / Pause */}
-          <button
-            onClick={(e) => { togglePlay(); (e.currentTarget as HTMLButtonElement).blur(); }}
-            className="w-11 h-11 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transition-colors"
-            title="Space to toggle"
-          >
-            {playing ? (
-              // Pause icon
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <rect x="5" y="4" width="3" height="12" rx="1" />
-                <rect x="12" y="4" width="3" height="12" rx="1" />
-              </svg>
-            ) : (
-              // Play icon
-              <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 4.2a1 1 0 0 0-1.3.95v9.7a1 1 0 0 0 1.3.95l9-4.85a1 1 0 0 0 0-1.9L6.3 4.2z" />
-              </svg>
-            )}
-          </button>
-
-          {/* Speed */}
+          {/* ── Row 1: action buttons + play ── */}
           <div className="flex items-center gap-2">
-            <span className="text-white/60 text-xs">Slow</span>
-            <input
-              type="range"
-              min={1}
-              max={MAX_SPEED}
-              value={speed}
-              onChange={(e) => { setSpeed(Number(e.target.value)); revealControls(); }}
-              className="w-28 accent-indigo-400"
-              title="← → to adjust"
-            />
-            <span className="text-white/60 text-xs">Fast</span>
-            <span className="text-white/50 text-xs w-6 text-right tabular-nums">{speed}</span>
+            {/* Edit button — hidden on public share pages */}
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="text-white/70 hover:text-white text-sm px-2.5 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 0l.172.172a2 2 0 0 1 0 2.828L12 16H9v-3z"/>
+                </svg>
+                <span className="hidden sm:inline">Edit</span>
+                <kbd className="hidden sm:inline text-xs text-white/40 font-mono">[E]</kbd>
+              </button>
+            )}
+
+            {/* Share / copy link — hidden on public share pages */}
+            {!isShared && (
+              <button
+                onClick={handleShare}
+                disabled={shareLoading}
+                className={`text-sm px-2.5 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50 ${
+                  shareFlash
+                    ? "text-green-300 border-green-400/40"
+                    : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
+                }`}
+                title="Copy shareable link"
+              >
+                {shareFlash ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : shareLoading ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                )}
+                <span className="hidden sm:inline">{shareFlash ? "Copied!" : "Share"}</span>
+              </button>
+            )}
+
+            {/* PDF download */}
+            <button
+              onClick={async () => { setPdfLoading(true); try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); } }}
+              disabled={pdfLoading}
+              className="text-white/70 hover:text-white text-sm px-2.5 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50"
+              title="Download PDF"
+            >
+              {pdfLoading ? (
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 2h10l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
+                  <polyline points="15 2 15 7 20 7"/>
+                  <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
+                  <line x1="12" y1="11" x2="12" y2="17"/>
+                  <polyline points="9 14 12 17 15 14"/>
+                </svg>
+              )}
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+
+            {/* Play / Pause */}
+            <button
+              onClick={(e) => { togglePlay(); (e.currentTarget as HTMLButtonElement).blur(); }}
+              className="w-11 h-11 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transition-colors"
+              title="Space to toggle"
+            >
+              {playing ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <rect x="5" y="4" width="3" height="12" rx="1" />
+                  <rect x="12" y="4" width="3" height="12" rx="1" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 4.2a1 1 0 0 0-1.3.95v9.7a1 1 0 0 0 1.3.95l9-4.85a1 1 0 0 0 0-1.9L6.3 4.2z" />
+                </svg>
+              )}
+            </button>
           </div>
 
-          {/* Font size */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => { setSizeAdjust(s => Math.max(-6, s - 1)); revealControls(); }}
-              className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-              title="− to shrink"
-            >
-              A-
-            </button>
-            <span className="text-white/50 text-xs w-6 text-center tabular-nums">{lyricSize}</span>
-            <button
-              onClick={() => { setSizeAdjust(s => Math.min(14, s + 1)); revealControls(); }}
-              className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-              title="+ to grow"
-            >
-              A+
-            </button>
+          {/* ── Row 2 (wraps on mobile): speed + font size ── */}
+          <div className="flex items-center gap-3 pl-1 border-l border-white/20">
+            {/* Speed */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50 text-xs tabular-nums w-4 text-right">{speed}</span>
+              <span className="hidden sm:inline text-white/60 text-xs">Slow</span>
+              <input
+                type="range"
+                min={1}
+                max={MAX_SPEED}
+                value={speed}
+                onChange={(e) => { setSpeed(Number(e.target.value)); revealControls(); }}
+                className="w-24 sm:w-28 accent-indigo-400"
+                title="← → to adjust"
+              />
+              <span className="hidden sm:inline text-white/60 text-xs">Fast</span>
+            </div>
+
+            {/* Font size */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { setSizeAdjust(s => Math.max(-6, s - 1)); revealControls(); }}
+                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+                title="− to shrink"
+              >
+                A−
+              </button>
+              <span className="text-white/35 text-xs w-5 text-center tabular-nums">{lyricSize}</span>
+              <button
+                onClick={() => { setSizeAdjust(s => Math.min(14, s + 1)); revealControls(); }}
+                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+                title="+ to grow"
+              >
+                A+
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -600,7 +613,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
         </svg>
-        Top
+        Top <kbd className="text-xs text-zinc-400 font-mono">[T]</kbd>
       </button>
     </div>
   );
