@@ -33,7 +33,6 @@ import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
-import { downloadPdf } from "@/lib/pdfExport";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -102,7 +101,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const [saveFlash, setSaveFlash] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
   const [showOverflow, setShowOverflow] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
   // ── History (undo / redo) ────────────────────────────────────────────────────
   const MAX_HISTORY = 100;
@@ -651,59 +649,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
                   Play <span className="ml-auto text-xs text-zinc-400 font-mono">[P]</span>
                 </button>
-                <button
-                  disabled={pdfLoading}
-                  onClick={async () => {
-                    setShowOverflow(false);
-                    setPdfLoading(true);
-                    try {
-                      await downloadPdf(`${title || "chord-sheet"}.pdf`);
-                    } finally {
-                      setPdfLoading(false);
-                    }
-                  }}
-                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors disabled:opacity-40"
-                >
-                  {pdfLoading ? (
-                    <svg className="w-4 h-4 text-zinc-400 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-zinc-400">
-                      <path d="M5 2h10l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
-                      <polyline points="15 2 15 7 20 7"/>
-                      <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
-                      <line x1="12" y1="11" x2="12" y2="17"/>
-                      <polyline points="9 14 12 17 15 14"/>
-                    </svg>
-                  )}
-                  {pdfLoading ? "Generating PDF…" : "Download PDF"}
-                </button>
               </div>
             )}
           </div>
-
-          {/* PDF download */}
-          <button
-            onClick={async () => {
-              setPdfLoading(true);
-              try { await downloadPdf(`${title || "chord-sheet"}.pdf`); }
-              finally { setPdfLoading(false); }
-            }}
-            disabled={pdfLoading}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 text-white/50 hover:text-white hover:bg-white/10"
-            title="Download PDF"
-          >
-            {pdfLoading ? (
-              <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 2h10l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
-                <polyline points="15 2 15 7 20 7"/>
-                <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
-                <line x1="12" y1="11" x2="12" y2="17"/>
-                <polyline points="9 14 12 17 15 14"/>
-              </svg>
-            )}
-          </button>
 
           {/* Save */}
           <button

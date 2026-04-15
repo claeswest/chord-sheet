@@ -7,6 +7,7 @@ import type { SongLine } from "@/types/song";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
+import { downloadPdf } from "@/lib/pdfExport";
 
 // Reuse a single canvas context across all measurements
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -59,6 +60,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [scrolled, setScrolled] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
   const [fontSeq, setFontSeq] = useState(0); // increments when fonts finish loading → re-measures chords
@@ -504,6 +506,27 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             )}
             {shareFlash ? "Copied!" : "Share"}
           </button>}
+
+          {/* PDF download */}
+          <button
+            onClick={async () => { setPdfLoading(true); try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); } }}
+            disabled={pdfLoading}
+            className="text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-2 disabled:opacity-50"
+            title="Download PDF"
+          >
+            {pdfLoading ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 2h10l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
+                <polyline points="15 2 15 7 20 7"/>
+                <text x="4.5" y="19.5" fontSize="6.5" fontWeight="700" fontFamily="Arial,sans-serif" fill="currentColor" stroke="none">PDF</text>
+                <line x1="12" y1="11" x2="12" y2="17"/>
+                <polyline points="9 14 12 17 15 14"/>
+              </svg>
+            )}
+            PDF
+          </button>
 
           {/* Play / Pause */}
           <button
