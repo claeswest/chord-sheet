@@ -861,7 +861,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     Artist
                     {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden xl:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[280px] shrink-0">Categories</span>}
+                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[200px] xl:w-[280px] shrink-0">Categories</span>}
                   <div className="hidden xl:block w-[100px] shrink-0 ml-4" />
                 </div>
                 {filtered.map((song, idx) => {
@@ -957,7 +957,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
                       {/* Category chips */}
                       {isLoggedIn && (
-                        <div className="hidden xl:flex flex-nowrap gap-1 w-[280px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="hidden lg:flex flex-nowrap gap-1 w-[200px] xl:w-[280px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
