@@ -905,7 +905,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                     >
                       {/* Left-edge accent bar — category colour only (song colour shown via dot instead) */}
                       {!rowBg && firstCatAccent ? (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${firstCatAccent}`} />
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-50 ${firstCatAccent}`} />
                       ) : null}
 
                       {/* Drag handle */}
@@ -920,8 +920,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         <span
                           className="shrink-0 text-4xl leading-none select-none"
                           style={{
-  color: rowBg ? (isDarkColour(rowBg) ? "#d4aa7a" : rowBg) : "#e4e4e7",
-  opacity: rowBg ? 1 : 0.8,
+  color: rowBg ? (isDarkColour(rowBg) ? "#d4aa7a" : rowBg) : "#c4c4c8",
+  opacity: rowBg ? 1 : 0.9,
   filter: rowBg && !isDarkColour(rowBg) ? "saturate(1.6)" : undefined,
 }}
                         >
@@ -929,7 +929,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </span>
                         <Link href={viewUrl} className="min-w-0 group/title">
                           <div className="text-sm font-medium truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
-                            {song.title || "Untitled Song"}
+                            {song.title
+                              ? song.title
+                              : song.artist
+                              ? <span className="italic" style={{ color: "#a1a1aa" }}>{song.artist}</span>
+                              : <span className="italic" style={{ color: "#d4d4d8" }}>Untitled song</span>}
                           </div>
                           {song.artist && (
                             <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
