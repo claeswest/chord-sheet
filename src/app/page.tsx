@@ -274,7 +274,7 @@ export default async function HomePage() {
                 return (
                   <div
                     key={planKey}
-                    className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm min-h-[480px] ${
+                    className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm sm:min-h-[480px] ${
                       isPopular
                         ? "ring-2 ring-indigo-500 shadow-indigo-100 shadow-md"
                         : "border border-zinc-200"

@@ -21,7 +21,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
   free: {
     name: "Free",
     price: 0,
-    description: "Get started for free",
+    description: "No credit card required",
     stripePriceId: undefined,
     isRecurring: false,
     features: {
