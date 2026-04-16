@@ -6,7 +6,7 @@ import PricingContent from "./PricingContent";
 
 export default async function PricingPage() {
   const session = await auth();
-  let currentPlan = "free";
+  let currentPlan: string | null = null;
   let userName: string | null = null;
   let userImage: string | null = null;
 

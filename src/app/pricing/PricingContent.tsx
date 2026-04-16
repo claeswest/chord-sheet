@@ -17,7 +17,7 @@ const FEATURES: { key: string; label: string }[] = [
   { key: "prioritySupport", label: "Priority support"    },
 ];
 
-export default function PricingContent({ currentPlan, userName, userImage }: { currentPlan: string; userName?: string | null; userImage?: string | null }) {
+export default function PricingContent({ currentPlan, userName, userImage }: { currentPlan: string | null; userName?: string | null; userImage?: string | null }) {
   const [loading, setLoading] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -52,7 +52,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
   useEffect(() => {
     if (autoTriggered.current) return;
     const plan = searchParams.get("plan") as Plan | null;
-    if (plan && PLAN_ORDER.includes(plan) && plan !== "free" && currentPlan === "free") {
+    if (plan && PLAN_ORDER.includes(plan) && plan !== "free" && (currentPlan === "free" || currentPlan === null)) {
       autoTriggered.current = true;
       handleUpgrade(plan);
     }
@@ -221,11 +221,11 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                         >
                           {loading === planKey
                             ? "Redirecting…"
-                            : currentPlan !== "free"
+                            : (currentPlan !== "free" && currentPlan !== null)
                             ? `Upgrade to ${planKey} →`
                             : "Start 7-day free trial →"}
                         </button>
-                        {currentPlan === "free" && (
+                        {(currentPlan === "free" || currentPlan === null) && (
                           <p className="text-center text-[11px] text-zinc-400">
                             7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
                           </p>
