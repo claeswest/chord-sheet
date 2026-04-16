@@ -725,11 +725,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-zinc-400">
                 {songs.length === 0 ? (
-                  <div className="text-center py-24 text-zinc-400">
-                    <p className="text-sm mb-4">Your library is empty.</p>
+                  <div className="flex flex-col items-center justify-center py-24 px-6">
+                    <div className="text-6xl mb-6 select-none">𝄞</div>
+                    <h2 className="text-xl font-semibold text-zinc-700 mb-2">Your library is empty</h2>
+                    <p className="text-sm text-zinc-400 mb-8 max-w-xs text-center leading-relaxed">
+                      Search any song by name and artist — AI will build a chord sheet in seconds.
+                    </p>
                     <Link href="/editor/new"
-                      className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                      + New Song
+                      className="bg-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-100">
+                      + Add your first song
                     </Link>
                   </div>
                 ) : selectedCategoryId && !search ? (
