@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
 import UserMenu from "@/components/ui/UserMenu";
+import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
   { key: "songLimit",       label: "Unlimited songs"     },
@@ -229,6 +230,13 @@ export default async function AccountPage() {
                   </Link>
                 </div>
               )}
+              {/* Manage / cancel */}
+              <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
+                <p className="text-xs text-zinc-400 leading-snug">
+                  Update payment method, view invoices or cancel your subscription.
+                </p>
+                <ManageSubscriptionButton />
+              </div>
             </div>
           ) : (
             <div
