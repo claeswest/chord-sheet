@@ -307,7 +307,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       <div ref={scrollRef} className="flex-1 overflow-y-auto relative z-20">
         <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64">
           {/* Song header */}
-          <div className="mb-10 text-center">
+          <div className="mb-10" style={{ textAlign: s.titleAlign ?? "center" }}>
             <h1
               className="leading-tight"
               style={{
