@@ -3,14 +3,26 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+const IMAGES = [
+  { src: "/BurningGold.jpeg", label: "BEFORE" },
+  { src: "/BurningGold_CSM.png", label: "AFTER" },
+];
+
 export default function TransformationSection() {
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const lightbox = lightboxIndex !== null ? IMAGES[lightboxIndex] : null;
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setLightboxIndex(null); return; }
+      if (lightboxIndex === null) return;
+      if (e.key === "ArrowRight") setLightboxIndex((i) => (i! + 1) % IMAGES.length);
+      if (e.key === "ArrowLeft")  setLightboxIndex((i) => (i! - 1 + IMAGES.length) % IMAGES.length);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [lightboxIndex]);
 
   return (
     <section className="relative px-4 sm:px-6 py-14 sm:py-20 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
@@ -27,7 +39,7 @@ export default function TransformationSection() {
           {/* Before */}
           <div className="flex-1 w-full flex flex-col gap-2">
             <button
-              onClick={() => setLightbox("/BurningGold.jpeg")}
+              onClick={() => setLightboxIndex(0)}
               className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xl cursor-zoom-in group w-full text-left"
             >
               <span className="absolute top-3 left-3 z-10 text-xs font-bold bg-black/60 text-white px-3 py-1 rounded-full backdrop-blur-sm tracking-wide">BEFORE</span>
@@ -60,7 +72,7 @@ export default function TransformationSection() {
           {/* After */}
           <div className="flex-1 w-full flex flex-col gap-2">
             <button
-              onClick={() => setLightbox("/BurningGold_CSM.png")}
+              onClick={() => setLightboxIndex(1)}
               className="relative rounded-2xl overflow-hidden border border-indigo-300 shadow-xl cursor-zoom-in group w-full text-left"
               style={{ boxShadow: "0 0 0 1px rgba(99,102,241,0.3), 0 20px 40px -8px rgba(99,102,241,0.35)" }}
             >
@@ -93,11 +105,12 @@ export default function TransformationSection() {
       {/* Lightbox */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-8 cursor-zoom-out"
-          onClick={() => setLightbox(null)}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-16 cursor-zoom-out"
+          onClick={() => setLightboxIndex(null)}
         >
+          {/* Close */}
           <button
-            onClick={() => setLightbox(null)}
+            onClick={() => setLightboxIndex(null)}
             className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             aria-label="Close"
           >
@@ -105,12 +118,38 @@ export default function TransformationSection() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <img
-            src={lightbox}
-            alt="Zoomed view"
-            className="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
+
+          {/* Prev */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i! - 1 + IMAGES.length) % IMAGES.length); }}
+            className="absolute left-3 sm:left-5 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Previous"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Image + label */}
+          <div className="flex flex-col items-center gap-3 max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={lightbox.src}
+              alt="Zoomed view"
+              className="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain"
+            />
+            <span className="text-xs font-bold tracking-widest text-white/50 uppercase">{lightbox.label}</span>
+          </div>
+
+          {/* Next */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i! + 1) % IMAGES.length); }}
+            className="absolute right-3 sm:right-5 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Next"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       )}
     </section>
