@@ -77,7 +77,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
 
       {/* Hero — extra bottom padding so cards overlap nicely */}
       <div
-        className="relative py-14 pb-20 text-center px-6"
+        className="relative py-10 sm:py-14 pb-16 sm:pb-20 text-center px-6"
         style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
       >
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -86,7 +86,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
         <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30">
           Pricing
         </span>
-        <h1 className="relative text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
+        <h1 className="relative text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
           Plans & pricing
         </h1>
         <p className="relative text-zinc-400 text-lg max-w-md mx-auto">
@@ -111,12 +111,12 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
       </div>
 
       {/* Cards */}
-      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 -mt-10 pb-12">
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 md:px-6 -mt-6 sm:-mt-10 pb-16 sm:pb-12">
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-6 text-center">{error}</p>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 max-w-xs sm:max-w-sm mx-auto md:max-w-none">
           {PLAN_ORDER.map((planKey) => {
             const plan = PLANS[planKey];
             const isPopular = planKey === "yearly";
@@ -128,10 +128,10 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                 key={planKey}
                 className={`relative bg-white rounded-2xl flex flex-col overflow-hidden transition-all ${
                   isPopular
-                    ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-100 md:-mt-4 md:mb-4"
+                    ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-100"
                     : isCurrent
-                    ? "ring-2 ring-emerald-400 shadow-md md:min-h-[460px]"
-                    : "border border-zinc-200 shadow-sm md:min-h-[460px]"
+                    ? "ring-2 ring-emerald-400 shadow-md md:mt-4 md:mb-4"
+                    : "border border-zinc-200 shadow-sm md:mt-4 md:mb-4"
                 }`}
               >
                   {/* Top banner */}
@@ -147,10 +147,10 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                     <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
                   )}
 
-                  <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 text-center">
+                  <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4">
                     <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
 
-                    <div className="h-11 flex items-end justify-center gap-2">
+                    <div className="h-11 flex items-end gap-2">
                       {isFree ? (
                         <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">Free</span>
                       ) : (
@@ -166,7 +166,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                       )}
                     </div>
 
-                    <div className="h-6 flex items-center justify-center mt-1">
+                    <div className="h-6 flex items-center mt-1">
                       <p className="text-xs text-zinc-400">{plan.description}</p>
                     </div>
                   </div>
@@ -239,15 +239,28 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
         </div>
 
         {/* Trust line */}
-        <div className="flex items-center justify-center gap-2 mt-10 text-sm text-zinc-500">
-          <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          <span>Secure payments via Stripe</span>
-          <span className="text-zinc-300">·</span>
-          <span>Cancel anytime</span>
-          <span className="text-zinc-300">·</span>
-          <span>No hidden fees</span>
+        <div className="mt-8 sm:mt-10 text-sm text-zinc-500 text-center">
+          {/* Mobile: stacked */}
+          <div className="flex flex-col items-center gap-1.5 sm:hidden">
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Secure payments via Stripe
+            </span>
+            <span>Cancel anytime · No hidden fees</span>
+          </div>
+          {/* Tablet+: inline */}
+          <div className="hidden sm:flex items-center justify-center gap-2">
+            <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Secure payments via Stripe</span>
+            <span className="text-zinc-300">·</span>
+            <span>Cancel anytime</span>
+            <span className="text-zinc-300">·</span>
+            <span>No hidden fees</span>
+          </div>
         </div>
       </div>
     </div>

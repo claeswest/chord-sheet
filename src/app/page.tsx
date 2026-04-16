@@ -118,9 +118,9 @@ export default async function HomePage() {
             For guitarists, pianists, vocalists & bands
           </span>
 
-          <h1 className="relative text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
-            Chord sheets,{" "}
-            <span className="text-indigo-400">done right</span>
+          <h1 className="relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
+            AI-powered chord sheets{" "}
+            <span className="text-indigo-400 whitespace-nowrap">for every musician</span>
           </h1>
 
           <p className="relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
