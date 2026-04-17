@@ -78,7 +78,7 @@ export default function WelcomeModal({ onDismiss }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">I already have chords</p>
-              <p className="text-xs text-white/30 mt-0.5">Paste text or snap a photo of a chord sheet</p>
+              <p className="text-xs text-white/30 mt-0.5">Paste lyrics & chords, or snap a photo</p>
             </div>
             <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
