@@ -56,7 +56,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(isNaN(savedSpeed) ? 3 : savedSpeed);
-  const [sizeAdjust, setSizeAdjust] = useState(0);
+  const [sizeAdjust, setSizeAdjust] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < 640 ? -3 : 0
+  );
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
@@ -304,7 +306,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       )}
 
       {/* Scrollable content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto relative z-20">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden relative z-20">
         <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64">
           {/* Song header */}
           <div className="mb-10" style={{ textAlign: s.titleAlign ?? "center" }}>
