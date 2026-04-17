@@ -1,16 +1,15 @@
 "use client";
 
-import Link from "next/link";
-
 interface Props {
   onSearch: () => void;
   onImport: () => void;
   onWriteMyself: () => void;
   showDemo?: boolean;
   onDemo?: () => void;
+  onClose?: () => void;
 }
 
-export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo = false, onDemo }: Props) {
+export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo = false, onDemo, onClose }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center px-5"
@@ -21,6 +20,19 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
         background: "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(99,102,241,0.28) 0%, transparent 70%)",
       }} />
 
+      {/* × close button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full text-white/30 hover:text-white hover:bg-white/10 transition-all"
+          aria-label="Close"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+
       <div className="relative w-full max-w-sm">
 
         {/* Header */}
@@ -30,9 +42,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", transform: "scale(1.3)" }} />
             <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white">
-                <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
-              </svg>
+              <span className="text-white select-none leading-none" style={{ fontSize: 38, marginTop: 2 }}>𝄞</span>
             </div>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">New chord sheet</h2>
@@ -103,7 +113,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">Build from scratch</p>
-              <p className="text-xs text-white/30 mt-0.5">Type your lyrics, then drag and drop chords</p>
+              <p className="text-xs text-white/30 mt-0.5">Type your lyrics, then click or drag to place chords</p>
             </div>
             <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
@@ -113,25 +123,16 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
         </div>
 
         {/* Footer */}
-        <div className="mt-7 flex flex-col items-center gap-2.5">
-          {showDemo && onDemo && (
+        {showDemo && onDemo && (
+          <div className="mt-7 flex items-center justify-center">
             <button
               onClick={onDemo}
               className="text-sm text-indigo-300/80 hover:text-indigo-200 transition-colors"
             >
               ✦ <span className="font-semibold text-indigo-300">Explore with a demo song</span>
             </button>
-          )}
-          <Link
-            href="/songs"
-            className="text-xs text-white/20 hover:text-white/40 transition-colors inline-flex items-center gap-1"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to songs
-          </Link>
-        </div>
+          </div>
+        )}
 
       </div>
     </div>

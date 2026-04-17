@@ -127,6 +127,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     return base;
   });
   const [rightPanel, setRightPanel] = useState<"chords" | "background" | "text">("chords");
+  const [showRightPanel, setShowRightPanel] = useState(true);
   // Always-current snapshot of song data — updated every render so effects can read
   // latest values without adding them as deps (avoids stale closures).
   const latestSongRef = useRef({ title, artist, lines, songId, songStyle });
@@ -633,6 +634,33 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </div>
 
 
+          {/* Chords panel toggle — mobile only */}
+          <button
+            onClick={() => setShowRightPanel((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm font-medium transition-colors ${
+              showRightPanel
+                ? "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
+                : "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
+            }`}
+            title="Toggle chords panel"
+          >
+            {showRightPanel ? (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Lyrics
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
+                </svg>
+                Chords
+              </>
+            )}
+          </button>
+
           {/* Overflow menu — Import, Replace, View, Print, New */}
           <div className="relative" ref={overflowRef}>
             <button
@@ -771,46 +799,57 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </div>
         </div>
 
-        {/* Right panel with tabs */}
-        <div className="w-80 shrink-0 border-l border-zinc-200 flex flex-col overflow-hidden bg-white">
-          <div className="flex border-b border-zinc-200 shrink-0 bg-white">
-            {(["chords", "background", "text"] as const).map((panel) => (
+        {/* Right panel with tabs — always visible on desktop, toggled on mobile */}
+        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:border-l md:border-zinc-200 flex-col overflow-hidden bg-white ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
+            <div className="flex border-b border-zinc-200 shrink-0 bg-white">
+              {/* Back to lyrics — mobile only */}
               <button
-                key={panel}
-                onClick={() => setRightPanel(panel)}
-                className={`flex-1 py-2 text-xs font-medium transition-colors capitalize ${
-                  rightPanel === panel ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
-                }`}
+                onClick={() => setShowRightPanel(false)}
+                className="flex items-center gap-1 pl-3 pr-2 text-xs text-zinc-400 hover:text-zinc-600 border-r border-zinc-200 shrink-0 transition-colors"
+                aria-label="Close panel"
               >
-                {panel === "chords" ? "Chords" : panel === "background" ? "Background" : "Text"}
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Sheet
               </button>
-            ))}
-          </div>
-          {rightPanel === "chords" ? (
-            <ChordPalette
-              activeChord={activeChord}
-              onSelectChord={setActiveChord}
-              songChords={Array.from(new Set(
-                lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
+              {(["chords", "background", "text"] as const).map((panel) => (
+                <button
+                  key={panel}
+                  onClick={() => setRightPanel(panel)}
+                  className={`flex-1 py-2 text-xs font-medium transition-colors capitalize ${
+                    rightPanel === panel ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
+                  }`}
+                >
+                  {panel === "chords" ? "Chords" : panel === "background" ? "Background" : "Text"}
+                </button>
               ))}
-              asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
-            />
-          ) : (
-            <StylePanel
-              style={songStyle}
-              onChange={setSongStyle}
-              songTitle={title}
-              songArtist={artist}
-              isLoggedIn={isLoggedIn}
-              activeTab={rightPanel}
-              lyricsText={lines
-                .filter((l) => l.type === "lyric")
-                .map((l) => (l.type === "lyric" ? l.text : ""))
-                .filter(Boolean)
-                .join("\n")}
-            />
-          )}
-        </div>
+            </div>
+            {rightPanel === "chords" ? (
+              <ChordPalette
+                activeChord={activeChord}
+                onSelectChord={setActiveChord}
+                songChords={Array.from(new Set(
+                  lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
+                ))}
+                asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
+              />
+            ) : (
+              <StylePanel
+                style={songStyle}
+                onChange={setSongStyle}
+                songTitle={title}
+                songArtist={artist}
+                isLoggedIn={isLoggedIn}
+                activeTab={rightPanel}
+                lyricsText={lines
+                  .filter((l) => l.type === "lyric")
+                  .map((l) => (l.type === "lyric" ? l.text : ""))
+                  .filter(Boolean)
+                  .join("\n")}
+              />
+            )}
+          </div>
       </div>
 
       {/* Print view — invisible on screen, rendered by @media print */}
@@ -822,6 +861,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           onSearch={() => { setStartModalDismissed(true); setShowImport("search"); }}
           onImport={() => { setStartModalDismissed(true); setShowImport("text"); }}
           onWriteMyself={() => setStartModalDismissed(true)}
+          onClose={() => router.push("/songs")}
           showDemo={!hasSongs && (isLoggedIn ? true : listSongs().length === 0)}
           onDemo={() => {
             setTitle(DEMO_SONG.title);
