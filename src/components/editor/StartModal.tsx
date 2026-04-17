@@ -103,7 +103,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">Build from scratch</p>
-              <p className="text-xs text-white/30 mt-0.5">Blank editor — drag and drop chords yourself</p>
+              <p className="text-xs text-white/30 mt-0.5">Type your lyrics, then drag and drop chords</p>
             </div>
             <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
