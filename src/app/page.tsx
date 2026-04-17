@@ -89,13 +89,13 @@ export default async function HomePage() {
             <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
             <Link href="#pricing"  className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
             {session ? (
-              <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
+              <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap">
                 Songs
               </Link>
             ) : (
               <>
-                <Link href="/login" className="hover:text-zinc-900 transition-colors">Sign in</Link>
-                <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
+                <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
+                <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap">
                   Get started free
                 </Link>
               </>
@@ -116,7 +116,7 @@ export default async function HomePage() {
             background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
           }} />
 
-          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30">
+          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
             For guitarists, pianists, vocalists & bands
           </span>
 
