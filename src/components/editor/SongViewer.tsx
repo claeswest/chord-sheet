@@ -615,18 +615,19 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       {/* Hidden print view — required for PDF export */}
       <PrintView title={title} artist={artist} lines={lines} songStyle={songStyle} watermark />
 
-      {/* Scroll to top button — appears once scrolled down */}
+      {/* Scroll to top button — appears once scrolled down, left side to avoid controls */}
       <button
         onClick={scrollToTop}
         aria-label="Scroll to top"
-        className={`fixed bottom-24 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/90 text-zinc-800 font-medium text-sm shadow-lg border border-zinc-200 backdrop-blur-sm transition-all duration-300 hover:bg-white hover:shadow-xl ${
+        title="Scroll to top [T]"
+        className={`fixed bottom-28 left-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-md shadow-lg shadow-black/30 transition-all duration-300 group ${
           scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
         </svg>
-        Top <kbd className="text-xs text-zinc-400 font-mono">[T]</kbd>
+        <span className="text-[9px] font-semibold tracking-wider text-white/50 group-hover:text-white/80 uppercase transition-colors leading-none">Top</span>
       </button>
     </div>
   );
