@@ -456,6 +456,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     }
     // Don't auto-save before the user has made any choice on the start modal
     if (!startModalDismissedRef.current) return;
+    // Don't auto-save a completely empty song (e.g. user came via ?start= param
+    // but hasn't imported or typed anything yet)
+    const hasContent = title || artist ||
+      lines.some((l: any) => l.text || l.chords?.length || l.label);
+    if (!hasContent) return;
     if (suppressAutoSave.current) {
       suppressAutoSave.current = false;
       return;

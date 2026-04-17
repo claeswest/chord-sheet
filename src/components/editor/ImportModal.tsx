@@ -258,10 +258,11 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "linear-gradient(160deg, #0f0c29e6 0%, #302b63e6 55%, #1a1640e6 100%)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl shadow-black/60 w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
 
         {/* Header — dark navy, matches songs page top bar */}
         <div className="flex items-center justify-between px-6 py-4" style={{ background: "#302b63" }}>
