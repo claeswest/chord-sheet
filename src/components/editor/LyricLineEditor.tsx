@@ -240,9 +240,19 @@ export default function LyricLineEditor({
       <div
         ref={chordAreaRef}
         className={`relative w-full select-none transition-all duration-150 ${
-          line.chords.length > 0 || addingAtPx !== null ? "h-6" : "h-0 group-hover/line:h-6"
+          line.chords.length > 0 || addingAtPx !== null || activeChord ? "h-6" : "h-0 group-hover/line:h-6"
         } ${activeChord ? "cursor-none" : "cursor-crosshair"}`}
         onClick={handleChordAreaClick}
+        onTouchEnd={(e) => {
+          if (!activeChord) return;
+          e.preventDefault();
+          if ((e.target as HTMLElement).closest("[data-chord-token]")) return;
+          const touch = e.changedTouches[0];
+          const rect = e.currentTarget.getBoundingClientRect();
+          const px = touch.clientX - rect.left;
+          const pos = pxToCharPos(line.text, px);
+          onAddChord(pos, activeChord);
+        }}
         onMouseMove={(e) => {
           if (!activeChord) return;
           const rect = e.currentTarget.getBoundingClientRect();

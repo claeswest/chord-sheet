@@ -805,7 +805,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               {/* Back to lyrics — mobile only */}
               <button
                 onClick={() => setShowRightPanel(false)}
-                className="flex items-center gap-1 pl-3 pr-2 text-xs text-zinc-400 hover:text-zinc-600 border-r border-zinc-200 shrink-0 transition-colors"
+                className="md:hidden flex items-center gap-1 pl-3 pr-2 text-xs text-zinc-400 hover:text-zinc-600 border-r border-zinc-200 shrink-0 transition-colors"
                 aria-label="Close panel"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -828,7 +828,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             {rightPanel === "chords" ? (
               <ChordPalette
                 activeChord={activeChord}
-                onSelectChord={setActiveChord}
+                onSelectChord={(chord) => {
+                  setActiveChord(chord);
+                  // On mobile the panel covers the sheet — close it so the user can tap to place the chord
+                  if (typeof window !== "undefined" && window.innerWidth < 768) {
+                    setShowRightPanel(false);
+                  }
+                }}
                 songChords={Array.from(new Set(
                   lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
                 ))}
