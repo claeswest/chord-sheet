@@ -27,9 +27,9 @@ export default function WelcomeModal({ onDismiss }: Props) {
               <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Welcome to ChordSheetMaker</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Let's make your first chord sheet</h2>
           <p className="text-white/50 mt-2 text-sm leading-relaxed max-w-xs">
-            What would you like to do?
+            How do you want to get started?
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function WelcomeModal({ onDismiss }: Props) {
             </div>
             <div className="relative flex-1 min-w-0">
               <p className="font-semibold text-sm">Find a song with AI</p>
-              <p className="text-xs text-indigo-200 mt-0.5">Search any song — get chords in seconds</p>
+              <p className="text-xs text-indigo-200 mt-0.5">Type a title and artist — chords appear in seconds</p>
             </div>
             <svg className="relative w-4 h-4 text-white/50 group-hover:text-white/90 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
@@ -71,8 +71,8 @@ export default function WelcomeModal({ onDismiss }: Props) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Import a chord sheet</p>
-              <p className="text-xs text-white/35 mt-0.5">Paste text · Upload image · Clipboard</p>
+              <p className="font-semibold text-sm">I already have chords</p>
+              <p className="text-xs text-white/35 mt-0.5">Paste text, upload a photo or image</p>
             </div>
             <svg className="w-4 h-4 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
@@ -91,8 +91,8 @@ export default function WelcomeModal({ onDismiss }: Props) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Write it myself</p>
-              <p className="text-xs text-white/35 mt-0.5">Start with a blank editor</p>
+              <p className="font-semibold text-sm">Build from scratch</p>
+              <p className="text-xs text-white/35 mt-0.5">Blank editor — drag and drop chords yourself</p>
             </div>
             <svg className="w-4 h-4 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
@@ -104,14 +104,14 @@ export default function WelcomeModal({ onDismiss }: Props) {
         {/* Footer links */}
         <div className="mt-7 flex items-center justify-center gap-5">
           <Link href="/login" className="text-sm text-indigo-300 hover:text-white transition-colors font-medium">
-            Sign in
+            Already have an account? Sign in
           </Link>
           <span className="text-white/15">·</span>
           <button
             onClick={onDismiss}
             className="text-sm text-white/30 hover:text-white/60 transition-colors"
           >
-            Just browsing
+            Skip for now
           </button>
         </div>
 
