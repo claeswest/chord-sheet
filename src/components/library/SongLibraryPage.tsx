@@ -76,10 +76,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [searchBarStuck, setSearchBarStuck] = useState(false);
 
-  // Switch category and clear any active sort
+  // Switch category and clear any active sort; close sidebar on mobile
   const selectCategory = (id: string | null) => {
     setSelectedCategoryId(id);
     setSortBy(null);
+    if (window.innerWidth < 1024) setSidebarOpen(false);
   };
 
   const handleSortClick = (opt: "date" | "title" | "artist") => {
@@ -130,8 +131,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   // Expanded row menu (small screens)
   const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
 
-  // Sidebar open/close
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Sidebar open/close — hidden by default on mobile, open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useEffect(() => {
+    if (window.innerWidth >= 1024) setSidebarOpen(true);
+  }, []);
 
   // Ensure drag highlight never gets stuck if the browser skips onDragEnd
   useEffect(() => {
@@ -410,10 +414,35 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {isLoggedIn && <UserMenu userName={userName} userImage={userImage} />}
       </header>
 
-      <div className="flex flex-1">
-        {/* Sidebar — collapsible */}
-        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200 ${sidebarOpen ? "w-64 xl:w-80" : "w-0 py-0 border-r-0"}`}>
+      <div className="flex flex-1 relative">
+        {/* Mobile backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar — full-screen overlay on mobile, inline on desktop */}
+        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200
+          ${sidebarOpen
+            ? "fixed inset-0 z-40 w-full overflow-y-auto lg:relative lg:inset-auto lg:z-auto lg:w-64 xl:lg:w-80 lg:overflow-hidden"
+            : "w-0 py-0 border-r-0 lg:w-0"
+          }`}>
         {isLoggedIn ? (<>
+            {/* Mobile close button */}
+            <div className="lg:hidden flex items-center justify-between px-4 pb-3 border-b border-white/10 mb-1">
+              <span className="text-xs font-semibold uppercase tracking-widest text-white/40">Categories</span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
             <button
               onClick={() => selectCategory(null)}
               className={`flex items-center gap-2 pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
