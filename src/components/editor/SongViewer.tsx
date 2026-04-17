@@ -35,20 +35,20 @@ interface Props {
   isShared?: boolean; // hides the share button on public share pages
 }
 
-const SPEED_PX_PER_TICK: Record<number, number> = {
-  1: 0.15, 2: 0.25, 3: 0.38, 4: 0.52, 5: 0.68,
-  6: 0.85, 7: 1.05, 8: 1.28, 9: 1.55, 10: 1.85,
-  11: 2.20, 12: 2.60, 13: 3.05, 14: 3.55, 15: 4.10,
-  16: 4.70, 17: 5.40, 18: 6.15, 19: 7.00, 20: 8.00,
+// Pixels per millisecond at each speed step (display-rate independent)
+const SPEED_PX_PER_MS: Record<number, number> = {
+  1: 0.00375, 2: 0.00625, 3: 0.0095, 4: 0.013, 5: 0.017,
+  6: 0.02125, 7: 0.02625, 8: 0.032, 9: 0.03875, 10: 0.04625,
+  11: 0.055, 12: 0.065, 13: 0.07625, 14: 0.08875, 15: 0.1025,
+  16: 0.1175, 17: 0.135, 18: 0.15375, 19: 0.175, 20: 0.2,
 };
 const MAX_SPEED = 20;
-const TICK_MS = 40; // ~25fps
 
 export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const scrollAccRef = useRef(0); // accumulates sub-pixel amounts
+  const rafRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const speedKey = songId ? `scrollSpeed:${songId}` : null;
@@ -153,22 +153,28 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     }
   }, [playing, revealControls]);
 
-  // Scroll loop
+  // Scroll loop — rAF-driven for butter-smooth sub-pixel scrolling at any speed
   useEffect(() => {
-    if (playing) {
-      scrollAccRef.current = 0;
-      intervalRef.current = setInterval(() => {
-        scrollAccRef.current += SPEED_PX_PER_TICK[speed];
-        const pixels = Math.floor(scrollAccRef.current);
-        if (pixels >= 1) {
-          scrollRef.current?.scrollBy({ top: pixels });
-          scrollAccRef.current -= pixels;
-        }
-      }, TICK_MS);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    if (!playing) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      lastTimeRef.current = null;
+      return;
     }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    const step = (timestamp: number) => {
+      if (lastTimeRef.current !== null) {
+        const elapsed = Math.min(timestamp - lastTimeRef.current, 100); // cap for tab-switch gaps
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop += SPEED_PX_PER_MS[speed] * elapsed;
+        }
+      }
+      lastTimeRef.current = timestamp;
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      lastTimeRef.current = null;
+    };
   }, [playing, speed]);
 
   // Keyboard shortcuts: Space = play/pause, +/=/ArrowRight = faster, -/ArrowLeft = slower
