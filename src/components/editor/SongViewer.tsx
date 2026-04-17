@@ -49,6 +49,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const scrollRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
+  const scrollPosRef = useRef(0); // float position we own — never read back from DOM
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const speedKey = songId ? `scrollSpeed:${songId}` : null;
@@ -153,18 +154,27 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     }
   }, [playing, revealControls]);
 
-  // Scroll loop — rAF-driven for butter-smooth sub-pixel scrolling at any speed
+  // Scroll loop — rAF-driven for butter-smooth sub-pixel scrolling at any speed.
+  // We maintain our OWN float position (scrollPosRef) and write it to scrollTop
+  // each frame. Reading scrollTop back would floor it to an integer and lose
+  // the fractional part, preventing motion at slow speeds.
   useEffect(() => {
     if (!playing) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       lastTimeRef.current = null;
       return;
     }
+    // Seed our float position from the current DOM scroll so we continue
+    // smoothly from wherever the user has manually scrolled to.
+    scrollPosRef.current = scrollRef.current?.scrollTop ?? 0;
+    lastTimeRef.current = null;
+
     const step = (timestamp: number) => {
       if (lastTimeRef.current !== null) {
         const elapsed = Math.min(timestamp - lastTimeRef.current, 100); // cap for tab-switch gaps
+        scrollPosRef.current += SPEED_PX_PER_MS[speed] * elapsed;
         if (scrollRef.current) {
-          scrollRef.current.scrollTop += SPEED_PX_PER_MS[speed] * elapsed;
+          scrollRef.current.scrollTop = scrollPosRef.current;
         }
       }
       lastTimeRef.current = timestamp;
