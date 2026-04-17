@@ -135,23 +135,19 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // Keep playingRef in sync so revealControls closure is always fresh
   useEffect(() => { playingRef.current = playing; }, [playing]);
 
-  // Show controls and (re)start the 3s hide timer — only hides when playing
+  // Show controls and (re)start the hide timer.
+  // While playing: hide after 800 ms of inactivity.
+  // While paused:  hide after 3 s so the sheet stays readable.
   const revealControls = useCallback(() => {
     setShowControls(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    if (playingRef.current) {
-      hideTimerRef.current = setTimeout(() => setShowControls(false), 800);
-    }
+    const delay = playingRef.current ? 800 : 3000;
+    hideTimerRef.current = setTimeout(() => setShowControls(false), delay);
   }, []);
 
-  // When play starts, kick off the timer; when it stops, always show controls
+  // Kick off the timer whenever play state changes
   useEffect(() => {
-    if (playing) {
-      revealControls();
-    } else {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      setShowControls(true);
-    }
+    revealControls();
   }, [playing, revealControls]);
 
   // Scroll loop — rAF-driven for consistent timing at the display's refresh rate.
