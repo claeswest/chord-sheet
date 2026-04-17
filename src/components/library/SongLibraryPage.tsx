@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import WelcomeModal from "./WelcomeModal";
 import GuestImportBanner from "./GuestImportBanner";
 import { encodeSong } from "@/lib/songUrl";
@@ -59,6 +60,9 @@ interface Props {
 }
 
 export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Props) {
+  const searchParams = useSearchParams();
+  const forceWelcome = searchParams.get("welcome") === "1";
+
   const [songs, setSongs] = useState<Song[]>([]);
   const [categories, setCategories] = useState<DbCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -389,8 +393,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Welcome modal — shown to new users with an empty library */}
-      {!loading && songs.length === 0 && !welcomeDismissed && (
+      {/* Welcome modal — shown when library is empty OR when landing via ?welcome=1 */}
+      {!loading && (forceWelcome || songs.length === 0) && !welcomeDismissed && (
         <WelcomeModal onDismiss={() => setWelcomeDismissed(true)} />
       )}
 

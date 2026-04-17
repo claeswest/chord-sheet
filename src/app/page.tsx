@@ -95,7 +95,7 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
-                <Link href="/editor/new?start=search"
+                <Link href="/songs?welcome=1"
                   className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
                   style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
                 >
@@ -140,7 +140,7 @@ export default async function HomePage() {
 
           <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
             <Link
-              href="/editor/new?start=search"
+              href="/songs?welcome=1"
               className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03] text-center"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
             >
@@ -388,7 +388,7 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href={session ? "/songs" : "/editor/new?start=search"}
+                href={session ? "/songs" : "/songs?welcome=1"}
                 className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
                 style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
               >
