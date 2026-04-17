@@ -426,7 +426,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         {/* Sidebar — full-screen overlay on mobile, inline on desktop */}
         <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200
           ${sidebarOpen
-            ? "fixed inset-0 z-40 w-full overflow-y-auto lg:relative lg:inset-auto lg:z-auto lg:w-64 xl:lg:w-80 lg:overflow-hidden"
+            ? "fixed inset-0 z-40 w-full overflow-y-auto overscroll-contain lg:relative lg:inset-auto lg:z-auto lg:w-64 xl:lg:w-80 lg:overflow-hidden"
             : "w-0 py-0 border-r-0 lg:w-0"
           }`}>
         {isLoggedIn ? (<>
@@ -461,7 +461,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
             </div>
 
 
-            <div className="flex-1 overflow-y-auto pb-2">
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-2">
               {/* Render parent categories, each followed by their subcategories */}
               {categories.filter((c) => !c.parentId).map((cat) => {
                 const children = categories.filter((c) => c.parentId === cat.id);
@@ -686,7 +686,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 px-6 pt-3 pb-6 min-w-0">
+        <main className="flex-1 px-6 pt-3 pb-6 min-w-0 scroll-smooth">
           <div>
             {/* Sentinel: when this leaves the viewport the search bar is "stuck" */}
             <div ref={sentinelRef} className="h-0" />
@@ -799,7 +799,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             ) : viewMode === "grid" ? (
               /* ── Card / Grid view ─────────────────────────────────────── */
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div key={`${selectedCategoryId}-${search}`} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 song-list-enter">
                 {filtered.map((song) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
                   const editUrl = `/editor/new?song=${encoded}`;
@@ -888,7 +888,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
-              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mt-4">
+              <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mt-4 song-list-enter">
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
