@@ -41,7 +41,7 @@ export default function WelcomeModal({ onDismiss }: Props) {
 
           {/* Find a song — primary */}
           <Link
-            href="/editor/new"
+            href="/editor/new?start=search"
             className="relative overflow-hidden group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white transition-all duration-200 text-left hover:scale-[1.02]"
             style={{
               background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
@@ -67,7 +67,7 @@ export default function WelcomeModal({ onDismiss }: Props) {
 
           {/* Import */}
           <Link
-            href="/editor/new"
+            href="/editor/new?start=import"
             className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
             style={{ background: "rgba(255,255,255,0.04)" }}
           >
@@ -87,7 +87,7 @@ export default function WelcomeModal({ onDismiss }: Props) {
 
           {/* Write myself */}
           <Link
-            href="/editor/new"
+            href="/editor/new?start=write"
             className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
             style={{ background: "rgba(255,255,255,0.04)" }}
           >

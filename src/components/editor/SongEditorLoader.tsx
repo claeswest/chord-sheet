@@ -23,5 +23,6 @@ export default function SongEditorLoader({ isLoggedIn, hasSongs = false }: Props
 
   const encoded = searchParams.get("song");
   const initialSong: SharedSong | null = encoded ? decodeSong(encoded) : null;
-  return <SongEditor initialSong={initialSong} isLoggedIn={isLoggedIn} hasSongs={hasSongs} />;
+  const start = searchParams.get("start") as "search" | "import" | "write" | null;
+  return <SongEditor initialSong={initialSong} isLoggedIn={isLoggedIn} hasSongs={hasSongs} initialMode={start} />;
 }

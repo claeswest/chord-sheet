@@ -78,22 +78,25 @@ interface SongEditorProps {
   initialSong?: SharedSong | null;
   isLoggedIn?: boolean;
   hasSongs?: boolean;
+  initialMode?: "search" | "import" | "write" | null;
 }
 
-export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs = false }: SongEditorProps = {}) {
+export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs = false, initialMode }: SongEditorProps = {}) {
   const router = useRouter();
   const [title, setTitle] = useState(initialSong?.title ?? "");
   const [artist, setArtist] = useState(initialSong?.artist ?? "");
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
-  const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(false);
+  const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(
+    initialMode === "search" ? "search" : initialMode === "import" ? "text" : false
+  );
   // Start modal: only show on a genuinely blank new song
   const isBlankNew = !initialSong || (
     (initialSong.lines?.length ?? 0) <= 1 &&
     (initialSong.lines?.[0] as any)?.text === "" &&
     ((initialSong.lines?.[0] as any)?.chords?.length ?? 0) === 0
   );
-  const [startModalDismissed, setStartModalDismissed] = useState(!isBlankNew);
+  const [startModalDismissed, setStartModalDismissed] = useState(!isBlankNew || !!initialMode);
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [semitones, setSemitones] = useState(initialSong?.semitones ?? 0);
   const [mounted, setMounted] = useState(false);
