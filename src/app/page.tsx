@@ -95,8 +95,16 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
-                <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap">
-                  Get started free
+                <Link href="/songs"
+                  className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
+                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
+                >
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
+                  <span className="relative">Get started free</span>
+                  <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+                  </svg>
                 </Link>
               </>
             )}
@@ -133,9 +141,18 @@ export default async function HomePage() {
           <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
             <Link
               href="/songs"
-              className="bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors shadow-lg shadow-indigo-900/50 text-center"
+              className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03] text-center"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
             >
-              Start for free
+              {/* shimmer sweep */}
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)", backgroundSize: "200% 100%" }} />
+              <span className="relative flex items-center justify-center gap-2">
+                Start for free
+                <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+                </svg>
+              </span>
             </Link>
             <Link
               href="#features"
@@ -372,9 +389,15 @@ export default async function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/songs"
-                className="inline-block bg-indigo-500 hover:bg-indigo-400 text-white px-10 py-4 rounded-full text-base font-semibold transition-colors shadow-xl shadow-indigo-900/60"
+                className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
+                style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
               >
-                {session ? "Go to my songs →" : "Start for free →"}
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
+                <span className="relative">{session ? "Go to my songs" : "Start for free"}</span>
+                <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+                </svg>
               </Link>
               {!session && (
                 <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
