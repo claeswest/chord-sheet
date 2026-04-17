@@ -615,12 +615,12 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       {/* Hidden print view — required for PDF export */}
       <PrintView title={title} artist={artist} lines={lines} songStyle={songStyle} watermark />
 
-      {/* Scroll to top button — appears once scrolled down, left side to avoid controls */}
+      {/* Scroll to top button — appears once scrolled down, sits above the control bar */}
       <button
         onClick={scrollToTop}
         aria-label="Scroll to top"
         title="Scroll to top [T]"
-        className={`fixed bottom-28 left-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-md shadow-lg shadow-black/30 transition-all duration-300 group ${
+        className={`fixed bottom-36 right-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-md shadow-lg shadow-black/30 transition-all duration-300 group ${
           scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
       >
