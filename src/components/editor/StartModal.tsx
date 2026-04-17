@@ -12,94 +12,121 @@ interface Props {
 
 export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo = false, onDemo }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-5"
+      style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #1a1640 100%)" }}
+    >
+      {/* Radial glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(99,102,241,0.28) 0%, transparent 70%)",
+      }} />
 
-        {/* Header — dark navy, matches ImportModal */}
-        <div className="px-6 py-5" style={{ background: "#302b63" }}>
-          <h2 className="text-lg font-semibold text-white">New chord sheet</h2>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>How do you want to start?</p>
+      <div className="relative w-full max-w-sm">
+
+        {/* Header */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="relative mb-5">
+            <div className="absolute inset-0 rounded-2xl blur-xl opacity-60"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", transform: "scale(1.3)" }} />
+            <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white">
+                <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">New chord sheet</h2>
+          <p className="text-white/40 mt-2 text-sm">How do you want to get started?</p>
         </div>
 
         {/* Options */}
-        <div className="p-4 space-y-2">
+        <div className="space-y-2.5">
 
+          {/* Find a song — primary */}
           <button
             onClick={onSearch}
-            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
+            className="relative overflow-hidden group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white transition-all duration-200 text-left hover:scale-[1.02]"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+              boxShadow: "0 4px 24px rgba(99,102,241,0.45), 0 1px 3px rgba(0,0,0,0.3)",
+            }}
           >
-            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.13) 50%, transparent 60%)" }} />
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
               </svg>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Find a song</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Search by artist and title · AI powered</p>
+            <div className="relative flex-1 min-w-0">
+              <p className="font-semibold text-sm">Find a song with AI</p>
+              <p className="text-xs text-indigo-200 mt-0.5">Type a title — chords appear in seconds</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="relative w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
+          {/* Import */}
           <button
             onClick={onImport}
-            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
+            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
+            style={{ background: "rgba(255,255,255,0.04)" }}
           >
-            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)" }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Import from web or photo</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Paste text or upload a photo</p>
+              <p className="font-semibold text-sm">I already have chords</p>
+              <p className="text-xs text-white/30 mt-0.5">Paste text or snap a photo of a paper sheet</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
+          {/* Write myself */}
           <button
             onClick={onWriteMyself}
-            className="w-full flex items-center gap-4 px-4 py-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 transition-colors text-left group"
+            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
+            style={{ background: "rgba(255,255,255,0.04)" }}
           >
-            <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)" }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Start with a blank sheet</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Type your own chords and lyrics</p>
+              <p className="font-semibold text-sm">Build from scratch</p>
+              <p className="text-xs text-white/30 mt-0.5">Blank editor — drag and drop chords yourself</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
         </div>
 
-        {/* Demo link — only for first-time users */}
-        {showDemo && onDemo && (
-          <div className="px-4 pb-2 text-center">
+        {/* Footer */}
+        <div className="mt-7 flex flex-col items-center gap-2.5">
+          {showDemo && onDemo && (
             <button
               onClick={onDemo}
-              className="text-xs text-indigo-400 hover:text-indigo-600 transition-colors"
+              className="text-sm text-indigo-300/80 hover:text-indigo-200 transition-colors"
             >
-              ✦ Explore with a demo song
+              ✦ <span className="font-semibold text-indigo-300">Explore with a demo song</span>
             </button>
-          </div>
-        )}
-
-        {/* Back link */}
-        <div className="pb-4 text-center">
+          )}
           <Link
             href="/songs"
-            className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors inline-flex items-center gap-1.5"
+            className="text-xs text-white/20 hover:text-white/40 transition-colors inline-flex items-center gap-1"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Back to songs
