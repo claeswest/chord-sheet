@@ -101,7 +101,7 @@ export default async function HomePage() {
                 >
                   <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                     style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                  <span className="relative">Get started free</span>
+                  <span className="relative">Try it free</span>
                   <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                   </svg>
@@ -148,7 +148,7 @@ export default async function HomePage() {
               <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)", backgroundSize: "200% 100%" }} />
               <span className="relative flex items-center justify-center gap-2">
-                Start for free
+                Try it free
                 <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
@@ -326,7 +326,7 @@ export default async function HomePage() {
                             : "bg-zinc-900 text-white hover:bg-zinc-700"
                         }`}
                       >
-                        {isFree ? "Get started free" : "Start 7-day free trial →"}
+                        {isFree ? "Try it free" : "Start 7-day free trial →"}
                       </Link>
                       {!isFree && (
                         <p className="text-center text-[11px] text-zinc-400">
@@ -378,7 +378,7 @@ export default async function HomePage() {
 
           <div className="relative max-w-2xl mx-auto">
             <span className="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 border border-indigo-500/30">
-              Get started free
+              Free to use
             </span>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
               Your songs deserve<br />a better home.
@@ -394,7 +394,7 @@ export default async function HomePage() {
               >
                 <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                <span className="relative">{session ? "Go to my songs" : "Start for free"}</span>
+                <span className="relative">{session ? "Go to my songs" : "Try it free"}</span>
                 <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
