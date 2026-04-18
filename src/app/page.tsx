@@ -186,9 +186,9 @@ export default async function HomePage() {
           {/* 3 highlights — horizontal until md, then 3-column vertical */}
           <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { icon: "⚡", title: "Instant AI import",       body: "Search a song name and get a complete chord sheet in seconds — no copying, no pasting." },
-              { icon: "🎯", title: "Precise chord placement", body: "Drag chords to the exact syllable. What you see in the editor is what you perform."     },
-              { icon: "▶️", title: "Follow along, hands-free",  body: "Press play and the sheet scrolls at your pace — just focus on the music. No tapping, no losing your place mid-song." },
+              { icon: "⚡", title: "Find any song with AI",    body: "Type a song title and get a complete chord sheet in seconds — ready to play." },
+              { icon: "🎯", title: "Precise chord placement", body: "Place each chord exactly where it falls on the beat. What you build is what you play."  },
+              { icon: "▶️", title: "Follow along, hands-free",  body: "Hit play and the sheet scrolls at your pace. No tapping, no losing your place mid-song." },
             ].map((h) => (
               <div key={h.title}
                 className="flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl"
