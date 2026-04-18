@@ -1,32 +1,41 @@
 import Script from "next/script";
 
+const AW_ID = "AW-1064389018"; // Google Ads conversion tracking
+
 /**
- * Google Analytics 4 — loaded only when NEXT_PUBLIC_GA_ID is set.
+ * Google Analytics 4 + Google Ads tracking.
  *
- * Setup:
+ * GA4 setup:
  *   1. Create a GA4 property at analytics.google.com
  *   2. Add NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX to your Vercel env vars
- *   3. For Google Ads conversion tracking, link your GA4 property to your
- *      Google Ads account and import Goals as conversions.
  */
 export default function GoogleAnalytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  if (!gaId) return null;
 
   return (
     <>
+      {/* Google Ads conversion tracking — always active */}
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${AW_ID}`}
         strategy="afterInteractive"
       />
-      <Script id="google-analytics" strategy="afterInteractive">
+      <Script id="google-ads" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${gaId}', { send_page_view: true });
+          gtag('config', '${AW_ID}');
         `}
       </Script>
+
+      {/* GA4 — active only when NEXT_PUBLIC_GA_ID is set */}
+      {gaId && (
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            gtag('config', '${gaId}', { send_page_view: true });
+          `}
+        </Script>
+      )}
     </>
   );
 }
