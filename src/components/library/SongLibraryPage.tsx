@@ -415,7 +415,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
         <div className="flex-1" />
-        {isLoggedIn && <UserMenu userName={userName} userImage={userImage} />}
+        {isLoggedIn
+          ? <UserMenu userName={userName} userImage={userImage} />
+          : <Link href="/login" className="text-sm font-medium px-4 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">Sign in</Link>
+        }
       </header>
 
       <div className="flex flex-1 relative">
