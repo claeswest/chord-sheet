@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     console.error("Gemini search error:", err);
+    if (res.status === 429) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
     return NextResponse.json({ error: "AI service error" }, { status: 502 });
   }
 

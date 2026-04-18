@@ -230,8 +230,10 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
       if (!res.ok) {
         if (res.status === 404 || data.notFound) {
           setSearchError("Song not found — try a different title or artist name");
+        } else if (res.status === 429 || data.error === "rate_limited") {
+          setSearchError("The AI is busy right now — please try again in a moment");
         } else {
-          setSearchError(data.error ?? "Search failed");
+          setSearchError("Something went wrong — please try again");
         }
         return;
       }
