@@ -25,7 +25,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
     stripePriceId: undefined,
     isRecurring: false,
     features: {
-      songLimit: 20,
+      songLimit: 5,
       pdfExport: false,
       sharing: false,
       setlists: false,
