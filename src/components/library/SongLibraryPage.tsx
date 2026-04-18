@@ -363,9 +363,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
       if (fromIdx === -1 || toIdx === -1) return prev;
       const [moved] = next.splice(fromIdx, 1);
       next.splice(toIdx, 0, moved);
-      reorderCategories(next.map((c) => c.id));
       return next;
     });
+    // Compute new order outside the updater and persist it
+    const next = [...categories];
+    const fromIdx = next.findIndex((c) => c.id === fromId);
+    const toIdx = next.findIndex((c) => c.id === toId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    reorderCategories(next.map((c) => c.id));
   };
 
   const handleRemoveFromCategory = async (songId: string, categoryId: string) => {
