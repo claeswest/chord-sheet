@@ -139,6 +139,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
   // Expanded row menu (small screens)
   const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
+  const [catPickerSongId, setCatPickerSongId] = useState<string | null>(null);
 
   // Sidebar open/close — hidden by default on mobile, open on desktop
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1192,20 +1193,51 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                             Delete
                           </button>
                         </div>
-                        {/* Categories */}
-                        {song.categoryIds.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {song.categoryIds.map((catId) => {
-                              const cat = categories.find((c) => c.id === catId);
-                              if (!cat) return null;
-                              const color = getCatColor(catId, categories);
-                              return (
-                                <span key={catId} className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}>
-                                  {cat.name}
-                                  <button onClick={() => handleRemoveFromCategory(song.id, catId)} className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity">×</button>
-                                </span>
-                              );
-                            })}
+                        {/* Categories + add picker */}
+                        {isLoggedIn && (
+                          <div className="mt-2">
+                            <div className="flex flex-wrap gap-1 mb-1.5">
+                              {song.categoryIds.map((catId) => {
+                                const cat = categories.find((c) => c.id === catId);
+                                if (!cat) return null;
+                                const color = getCatColor(catId, categories);
+                                return (
+                                  <span key={catId} className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}>
+                                    {cat.name}
+                                    <button onClick={() => handleRemoveFromCategory(song.id, catId)} className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity">×</button>
+                                  </span>
+                                );
+                              })}
+                              <button
+                                onClick={() => setCatPickerSongId(catPickerSongId === song.id ? null : song.id)}
+                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-zinc-100 text-zinc-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors border border-dashed border-zinc-300 hover:border-indigo-300"
+                              >
+                                + Category
+                              </button>
+                            </div>
+                            {catPickerSongId === song.id && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {categories.filter((c) => !song.categoryIds.includes(c.id)).map((cat) => {
+                                  const color = getCatColor(cat.id, categories);
+                                  return (
+                                    <button
+                                      key={cat.id}
+                                      onClick={async () => {
+                                        setSongs((prev) => prev.map((s) => s.id === song.id ? { ...s, categoryIds: [...s.categoryIds, cat.id] } : s));
+                                        setCatPickerSongId(null);
+                                        await addSongToCategory(cat.id, song.id);
+                                      }}
+                                      className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${color.chip} opacity-70 hover:opacity-100 transition-opacity`}
+                                    >
+                                      {cat.name}
+                                    </button>
+                                  );
+                                })}
+                                {categories.filter((c) => !song.categoryIds.includes(c.id)).length === 0 && (
+                                  <span className="text-xs text-zinc-400">All categories assigned</span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
