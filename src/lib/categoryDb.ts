@@ -54,6 +54,14 @@ export async function removeSongFromCategory(categoryId: string, songId: string)
   });
 }
 
+export async function reorderCategories(ids: string[]): Promise<void> {
+  await fetch("/api/categories", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+}
+
 export async function reorderSongsInCategory(categoryId: string, songIds: string[]): Promise<void> {
   const res = await fetch(`/api/categories/${categoryId}/songs`, {
     method: "PUT",

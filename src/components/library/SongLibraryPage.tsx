@@ -10,7 +10,7 @@ import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, type DbSong } f
 import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
-  addSongToCategory, removeSongFromCategory, reorderSongsInCategory, type DbCategory,
+  addSongToCategory, removeSongFromCategory, reorderSongsInCategory, reorderCategories, type DbCategory,
 } from "@/lib/categoryDb";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
@@ -131,6 +131,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
 
   // Drag and drop — reorder within category
   const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
+
+  // Drag and drop — reorder categories
+  const [dragCatId, setDragCatId] = useState<string | null>(null);
+  const [dragOverCatReorderId, setDragOverCatReorderId] = useState<string | null>(null);
+  const touchCatDragRef = useRef<{ catId: string; startY: number } | null>(null);
 
   // Expanded row menu (small screens)
   const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
@@ -348,6 +353,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     await addSongToCategory(categoryId, songId);
   };
 
+  const handleCatReorder = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    setCategories((prev) => {
+      const next = [...prev];
+      const fromIdx = next.findIndex((c) => c.id === fromId);
+      const toIdx = next.findIndex((c) => c.id === toId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      reorderCategories(next.map((c) => c.id));
+      return next;
+    });
+  };
+
   const handleRemoveFromCategory = async (songId: string, categoryId: string) => {
     setSongs((prev) =>
       prev.map((s) => (s.id === songId ? { ...s, categoryIds: s.categoryIds.filter((id) => id !== categoryId) } : s))
@@ -482,16 +501,33 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   <div key={cat.id}>
                     {/* Parent category row */}
                     <div
-                      onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
-                      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
-                      onDrop={(e) => handleDrop(e, cat.id)}
+                      data-cat-id={cat.id}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (dragCatId && dragCatId !== cat.id) { setDragOverCatReorderId(cat.id); return; }
+                        setDragOverCategoryId(cat.id);
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                          setDragOverCategoryId(null);
+                          setDragOverCatReorderId(null);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        if (dragCatId) { handleCatReorder(dragCatId, cat.id); setDragCatId(null); setDragOverCatReorderId(null); return; }
+                        handleDrop(e, cat.id);
+                      }}
                       className={`group flex items-center gap-1 pl-3 pr-2 transition-all duration-100 border-l-4 ${
                         dragSongId ? "py-3" : "py-1.5"
                       } ${
-                        dragOverCategoryId === cat.id
+                        dragOverCatReorderId === cat.id
+                          ? "bg-white/20 ring-2 ring-inset ring-white/40 border-l-transparent"
+                          : dragOverCategoryId === cat.id
                           ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400 border-l-transparent"
                           : dragSongId
                           ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
+                          : dragCatId === cat.id
+                          ? "opacity-40 border-l-transparent"
                           : selectedCategoryId === cat.id
                           ? `bg-white/20 ${getCatColor(cat.id, categories).sidebarSelected}`
                           : "hover:bg-white/10 border-l-transparent"
@@ -506,6 +542,32 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         />
                       ) : (
                         <>
+                          {/* Category drag handle */}
+                          <span
+                            draggable
+                            onDragStart={(e) => { e.stopPropagation(); e.dataTransfer.effectAllowed = "move"; setDragCatId(cat.id); }}
+                            onDragEnd={() => { setDragCatId(null); setDragOverCatReorderId(null); }}
+                            onTouchStart={(e) => { touchCatDragRef.current = { catId: cat.id, startY: e.touches[0].clientY }; }}
+                            onTouchMove={(e) => {
+                              if (!touchCatDragRef.current) return;
+                              e.preventDefault();
+                              setDragCatId(touchCatDragRef.current.catId);
+                              const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+                              const row = el?.closest("[data-cat-id]");
+                              const overId = row?.getAttribute("data-cat-id") ?? null;
+                              setDragOverCatReorderId(overId !== touchCatDragRef.current.catId ? overId : null);
+                            }}
+                            onTouchEnd={() => {
+                              if (touchCatDragRef.current && dragOverCatReorderId) {
+                                handleCatReorder(touchCatDragRef.current.catId, dragOverCatReorderId);
+                              }
+                              touchCatDragRef.current = null;
+                              setDragCatId(null);
+                              setDragOverCatReorderId(null);
+                            }}
+                            className="shrink-0 text-white/20 hover:text-white/60 sm:opacity-0 sm:group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
+                            title="Drag to reorder"
+                          >⠿</span>
                           <span className="w-4 h-4 shrink-0 flex items-center justify-center">
                             {children.length > 0 && (
                               <button onClick={() => toggleCollapse(cat.id)} className="text-white/60 hover:text-white transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
@@ -806,7 +868,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
               </div>
             ) : viewMode === "grid" ? (
               /* ── Card / Grid view ─────────────────────────────────────── */
-              <div key={`${selectedCategoryId}-${search}`} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 song-list-enter">
+              <div key={`${selectedCategoryId}-${search}`} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pt-4 song-list-enter">
                 {filtered.map((song) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
                   const editUrl = `/editor/new?song=${encoded}`;

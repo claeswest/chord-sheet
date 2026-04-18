@@ -21,6 +21,25 @@ export async function GET() {
   })));
 }
 
+export async function PUT(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { ids } = await req.json();
+  if (!Array.isArray(ids)) return NextResponse.json({ error: "ids required" }, { status: 400 });
+
+  await Promise.all(
+    ids.map((id: string, index: number) =>
+      prisma.category.updateMany({
+        where: { id, userId: session.user!.id },
+        data: { order: index },
+      })
+    )
+  );
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
