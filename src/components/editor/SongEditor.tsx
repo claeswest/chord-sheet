@@ -30,7 +30,7 @@ import PrintView from "./PrintView";
 import StartModal from "./StartModal";
 import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
-import { upsertSong, fetchSongStyle } from "@/lib/songDb";
+import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -424,7 +424,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
     if (isLoggedIn) {
-      await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle, semitones });
+      try {
+        await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle, semitones });
+      } catch (err) {
+        if (err instanceof SongLimitError) {
+          // Redirect to songs page where the upgrade modal will guide the user
+          router.push("/songs");
+          return;
+        }
+        throw err;
+      }
     } else {
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
     }

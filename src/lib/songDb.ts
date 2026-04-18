@@ -20,12 +20,20 @@ export async function fetchSongs(): Promise<DbSong[]> {
   return rows.map(rowToDbSong);
 }
 
+export class SongLimitError extends Error {
+  constructor() { super("limit_reached"); this.name = "SongLimitError"; }
+}
+
 export async function upsertSong(song: Omit<DbSong, "updatedAt">): Promise<DbSong> {
   const res = await fetch("/api/songs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(song),
   });
+  if (res.status === 403) {
+    const body = await res.json().catch(() => ({}));
+    if (body.error === "limit_reached") throw new SongLimitError();
+  }
   if (!res.ok) throw new Error("Failed to save song");
   return rowToDbSong(await res.json());
 }

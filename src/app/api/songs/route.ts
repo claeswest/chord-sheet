@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { planFromUser, getSongLimit } from "@/lib/plans";
 
 // GET /api/songs — list all songs for the current user
 export async function GET() {
@@ -79,6 +80,27 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const { id, title, artist, lines, tags, style, semitones } = body;
+
+  // Check if this is a new song (no existing record for this id + user)
+  const existing = id
+    ? await prisma.song.findFirst({ where: { id, userId: session.user.id }, select: { id: true } })
+    : null;
+
+  if (!existing) {
+    // New song — enforce plan limit
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true, stripeSubscriptionId: true, stripeCurrentPeriodEnd: true, stripeSubscriptionStatus: true },
+    });
+    const plan = planFromUser(user ?? {});
+    const limit = getSongLimit(plan);
+    if (limit !== null) {
+      const count = await prisma.song.count({ where: { userId: session.user.id } });
+      if (count >= limit) {
+        return NextResponse.json({ error: "limit_reached" }, { status: 403 });
+      }
+    }
+  }
 
   const song = await prisma.song.upsert({
     where: { id: id ?? "__new__" },

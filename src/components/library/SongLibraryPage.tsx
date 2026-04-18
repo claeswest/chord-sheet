@@ -57,9 +57,11 @@ interface Props {
   isLoggedIn: boolean;
   userName?: string | null;
   userImage?: string | null;
+  /** null = unlimited (paid plan). number = max songs allowed on free plan. */
+  songLimit?: number | null;
 }
 
-export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Props) {
+export default function SongLibraryPage({ isLoggedIn, userName, userImage, songLimit = null }: Props) {
   const searchParams = useSearchParams();
   const forceWelcome = searchParams.get("welcome") === "1";
 
@@ -146,6 +148,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
   useEffect(() => {
     if (window.innerWidth >= 1024) setSidebarOpen(true);
   }, []);
+
+  // Upgrade modal
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // Which songs are locked: those beyond the plan limit (by current sort order)
+  const lockedSongIds: Set<string> = songLimit !== null && songs.length > songLimit
+    ? new Set(songs.slice(songLimit).map((s) => s.id))
+    : new Set();
+  const atLimit = songLimit !== null && songs.length >= songLimit;
 
   // Ensure drag highlight never gets stuck if the browser skips onDragEnd
   useEffect(() => {
@@ -794,15 +805,28 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 />
               </div>
               <div className="flex-1" />
-              <Link
-                href="/editor/new"
-                className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shrink-0"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
-                  <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
-                </svg>
-                New Song
-              </Link>
+              {atLimit ? (
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="flex items-center gap-1.5 text-sm bg-zinc-200 text-zinc-500 px-4 py-2 rounded-lg font-medium shrink-0 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                  title={`Free plan limit: ${songLimit} songs`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
+                    <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
+                  </svg>
+                  New Song
+                </button>
+              ) : (
+                <Link
+                  href="/editor/new"
+                  className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shrink-0"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
+                    <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
+                  </svg>
+                  New Song
+                </Link>
+              )}
               {/* List / Grid toggle */}
               {!loading && (
                 <div className="flex items-center gap-0.5 bg-white border border-zinc-200 rounded-lg p-0.5 shrink-0">
@@ -821,6 +845,25 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                 </div>
               )}
             </div>
+
+            {/* Plan limit banner */}
+            {!loading && atLimit && isLoggedIn && (
+              <div className="mt-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-500 shrink-0">
+                  <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
+                </svg>
+                <p className="flex-1 text-sm text-amber-800">
+                  <span className="font-semibold">Free plan limit reached</span> — you can keep your existing songs, but need to upgrade to add more.
+                  {lockedSongIds.size > 0 && <span> Your {lockedSongIds.size} older song{lockedSongIds.size !== 1 ? "s are" : " is"} locked below.</span>}
+                </p>
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="shrink-0 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Upgrade
+                </button>
+              </div>
+            )}
 
             {/* Guest song import banner — shown to logged-in users who have orphaned localStorage songs */}
             {isLoggedIn && !loading && typeof window !== "undefined" && !sessionStorage.getItem("guestImportSnoozed") && (
@@ -902,18 +945,33 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const chordCount = (song.lines as any[])?.reduce((n: number, l: any) => n + (l.chords?.length ?? 0), 0) ?? 0;
 
+                  const isLocked = lockedSongIds.has(song.id);
+
                   return (
                     <div
                       key={song.id}
-                      draggable={isLoggedIn}
-                      onDragStart={(e) => handleDragStart(e, song.id)}
+                      draggable={isLoggedIn && !isLocked}
+                      onDragStart={(e) => !isLocked && handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
-                      className={`group relative rounded-xl border border-zinc-200 overflow-hidden bg-white hover:shadow-md transition-all ${
-                        dragSongId === song.id ? "opacity-40" : ""
-                      }`}
+                      className={`group relative rounded-xl border overflow-hidden bg-white transition-all ${
+                        isLocked
+                          ? "opacity-50 border-zinc-200 hover:opacity-70 hover:border-amber-300 cursor-pointer"
+                          : "border-zinc-200 hover:shadow-md"
+                      } ${dragSongId === song.id ? "opacity-40" : ""}`}
+                      onClick={isLocked ? () => setShowUpgradeModal(true) : undefined}
                     >
+                      {/* Lock overlay for grid cards */}
+                      {isLocked && (
+                        <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                          <div className="bg-amber-400/90 rounded-full p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
+                              <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
                       {/* Coloured top area */}
-                      <Link href={viewUrl} className="block">
+                      <Link href={isLocked ? "#" : viewUrl} onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined} className="block">
                         <div
                           className="px-4 pt-4 pb-5 min-h-[88px]"
                           style={cardBg
@@ -1021,11 +1079,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                   }, 0);
                   const firstChord = allLines.find((l: any) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
 
+                  const isLocked = lockedSongIds.has(song.id);
+
                   return (
                     <React.Fragment key={song.id}>
                     <div
-                      draggable={isLoggedIn}
-                      onDragStart={(e) => handleDragStart(e, song.id)}
+                      draggable={isLoggedIn && !isLocked}
+                      onDragStart={(e) => !isLocked && handleDragStart(e, song.id)}
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -1035,8 +1095,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       }}
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
-                      onClick={() => window.location.href = viewUrl}
-                      className={`group relative flex items-center gap-4 px-5 py-4 transition-colors hover:bg-indigo-50/60 cursor-pointer ${
+                      onClick={() => isLocked ? setShowUpgradeModal(true) : (window.location.href = viewUrl)}
+                      className={`group relative flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
+                        isLocked ? "opacity-50 hover:opacity-70 hover:bg-amber-50/40" : "hover:bg-indigo-50/60"
+                      } ${
                         idx !== 0 || expandedSongId !== null ? "border-t border-zinc-100" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
@@ -1046,6 +1108,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       {!rowBg && firstCatAccent ? (
                         <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-50 ${firstCatAccent}`} />
                       ) : null}
+
+                      {/* Lock icon for over-limit songs */}
+                      {isLocked && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-400">
+                            <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
+                          </svg>
+                        </div>
+                      )}
 
                       {/* Drag handle */}
                       {isLoggedIn && (
@@ -1276,6 +1347,42 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
           </div>
         </main>
       </div>
+
+      {/* Upgrade modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowUpgradeModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-500">
+                  <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-zinc-900">Unlock all your songs</h2>
+                <p className="text-xs text-zinc-500">Free plan is limited to {songLimit} songs</p>
+              </div>
+            </div>
+            <p className="text-sm text-zinc-600 mb-5 leading-relaxed">
+              All your songs are safely stored — upgrade to access your full library, add unlimited songs, and export to PDF.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+              >
+                Not now
+              </button>
+              <Link
+                href="/pricing"
+                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
+              >
+                See plans
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation modal */}
       {confirmDelete && (
