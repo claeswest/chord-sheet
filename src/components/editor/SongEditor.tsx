@@ -128,6 +128,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   });
   const [rightPanel, setRightPanel] = useState<"chords" | "background" | "text">("chords");
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const [showSmallScreenBanner, setShowSmallScreenBanner] = useState(true);
   // Always-current snapshot of song data — updated every render so effects can read
   // latest values without adding them as deps (avoids stale closures).
   const latestSongRef = useRef({ title, artist, lines, songId, songStyle });
@@ -565,12 +566,23 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Small-screen warning banner */}
-      <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
-        <svg className="w-5 h-5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-        </svg>
-        <span>The editor works best on a larger screen.</span>
-      </div>
+      {showSmallScreenBanner && (
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
+          <svg className="w-5 h-5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
+          <span className="flex-1">Best on a larger screen.</span>
+          <button
+            onClick={() => setShowSmallScreenBanner(false)}
+            className="text-amber-500 hover:text-amber-700 transition-colors"
+            aria-label="Dismiss"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Toolbar */}
       <header className="flex items-center gap-3 px-6 h-14 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
