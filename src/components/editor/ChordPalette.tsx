@@ -25,11 +25,12 @@ const QUALITIES = [
 interface Props {
   activeChord: string | null;
   onSelectChord: (chord: string | null) => void;
+  onConfirmChord?: () => void;
   songChords?: string[];
   asideClassName?: string;
 }
 
-export default function ChordPalette({ activeChord, onSelectChord, songChords = [], asideClassName }: Props) {
+export default function ChordPalette({ activeChord, onSelectChord, onConfirmChord, songChords = [], asideClassName }: Props) {
   const [root, setRoot] = useState<string | null>(null);
   const [accidental, setAccidental] = useState("");
   const [quality, setQuality] = useState("");
@@ -99,12 +100,20 @@ export default function ChordPalette({ activeChord, onSelectChord, songChords = 
               <p className="text-xs text-indigo-200 mb-0.5">Selected chord</p>
               <p className="text-2xl font-bold text-white leading-none">{activeChord}</p>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-indigo-200 mb-1.5">Click a lyric line to place</p>
-              <button
-                onClick={() => onSelectChord(null)}
-                className="text-xs text-indigo-200 hover:text-white transition-colors border border-indigo-400 hover:border-indigo-200 rounded-lg px-2 py-1"
-              >Clear</button>
+            <div className="text-right flex flex-col items-end gap-1.5">
+              <p className="text-xs text-indigo-200">Tap a lyric line to place</p>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => onSelectChord(null)}
+                  className="text-xs text-indigo-200 hover:text-white transition-colors border border-indigo-400 hover:border-indigo-200 rounded-lg px-2 py-1"
+                >Clear</button>
+                {onConfirmChord && (
+                  <button
+                    onClick={onConfirmChord}
+                    className="sm:hidden text-xs bg-white text-indigo-600 font-semibold rounded-lg px-2 py-1 hover:bg-indigo-50 transition-colors"
+                  >Place →</button>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -119,7 +128,7 @@ export default function ChordPalette({ activeChord, onSelectChord, songChords = 
             <p className="text-xs font-medium text-zinc-500 mb-2">In this song</p>
             <div className="flex gap-1 flex-wrap">
               {songChords.map((chord) => (
-                <button key={chord} onClick={() => onSelectChord(chord)}
+                <button key={chord} onClick={() => { onSelectChord(chord); onConfirmChord?.(); }}
                   className={`${btnBase} ${activeChord === chord ? btnActive : btnIdle}`}
                 >{chord}</button>
               ))}

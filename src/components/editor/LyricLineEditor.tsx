@@ -87,20 +87,16 @@ export default function LyricLineEditor({
   useEffect(() => { lyricFontRef.current = lyricFont; }, [lyricFont]);
   useEffect(() => { lineTextRef.current  = line.text;  }, [line.text]);
 
-  // Global mouse listeners for drag
+  // Global mouse/touch listeners for drag
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const applyDrag = (clientX: number) => {
       const d = draggingRef.current;
       if (!d || !chordAreaRef.current) return;
       const size = lyricSizeRef.current;
       const font = lyricFontRef.current;
       const text = lineTextRef.current;
       const charW = measureWidth("M", size, font);
-
-      // Target pixel = where the chord should be now
-      const targetPx = d.startPixelX + (e.clientX - d.startMouseX);
-
-      // Map pixel → character position (same logic as pxToCharPos)
+      const targetPx = d.startPixelX + (clientX - d.startMouseX);
       let newPos: number;
       const textWidth = text ? measureWidth(text, size, font) : 0;
       if (targetPx > textWidth) {
@@ -117,13 +113,25 @@ export default function LyricLineEditor({
       }
       onMoveChordRef.current(d.chordId, Math.max(0, newPos));
     };
+
+    const handleMouseMove = (e: MouseEvent) => applyDrag(e.clientX);
     const handleMouseUp = () => { draggingRef.current = null; };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!draggingRef.current) return;
+      e.preventDefault();
+      applyDrag(e.touches[0].clientX);
+    };
+    const handleTouchEnd = () => { draggingRef.current = null; };
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -274,6 +282,15 @@ export default function LyricLineEditor({
               draggingRef.current = {
                 chordId: chord.id,
                 startMouseX: e.clientX,
+                startPixelX: chordLeftPx(chord.position),
+              };
+            }}
+            onTouchStart={(e) => {
+              if ((e.target as HTMLElement).closest("[data-chord-delete]")) return;
+              e.stopPropagation();
+              draggingRef.current = {
+                chordId: chord.id,
+                startMouseX: e.touches[0].clientX,
                 startPixelX: chordLeftPx(chord.position),
               };
             }}
