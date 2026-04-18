@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import { signIn } from "@/lib/auth";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description:
+    "Sign in to ChordSheetMaker to access your chord sheets from any device. Continue with Google or GitHub.",
+};
 
 export default function LoginPage({
   searchParams,

@@ -1,8 +1,20 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { planFromUser } from "@/lib/plans";
 import { Suspense } from "react";
 import PricingContent from "./PricingContent";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Start free with 5 songs. Upgrade for unlimited songs, PDF export, public sharing and more. 7-day free trial — cancel anytime.",
+  openGraph: {
+    title: "ChordSheetMaker Pricing — Free plan available",
+    description:
+      "Start free with 5 songs. Upgrade for unlimited songs, PDF export, public sharing and more.",
+  },
+};
 
 export default async function PricingPage() {
   const session = await auth();
