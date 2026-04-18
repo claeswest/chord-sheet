@@ -354,6 +354,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
     await addSongToCategory(categoryId, songId);
   };
 
+  const moveCategoryStep = (catId: string, direction: "up" | "down") => {
+    const parentId = categories.find((c) => c.id === catId)?.parentId ?? null;
+    const siblings = categories.filter((c) => c.parentId === parentId);
+    const idx = siblings.findIndex((c) => c.id === catId);
+    const newIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= siblings.length) return;
+    handleCatReorder(catId, siblings[newIdx].id);
+  };
+
   const handleCatReorder = (fromId: string, toId: string) => {
     if (fromId === toId) return;
     setCategories((prev) => {
@@ -550,32 +559,35 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         />
                       ) : (
                         <>
-                          {/* Category drag handle */}
+                          {/* Category drag handle — desktop only */}
                           <span
                             draggable
                             onDragStart={(e) => { e.stopPropagation(); e.dataTransfer.effectAllowed = "move"; setDragCatId(cat.id); }}
                             onDragEnd={() => { setDragCatId(null); setDragOverCatReorderId(null); }}
-                            onTouchStart={(e) => { touchCatDragRef.current = { catId: cat.id, startY: e.touches[0].clientY }; }}
-                            onTouchMove={(e) => {
-                              if (!touchCatDragRef.current) return;
-                              e.preventDefault();
-                              setDragCatId(touchCatDragRef.current.catId);
-                              const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                              const row = el?.closest("[data-cat-id]");
-                              const overId = row?.getAttribute("data-cat-id") ?? null;
-                              setDragOverCatReorderId(overId !== touchCatDragRef.current.catId ? overId : null);
-                            }}
-                            onTouchEnd={() => {
-                              if (touchCatDragRef.current && dragOverCatReorderId) {
-                                handleCatReorder(touchCatDragRef.current.catId, dragOverCatReorderId);
-                              }
-                              touchCatDragRef.current = null;
-                              setDragCatId(null);
-                              setDragOverCatReorderId(null);
-                            }}
-                            className="shrink-0 text-white/20 hover:text-white/60 sm:opacity-0 sm:group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
+                            className="hidden sm:inline shrink-0 text-white/20 hover:text-white/60 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
                             title="Drag to reorder"
                           >⠿</span>
+                          {/* ▲ ▼ buttons — mobile only */}
+                          <span className="sm:hidden flex flex-col shrink-0 -my-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "up"); }}
+                              className="text-white/30 hover:text-white transition-colors leading-none py-0.5"
+                              title="Move up"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "down"); }}
+                              className="text-white/30 hover:text-white transition-colors leading-none py-0.5"
+                              title="Move down"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          </span>
                           <span className="w-4 h-4 shrink-0 flex items-center justify-center">
                             {children.length > 0 && (
                               <button onClick={() => toggleCollapse(cat.id)} className="text-white/60 hover:text-white transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
