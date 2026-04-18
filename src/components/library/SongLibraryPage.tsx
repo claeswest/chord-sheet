@@ -1249,6 +1249,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                                       key={cat.id}
                                       onClick={async () => {
                                         setSongs((prev) => prev.map((s) => s.id === song.id ? { ...s, categoryIds: [...s.categoryIds, cat.id] } : s));
+                                        setCategories((prev) => prev.map((c) => c.id === cat.id ? { ...c, songIds: [...c.songIds, song.id] } : c));
                                         setCatPickerSongId(null);
                                         await addSongToCategory(cat.id, song.id);
                                       }}
