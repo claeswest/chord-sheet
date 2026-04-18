@@ -28,14 +28,19 @@ export async function PUT(req: NextRequest) {
   const { ids } = await req.json();
   if (!Array.isArray(ids)) return NextResponse.json({ error: "ids required" }, { status: 400 });
 
-  await Promise.all(
-    ids.map((id: string, index: number) =>
-      prisma.category.updateMany({
-        where: { id, userId: session.user!.id },
-        data: { order: index },
-      })
-    )
-  );
+  try {
+    await Promise.all(
+      (ids as string[]).map((id, index) =>
+        prisma.category.update({
+          where: { id },
+          data: { order: index },
+        })
+      )
+    );
+  } catch (e) {
+    console.error("reorderCategories error", e);
+    return NextResponse.json({ error: "Failed to reorder" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
