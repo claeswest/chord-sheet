@@ -1031,18 +1031,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                         </div>
                       )}
 
-                      {/* ⋯ button — visible below xl */}
-                      {isLoggedIn && (
-                        <button
-                          className="xl:hidden shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
-                          title="More options"
-                          onClick={(e) => { e.stopPropagation(); setExpandedSongId(expandedSongId === song.id ? null : song.id); }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                            <path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-                          </svg>
-                        </button>
-                      )}
+                      {/* ⋯ button — visible below xl, for all users */}
+                      <button
+                        className="xl:hidden shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                        title="More options"
+                        onClick={(e) => { e.stopPropagation(); setExpandedSongId(expandedSongId === song.id ? null : song.id); }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                          <path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                        </svg>
+                      </button>
 
                       {/* Actions — grouped pill */}
                       <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px]" onClick={(e) => e.stopPropagation()}>
@@ -1099,7 +1097,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage }: Pro
                       </div>{/* end actions */}
                     </div>
 
-                    {/* Expanded panel — edit/duplicate/delete + categories (< xl only) */}
+                    {/* Expanded panel — edit/duplicate/delete + categories (< xl only, all users) */}
                     {expandedSongId === song.id && (
                       <div className="xl:hidden border-t border-zinc-100 bg-zinc-50/80 px-5 py-3" onClick={(e) => e.stopPropagation()}>
                         {/* Action buttons */}
