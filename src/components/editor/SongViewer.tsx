@@ -620,14 +620,15 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         onClick={scrollToTop}
         aria-label="Scroll to top"
         title="Scroll to top [T]"
-        className={`fixed bottom-36 right-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-md shadow-lg shadow-black/30 transition-all duration-300 group ${
+        className={`fixed bottom-36 right-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 group ${
           scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
+        style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 20px rgba(99,102,241,0.5)" }}
       >
-        <svg className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
         </svg>
-        <span className="text-[9px] font-semibold tracking-wider text-white/50 group-hover:text-white/80 uppercase transition-colors leading-none">Top</span>
+        <span className="text-[9px] font-semibold tracking-wider text-white/70 uppercase leading-none">Top</span>
       </button>
     </div>
   );
