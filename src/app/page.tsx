@@ -168,7 +168,7 @@ export default async function HomePage() {
               <img
                 src="/hero-photo.jpg"
                 alt="Guitarist using ChordSheetMaker on a laptop"
-                className="w-full object-cover max-h-48 sm:max-h-none"
+                className="w-full object-cover max-h-[230px] sm:max-h-none"
                 style={{ objectPosition: "center 20%" }}
               />
             </div>
