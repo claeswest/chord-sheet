@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
           stripePriceId: priceId,
           stripeSubscriptionStatus: sub.status, // trialing | active | past_due | canceled
           stripeCurrentPeriodEnd: new Date(
-            (sub.trial_end ?? sub.items.data[0].current_period_end) * 1000
+            sub.items.data[0].current_period_end * 1000
           ),
         },
       });

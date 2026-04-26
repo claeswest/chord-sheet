@@ -7,7 +7,6 @@ import UserMenu from "@/components/ui/UserMenu";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
-  { key: "songLimit",       label: "Unlimited songs"     },
   { key: "pdfExport",       label: "PDF export"          },
   { key: "sharing",         label: "Public sharing"      },
   { key: "setlists",        label: "Setlists & folders"  },
@@ -50,8 +49,15 @@ export default async function AccountPage() {
       })
     : null;
 
-  const activeFeatures = FEATURE_ROWS.filter(({ key }) => canUseFeature(plan, key));
-  const lockedFeatures = FEATURE_ROWS.filter(({ key }) => !canUseFeature(plan, key));
+  const unlimitedSongs = planConfig.features.songLimit === true;
+  const activeFeatures = [
+    ...(unlimitedSongs ? [{ key: "songLimit" as const, label: "Unlimited songs" }] : []),
+    ...FEATURE_ROWS.filter(({ key }) => canUseFeature(plan, key)),
+  ];
+  const lockedFeatures = [
+    ...(!unlimitedSongs ? [{ key: "songLimit" as const, label: "Unlimited songs" }] : []),
+    ...FEATURE_ROWS.filter(({ key }) => !canUseFeature(plan, key)),
+  ];
 
   return (
     <div className="min-h-screen" style={{ background: "#f0f0f5" }}>
