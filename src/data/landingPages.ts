@@ -8,6 +8,11 @@ export interface LandingSection {
   body: string;
 }
 
+export interface LandingFaq {
+  q: string;
+  a: string;
+}
+
 export interface LandingPage {
   slug: string;
   metaTitle: string;
@@ -17,6 +22,7 @@ export interface LandingPage {
   h1Accent: string; // highlighted tail of the headline
   intro: string;
   sections: LandingSection[];
+  faqs: LandingFaq[];
   ctaHeading: string;
   ctaBody: string;
 }
@@ -50,6 +56,24 @@ export const LANDING_PAGES: LandingPage[] = [
         body: "Generate atmospheric AI backgrounds, choose fonts and colours, transpose to any key, and export a clean PDF for your binder or your band.",
       },
     ],
+    faqs: [
+      {
+        q: "Is the chord sheet maker free?",
+        a: "Yes. You can create your first chord sheets free with no credit card. Upgrade to Pro any time for unlimited songs, PDF export and sharing.",
+      },
+      {
+        q: "Does it work on phones and tablets?",
+        a: "Absolutely. ChordSheetMaker runs in any browser, so you can build a chord sheet on your laptop and perform from your phone or tablet — your songs sync automatically.",
+      },
+      {
+        q: "Can the AI find the chords for any song?",
+        a: "Type a song title and our AI builds a complete chord sheet in seconds, with chords aligned over the lyrics. You can then tweak any chord with a single click.",
+      },
+      {
+        q: "Can I transpose a song to a different key?",
+        a: "Yes. Transpose any chord sheet up or down with one tap and every chord moves with it — ideal for matching a singer's range.",
+      },
+    ],
     ctaHeading: "Make your first chord sheet free",
     ctaBody: "Start with 5 songs free — no credit card required. Upgrade any time for unlimited songs, PDF export and sharing.",
   },
@@ -79,6 +103,24 @@ export const LANDING_PAGES: LandingPage[] = [
       {
         heading: "Transpose for any singer",
         body: "Change the key with one tap and every chord moves with it — perfect when a song sits too high or too low for the vocalist.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I make guitar chord sheets for free?",
+        a: "Yes — start free with no credit card. Build your first guitar chord sheets and upgrade for unlimited songs and PDF export whenever you're ready.",
+      },
+      {
+        q: "Can I add a capo or transpose for my voice?",
+        a: "Yes. Transpose any song up or down with one tap, or use the capo tool to keep easy open-chord shapes while changing the key.",
+      },
+      {
+        q: "Can I import chord sheets I already have?",
+        a: "You can paste existing lyrics and chords, or snap a photo of a printed or handwritten sheet and our AI turns it into a clean, editable digital chord sheet.",
+      },
+      {
+        q: "Will it scroll while I play?",
+        a: "Yes. Hands-free auto-scroll keeps your hands on the fretboard. Adjust the speed on the fly and read comfortably from any device on your music stand.",
       },
     ],
     ctaHeading: "Start your guitar chord sheets free",
@@ -112,6 +154,24 @@ export const LANDING_PAGES: LandingPage[] = [
         body: "Export a clean, professional PDF for your folder or share a link with your band, choir or worship team.",
       },
     ],
+    faqs: [
+      {
+        q: "Is it free to make piano chord sheets?",
+        a: "Yes. Start free with 5 songs and no credit card. Upgrade to Pro any time for unlimited songs, PDF export and sharing.",
+      },
+      {
+        q: "Can I create lead sheets, not just chords?",
+        a: "Type a song title and get a complete chord chart in seconds, with chords sitting right above the lyrics and sections clearly marked — ready for the keys.",
+      },
+      {
+        q: "Can I transpose to an easier key?",
+        a: "Yes. Move any song up or down with a single tap and every chord transposes instantly, so you can match the singer or simplify the fingering.",
+      },
+      {
+        q: "Can I print or export my chord sheet?",
+        a: "You can export a clean, professional PDF for your folder, or share a link with your band, choir or worship team.",
+      },
+    ],
     ctaHeading: "Create your piano chord sheets free",
     ctaBody: "Start free with 5 songs — no credit card required. Go unlimited any time with a Pro plan.",
   },
@@ -141,6 +201,24 @@ export const LANDING_PAGES: LandingPage[] = [
       {
         heading: "Share and export",
         body: "Send a public link to your bandmates or export a clean PDF. Organize everything into setlists for your next gig.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Do I need to download anything?",
+        a: "No. ChordSheetMaker runs entirely in your browser — there's nothing to install. Create and perform from any laptop, phone or tablet.",
+      },
+      {
+        q: "Is it free to use?",
+        a: "Yes, you can start free with no credit card. Upgrade for unlimited songs, sharing and PDF export whenever you're ready.",
+      },
+      {
+        q: "Can I import existing chords?",
+        a: "Yes. Paste lyrics and chords as text, or snap a photo of a printed sheet and our AI converts it into a clean, editable chord sheet.",
+      },
+      {
+        q: "Will my chord sheets sync across devices?",
+        a: "Your chord sheets are saved to your account and sync automatically, so they're always one tap away wherever you sign in.",
       },
     ],
     ctaHeading: "Create your first chord sheet online",

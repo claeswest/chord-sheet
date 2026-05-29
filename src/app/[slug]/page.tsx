@@ -38,8 +38,40 @@ export default async function LandingPage({ params }: Props) {
   const page = getLandingPage(slug);
   if (!page) notFound();
 
+  const pageUrl = `${BASE_URL}/${page.slug}`;
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "ChordSheetMaker",
+      url: pageUrl,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+      description: page.metaDescription,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free plan — no credit card required",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: page.faqs.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-full bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
@@ -119,6 +151,35 @@ export default async function LandingPage({ params }: Props) {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-8 sm:mb-10 tracking-tight text-center">
+              Frequently asked questions
+            </h2>
+            <div className="divide-y divide-zinc-100 border-y border-zinc-100">
+              {page.faqs.map((f) => (
+                <details key={f.q} className="group py-5">
+                  <summary className="flex items-center justify-between cursor-pointer list-none">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 pr-6">
+                      {f.q}
+                    </h3>
+                    <svg
+                      className="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200 group-open:rotate-180"
+                      fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
+                  <p className="text-zinc-600 leading-relaxed text-base mt-3 pr-8">
+                    {f.a}
+                  </p>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
 
