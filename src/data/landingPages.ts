@@ -371,6 +371,202 @@ export const LANDING_PAGES: LandingPage[] = [
     ctaHeading: "Build your first chord chart free",
     ctaBody: "Start free — no credit card, no download. Upgrade for unlimited songs, sharing and PDF export when you're ready.",
   },
+  {
+    slug: "childrens-choir-songs",
+    metaTitle: "Children's Choir Songs — Organize & Accompany Them Online",
+    metaDescription:
+      "Keep all your children's choir songs in one organized place and accompany them with ease. Chords above the lyrics, transpose to any key, auto-scroll while you play. Free to start.",
+    eyebrow: "For children's choirs",
+    h1: "Every children's choir song,",
+    h1Accent: "organized and ready to play",
+    intro:
+      "Stop hunting through folders and scraps of paper. ChordSheetMaker keeps all your children's choir songs in one tidy place — chords sitting right above the lyrics — so you can accompany the choir with confidence, every rehearsal.",
+    sections: [
+      {
+        heading: "Keep every song in one place",
+        body: "Save each choir song to your account and group them into folders or setlists for terms, concerts and rehearsals. Everything is one tap away, on any device.",
+      },
+      {
+        heading: "Accompany with chords above the lyrics",
+        body: "Chords sit exactly above the words, sections clearly labelled, so you can play along on piano or guitar while you lead the children.",
+      },
+      {
+        heading: "Transpose to the children's range",
+        body: "Young voices sit higher — move any song into a comfortable key with a single tap and every chord follows instantly.",
+      },
+      {
+        heading: "Play hands-free while you conduct",
+        body: "Auto-scroll keeps the song moving at your pace with large, readable text, so you can keep your hands and eyes on the choir.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free to organize my choir songs?",
+        a: "Yes — start free with no credit card. Save your first songs and upgrade to Pro any time for unlimited songs, sharing and PDF export.",
+      },
+      {
+        q: "Can I group songs by term or concert?",
+        a: "Yes. Organize your chord sheets into folders and setlists, so each rehearsal or concert has exactly the right songs in order.",
+      },
+      {
+        q: "Can I transpose songs for young voices?",
+        a: "Absolutely. Transpose any song up or down with one tap so it sits comfortably in the children's range.",
+      },
+      {
+        q: "Can I accompany on piano and guitar?",
+        a: "Yes. Chords appear right above the lyrics, so you can accompany on any instrument while the sheet scrolls hands-free.",
+      },
+    ],
+    ctaHeading: "Organize your choir songs free",
+    ctaBody: "Start free — no credit card. Upgrade for unlimited songs, sharing and PDF export whenever you're ready.",
+  },
+  {
+    slug: "music-lesson-songs",
+    metaTitle: "Songs From Your Music Lessons — Save & Practice Them Online",
+    metaDescription:
+      "Keep every song from your music lessons in one organized place. Chords above the lyrics, transpose to any key, and practice with hands-free auto-scroll. Free to start.",
+    eyebrow: "For music students",
+    h1: "Every song from your lessons,",
+    h1Accent: "saved and ready to practice",
+    intro:
+      "The songs your teacher gives you shouldn't get lost in a pile of paper. ChordSheetMaker keeps every lesson song in one organized place — chords above the lyrics — so you can practice between lessons and actually remember what you learned.",
+    sections: [
+      {
+        heading: "Save every lesson in one place",
+        body: "Add each song your teacher gives you and keep them all in tidy folders. Pick up exactly where you left off, on your phone, tablet or laptop.",
+      },
+      {
+        heading: "Type it in or snap a photo",
+        body: "Write the chords yourself, paste them in, or photograph the sheet your teacher handed you and let AI turn it into a clean, editable version.",
+      },
+      {
+        heading: "Practice at your own pace",
+        body: "Auto-scroll moves the song at the speed you choose, so you can keep both hands on your instrument and build up tempo as you improve.",
+      },
+      {
+        heading: "Transpose to a comfortable key",
+        body: "Move any song up or down with a single tap to match your voice or simplify a tricky shape your teacher hasn't covered yet.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free for students?",
+        a: "Yes — start free with no credit card. Save your first lesson songs and upgrade to Pro any time for unlimited songs and PDF export.",
+      },
+      {
+        q: "Can I add the songs my teacher gives me?",
+        a: "Yes. Type or paste the chords, or snap a photo of the sheet and our AI turns it into a clean, editable chord sheet you can keep forever.",
+      },
+      {
+        q: "Can I practice along between lessons?",
+        a: "Absolutely. Hands-free auto-scroll lets you practice at your own pace, and you can bump up the speed as you improve.",
+      },
+      {
+        q: "Will my songs be there next lesson?",
+        a: "Yes. Everything saves to your account and syncs across devices, so your lesson songs are always one tap away.",
+      },
+    ],
+    ctaHeading: "Save your lesson songs free",
+    ctaBody: "Start free — no credit card. Upgrade for unlimited songs, sharing and PDF export whenever you're ready.",
+  },
+  {
+    slug: "kids-music-lesson-songs",
+    metaTitle: "Your Child's Music Lesson Songs — Keep Them Organized Online",
+    metaDescription:
+      "Keep all the songs from your child's music lessons in one organized place and help them practice at home. Chords above the lyrics, transpose, and auto-scroll. Free to start.",
+    eyebrow: "For music parents",
+    h1: "Your child's lesson songs,",
+    h1Accent: "organized for practice at home",
+    intro:
+      "Help your child get the most from their music lessons. ChordSheetMaker keeps every song their teacher gives them in one organized place — chords above the lyrics — so home practice is easy and nothing gets lost between lessons.",
+    sections: [
+      {
+        heading: "Never lose a lesson song again",
+        body: "Save each song from your child's lessons into tidy folders, so the right songs are ready for practice instead of buried in a school bag.",
+      },
+      {
+        heading: "Snap a photo of the teacher's sheet",
+        body: "Photograph the handout your child brings home and our AI turns it into a clean, editable chord sheet you can both read clearly.",
+      },
+      {
+        heading: "Make practice easier",
+        body: "Auto-scroll keeps the song moving at a gentle pace and the text scales up large, so your child can play along hands-free.",
+      },
+      {
+        heading: "Transpose to suit your child",
+        body: "Move any song into an easier key with a single tap to match your child's voice or the shapes they've learned so far.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free to use for my child's songs?",
+        a: "Yes — start free with no credit card. Save your first songs and upgrade to Pro any time for unlimited songs and PDF export.",
+      },
+      {
+        q: "Can I add the songs from their teacher?",
+        a: "Yes. Type or paste the chords, or snap a photo of the teacher's handout and our AI turns it into a clean, editable chord sheet.",
+      },
+      {
+        q: "Can it help my child practice at home?",
+        a: "Absolutely. Hands-free auto-scroll and large, readable text make it easy for your child to play along at their own pace.",
+      },
+      {
+        q: "Will the songs stay saved between lessons?",
+        a: "Yes. Everything saves to your account and syncs across devices, so the right songs are always ready for the next practice.",
+      },
+    ],
+    ctaHeading: "Organize your child's lesson songs free",
+    ctaBody: "Start free — no credit card. Upgrade for unlimited songs, sharing and PDF export whenever you're ready.",
+  },
+  {
+    slug: "songs-for-special-occasions",
+    metaTitle: "Birthday & Christmas Song Chords — Make Sheets for Any Occasion",
+    metaDescription:
+      "Make chord sheets for birthdays, Christmas and every celebration. AI finds the chords, transpose for sing-alongs, and play hands-free with auto-scroll. Free to start.",
+    eyebrow: "Songs for every occasion",
+    h1: "Birthday & Christmas songs,",
+    h1Accent: "ready for the sing-along",
+    intro:
+      "Be ready whenever it's time to sing. ChordSheetMaker turns birthday songs, Christmas carols and celebration favourites into clean chord sheets you can play in seconds — and keeps them organized for the next gathering.",
+    sections: [
+      {
+        heading: "Chord sheets for every celebration",
+        body: "Build sheets for birthdays, Christmas, weddings and holidays. Type a title and AI finds the chords, aligned right above the lyrics.",
+      },
+      {
+        heading: "Keep a folder for each occasion",
+        body: "Group your songs into setlists — a Christmas folder, a birthday folder — so you're always ready when the moment comes to play.",
+      },
+      {
+        heading: "Transpose for a group sing-along",
+        body: "Move any song into a key everyone can sing with a single tap, so the whole room can join in comfortably.",
+      },
+      {
+        heading: "Play hands-free at the party",
+        body: "Auto-scroll keeps the song moving while you play, with large text you can read across the room from your phone or tablet.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free to make occasion song sheets?",
+        a: "Yes — start free with no credit card. Build your first sheets and upgrade to Pro any time for unlimited songs and PDF export.",
+      },
+      {
+        q: "Can I organize songs by occasion?",
+        a: "Yes. Group your chord sheets into setlists — Christmas, birthdays, weddings — so the right songs are ready for each gathering.",
+      },
+      {
+        q: "Can I transpose for everyone to sing?",
+        a: "Absolutely. Transpose any song up or down with one tap to land on a key the whole group can sing comfortably.",
+      },
+      {
+        q: "Can I play from my phone at a party?",
+        a: "Yes. ChordSheetMaker runs in any browser with large text and hands-free auto-scroll, so it's easy to play from a phone or tablet.",
+      },
+    ],
+    ctaHeading: "Make your celebration song sheets free",
+    ctaBody: "Start free — no credit card. Upgrade for unlimited songs, sharing and PDF export whenever you're ready.",
+  },
 ];
 
 export const LANDING_SLUGS = LANDING_PAGES.map((p) => p.slug);
