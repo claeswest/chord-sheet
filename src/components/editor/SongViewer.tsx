@@ -537,10 +537,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               </button>
             )}
 
-            {/* Performance mode toggle */}
+            {/* Performance mode toggle — mobile only */}
             <button
               onClick={() => { setPerfMode(p => !p); revealControls(); }}
-              className={`text-sm px-2.5 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-1.5 ${
+              className={`sm:hidden text-sm px-2.5 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-1.5 ${
                 perfMode
                   ? "text-amber-300 border-amber-400/40 bg-amber-500/10"
                   : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
