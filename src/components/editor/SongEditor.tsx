@@ -910,6 +910,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           onBack={() => setShowTemplateModal(false)}
           onSelect={(t: SongTemplate) => {
             const built = t.build();
+            suppressAutoSave.current = true; // don't save until user actually edits
             setLines(built);
             historyStack.current = [built];
             setHistoryPos(0);
