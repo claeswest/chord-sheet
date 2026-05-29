@@ -224,6 +224,153 @@ export const LANDING_PAGES: LandingPage[] = [
     ctaHeading: "Create your first chord sheet online",
     ctaBody: "Start free — no credit card, no download. Upgrade for unlimited songs, sharing and PDF export when you're ready.",
   },
+  {
+    slug: "ukulele-chord-sheets",
+    metaTitle: "Ukulele Chord Sheets — Create & Play Them Online Free",
+    metaDescription:
+      "Make ukulele chord sheets online in seconds. AI finds the chords, you drag them above the lyrics, then strum along with hands-free auto-scroll. Free to start.",
+    eyebrow: "For ukulele players",
+    h1: "Ukulele chord sheets,",
+    h1Accent: "ready to strum",
+    intro:
+      "Turn any song into a clean ukulele chord sheet in seconds. ChordSheetMaker finds the chords, lets you place them precisely above the lyrics, and scrolls hands-free while you strum.",
+    sections: [
+      {
+        heading: "Chords above every lyric",
+        body: "Drop each chord exactly where the change lands so you always know what to play next. Perfectly spaced on your phone, tablet or laptop.",
+      },
+      {
+        heading: "Transpose to a uke-friendly key",
+        body: "Move any song up or down with one tap to land on easy ukulele shapes — or to match your singing range.",
+      },
+      {
+        heading: "Strum hands-free",
+        body: "Hit play and the sheet scrolls at your pace like a teleprompter, so both hands stay on the strings.",
+      },
+      {
+        heading: "Import what you already have",
+        body: "Paste existing chords or snap a photo of a printed sheet and our AI turns it into a clean, editable ukulele chord sheet.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free to make ukulele chord sheets?",
+        a: "Yes — start free with no credit card. Build your first ukulele chord sheets and upgrade for unlimited songs and PDF export whenever you're ready.",
+      },
+      {
+        q: "Can I transpose to easy ukulele keys?",
+        a: "Yes. Transpose any song up or down with a single tap and every chord moves with it, so you can land on simple open shapes.",
+      },
+      {
+        q: "Does it work on my phone or tablet?",
+        a: "Absolutely. ChordSheetMaker runs in any browser, so you can build on a laptop and strum from your phone or tablet — your songs sync automatically.",
+      },
+      {
+        q: "Will it scroll while I play?",
+        a: "Yes. Hands-free auto-scroll keeps both hands on the strings. Adjust the speed on the fly and read from any device on your music stand.",
+      },
+    ],
+    ctaHeading: "Start your ukulele chord sheets free",
+    ctaBody: "Create your first chord sheets free — no credit card. Upgrade for unlimited songs and PDF export whenever you're ready.",
+  },
+  {
+    slug: "worship-chord-sheets",
+    metaTitle: "Worship Chord Sheets — Make Charts for Your Team Online",
+    metaDescription:
+      "Create worship chord sheets and lead sheets online. AI finds the chords, transpose to any key for your vocalist, and share with your whole team. Free to start.",
+    eyebrow: "For worship teams",
+    h1: "Worship chord sheets,",
+    h1Accent: "ready for Sunday",
+    intro:
+      "Build clean worship chord charts your whole team can read. ChordSheetMaker finds the chords for any song, transposes to the right key in a tap, and lets you share a link or export PDFs for the band.",
+    sections: [
+      {
+        heading: "Charts your whole team can read",
+        body: "Chords sit right above the lyrics with sections clearly labelled, so guitar, keys and vocals are all on the same page.",
+      },
+      {
+        heading: "Transpose for any vocalist",
+        body: "Move a song into the singer's key with a single tap. Every chord transposes instantly — perfect for rotating worship leaders.",
+      },
+      {
+        heading: "Share with the band",
+        body: "Send a public link to your team or export clean PDFs for the folder. Organize songs into setlists for each service.",
+      },
+      {
+        heading: "Lead the set hands-free",
+        body: "Auto-scroll keeps your hands on the instrument while the sheet moves at your pace, with large, readable text from the stage.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is it free for worship teams?",
+        a: "Yes — start free with no credit card. Upgrade to Pro any time for unlimited songs, sharing and PDF export for the whole team.",
+      },
+      {
+        q: "Can I transpose into the singer's key?",
+        a: "Yes. Transpose any song up or down with one tap and every chord moves with it — ideal when worship leaders sing in different keys.",
+      },
+      {
+        q: "Can I share charts with my band?",
+        a: "You can send a public link to anyone on your team or export clean PDFs, and group songs into setlists for each service.",
+      },
+      {
+        q: "Can I build setlists for a service?",
+        a: "Yes. Organize your chord sheets into setlists so your whole team has the right songs in the right order, ready to play.",
+      },
+    ],
+    ctaHeading: "Create your worship chord sheets free",
+    ctaBody: "Start free — no credit card. Upgrade for unlimited songs, sharing and PDF export for your whole team.",
+  },
+  {
+    slug: "chord-chart-maker",
+    metaTitle: "Chord Chart Maker — Build Chord Charts Online Free",
+    metaDescription:
+      "A free online chord chart maker. Search any song with AI, drag chords above the lyrics, transpose to any key and perform with auto-scroll. No download, start free.",
+    eyebrow: "Free chord chart maker",
+    h1: "The chord chart maker",
+    h1Accent: "musicians actually enjoy",
+    intro:
+      "ChordSheetMaker is a free online chord chart maker that turns any song into a clean, playable chart in seconds. Type a title, let AI find the chords, then drag each one exactly where it falls above the lyrics.",
+    sections: [
+      {
+        heading: "Build a chord chart in seconds",
+        body: "Search any song by name and our AI builds a complete chord chart — chords aligned over the right syllables, sections labelled, ready to play.",
+      },
+      {
+        heading: "Drag-and-drop placement",
+        body: "Grab a chord and drop it above the exact beat where it changes. What you see is what you play, perfectly spaced on every screen.",
+      },
+      {
+        heading: "Transpose and perform",
+        body: "Change the key with one tap, then play hands-free as the chart scrolls at your pace like a teleprompter.",
+      },
+      {
+        heading: "Export and share",
+        body: "Export a clean PDF for your binder or send a public link to your bandmates, and organize everything into setlists.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is the chord chart maker free?",
+        a: "Yes. Create your first chord charts free with no credit card. Upgrade to Pro any time for unlimited songs, PDF export and sharing.",
+      },
+      {
+        q: "Do I need to install anything?",
+        a: "No. It runs entirely in your browser — build on a laptop and perform from your phone or tablet, with your charts synced automatically.",
+      },
+      {
+        q: "Can the AI build a chart from a song title?",
+        a: "Yes. Type a song name and our AI creates a complete chord chart in seconds, which you can fine-tune with a single click.",
+      },
+      {
+        q: "Can I transpose a chord chart?",
+        a: "Yes. Transpose up or down with one tap and every chord moves with it, so you can match any singer or instrument.",
+      },
+    ],
+    ctaHeading: "Build your first chord chart free",
+    ctaBody: "Start free — no credit card, no download. Upgrade for unlimited songs, sharing and PDF export when you're ready.",
+  },
 ];
 
 export const LANDING_SLUGS = LANDING_PAGES.map((p) => p.slug);

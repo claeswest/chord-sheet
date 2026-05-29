@@ -39,6 +39,7 @@ export default async function LandingPage({ params }: Props) {
   if (!page) notFound();
 
   const pageUrl = `${BASE_URL}/${page.slug}`;
+  const relatedPages = LANDING_PAGES.filter((p) => p.slug !== page.slug).slice(0, 3);
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -178,6 +179,37 @@ export default async function LandingPage({ params }: Props) {
                     {f.a}
                   </p>
                 </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Related pages ────────────────────────────────────────────────── */}
+        <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f0efff 0%, #f8f7ff 100%)" }}>
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-8 sm:mb-10 tracking-tight text-center">
+              Explore more ways to use ChordSheetMaker
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {relatedPages.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/${p.slug}`}
+                  className="group block rounded-2xl bg-white border border-zinc-100 p-6 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                    {p.eyebrow}
+                  </span>
+                  <p className="mt-2 font-bold text-zinc-900 leading-snug">
+                    {p.h1} <span className="text-indigo-500">{p.h1Accent}</span>
+                  </p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 group-hover:gap-2 transition-all">
+                    Learn more
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+                    </svg>
+                  </span>
+                </Link>
               ))}
             </div>
           </div>
