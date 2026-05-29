@@ -28,6 +28,8 @@ import StylePanel from "./StylePanel";
 import { transposeSong, transposeChord, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import StartModal from "./StartModal";
+import TemplateModal from "./TemplateModal";
+import type { SongTemplate } from "@/data/templates";
 import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
@@ -98,6 +100,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   );
   const [startModalDismissed, setStartModalDismissed] = useState(!isBlankNew || !!initialMode);
   const [showFindReplace, setShowFindReplace] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [semitones, setSemitones] = useState(initialSong?.semitones ?? 0);
   const [mounted, setMounted] = useState(false);
   const [songId, setSongId] = useState(() => initialSong?.id ?? genId());
@@ -882,11 +885,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       <PrintView title={title} artist={artist} lines={displayLines} songStyle={songStyle} watermark />
 
       {/* Start modal — full-page overlay for blank new songs */}
-      {mounted && !startModalDismissed && (
+      {mounted && !startModalDismissed && !showTemplateModal && (
         <StartModal
           onSearch={() => { setStartModalDismissed(true); setShowImport("search"); }}
           onImport={() => { setStartModalDismissed(true); setShowImport("text"); }}
           onWriteMyself={() => setStartModalDismissed(true)}
+          onTemplate={() => setShowTemplateModal(true)}
           onClose={() => router.push("/songs")}
           showDemo={!hasSongs && (isLoggedIn ? true : listSongs().length === 0)}
           onDemo={() => {
@@ -895,6 +899,21 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             setLines(DEMO_SONG.lines);
             historyStack.current = [DEMO_SONG.lines];
             setHistoryPos(0);
+            setStartModalDismissed(true);
+          }}
+        />
+      )}
+
+      {/* Template modal */}
+      {mounted && !startModalDismissed && showTemplateModal && (
+        <TemplateModal
+          onBack={() => setShowTemplateModal(false)}
+          onSelect={(t: SongTemplate) => {
+            const built = t.build();
+            setLines(built);
+            historyStack.current = [built];
+            setHistoryPos(0);
+            setShowTemplateModal(false);
             setStartModalDismissed(true);
           }}
         />

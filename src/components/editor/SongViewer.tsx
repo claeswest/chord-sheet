@@ -60,6 +60,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [sizeAdjust, setSizeAdjust] = useState(() =>
     typeof window !== "undefined" && window.innerWidth < 640 ? -3 : 0
   );
+  const [perfMode, setPerfMode] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
@@ -72,9 +73,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const bgImgRef = useRef<HTMLImageElement>(null);
 
   const s = songStyle ?? DEFAULT_STYLE;
-  const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust;
-  const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust;
-  const titleSize = (s.title.fontSize ?? 20) + sizeAdjust;
+  const perfBoost = perfMode ? 8 : 0;
+  const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust + perfBoost;
+  const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust + perfBoost;
+  const titleSize = (s.title.fontSize ?? 20) + sizeAdjust + perfBoost;
 
   // Persist speed to localStorage whenever it changes
   useEffect(() => {
@@ -317,7 +319,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       )}
 
       {/* Scrollable content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden relative z-20">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-20"
+        onClick={perfMode ? togglePlay : undefined}
+      >
         <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64">
           {/* Song header */}
           <div className="mb-10" style={{ textAlign: s.titleAlign ?? "center" }}>
@@ -531,6 +537,22 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               </button>
             )}
 
+            {/* Performance mode toggle */}
+            <button
+              onClick={() => { setPerfMode(p => !p); revealControls(); }}
+              className={`text-sm px-2.5 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-1.5 ${
+                perfMode
+                  ? "text-amber-300 border-amber-400/40 bg-amber-500/10"
+                  : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
+              }`}
+              title="Performance mode — larger text, tap to play"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+              <span className="hidden sm:inline">{perfMode ? "Stage" : "Stage"}</span>
+            </button>
+
             {/* PDF download */}
             <button
               onClick={async () => { setPdfLoading(true); try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); } }}
@@ -611,6 +633,15 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
         </div>
       </div>
+
+      {/* Performance mode hint — tap to play */}
+      {perfMode && !playing && (
+        <div className="fixed inset-0 z-25 flex items-center justify-center pointer-events-none">
+          <div className="bg-black/40 backdrop-blur-sm text-white/60 text-sm px-4 py-2 rounded-full border border-white/10 animate-pulse">
+            Tap anywhere to play
+          </div>
+        </div>
+      )}
 
       {/* Hidden print view — required for PDF export */}
       <PrintView title={title} artist={artist} lines={lines} songStyle={songStyle} watermark />

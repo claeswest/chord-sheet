@@ -4,12 +4,13 @@ interface Props {
   onSearch: () => void;
   onImport: () => void;
   onWriteMyself: () => void;
+  onTemplate?: () => void;
   showDemo?: boolean;
   onDemo?: () => void;
   onClose?: () => void;
 }
 
-export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo = false, onDemo, onClose }: Props) {
+export default function StartModal({ onSearch, onImport, onWriteMyself, onTemplate, showDemo = false, onDemo, onClose }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center px-5"
@@ -98,6 +99,30 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, showDemo
               <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
             </svg>
           </button>
+
+          {/* Template */}
+          {onTemplate && (
+            <button
+              onClick={onTemplate}
+              className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
+              style={{ background: "rgba(255,255,255,0.04)" }}
+            >
+              <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
+                style={{ background: "rgba(255,255,255,0.06)" }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Use a template</p>
+                <p className="text-xs text-white/30 mt-0.5">Pick a song structure to start from</p>
+              </div>
+              <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          )}
 
           {/* Write myself */}
           <button
