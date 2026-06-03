@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   const mimeType = match[1];
   const base64Data = match[2];
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const res = await fetch(url, {
     method: "POST",

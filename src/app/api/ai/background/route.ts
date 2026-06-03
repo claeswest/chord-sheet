@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   ].filter(Boolean).join("\n");
 
   // Step 1: Ask Gemini Flash to write a visual image prompt
-  const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
   const textRes = await fetch(textUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
