@@ -58,6 +58,83 @@ export const JAZZ_PRESET: Partial<SongStyle> = {
   section: { fontFamily: PETALUMA_STACK, fontSize: 14, color: "#1a1a1a", bold: false, italic: false },
 };
 
+export interface StylePreset {
+  id: string;
+  label: string;
+  emoji: string;
+  /** Font used to render the preset's button label (for a quick visual cue). */
+  previewStack?: string;
+  style: Partial<SongStyle>;
+}
+
+const SANS = "'Poppins', sans-serif";
+const SANS_BODY = "'Inter', sans-serif";
+const SERIF = "'Lora', serif";
+const GARAMOND = "'EB Garamond', serif";
+const CONDENSED = "'Oswald', sans-serif";
+
+export const STYLE_PRESETS: StylePreset[] = [
+  {
+    id: "clean", label: "Clean", emoji: "📄", previewStack: MONO_STACK,
+    style: {
+      jazzChords: false, background: "#ffffff", titleAlign: "center", sectionAlign: "left", sectionDivider: true,
+      title:   { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
+      artist:  { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
+      lyrics:  { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
+      chords:  { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
+      section: { fontFamily: MONO_STACK, fontSize: 11, color: "#4f46e5", bold: true,  italic: false },
+    },
+  },
+  {
+    id: "jazz", label: "Jazz", emoji: "🎷", previewStack: PETALUMA_STACK,
+    style: JAZZ_PRESET,
+  },
+  {
+    id: "modern", label: "Modern", emoji: "✨", previewStack: SANS,
+    style: {
+      jazzChords: false, background: "#ffffff", titleAlign: "center", sectionAlign: "left", sectionDivider: true,
+      title:   { fontFamily: SANS,      fontSize: 28, color: "#111827", bold: true,  italic: false },
+      artist:  { fontFamily: SANS,      fontSize: 14, color: "#6b7280", bold: false, italic: false },
+      lyrics:  { fontFamily: SANS_BODY, fontSize: 15, color: "#1f2937", bold: false, italic: false },
+      chords:  { fontFamily: SANS,      fontSize: 14, color: "#6366f1", bold: true,  italic: false },
+      section: { fontFamily: SANS,      fontSize: 12, color: "#6366f1", bold: true,  italic: false },
+    },
+  },
+  {
+    id: "folk", label: "Folk", emoji: "🪕", previewStack: SERIF,
+    style: {
+      jazzChords: false, background: "#f7f2e9", titleAlign: "center", sectionAlign: "left", sectionDivider: false,
+      title:   { fontFamily: SERIF, fontSize: 26, color: "#3f322a", bold: true,  italic: false },
+      artist:  { fontFamily: SERIF, fontSize: 14, color: "#6b5847", bold: false, italic: true  },
+      lyrics:  { fontFamily: SERIF, fontSize: 15, color: "#3f322a", bold: false, italic: false },
+      chords:  { fontFamily: SERIF, fontSize: 15, color: "#9c5b2e", bold: true,  italic: false },
+      section: { fontFamily: SERIF, fontSize: 13, color: "#9c5b2e", bold: true,  italic: false },
+    },
+  },
+  {
+    id: "worship", label: "Worship", emoji: "🕊️", previewStack: GARAMOND,
+    style: {
+      jazzChords: false, background: "#faf9ff", titleAlign: "center", sectionAlign: "center", sectionDivider: false,
+      title:   { fontFamily: GARAMOND, fontSize: 30, color: "#3b0764", bold: true,  italic: false },
+      artist:  { fontFamily: GARAMOND, fontSize: 15, color: "#7e22ce", bold: false, italic: true  },
+      lyrics:  { fontFamily: GARAMOND, fontSize: 17, color: "#27272a", bold: false, italic: false },
+      chords:  { fontFamily: GARAMOND, fontSize: 15, color: "#7c3aed", bold: true,  italic: false },
+      section: { fontFamily: GARAMOND, fontSize: 13, color: "#7c3aed", bold: true,  italic: false },
+    },
+  },
+  {
+    id: "rock", label: "Rock", emoji: "🎸", previewStack: CONDENSED,
+    style: {
+      jazzChords: false, background: "#161616", titleAlign: "center", sectionAlign: "left", sectionDivider: true,
+      title:   { fontFamily: CONDENSED, fontSize: 30, color: "#ffffff", bold: true,  italic: false },
+      artist:  { fontFamily: CONDENSED, fontSize: 14, color: "#a1a1aa", bold: false, italic: false },
+      lyrics:  { fontFamily: SANS_BODY, fontSize: 15, color: "#e4e4e7", bold: false, italic: false },
+      chords:  { fontFamily: CONDENSED, fontSize: 16, color: "#f59e0b", bold: true,  italic: false },
+      section: { fontFamily: CONDENSED, fontSize: 13, color: "#f59e0b", bold: true,  italic: false },
+    },
+  },
+];
+
 export interface GoogleFont {
   name: string;
   url: string;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, JAZZ_PRESET } from "@/lib/songStyle";
+import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@/lib/imageUtils";
 
@@ -586,22 +586,25 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             {/* ── Presets ── */}
             <div className="px-4 pt-3 pb-1">
               <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">Presets</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onChange({ ...style, ...JAZZ_PRESET })}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white hover:border-amber-300 hover:bg-amber-50 transition-colors py-2.5 px-3 text-sm font-semibold text-zinc-700"
-                  style={{ fontFamily: "'Petaluma Script', cursive" }}
-                  title="Handwritten Petaluma Script + Real Book chord styling on warm paper"
-                >
-                  🎷 Jazz / Real Book
-                </button>
-                <button
-                  onClick={() => onChange({ ...DEFAULT_STYLE, background: style.background, backgroundImage: style.backgroundImage, overlayOpacity: style.overlayOpacity })}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors py-2.5 px-3 text-sm font-semibold text-zinc-700"
-                  title="Clean monospace default"
-                >
-                  Clean
-                </button>
+              <div className="grid grid-cols-3 gap-2">
+                {STYLE_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      // Pre-load any web fonts the preset uses so the preview updates instantly.
+                      [p.style.title, p.style.artist, p.style.lyrics, p.style.chords, p.style.section].forEach((s) => {
+                        const font = s?.fontFamily ? ALL_FONTS.find((f) => f.stack === s.fontFamily) : undefined;
+                        if (font) loadGoogleFont(font.url);
+                      });
+                      onChange({ ...style, ...p.style });
+                    }}
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-zinc-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors py-2.5 px-1"
+                    title={`Apply the ${p.label} style`}
+                  >
+                    <span className="text-lg leading-none">{p.emoji}</span>
+                    <span className="text-xs font-semibold text-zinc-700" style={p.previewStack ? { fontFamily: p.previewStack } : undefined}>{p.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
