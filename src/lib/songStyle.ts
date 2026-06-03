@@ -68,6 +68,8 @@ export const GOOGLE_FONTS: GoogleFont[] = [
   { name: "Reenie Beanie",   url: "https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap",                stack: "'Reenie Beanie', cursive" },
   { name: "Patrick Hand",    url: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",                 stack: "'Patrick Hand', cursive" },
   { name: "Kalam",           url: "https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap",           stack: "'Kalam', cursive" },
+  // Self-hosted jazz font (loaded via @font-face in globals.css, so url is empty)
+  { name: "MuseJazz Text",   url: "",                                                                                 stack: "'MuseJazz Text', cursive" },
 ];
 
 export const SYSTEM_FONT: GoogleFont = {

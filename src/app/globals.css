@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Self-hosted jazz lead-sheet font */
+@font-face {
+  font-family: "MuseJazz Text";
+  src: url("/fonts/MuseJazzText.otf") format("opentype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
 html {
   scroll-behavior: smooth;
 }
