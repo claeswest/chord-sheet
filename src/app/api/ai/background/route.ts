@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: `${promptSystem}\n\nSong:\n${songContent}` }] }],
-      generationConfig: { temperature: 0.8, maxOutputTokens: 200 },
+      generationConfig: { temperature: 0.8, maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
 

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       contents: [{ parts: [{ text: `${PROMPT}\n\nSong request: ${query.trim()}` }] }],
       tools: [{ google_search: {} }],
-      generationConfig: { temperature: 0, maxOutputTokens: 4096 },
+      generationConfig: { temperature: 0, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
 
