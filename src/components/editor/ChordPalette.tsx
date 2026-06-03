@@ -9,17 +9,21 @@ const ACCIDENTALS = [
   { label: "♭", value: "b" },
 ];
 
+// Ordered roughly by how often each quality appears in popular music
+// (most common first). 12 entries = 3 full rows of 4.
 const QUALITIES = [
-  { label: "maj",   value: ""     },
-  { label: "m",     value: "m"    },
-  { label: "7",     value: "7"    },
-  { label: "m7",    value: "m7"   },
-  { label: "maj7",  value: "maj7" },
-  { label: "sus2",  value: "sus2" },
-  { label: "sus4",  value: "sus4" },
-  { label: "add9",  value: "add9" },
-  { label: "dim",   value: "dim"  },
-  { label: "dim7",  value: "dim7" },
+  { label: "maj",   value: ""     }, // major triad
+  { label: "m",     value: "m"    }, // minor triad
+  { label: "7",     value: "7"    }, // dominant 7th
+  { label: "m7",    value: "m7"   }, // minor 7th
+  { label: "maj7",  value: "maj7" }, // major 7th
+  { label: "sus4",  value: "sus4" }, // suspended 4th
+  { label: "sus2",  value: "sus2" }, // suspended 2nd
+  { label: "add9",  value: "add9" }, // added 9th
+  { label: "6",     value: "6"    }, // major 6th
+  { label: "9",     value: "9"    }, // dominant 9th
+  { label: "dim",   value: "dim"  }, // diminished
+  { label: "dim7",  value: "dim7" }, // diminished 7th
 ];
 
 interface Props {
