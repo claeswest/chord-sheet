@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
-/* Self-hosted jazz lead-sheet font */
+/* Self-hosted jazz lead-sheet fonts */
 @font-face {
   font-family: "MuseJazz Text";
   src: url("/fonts/MuseJazzText.otf") format("opentype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Petaluma Script";
+  src: url("/fonts/PetalumaScript.otf") format("opentype");
   font-weight: 400 700;
   font-display: swap;
 }
