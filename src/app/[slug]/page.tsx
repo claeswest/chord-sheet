@@ -137,6 +137,72 @@ export default async function LandingPage({ params }: Props) {
             </span>
           </Link>
           <p className="relative mt-4 text-xs text-white/30">No credit card required · Free forever plan available</p>
+
+          {/* Trust signals */}
+          <div className="relative mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-white/55">
+            {["AI finds the chords", "Works on any device", "Export to PDF", "Free forever plan"].map((t) => (
+              <span key={t} className="inline-flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                {t}
+              </span>
+            ))}
+          </div>
+
+          {/* Product screenshot — a real chord sheet made with the app */}
+          <div className="relative mt-12 w-full max-w-3xl">
+            <div className="absolute -inset-4 rounded-3xl blur-2xl opacity-60 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse at center, rgba(99,102,241,0.35) 0%, transparent 70%)" }} />
+            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/50">
+              <div className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+                <span className="flex-1 mx-3 text-center text-[10px] text-white/25 font-mono truncate tracking-wide">chordsheetmaker.ai</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/example1.png"
+                alt={`Example chord sheet made with ChordSheetMaker — chords aligned above the lyrics`}
+                className="w-full object-cover object-top"
+                style={{ aspectRatio: "16 / 10" }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Examples ─────────────────────────────────────────────────────── */}
+        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-3">Examples</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-zinc-900 mb-3 tracking-tight">See what you can create</h2>
+            <p className="text-center text-zinc-500 mb-12 max-w-xl mx-auto leading-relaxed">
+              Real chord sheets made with ChordSheetMaker — backgrounds, fonts and colours all customised with AI.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[
+                { src: "/example1.png", title: "Hotel California", artist: "Eagles" },
+                { src: "/example2.png", title: "Perfect", artist: "Ed Sheeran" },
+              ].map((ex) => (
+                <div key={ex.title} className="relative rounded-2xl overflow-hidden border border-indigo-100 shadow-xl shadow-indigo-200/50">
+                  <div className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+                  </div>
+                  <div className="overflow-hidden" style={{ aspectRatio: "16 / 10" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={ex.src} alt={`${ex.title} by ${ex.artist} — example chord sheet`} className="w-full h-full object-cover object-top" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-5 py-4">
+                    <p className="text-white font-bold text-sm leading-tight">{ex.title}</p>
+                    <p className="text-white/55 text-xs">{ex.artist}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ── Sections ─────────────────────────────────────────────────────── */}
