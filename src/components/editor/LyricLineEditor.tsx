@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import type { LyricLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 import { MONO_STACK } from "@/lib/songStyle";
+import ChordLabel from "./ChordLabel";
 
 interface Props {
   line: LyricLine;
@@ -342,7 +343,7 @@ export default function LyricLineEditor({
                   }}
                   title="Drag to move · Double-click to edit"
                 >
-                  {chord.chord}
+                  <ChordLabel chord={chord.chord} jazz={songStyle?.jazzChords} />
                 </span>
                 <button
                   data-chord-delete
