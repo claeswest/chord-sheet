@@ -64,6 +64,10 @@ export const GOOGLE_FONTS: GoogleFont[] = [
   { name: "Oswald",          url: "https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap",           stack: "'Oswald', sans-serif" },
   { name: "Nunito",          url: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap",           stack: "'Nunito', sans-serif" },
   { name: "Caveat",          url: "https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap",           stack: "'Caveat', cursive" },
+  // Handwritten / jazz lead-sheet style
+  { name: "Reenie Beanie",   url: "https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap",                stack: "'Reenie Beanie', cursive" },
+  { name: "Patrick Hand",    url: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",                 stack: "'Patrick Hand', cursive" },
+  { name: "Kalam",           url: "https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap",           stack: "'Kalam', cursive" },
 ];
 
 export const SYSTEM_FONT: GoogleFont = {
