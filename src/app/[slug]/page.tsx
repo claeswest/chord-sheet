@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import { LANDING_PAGES, LANDING_SLUGS, getLandingPage } from "@/data/landingPages";
@@ -161,13 +162,16 @@ export default async function LandingPage({ params }: Props) {
                 <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
                 <span className="flex-1 mx-3 text-center text-[10px] text-white/25 font-mono truncate tracking-wide">chordsheetmaker.ai</span>
               </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/example1.png"
-                alt={`Example chord sheet made with ChordSheetMaker — chords aligned above the lyrics`}
-                className="w-full object-cover object-top"
-                style={{ aspectRatio: "16 / 10" }}
-              />
+              <div className="relative w-full" style={{ aspectRatio: "16 / 10" }}>
+                <Image
+                  src="/example1.png"
+                  alt="Example chord sheet made with ChordSheetMaker — chords aligned above the lyrics"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  className="object-cover object-top"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -191,9 +195,14 @@ export default async function LandingPage({ params }: Props) {
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
                   </div>
-                  <div className="overflow-hidden" style={{ aspectRatio: "16 / 10" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={ex.src} alt={`${ex.title} by ${ex.artist} — example chord sheet`} className="w-full h-full object-cover object-top" />
+                  <div className="relative overflow-hidden" style={{ aspectRatio: "16 / 10" }}>
+                    <Image
+                      src={ex.src}
+                      alt={`${ex.title} by ${ex.artist} — example chord sheet`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 520px"
+                      className="object-cover object-top"
+                    />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-5 py-4">
                     <p className="text-white font-bold text-sm leading-tight">{ex.title}</p>

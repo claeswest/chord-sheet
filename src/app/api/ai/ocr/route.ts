@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 
 const PROMPT = `You are looking at a photo or scan of a chord sheet (handwritten, printed, or photographed from a screen/book/paper).
 
@@ -57,22 +58,18 @@ export async function POST(req: NextRequest) {
   const mimeType = match[1];
   const base64Data = match[2];
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = geminiUrl(GEMINI_TEXT_MODEL, apiKey);
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { inlineData: { mimeType, data: base64Data } },
-            { text: PROMPT },
-          ],
-        },
-      ],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
-    }),
+  const res = await geminiFetch(url, {
+    contents: [
+      {
+        parts: [
+          { inlineData: { mimeType, data: base64Data } },
+          { text: PROMPT },
+        ],
+      },
+    ],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
   });
 
   if (!res.ok) {

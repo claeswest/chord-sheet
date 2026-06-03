@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 
 const PROMPT = `You are an expert musician and chord transcriber with deep knowledge of popular songs across all genres and eras.
 
@@ -53,16 +54,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No query provided" }, { status: 400 });
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = geminiUrl(GEMINI_TEXT_MODEL, apiKey);
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `${PROMPT}\n\nSong request: ${query.trim()}` }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { temperature: 0, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
-    }),
+  const res = await geminiFetch(url, {
+    contents: [{ parts: [{ text: `${PROMPT}\n\nSong request: ${query.trim()}` }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: { temperature: 0, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
   });
 
   if (!res.ok) {

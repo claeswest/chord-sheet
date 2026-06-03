@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ALL_FONTS } from "@/lib/songStyle";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 
 // Derived directly from songStyle.ts — always in sync with the actual font list
 const AVAILABLE_FONTS = ALL_FONTS.map(f => f.name);
@@ -83,20 +84,16 @@ export async function POST(req: NextRequest) {
     lyrics ? `\nLyrics:\n${lyrics}` : "",
   ].filter(Boolean).join("\n");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = geminiUrl(GEMINI_TEXT_MODEL, apiKey);
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `${PROMPT}\n\nSong:\n${songContent}` }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    }),
+  const res = await geminiFetch(url, {
+    contents: [{ parts: [{ text: `${PROMPT}\n\nSong:\n${songContent}` }] }],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1024,
+      responseMimeType: "application/json",
+      thinkingConfig: { thinkingBudget: 0 },
+    },
   });
 
   if (!res.ok) {

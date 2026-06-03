@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 
 const STYLE_PROMPTS: Record<string, string> = {
   abstract: `You are a visual artist. Given a song title, artist, and lyrics, write a single concise image generation prompt (max 60 words) for an ABSTRACT, PAINTERLY background image that suits the song's mood and genre.
@@ -133,14 +134,10 @@ export async function POST(req: NextRequest) {
   ].filter(Boolean).join("\n");
 
   // Step 1: Ask Gemini Flash to write a visual image prompt
-  const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  const textRes = await fetch(textUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `${promptSystem}\n\nSong:\n${songContent}` }] }],
-      generationConfig: { temperature: 0.8, maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 } },
-    }),
+  const textUrl = geminiUrl(GEMINI_TEXT_MODEL, apiKey);
+  const textRes = await geminiFetch(textUrl, {
+    contents: [{ parts: [{ text: `${promptSystem}\n\nSong:\n${songContent}` }] }],
+    generationConfig: { temperature: 0.8, maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 } },
   });
 
   if (!textRes.ok) {
@@ -156,16 +153,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI returned empty image prompt" }, { status: 502 });
   }
 
-  // Step 2: Generate image using Gemini image generation model
-  const imgUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
-  const imgRes = await fetch(imgUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  // Step 2: Generate image using Gemini image generation model.
+  // Image generation is slow, so allow a longer timeout and no retry (a retry
+  // would double an already-long wait and the cost).
+  const imgUrl = geminiUrl(GEMINI_IMAGE_MODEL, apiKey);
+  const imgRes = await geminiFetch(
+    imgUrl,
+    {
       contents: [{ parts: [{ text: imagePrompt }] }],
       generationConfig: { responseModalities: ["IMAGE"] },
-    }),
-  });
+    },
+    { timeoutMs: 60_000, retries: 0 }
+  );
 
   if (!imgRes.ok) {
     const err = await imgRes.json().catch(() => ({}));
