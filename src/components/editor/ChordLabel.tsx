@@ -14,7 +14,7 @@ interface Props {
 export default function ChordLabel({ chord, jazz }: Props) {
   if (!jazz) return <>{chord}</>;
 
-  const { root, sup, bass } = splitChord(chord);
+  const { root, quality, sup, bass } = splitChord(chord);
 
   // Unparseable symbol (e.g. "N.C.") — render as-is.
   if (!root) return <>{prettyAccidentals(chord)}</>;
@@ -22,8 +22,9 @@ export default function ChordLabel({ chord, jazz }: Props) {
   return (
     <>
       {prettyAccidentals(root)}
+      {quality && prettyAccidentals(quality)}
       {sup && (
-        <span style={{ fontSize: "0.7em", verticalAlign: "0.16em", lineHeight: 1 }}>
+        <span style={{ fontSize: "0.72em", verticalAlign: "0.28em", lineHeight: 1 }}>
           {prettyAccidentals(sup)}
         </span>
       )}

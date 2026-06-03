@@ -1,14 +1,19 @@
 // Splits a chord symbol into the parts needed to render it in the classic
-// jazz lead-sheet ("Real Book") style: a full-size root + a raised, smaller
-// superscript for the quality/extensions, plus an optional slash bass note.
+// jazz lead-sheet ("Real Book") style:
+//   - root:    full-size note + accidental
+//   - quality: letter quality that stays on the baseline (m, maj, dim, sus…)
+//   - sup:     numbers / alterations raised as a superscript (7, 9, 13, b5…)
+//   - bass:    optional slash bass note
 //
-//   "Ebma7"   → { root: "Eb", sup: "ma7",  bass: null }
-//   "Bb13(b9)"→ { root: "Bb", sup: "13(b9)", bass: null }
-//   "Dm7/G"   → { root: "D",  sup: "m7",   bass: "G" }
-//   "G"       → { root: "G",  sup: "",      bass: null }
+//   "Fm7"     → { root: "F",  quality: "m",   sup: "7",     bass: null }
+//   "Ebmaj7"  → { root: "Eb", quality: "maj", sup: "7",     bass: null }
+//   "Bb13(b9)"→ { root: "Bb", quality: "",    sup: "13(b9)",bass: null }
+//   "Dm7/G"   → { root: "D",  quality: "m",   sup: "7",     bass: "G" }
+//   "G"       → { root: "G",  quality: "",    sup: "",      bass: null }
 
 export interface ChordParts {
   root: string;
+  quality: string;
   sup: string;
   bass: string | null;
 }
@@ -29,9 +34,17 @@ export function splitChord(chord: string): ChordParts {
   const rootMatch = main.match(/^([A-G][#b♯♭]?)(.*)$/);
   if (!rootMatch) {
     // Not a standard chord (e.g. "N.C.") — leave it whole.
-    return { root: "", sup: "", bass };
+    return { root: "", quality: "", sup: "", bass };
   }
-  return { root: rootMatch[1], sup: rootMatch[2], bass };
+
+  // Split the remainder into a baseline letter quality (everything up to the
+  // first digit) and a raised superscript (from the first digit onward).
+  const rest = rootMatch[2];
+  const extMatch = rest.match(/^(\D*?)(\d.*)$/);
+  const quality = extMatch ? extMatch[1] : rest;
+  const sup = extMatch ? extMatch[2] : "";
+
+  return { root: rootMatch[1], quality, sup, bass };
 }
 
 /** Replace plain b/# accidentals with proper ♭/♯ glyphs for display. */
