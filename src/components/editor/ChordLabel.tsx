@@ -24,7 +24,7 @@ export default function ChordLabel({ chord, jazz }: Props) {
       {prettyAccidentals(root)}
       {quality && prettyAccidentals(quality)}
       {sup && (
-        <span style={{ fontSize: "0.72em", verticalAlign: "0.28em", lineHeight: 1 }}>
+        <span style={{ fontSize: "0.82em", verticalAlign: "0.3em", lineHeight: 1 }}>
           {prettyAccidentals(sup)}
         </span>
       )}
