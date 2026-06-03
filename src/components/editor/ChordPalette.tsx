@@ -27,7 +27,7 @@ const QUALITIES = [
 ];
 
 // Extended / altered jazz qualities, hidden behind the "More" toggle.
-// 8 entries = 2 full rows of 4.
+// 12 entries = 3 full rows of 4.
 const ADVANCED_QUALITIES = [
   { label: "maj9",  value: "maj9" }, // major 9th
   { label: "m9",    value: "m9"   }, // minor 9th
@@ -37,6 +37,10 @@ const ADVANCED_QUALITIES = [
   { label: "aug",   value: "aug"  }, // augmented
   { label: "7♭9",   value: "7b9"  }, // dominant flat 9
   { label: "7♯9",   value: "7#9"  }, // dominant sharp 9 ("Hendrix")
+  { label: "m11",   value: "m11"  }, // minor 11th
+  { label: "m13",   value: "m13"  }, // minor 13th
+  { label: "6/9",   value: "6/9"  }, // six-nine
+  { label: "7alt",  value: "7alt" }, // altered dominant
 ];
 
 interface Props {
@@ -55,6 +59,19 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
   const [showAdvanced, setShowAdvanced] = useState(false);
   // Keep the advanced row visible whenever an advanced quality is selected.
   const qualityIsAdvanced = ADVANCED_QUALITIES.some((q) => q.value === quality);
+
+  // Remember the user's "More chords" preference across sessions.
+  const ADV_KEY = "chordPalette:showAdvanced";
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(ADV_KEY) === "1") setShowAdvanced(true);
+    } catch { /* ignore */ }
+  }, []);
+  const toggleAdvanced = () => {
+    const next = !(showAdvanced || qualityIsAdvanced);
+    setShowAdvanced(next);
+    try { localStorage.setItem(ADV_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     if (!activeChord) {
@@ -217,7 +234,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
 
             <button
               type="button"
-              onClick={() => setShowAdvanced(!(showAdvanced || qualityIsAdvanced))}
+              onClick={toggleAdvanced}
               className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors py-1"
             >
               {showAdvanced || qualityIsAdvanced ? "Fewer chords" : "More chords"}
