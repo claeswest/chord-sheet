@@ -9,6 +9,7 @@ import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
 import PrintView from "./PrintView";
+import ChordLabel from "./ChordLabel";
 
 // Reuse a single canvas context across all measurements
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -431,7 +432,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                               top: 0,
                             }}
                           >
-                            {chord.chord}
+                            <ChordLabel chord={chord.chord} jazz={s.jazzChords} />
                           </span>
                         ))}
                       </div>

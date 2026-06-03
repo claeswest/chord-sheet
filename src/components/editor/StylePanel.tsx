@@ -536,6 +536,21 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                         </div>
                       </div>
                     )}
+                    {editingElement === "chords" && (
+                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-medium text-zinc-600">Real Book style</span>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">Jazz lead-sheet look — raised superscript extensions (E♭<sup>ma7</sup>)</p>
+                          </div>
+                          <button onClick={() => onChange({ ...style, jazzChords: !style.jazzChords })}
+                            className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${style.jazzChords ? "bg-indigo-500" : "bg-zinc-200"}`}
+                          >
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${style.jazzChords ? "translate-x-4" : "translate-x-0"}`} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {editingElement === "sections" && (
                       <div className="mt-3 pt-3 border-t border-zinc-100 space-y-2">
                         <div className="flex items-center gap-2">

@@ -20,6 +20,8 @@ export interface SongStyle {
   titleAlign?: "left" | "center";
   sectionAlign?: "left" | "center";
   sectionDivider?: boolean;
+  /** Render chords in jazz lead-sheet ("Real Book") style with superscript extensions. */
+  jazzChords?: boolean;
 }
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";

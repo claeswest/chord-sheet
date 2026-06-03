@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
+import ChordLabel from "./ChordLabel";
 
 // At print resolution 96dpi: 1pt = 96/72 px ≈ 1.333px
 // So 12pt ≈ 16px, which is what the baseline print CSS targets.
@@ -162,7 +163,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
               color:      s.chords.color ?? "#4f46e5",
             }}
           >
-            {chord.chord}
+            <ChordLabel chord={chord.chord} jazz={s.jazzChords} />
           </span>
         ));
 
