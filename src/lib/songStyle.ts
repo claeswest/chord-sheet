@@ -38,6 +38,26 @@ export const DEFAULT_STYLE: SongStyle = {
   sectionDivider: true,
 };
 
+const PETALUMA_STACK = "'Petaluma Script', cursive";
+
+/**
+ * One-click "Jazz / Real Book" look: handwritten Petaluma Script on every
+ * element, black ink on warm manuscript paper, and Real Book chord styling.
+ * Applied as a merge so the user's background image (if any) is preserved.
+ */
+export const JAZZ_PRESET: Partial<SongStyle> = {
+  jazzChords:     true,
+  background:     "#fbf9f2",
+  titleAlign:     "center",
+  sectionAlign:   "left",
+  sectionDivider: false,
+  title:   { fontFamily: PETALUMA_STACK, fontSize: 30, color: "#1a1a1a", bold: false, italic: false },
+  artist:  { fontFamily: PETALUMA_STACK, fontSize: 16, color: "#555555", bold: false, italic: false },
+  lyrics:  { fontFamily: PETALUMA_STACK, fontSize: 17, color: "#1a1a1a", bold: false, italic: false },
+  chords:  { fontFamily: PETALUMA_STACK, fontSize: 18, color: "#1a1a1a", bold: false, italic: false },
+  section: { fontFamily: PETALUMA_STACK, fontSize: 14, color: "#1a1a1a", bold: false, italic: false },
+};
+
 export interface GoogleFont {
   name: string;
   url: string;

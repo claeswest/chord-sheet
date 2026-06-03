@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE } from "@/lib/songStyle";
+import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, JAZZ_PRESET } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@/lib/imageUtils";
 
@@ -582,6 +582,28 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                 </div>
               </div>
             )}
+
+            {/* ── Presets ── */}
+            <div className="px-4 pt-3 pb-1">
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">Presets</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onChange({ ...style, ...JAZZ_PRESET })}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white hover:border-amber-300 hover:bg-amber-50 transition-colors py-2.5 px-3 text-sm font-semibold text-zinc-700"
+                  style={{ fontFamily: "'Petaluma Script', cursive" }}
+                  title="Handwritten Petaluma Script + Real Book chord styling on warm paper"
+                >
+                  🎷 Jazz / Real Book
+                </button>
+                <button
+                  onClick={() => onChange({ ...DEFAULT_STYLE, background: style.background, backgroundImage: style.backgroundImage, overlayOpacity: style.overlayOpacity })}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors py-2.5 px-3 text-sm font-semibold text-zinc-700"
+                  title="Clean monospace default"
+                >
+                  Clean
+                </button>
+              </div>
+            </div>
 
             {/* ── Compact preview rows ── */}
             <div className="px-4 py-2">
