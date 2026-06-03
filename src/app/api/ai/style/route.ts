@@ -15,6 +15,7 @@ Return ONLY valid JSON (no markdown, no code fences, no explanation) in this exa
   "theme": "1-2 sentences describing the visual theme and why it suits the song",
   "background": "#hexcolor",
   "titleAlign": <"left" or "center" — center suits anthems/ballads, left suits intimate/folk/personal songs>,
+  "jazzChords": <true or false — true for jazz, swing, bossa nova, big band, blues and lead-sheet style songs; renders chords in classic "Real Book" notation (baseline quality + raised superscript extensions). false for pop/rock/folk/worship>,
   "title": {
     "fontName": "choose the most fitting font from the list above",
     "fontSize": <integer 18–36, pick what suits the song's drama/energy>,
@@ -60,6 +61,7 @@ Design guidelines:
 - The chord color should stand out clearly from the lyric color
 - Match the visual mood to the song: folk feels warm/earthy, rock feels bold/dark, love songs feel soft/elegant, classical feels refined, blues feels deep/moody, pop feels clean/bright
 - Serif fonts suit classical, folk, country, ballads; monospace suits technical/indie/electronic; sans-serif suits pop/modern; Caveat suits handwritten/folk/personal
+- For JAZZ, swing, bossa nova, big band, blues or lead-sheet style songs: set jazzChords=true, use "Petaluma Script" or "MuseJazz Text" for the chords (and ideally lyrics/title too), and use black/near-black ink (#1a1a1a) on warm off-white paper (#fbf9f2) for an authentic Real Book look
 - The title font can be expressive and dramatic; lyrics font should prioritize readability
 - Vary font sizes meaningfully: a dramatic rock anthem title might be 32px, a delicate folk ballad title might be 20px
 - Use bold/italic purposefully: bold adds weight and power, italic adds elegance and motion
@@ -131,6 +133,7 @@ export async function POST(req: NextRequest) {
     theme: parsed.theme ?? "",
     style: {
       background:     parsed.background ?? "#ffffff",
+      jazzChords:     parsed.jazzChords === true,
       titleAlign:     parsed.titleAlign === "left" ? "left" : "center",
       sectionAlign:   sec?.align === "center" ? "center" : "left",
       sectionDivider: sec?.divider !== false,
