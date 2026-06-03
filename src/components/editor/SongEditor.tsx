@@ -35,6 +35,9 @@ import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
+import {
+  trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
+} from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
@@ -142,6 +145,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // Set to true before programmatic style updates (e.g. fetchSongStyle on load) so
   // the auto-save effect skips that render — it's not a user edit.
   const suppressAutoSave = useRef(false);
+  // Funnel analytics: only fire each milestone once per editing session.
+  const firstChordTracked = useRef(false);
+  const songSavedTracked = useRef(false);
   // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
   const lastSavedBgImage = useRef<string | undefined>(
     // Initialise to whatever we seeded from sessionStorage/initialSong — no need to save that
@@ -154,6 +160,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     })()
   );
   useEffect(() => setMounted(true), []);
+
+  // Funnel: a blank new-song editor opened (the start modal will show).
+  useEffect(() => {
+    if (isBlankNew && !initialMode) trackEditorOpened(isLoggedIn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   // Auto-focus the title when a blank new song opens (after start modal is dismissed)
@@ -377,6 +389,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     // Un-transpose it before storing so the display round-trip shows what they typed.
     const preferFlats = chord.includes("b") && !chord.startsWith("B");
     const storedChord = semitones !== 0 ? transposeChord(chord, -semitones, preferFlats) : chord;
+    if (!firstChordTracked.current) {
+      firstChordTracked.current = true;
+      trackFirstChord();
+    }
     setLines((prev) => {
       const next = prev.map((l) => {
         if (l.id !== lineId || l.type !== "lyric") return l;
@@ -439,6 +455,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       }
     } else {
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
+    }
+    if (!songSavedTracked.current) {
+      songSavedTracked.current = true;
+      trackSongSaved(isLoggedIn ? "user" : "guest");
     }
     // Keep the URL in sync so reloads restore the latest title/artist/content
     const encoded = encodeSong({ id: songId, title, artist, lines, style: songStyle, semitones: semitones || undefined });
@@ -887,13 +907,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {/* Start modal — full-page overlay for blank new songs */}
       {mounted && !startModalDismissed && !showTemplateModal && (
         <StartModal
-          onSearch={() => { setStartModalDismissed(true); setShowImport("search"); }}
-          onImport={() => { setStartModalDismissed(true); setShowImport("text"); }}
-          onWriteMyself={() => setStartModalDismissed(true)}
-          onTemplate={() => setShowTemplateModal(true)}
+          onSearch={() => { trackStartChoice("search"); setStartModalDismissed(true); setShowImport("search"); }}
+          onImport={() => { trackStartChoice("import"); setStartModalDismissed(true); setShowImport("text"); }}
+          onWriteMyself={() => { trackStartChoice("scratch"); setStartModalDismissed(true); }}
+          onTemplate={() => { trackStartChoice("template"); setShowTemplateModal(true); }}
           onClose={() => router.push("/songs")}
           showDemo={!hasSongs && (isLoggedIn ? true : listSongs().length === 0)}
           onDemo={() => {
+            trackStartChoice("demo");
             setTitle(DEMO_SONG.title);
             setArtist(DEMO_SONG.artist);
             setLines(DEMO_SONG.lines);

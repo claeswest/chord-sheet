@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { SongLine } from "@/types/song";
 import { parseChordSheet } from "@/lib/parseChordSheet";
+import { trackAiSearch, trackImportSuccess } from "@/lib/analytics";
 
 interface ImportMeta {
   title?: string;
@@ -82,6 +83,10 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const [cleaned, setCleaned] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pendingAutoClean = useRef(false);
+  // Funnel analytics: remember how the imported content originated.
+  const importSource = useRef<"search" | "text" | "photo">(
+    defaultTab === "search" ? "search" : "text"
+  );
 
   const [query, setQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -188,6 +193,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
 
   const handleOcrRead = async () => {
     if (!imageSrc) return;
+    importSource.current = "photo";
     setOcrLoading(true);
     setOcrError("");
     try {
@@ -218,6 +224,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
 
   const handleSearch = async () => {
     if (!query.trim()) return;
+    importSource.current = "search";
     setSearchLoading(true);
     setSearchError("");
     try {
@@ -229,14 +236,18 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 404 || data.notFound) {
+          trackAiSearch("notfound");
           setSearchError("Song not found — try a different title or artist name");
         } else if (res.status === 429 || data.error === "rate_limited") {
+          trackAiSearch("error");
           setSearchError("The AI is busy right now — please try again in a moment");
         } else {
+          trackAiSearch("error");
           setSearchError("Something went wrong — please try again");
         }
         return;
       }
+      trackAiSearch("success");
       pendingAutoClean.current = true;
       setText(data.text ?? "");
       setMeta({
@@ -252,7 +263,11 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   };
 
   const handleImport = () => {
-    if (preview.length > 0) { onImport(preview, meta); onClose(true); }
+    if (preview.length > 0) {
+      trackImportSuccess(importSource.current);
+      onImport(preview, meta);
+      onClose(true);
+    }
   };
 
   const showReview = cleaned && !aiLoading;
