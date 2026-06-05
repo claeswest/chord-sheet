@@ -734,52 +734,77 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
             </div>
           </>) : (
-            /* Guest — sign-in pitch */
-            <div className="flex flex-col flex-1 items-stretch justify-center px-4 py-6">
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex flex-col gap-5">
+            /* Guest — value-first create actions, account pitch below */
+            <div className="flex flex-col flex-1 px-4 py-6 gap-5 overflow-y-auto">
 
-                {/* Heading */}
-                <div className="text-center">
-                  <div className="w-11 h-11 rounded-2xl bg-indigo-500/25 border border-indigo-400/20 flex items-center justify-center mx-auto mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-indigo-300">
-                      <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4Z"/>
+              {/* Create actions — first */}
+              <div className="space-y-2.5">
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/30 px-1">Create a chord chart</p>
+
+                {/* Find with AI — primary */}
+                <Link
+                  href="/editor/new?start=search"
+                  className="relative overflow-hidden group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
+                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
                     </svg>
                   </div>
-                  <p className="text-sm font-bold text-white/90 leading-snug">Save more with an account</p>
-                  <p className="text-xs text-white/40 mt-1">Free · no credit card needed</p>
-                </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm">Find a song with AI</p>
+                    <p className="text-[11px] text-indigo-200">Type a title — chords in seconds</p>
+                  </div>
+                </Link>
 
-                {/* Benefits */}
-                <div className="space-y-2.5">
-                  {([
-                    { text: "Songs synced across all devices",        icon: <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/> },
-                    { text: "AI backgrounds saved with your song",    icon: <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z"/> },
-                    { text: "Organise songs into categories",         icon: <path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2Z"/> },
-                    { text: "Share songs via a public link",          icon: <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92Z"/> },
-                  ] as { text: string; icon: React.ReactNode }[]).map(({ text, icon }) => (
-                    <div key={text} className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-300">
-                          {icon}
-                        </svg>
-                      </div>
-                      <span className="text-xs text-white/60 leading-snug">{text}</span>
-                    </div>
-                  ))}
-                </div>
+                {/* Import */}
+                <Link
+                  href="/editor/new?start=import"
+                  className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm">I already have chords</p>
+                    <p className="text-[11px] text-white/30">Paste, or snap a photo</p>
+                  </div>
+                </Link>
 
-                {/* CTA */}
+                {/* Try demo */}
+                <Link
+                  href="/editor/new?start=demo"
+                  className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm">Try the demo</p>
+                    <p className="text-[11px] text-white/30">See a finished chart</p>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Account pitch — secondary, below the value */}
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4 mt-auto">
+                <p className="text-sm font-bold text-white/90">Save your work</p>
+                <p className="text-xs text-white/40 mt-1 mb-3 leading-snug">
+                  Create a free account to keep your charts, sync across devices, and build setlists. No credit card.
+                </p>
                 <Link
                   href="/login"
-                  className="flex items-center justify-center w-full bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition-colors shadow-lg shadow-indigo-900/40"
+                  className="flex items-center justify-center w-full bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
                 >
                   Sign in or create account
                 </Link>
-
-                <p className="text-center text-[10px] text-white/25 -mt-2">
-                  Already have songs? They'll be waiting.
-                </p>
-
               </div>
             </div>
           )}
