@@ -777,7 +777,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <span className="shrink-0">👋</span>
             <span className="truncate">
               <strong className="font-semibold">This is a demo song.</strong>
-              <span className="text-indigo-100 hidden sm:inline"> Explore it — then make your own.</span>
+              <span className="text-indigo-100"> Try dragging a chord, editing the lyrics, or pressing play.</span>
             </span>
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -785,7 +785,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               onClick={() => { trackStartChoice("search"); setShowImport("search"); setShowDemoBanner(false); }}
               className="inline-flex items-center gap-1 bg-white text-indigo-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-50 transition-colors"
             >
-              Create your own
+              Make your own
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
