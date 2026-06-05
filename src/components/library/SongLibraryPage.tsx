@@ -15,6 +15,7 @@ import {
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
+import { trackPaywallSeen } from "@/lib/analytics";
 
 /** Returns true if a hex colour is dark (luminance < 0.18) */
 function isDarkColour(hex: string): boolean {
@@ -151,6 +152,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
   // Upgrade modal
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // Funnel: fire once when the paywall is shown (user already created value).
+  const paywallTracked = useRef(false);
+  useEffect(() => {
+    if (showUpgradeModal && !paywallTracked.current) {
+      paywallTracked.current = true;
+      trackPaywallSeen("song_limit");
+    }
+  }, [showUpgradeModal]);
 
   // Which songs are locked: those beyond the plan limit (by current sort order)
   const lockedSongIds: Set<string> = songLimit !== null && songs.length > songLimit

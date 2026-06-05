@@ -37,6 +37,7 @@ import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import {
   trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
+  trackDemoStarted, trackFirstEdit,
 } from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
@@ -152,6 +153,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // Funnel analytics: only fire each milestone once per editing session.
   const firstChordTracked = useRef(false);
   const songSavedTracked = useRef(false);
+  const firstEditTracked = useRef(false);
+  const markFirstEdit = () => {
+    if (!firstEditTracked.current) { firstEditTracked.current = true; trackFirstEdit(); }
+  };
   // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
   const lastSavedBgImage = useRef<string | undefined>(
     // Initialise to whatever we seeded from sessionStorage/initialSong — no need to save that
@@ -165,9 +170,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   );
   useEffect(() => setMounted(true), []);
 
-  // Funnel: a blank new-song editor opened (the start modal will show).
+  // Funnel: a blank new-song editor opened (the start modal will show),
+  // or a demo-first visitor landed straight on the playable demo chart.
   useEffect(() => {
-    if (isBlankNew && !initialMode) trackEditorOpened(isLoggedIn);
+    if (isDemo) trackDemoStarted();
+    else if (isBlankNew && !initialMode) trackEditorOpened(isLoggedIn);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -184,6 +191,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   // Push a snapshot immediately (structural changes: add/delete line/chord/section)
   const pushSnap = useCallback((next: SongLine[]) => {
+    markFirstEdit();
     if (textSnapTimer.current) { clearTimeout(textSnapTimer.current); textSnapTimer.current = null; }
     const truncated = historyStack.current.slice(0, historyPos + 1);
     truncated.push(next);
@@ -196,6 +204,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   // Push a snapshot after 600ms of inactivity (text typing / chord renaming)
   const pushSnapDebounced = useCallback((next: SongLine[]) => {
+    markFirstEdit();
     if (textSnapTimer.current) clearTimeout(textSnapTimer.current);
     textSnapTimer.current = setTimeout(() => {
       const truncated = historyStack.current.slice(0, historyPos + 1);

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { PLANS, Plan } from "@/lib/plans";
 import UserMenu from "@/components/ui/UserMenu";
+import { trackTrialStarted } from "@/lib/analytics";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 
@@ -40,7 +41,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
         return;
       }
       if (!res.ok) { setError(data.error ?? "Something went wrong"); return; }
-      if (data.url) window.location.href = data.url;
+      if (data.url) { trackTrialStarted(plan); window.location.href = data.url; }
     } catch {
       setError("Network error — please try again");
     } finally {

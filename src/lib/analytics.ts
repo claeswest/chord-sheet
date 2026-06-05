@@ -54,3 +54,22 @@ export const trackFirstChord = () => track("first_chord_placed");
 /** A song was saved. auth = guest | user. */
 export const trackSongSaved = (auth: "guest" | "user") =>
   track("song_saved", { auth });
+
+// ── Activation funnel (treat "playable chart reached" as activation) ─────────
+
+/** A visitor opened the pre-loaded demo chart (demo-first entry). */
+export const trackDemoStarted = () => track("demo_started");
+
+/** The user made their first real edit to the chart (chord/text/transpose). */
+export const trackFirstEdit = () => track("first_edit_made");
+
+/** The user started hands-free performance / auto-scroll — the core payoff. */
+export const trackStageModeStarted = () => track("stage_mode_started");
+
+/** The paywall/upgrade prompt was shown after the user had created value. */
+export const trackPaywallSeen = (where: string) =>
+  track("paywall_seen_after_value", { where });
+
+/** The user initiated a paid checkout / free trial. plan = monthly | yearly. */
+export const trackTrialStarted = (plan: string) =>
+  track("trial_started", { plan });

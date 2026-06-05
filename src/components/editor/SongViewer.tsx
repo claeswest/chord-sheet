@@ -8,6 +8,7 @@ import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/son
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
+import { trackStageModeStarted } from "@/lib/analytics";
 import PrintView from "./PrintView";
 import ChordLabel from "./ChordLabel";
 
@@ -232,6 +233,15 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     setPlaying((p) => !p);
     revealControls();
   }, [revealControls]);
+
+  // Funnel: fire once the first time hands-free auto-scroll actually starts.
+  const stageTracked = useRef(false);
+  useEffect(() => {
+    if (playing && !stageTracked.current) {
+      stageTracked.current = true;
+      trackStageModeStarted();
+    }
+  }, [playing]);
 
   const handleShare = useCallback(async () => {
     // If already on a share page, just copy the current URL
