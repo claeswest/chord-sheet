@@ -777,7 +777,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <span className="shrink-0">👋</span>
             <span className="truncate">
               <strong className="font-semibold">This is a demo song.</strong>
-              <span className="text-indigo-100"> Try dragging a chord, editing the lyrics, or pressing play.</span>
+              <span className="text-indigo-100"> Try dragging a chord, editing the lyrics, or changing the key.</span>
             </span>
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
