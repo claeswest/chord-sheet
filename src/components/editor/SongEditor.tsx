@@ -91,6 +91,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const router = useRouter();
   // Demo-first entry: land straight on a populated, playable chart (no start modal).
   const isDemo = initialMode === "demo";
+  const [showDemoBanner, setShowDemoBanner] = useState(isDemo);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
   const [activeChord, setActiveChord] = useState<string | null>(null);
@@ -764,6 +765,39 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </button>
         </div>
       </header>
+
+      {/* Demo bridge — turn "I tried it" into "I'll make my own" */}
+      {showDemoBanner && (
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-indigo-600 text-white shrink-0">
+          <span className="flex items-center gap-2 min-w-0 text-sm">
+            <span className="shrink-0">👋</span>
+            <span className="truncate">
+              <strong className="font-semibold">This is a demo song.</strong>
+              <span className="text-indigo-100 hidden sm:inline"> Explore it — then make your own.</span>
+            </span>
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => { trackStartChoice("search"); setShowImport("search"); setShowDemoBanner(false); }}
+              className="inline-flex items-center gap-1 bg-white text-indigo-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-50 transition-colors"
+            >
+              Create your own
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowDemoBanner(false)}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-indigo-200 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
