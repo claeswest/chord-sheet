@@ -19,17 +19,35 @@ const FEATURE_LABELS: Record<string, string> = {
 const features = [
   {
     icon: "✦",
-    title: "AI Song Search",
-    description: "Type a song name and artist — AI knows millions of songs and returns a ready-to-use chord sheet in seconds.",
+    title: "Find any song with AI",
+    description: "Type a song name and artist — AI returns a clean chord chart with the chords sitting right above the lyrics, in seconds.",
     hex: "#6366f1",
     iconBg: "rgba(99,102,241,0.12)",
     cardBg: "rgba(99,102,241,0.04)",
     glow: "rgba(99,102,241,0.18)",
   },
   {
+    icon: "🎚️",
+    title: "Transpose to your key",
+    description: "Move the whole chart up or down with one tap to fit your singer's range. Every chord updates instantly — no capo math.",
+    hex: "#8b5cf6",
+    iconBg: "rgba(139,92,246,0.12)",
+    cardBg: "rgba(139,92,246,0.04)",
+    glow: "rgba(139,92,246,0.18)",
+  },
+  {
+    icon: "▶️",
+    title: "Auto-scroll on stage",
+    description: "Hit play and the chart scrolls hands-free at your pace — large, readable text on phone, tablet or laptop. Keep both hands on your instrument.",
+    hex: "#10b981",
+    iconBg: "rgba(16,185,129,0.12)",
+    cardBg: "rgba(16,185,129,0.04)",
+    glow: "rgba(16,185,129,0.18)",
+  },
+  {
     icon: "🎸",
-    title: "Drag-and-Drop Chords",
-    description: "Grab any chord and drop it above the exact lyric syllable where the change happens. No manual spacing.",
+    title: "Fix alignment by dragging",
+    description: "Grab any chord and drop it above the exact syllable where the change lands. What you build is what you play — no fiddly spacing.",
     hex: "#3b82f6",
     iconBg: "rgba(59,130,246,0.12)",
     cardBg: "rgba(59,130,246,0.04)",
@@ -37,35 +55,17 @@ const features = [
   },
   {
     icon: "📷",
-    title: "Photo & Image Import",
-    description: "Snap a photo of a paper chord sheet. AI reads it and turns it into a fully editable digital sheet.",
+    title: "Import photos & paste",
+    description: "Snap a photo of a paper or printed chord sheet, or paste from any site — AI cleans it up into a fully editable chart.",
     hex: "#14b8a6",
     iconBg: "rgba(20,184,166,0.12)",
     cardBg: "rgba(20,184,166,0.04)",
     glow: "rgba(20,184,166,0.18)",
   },
   {
-    icon: "🎨",
-    title: "AI Background & Styling",
-    description: "Generate atmospheric background images matched to your song's mood — abstract, landscape, vintage, concert and more.",
-    hex: "#f59e0b",
-    iconBg: "rgba(245,158,11,0.12)",
-    cardBg: "rgba(245,158,11,0.04)",
-    glow: "rgba(245,158,11,0.18)",
-  },
-  {
-    icon: "▶️",
-    title: "Auto-Scroll Performance Mode",
-    description: "Hands-free teleprompter scroll at the exact speed you need. Control with keyboard — perfect on stage.",
-    hex: "#10b981",
-    iconBg: "rgba(16,185,129,0.12)",
-    cardBg: "rgba(16,185,129,0.04)",
-    glow: "rgba(16,185,129,0.18)",
-  },
-  {
     icon: "📄",
-    title: "Print & PDF Export",
-    description: "Print straight from the browser or export a clean PDF. Organize songs into setlists for your gigs.",
+    title: "Setlists, PDF & sharing",
+    description: "Organize songs into setlists for each gig, export a clean PDF, or share a link with your band — all synced across devices.",
     hex: "#f43f5e",
     iconBg: "rgba(244,63,94,0.12)",
     cardBg: "rgba(244,63,94,0.04)",
@@ -125,17 +125,17 @@ export default async function HomePage() {
           }} />
 
           <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
-            For guitarists, pianists, vocalists & bands
+            For gigging musicians, singers & cover bands
           </span>
 
           <h1 className="relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
-            AI-powered chord sheets{" "}
-            <span className="text-indigo-400 whitespace-nowrap">for every musician</span>
+            Turn any song into a{" "}
+            <span className="text-indigo-400">stage-ready chord chart</span>
           </h1>
 
           <p className="relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
-            Search any song with AI, drag chords above lyrics, style with generated backgrounds,
-            and perform with hands-free auto-scroll — all in your browser.
+            Get a clean chart with the chords in the right places, transpose it to your singer&apos;s key,
+            and play hands-free with auto-scroll — on your phone, tablet or laptop.
           </p>
 
           <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
@@ -148,7 +148,7 @@ export default async function HomePage() {
               <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)", backgroundSize: "200% 100%" }} />
               <span className="relative flex items-center justify-center gap-2">
-                Try it free
+                Build a chart free
                 <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
@@ -180,15 +180,15 @@ export default async function HomePage() {
 
           {/* Caption */}
           <p className="relative text-xs text-white/25 mb-8 sm:mb-12">
-            Real chord sheet created in ChordSheetMaker — background image and styling generated with AI
+            A real chord chart in ChordSheetMaker — transposed and ready to perform
           </p>
 
           {/* 3 highlights — horizontal until md, then 3-column vertical */}
           <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { icon: "⚡", title: "Find any song with AI",    body: "Type a song title and get a complete chord sheet in seconds — ready to play." },
-              { icon: "🎯", title: "Precise chord placement", body: "Place each chord exactly where it falls on the beat. What you build is what you play."  },
-              { icon: "▶️", title: "Follow along, hands-free",  body: "Hit play and the sheet scrolls at your pace. No tapping, no losing your place mid-song." },
+              { icon: "⚡", title: "Any song, clean chart",   body: "Type a title and AI lays the chords over the lyrics, perfectly aligned — ready in seconds." },
+              { icon: "🎚️", title: "In your singer's key",    body: "Transpose the whole chart up or down with one tap. No rewriting, no capo math."  },
+              { icon: "▶️", title: "Hands-free on stage",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
             ].map((h) => (
               <div key={h.title}
                 className="flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl"
@@ -205,10 +205,10 @@ export default async function HomePage() {
           <div id="features" className="relative w-full max-w-6xl mx-auto pt-12 sm:pt-16 pb-2">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">
-              Everything you need
+              Everything you need on stage
             </h2>
             <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-base sm:text-lg">
-              Built for musicians who want to focus on playing, not formatting.
+              Built for musicians who play live — focus on the performance, not the formatting.
             </p>
           </div>
         </section>
@@ -384,7 +384,7 @@ export default async function HomePage() {
               Your songs deserve<br />a better home.
             </h2>
             <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
-              Create, style and perform your chord sheets — from any device, any stage.
+              Build, transpose and perform your chord charts — from any device, any stage.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
