@@ -83,13 +83,15 @@ interface SongEditorProps {
   initialSong?: SharedSong | null;
   isLoggedIn?: boolean;
   hasSongs?: boolean;
-  initialMode?: "search" | "import" | "write" | null;
+  initialMode?: "search" | "import" | "write" | "demo" | null;
 }
 
 export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs = false, initialMode }: SongEditorProps = {}) {
   const router = useRouter();
-  const [title, setTitle] = useState(initialSong?.title ?? "");
-  const [artist, setArtist] = useState(initialSong?.artist ?? "");
+  // Demo-first entry: land straight on a populated, playable chart (no start modal).
+  const isDemo = initialMode === "demo";
+  const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
+  const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(
@@ -119,7 +121,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   // Lines state — initializer also seeds the history stack
   const [lines, setLines] = useState<SongLine[]>(() => {
-    const initial = initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }];
+    const initial = isDemo
+      ? DEMO_SONG.lines
+      : (initialSong?.lines ?? [{ id: genId(), type: "lyric", text: "", chords: [] }]);
     historyStack.current = [initial];
     return initial;
   });
@@ -170,11 +174,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const titleInputRef = useRef<HTMLInputElement>(null);
   // Auto-focus the title when a blank new song opens (after start modal is dismissed)
   useEffect(() => {
-    if (isBlankNew && startModalDismissed) {
+    if (isBlankNew && startModalDismissed && !isDemo) {
       titleInputRef.current?.focus();
       titleInputRef.current?.select();
     }
-  }, [isBlankNew, startModalDismissed]);
+  }, [isBlankNew, startModalDismissed, isDemo]);
 
   // ── Snapshot helpers ─────────────────────────────────────────────────────────
 
