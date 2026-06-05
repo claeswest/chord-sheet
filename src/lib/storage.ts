@@ -1,4 +1,5 @@
 import type { SongLine } from "@/types/song";
+import type { SongStyle } from "@/lib/songStyle";
 
 const STORAGE_KEY = "chordsheet_songs";
 const INDEX_KEY = "chordsheet_index"; // ordered list of ids
@@ -10,6 +11,8 @@ export type StoredSong = {
   lines: SongLine[];
   updatedAt: string; // ISO string
   tags?: string[];
+  style?: SongStyle;     // text/colour/font styling (backgroundImage stripped to save space)
+  semitones?: number;    // current transpose
 };
 
 export function updateSongTags(id: string, tags: string[]): void {

@@ -191,6 +191,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               title: s.title,
               artist: s.artist,
               lines: s.lines,
+              style: s.style,
+              semitones: s.semitones,
               tags: [],
               updatedAt: s.updatedAt,
               categoryIds: [],

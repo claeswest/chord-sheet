@@ -468,7 +468,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         throw err;
       }
     } else {
-      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString() });
+      // Strip the (potentially huge base64) background image so we don't blow
+      // the localStorage quota; everything else (fonts, colours, jazzChords…) persists.
+      const { backgroundImage, ...safeStyle } = songStyle;
+      void backgroundImage;
+      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString(), style: safeStyle, semitones });
     }
     if (!songSavedTracked.current) {
       songSavedTracked.current = true;
