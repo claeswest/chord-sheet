@@ -46,36 +46,97 @@ const DEMO_SONG = {
   title: "Demo Song",
   artist: "ChordSheetMaker",
   lines: [
-    { id: "ds1", type: "section" as const, label: "Verse" },
+    { id: "ds1", type: "section" as const, label: "Verse 1" },
     { id: "ds2", type: "lyric" as const, text: "Walking down the road at night", chords: [
       { id: "dc1", chord: "Am", position: 0 },
       { id: "dc2", chord: "G",  position: 13 },
-      { id: "dc3", chord: "C",  position: 20 },
+      { id: "dc3", chord: "C",  position: 22 },
     ]},
     { id: "ds3", type: "lyric" as const, text: "Looking for a guiding light", chords: [
       { id: "dc4", chord: "Am", position: 0 },
-      { id: "dc5", chord: "F",  position: 11 },
-      { id: "dc6", chord: "G",  position: 21 },
+      { id: "dc5", chord: "F",  position: 12 },
+      { id: "dc6", chord: "G",  position: 22 },
     ]},
-    { id: "ds4", type: "section" as const, label: "Chorus" },
-    { id: "ds5", type: "lyric" as const, text: "Every step is leading somewhere", chords: [
-      { id: "dc7",  chord: "F",  position: 0 },
-      { id: "dc8",  chord: "G",  position: 11 },
-      { id: "dc9",  chord: "Am", position: 21 },
+    { id: "ds4", type: "lyric" as const, text: "Every shadow tells a tale", chords: [
+      { id: "dc7", chord: "C",  position: 0 },
+      { id: "dc8", chord: "G",  position: 13 },
+      { id: "dc9", chord: "Am", position: 19 },
     ]},
-    { id: "ds6", type: "lyric" as const, text: "Carry on, there's magic in the air", chords: [
+    { id: "ds5", type: "lyric" as const, text: "Of the ones who never fail", chords: [
       { id: "dc10", chord: "F", position: 0 },
-      { id: "dc11", chord: "C", position: 10 },
-      { id: "dc12", chord: "G", position: 27 },
+      { id: "dc11", chord: "C", position: 7 },
+      { id: "dc12", chord: "G", position: 16 },
     ]},
-    { id: "ds7", type: "section" as const, label: "Bridge" },
-    { id: "ds8", type: "lyric" as const, text: "Hold on tight, don't let go", chords: [
-      { id: "dc13", chord: "Em", position: 0 },
-      { id: "dc14", chord: "Am", position: 15 },
+
+    { id: "ds6", type: "section" as const, label: "Chorus" },
+    { id: "ds7", type: "lyric" as const, text: "Every step is leading somewhere", chords: [
+      { id: "dc13", chord: "F",  position: 0 },
+      { id: "dc14", chord: "G",  position: 11 },
+      { id: "dc15", chord: "Am", position: 22 },
     ]},
-    { id: "ds9", type: "lyric" as const, text: "Feel the rhythm, let it flow", chords: [
-      { id: "dc15", chord: "Em", position: 0 },
-      { id: "dc16", chord: "G",  position: 15 },
+    { id: "ds8", type: "lyric" as const, text: "Carry on, there's magic in the air", chords: [
+      { id: "dc16", chord: "F", position: 0 },
+      { id: "dc17", chord: "C", position: 10 },
+      { id: "dc18", chord: "G", position: 27 },
+    ]},
+    { id: "ds9", type: "lyric" as const, text: "Hold the line and don't look back", chords: [
+      { id: "dc19", chord: "C",  position: 0 },
+      { id: "dc20", chord: "G",  position: 13 },
+      { id: "dc21", chord: "Am", position: 22 },
+    ]},
+    { id: "ds10", type: "lyric" as const, text: "Find your way and don't look back", chords: [
+      { id: "dc22", chord: "F", position: 0 },
+      { id: "dc23", chord: "C", position: 10 },
+      { id: "dc24", chord: "G", position: 24 },
+    ]},
+
+    { id: "ds11", type: "section" as const, label: "Verse 2" },
+    { id: "ds12", type: "lyric" as const, text: "Morning breaks the falling dark", chords: [
+      { id: "dc25", chord: "Am", position: 0 },
+      { id: "dc26", chord: "G",  position: 14 },
+      { id: "dc27", chord: "C",  position: 24 },
+    ]},
+    { id: "ds13", type: "lyric" as const, text: "Lighting up a brand new spark", chords: [
+      { id: "dc28", chord: "Am", position: 0 },
+      { id: "dc29", chord: "F",  position: 12 },
+      { id: "dc30", chord: "G",  position: 22 },
+    ]},
+    { id: "ds14", type: "lyric" as const, text: "Voices rising, soft and clear", chords: [
+      { id: "dc31", chord: "C",  position: 0 },
+      { id: "dc32", chord: "G",  position: 13 },
+      { id: "dc33", chord: "Am", position: 21 },
+    ]},
+    { id: "ds15", type: "lyric" as const, text: "Calling all the world to hear", chords: [
+      { id: "dc34", chord: "F", position: 0 },
+      { id: "dc35", chord: "C", position: 11 },
+      { id: "dc36", chord: "G", position: 21 },
+    ]},
+
+    { id: "ds16", type: "section" as const, label: "Bridge" },
+    { id: "ds17", type: "lyric" as const, text: "Hold on tight, don't let go", chords: [
+      { id: "dc37", chord: "Em", position: 0 },
+      { id: "dc38", chord: "Am", position: 15 },
+    ]},
+    { id: "ds18", type: "lyric" as const, text: "Feel the rhythm, let it flow", chords: [
+      { id: "dc39", chord: "Em", position: 0 },
+      { id: "dc40", chord: "G",  position: 15 },
+    ]},
+    { id: "ds19", type: "lyric" as const, text: "Through the night until the dawn", chords: [
+      { id: "dc41", chord: "Dm", position: 0 },
+      { id: "dc42", chord: "F",  position: 12 },
+      { id: "dc43", chord: "C",  position: 22 },
+    ]},
+
+    { id: "ds20", type: "section" as const, label: "Chorus" },
+    { id: "ds21", type: "lyric" as const, text: "Every step is leading somewhere", chords: [
+      { id: "dc44", chord: "F",  position: 0 },
+      { id: "dc45", chord: "G",  position: 11 },
+      { id: "dc46", chord: "Am", position: 22 },
+    ]},
+    { id: "ds22", type: "lyric" as const, text: "Carry on, there's magic in the air", chords: [
+      { id: "dc47", chord: "F", position: 0 },
+      { id: "dc48", chord: "C", position: 10 },
+      { id: "dc49", chord: "G", position: 27 },
     ]},
   ] as SongLine[],
 };
