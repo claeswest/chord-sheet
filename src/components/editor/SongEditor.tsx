@@ -757,10 +757,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </div>
 
 
-          {/* Chords panel toggle — mobile only */}
+          {/* Chords panel toggle — mobile only (panel is always visible on md+) */}
           <button
             onClick={() => setShowRightPanel((v) => !v)}
-            className={`flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm font-medium transition-colors ${
+            className={`md:hidden flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm font-medium transition-colors ${
               showRightPanel
                 ? "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
                 : "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
