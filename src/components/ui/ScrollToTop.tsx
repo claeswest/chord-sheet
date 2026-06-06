@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Kbd from "@/components/ui/Kbd";
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
@@ -39,7 +40,7 @@ export default function ScrollToTop() {
       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
       </svg>
-      Top <kbd className="text-xs text-white/50 font-mono">[T]</kbd>
+      Top <Kbd>T</Kbd>
     </button>
   );
 }

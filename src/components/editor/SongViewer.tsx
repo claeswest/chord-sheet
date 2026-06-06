@@ -9,6 +9,7 @@ import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
 import { trackStageModeStarted } from "@/lib/analytics";
+import Kbd from "@/components/ui/Kbd";
 import PrintView from "./PrintView";
 import ChordLabel from "./ChordLabel";
 
@@ -514,7 +515,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 0l.172.172a2 2 0 0 1 0 2.828L12 16H9v-3z"/>
                 </svg>
                 <span className="hidden sm:inline">Edit</span>
-                <kbd className="hidden sm:inline text-xs text-white/40 font-mono">[E]</kbd>
+                <Kbd className="hidden sm:inline-flex">E</Kbd>
               </button>
             )}
 

@@ -21,6 +21,7 @@ import LyricLineEditor from "./LyricLineEditor";
 import SectionHeaderBlock from "./SectionHeaderBlock";
 import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
+import Kbd from "@/components/ui/Kbd";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
@@ -702,7 +703,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </Link>
         <>
           <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
-            ← Songs {isLoggedIn && <kbd className="hidden sm:inline text-xs text-white/30 font-mono">[S]</kbd>}
+            ← Songs {isLoggedIn && <Kbd className="hidden sm:inline-flex">S</Kbd>}
           </Link>
         </>
         <div className="flex items-center gap-2 ml-auto">
@@ -839,7 +840,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <span className="truncate">
               <strong className="font-semibold">This is a demo song.</strong>
               <span className="text-indigo-100"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or press </span>
-              <kbd className="px-1 py-0.5 rounded bg-white/20 text-white text-[11px] font-mono align-middle">P</kbd>
+              <Kbd>P</Kbd>
               <span className="text-indigo-100"> for play mode.</span>
             </span>
           </span>
