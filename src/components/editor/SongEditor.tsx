@@ -959,7 +959,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
 
         {/* Right panel with tabs — always visible on desktop, toggled on mobile */}
-        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:border-l md:border-zinc-200 flex-col overflow-hidden bg-white ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
+        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-zinc-200 flex-col overflow-hidden bg-white ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
             <div className="flex border-b border-zinc-200 shrink-0 bg-white">
               {/* Back to lyrics — mobile only */}
               <button
