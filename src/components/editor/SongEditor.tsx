@@ -785,6 +785,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             )}
           </button>
 
+          {/* Play / performance mode — always visible (one tap on mobile) */}
+          <button
+            onClick={() => setViewMode(true)}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-lg text-sm font-medium bg-white/10 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+            title="Play mode — hands-free auto-scroll"
+          >
+            <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            <span className="hidden sm:inline">Play</span>
+            <Kbd className="hidden md:inline-flex">P</Kbd>
+          </button>
+
           {/* Overflow menu — Import, Replace, View, Print, New */}
           <div className="relative" ref={overflowRef}>
             <button
