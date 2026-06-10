@@ -36,7 +36,25 @@ export default function LoginPage({
         <div className="text-2xl font-bold tracking-tight mb-1">
           Chord<span className="text-indigo-600">SheetMaker</span>
         </div>
-        <p className="text-sm text-zinc-400 mb-8">Sign in to save and access your songs</p>
+        <p className="text-sm text-zinc-500 mb-5">
+          Sign in or create your <strong className="text-zinc-700">free account</strong> — one click, no forms
+        </p>
+
+        {/* What you get */}
+        <ul className="text-left text-sm text-zinc-600 space-y-2 mb-7">
+          {[
+            "Keep your chord charts safe on every device",
+            "Organize songs into setlists for each gig",
+            "Pick up on your phone what you built on your laptop",
+          ].map((benefit) => (
+            <li key={benefit} className="flex items-start gap-2.5">
+              <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              {benefit}
+            </li>
+          ))}
+        </ul>
 
         <div className="flex flex-col gap-3">
           <form
@@ -79,7 +97,10 @@ export default function LoginPage({
           </form>
         </div>
 
-        <p className="text-xs text-zinc-300 mt-8">
+        <p className="text-xs text-zinc-400 mt-6">
+          Free forever plan · No credit card required
+        </p>
+        <p className="text-xs text-zinc-300 mt-2">
           By signing in you agree to our terms of service
         </p>
 

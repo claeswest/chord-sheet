@@ -28,6 +28,8 @@ export default function GuestImportBanner({ onImported }: Props) {
           artist: song.artist ?? "",
           lines: song.lines,
           tags: song.tags ?? [],
+          style: song.style,
+          semitones: song.semitones,
         });
         deleteSong(song.id);
       }

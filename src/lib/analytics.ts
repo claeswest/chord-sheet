@@ -73,3 +73,7 @@ export const trackPaywallSeen = (where: string) =>
 /** The user initiated a paid checkout / free trial. plan = monthly | yearly. */
 export const trackTrialStarted = (plan: string) =>
   track("trial_started", { plan });
+
+/** The "don't lose your work" signup nudge was shown to / clicked by a guest. */
+export const trackSignupNudge = (action: "shown" | "clicked") =>
+  track("signup_nudge", { action });
