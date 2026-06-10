@@ -856,17 +856,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       {/* Demo bridge — turn "I tried it" into "I'll make my own" */}
       {showDemoBanner && (
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-indigo-600 text-white shrink-0">
-          <span className="flex items-center gap-2 min-w-0 text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-indigo-600 text-white shrink-0">
+          <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
             <span className="shrink-0">👋</span>
-            <span className="truncate">
+            <span>
               <strong className="font-semibold">This is a demo song.</strong>
               <span className="text-indigo-100"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or press </span>
               <Kbd>P</Kbd>
               <span className="text-indigo-100"> for play mode.</span>
             </span>
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
             <button
               onClick={() => { trackStartChoice("search"); setShowImport("search"); setShowDemoBanner(false); }}
               className="inline-flex items-center gap-1 bg-white text-indigo-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-50 transition-colors"
@@ -891,15 +891,15 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       {/* "Don't lose your work" nudge — guests only, after their first save */}
       {showGuestSaveNudge && !showDemoBanner && !isLoggedIn && (
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-emerald-600 text-white shrink-0">
-          <span className="flex items-center gap-2 min-w-0 text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-emerald-600 text-white shrink-0">
+          <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
             <span className="shrink-0">✓</span>
-            <span className="truncate">
+            <span>
               <strong className="font-semibold">Saved — but only on this device.</strong>
               <span className="text-emerald-100"> Create a free account to keep your song and open it anywhere.</span>
             </span>
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
             <Link
               href="/login?next=/songs"
               onClick={() => trackSignupNudge("clicked")}
