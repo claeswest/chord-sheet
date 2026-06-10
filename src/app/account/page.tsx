@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
+import { syncStaleSubscription } from "@/lib/stripeSync";
 import UserMenu from "@/components/ui/UserMenu";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
@@ -22,7 +23,7 @@ export default async function AccountPage() {
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
-        name: true, email: true, image: true, plan: true,
+        id: true, name: true, email: true, image: true, plan: true,
         stripeSubscriptionId: true, stripeCurrentPeriodEnd: true,
         stripeSubscriptionStatus: true, createdAt: true,
       },
@@ -31,6 +32,11 @@ export default async function AccountPage() {
   ]);
 
   if (!user) redirect("/login");
+
+  // Self-heal: if the stored subscription period has passed (e.g. a missed
+  // trial→active webhook), reconcile with Stripe before rendering.
+  const synced = await syncStaleSubscription(user);
+  if (synced) Object.assign(user, synced);
 
   const plan = planFromUser(user) as Plan;
   const planConfig = PLANS[plan];

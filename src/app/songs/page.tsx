@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { planFromUser, getSongLimit } from "@/lib/plans";
+import { syncStaleSubscription } from "@/lib/stripeSync";
 import SongLibraryPage from "@/components/library/SongLibraryPage";
 
 export default async function SongsPage() {
@@ -12,6 +13,7 @@ export default async function SongsPage() {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
+        id: true,
         plan: true,
         stripeSubscriptionId: true,
         stripeCurrentPeriodEnd: true,
@@ -19,6 +21,9 @@ export default async function SongsPage() {
       },
     });
     if (user) {
+      // Self-heal stale subscription data (e.g. a missed Stripe webhook)
+      const synced = await syncStaleSubscription(user);
+      if (synced) Object.assign(user, synced);
       songLimit = getSongLimit(planFromUser(user));
     }
   }
