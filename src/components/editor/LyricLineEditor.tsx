@@ -403,7 +403,7 @@ export default function LyricLineEditor({
       )}
 
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <input
           ref={inputRef}
           data-lyric-input
@@ -423,10 +423,10 @@ export default function LyricLineEditor({
             margin: 0,
           }}
         />
-        {/* Add line below */}
+        {/* Add line below — hidden on phones (Enter on the keyboard does the same) */}
         <button
           onClick={onAddLineAfter}
-          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          className="hidden sm:block sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Add line below (Enter)"
         >
@@ -438,7 +438,7 @@ export default function LyricLineEditor({
         <div className="relative sm:opacity-0 sm:group-hover/line:opacity-100 transition-all shrink-0">
           <button
             onClick={() => setShowSectionPicker((v) => !v)}
-            className="text-zinc-600 hover:text-indigo-600 transition-colors rounded-md p-1"
+            className="text-zinc-600 hover:text-indigo-600 transition-colors rounded-md p-0.5 sm:p-1"
             tabIndex={-1}
             title="Insert section below"
           >
@@ -465,7 +465,7 @@ export default function LyricLineEditor({
         </div>
         <button
           onClick={onDuplicate}
-          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-0.5 sm:p-1"
           tabIndex={-1}
           title="Duplicate line"
         >
@@ -476,7 +476,7 @@ export default function LyricLineEditor({
         </button>
         <button
           onClick={onDelete}
-          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-red-500 transition-all shrink-0 rounded-md p-1"
+          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-red-500 transition-all shrink-0 rounded-md p-0.5 sm:p-1"
           tabIndex={-1}
           title="Delete line"
         >

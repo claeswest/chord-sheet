@@ -934,7 +934,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
         <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
-          <div className="max-w-3xl mx-auto px-12 py-10 space-y-0">
+          <div className="max-w-3xl mx-auto px-2 sm:px-12 py-10 space-y-0">
             {/* Title & artist — editable inline */}
             <div
               className="mb-10"
