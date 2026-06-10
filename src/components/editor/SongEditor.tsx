@@ -204,7 +204,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     return base;
   });
   const [rightPanel, setRightPanel] = useState<"chords" | "background" | "text">("chords");
-  const [showRightPanel, setShowRightPanel] = useState(true);
+  // Tools panel: on mobile it's a full-screen overlay, so start closed there —
+  // visitors should land on the sheet, not the chord palette. On md+ the panel
+  // is always visible via CSS regardless of this state.
+  const [showRightPanel, setShowRightPanel] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 768
+  );
   const [showSmallScreenBanner, setShowSmallScreenBanner] = useState(true);
   // Always-current snapshot of song data — updated every render so effects can read
   // latest values without adding them as deps (avoids stale closures).
