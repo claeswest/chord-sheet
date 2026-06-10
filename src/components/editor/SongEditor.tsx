@@ -1025,10 +1025,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         {/* Right panel with tabs — always visible on desktop, toggled on mobile */}
         <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-zinc-200 flex-col overflow-hidden bg-white ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
             <div className="flex border-b border-zinc-200 shrink-0 bg-white">
-              {/* Back to lyrics — mobile only */}
+              {/* Back to the sheet — mobile only; mirrors the toolbar Tools/Sheet pill */}
               <button
                 onClick={() => setShowRightPanel(false)}
-                className="md:hidden flex items-center gap-1 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 border-r border-indigo-700 shrink-0 transition-colors"
+                className="md:hidden flex items-center gap-1.5 self-center m-1 px-3 h-8 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shrink-0 transition-colors"
                 aria-label="Close panel"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
