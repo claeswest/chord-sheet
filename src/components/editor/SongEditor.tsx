@@ -866,9 +866,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <span className="shrink-0">👋</span>
             <span>
               <strong className="font-semibold">This is a demo song.</strong>
-              <span className="text-indigo-100"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or press </span>
-              <Kbd>P</Kbd>
-              <span className="text-indigo-100"> for play mode.</span>
+              <span className="text-indigo-100"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or </span>
+              <span className="text-indigo-100 sm:hidden">tap ▶ above to play.</span>
+              <span className="text-indigo-100 hidden sm:inline">press <Kbd>P</Kbd> for play mode.</span>
             </span>
           </span>
           <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
