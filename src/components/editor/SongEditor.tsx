@@ -225,7 +225,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const firstChordTracked = useRef(false);
   const songSavedTracked = useRef(false);
   const firstEditTracked = useRef(false);
+  // True once the user has actually changed something (lines, title or artist).
+  // Guards the demo against being saved untouched (e.g. spurious effect re-runs).
+  const userEditedRef = useRef(false);
   const markFirstEdit = () => {
+    userEditedRef.current = true;
     if (!firstEditTracked.current) { firstEditTracked.current = true; trackFirstEdit(); }
   };
   // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
@@ -586,6 +590,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     }
     // Don't auto-save before the user has made any choice on the start modal
     if (!startModalDismissedRef.current) return;
+    // Don't save the demo song until the user has actually changed something
+    if (isDemo && !userEditedRef.current) return;
     // Don't auto-save a completely empty song (e.g. user came via ?start= param
     // but hasn't imported or typed anything yet)
     const hasContent = title || artist ||
@@ -693,16 +699,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      {/* Small-screen warning banner */}
-      {showSmallScreenBanner && (
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
-          <svg className="w-5 h-5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          </svg>
-          <span className="flex-1">Best on a larger screen.</span>
+      {/* Small-screen tip — friendly, and never stacked on top of other banners */}
+      {showSmallScreenBanner && !showDemoBanner && !showGuestSaveNudge && (
+        <div className="md:hidden flex items-center gap-3 px-4 py-2.5 bg-zinc-50 border-b border-zinc-200 text-zinc-600 text-sm">
+          <span className="shrink-0">💡</span>
+          <span className="flex-1">Tip: editing is easiest on a bigger screen — playing works great right here.</span>
           <button
             onClick={() => setShowSmallScreenBanner(false)}
-            className="text-amber-500 hover:text-amber-700 transition-colors"
+            className="text-zinc-400 hover:text-zinc-600 transition-colors"
             aria-label="Dismiss"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -946,7 +950,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               <input
                 ref={titleInputRef}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => { userEditedRef.current = true; setTitle(e.target.value); }}
                 onFocus={(e) => e.target.select()}
                 placeholder="Song title"
                 className="w-full bg-transparent border-none outline-none"
@@ -963,7 +967,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               />
               <input
                 value={artist}
-                onChange={(e) => setArtist(e.target.value)}
+                onChange={(e) => { userEditedRef.current = true; setArtist(e.target.value); }}
                 onFocus={(e) => e.target.select()}
                 placeholder="Artist"
                 className="w-full bg-transparent border-none outline-none mt-1"
