@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ALL_FONTS } from "@/lib/songStyle";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 // Derived directly from songStyle.ts — always in sync with the actual font list
 const AVAILABLE_FONTS = ALL_FONTS.map(f => f.name);
@@ -73,6 +74,10 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  }
+
+  if (!rateLimit(`style:${clientIp(req)}`, 10)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const { title, artist, lyrics } = await req.json();

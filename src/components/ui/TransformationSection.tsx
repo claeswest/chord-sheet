@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const IMAGES = [
   { src: "/BurningGold.jpeg", label: "BEFORE" },
@@ -49,11 +50,13 @@ export default function TransformationSection() {
                   Zoom
                 </span>
               </span>
-              <div className="aspect-[4/3]">
-                <img
+              <div className="relative aspect-[4/3]">
+                <Image
                   src="/BurningGold.jpeg"
                   alt="Handwritten chord sheet for Burning Gold on a notepad"
-                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 430px"
+                  className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
             </button>
@@ -83,11 +86,13 @@ export default function TransformationSection() {
                   Zoom
                 </span>
               </span>
-              <div className="aspect-[4/3]">
-                <img
+              <div className="relative aspect-[4/3]">
+                <Image
                   src="/BurningGold_CSM.png"
                   alt="Burning Gold chord sheet styled in ChordSheetMaker with AI background"
-                  className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 430px"
+                  className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
             </button>

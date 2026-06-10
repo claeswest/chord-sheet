@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 const PROMPT = `You are an expert musician and chord transcriber with deep knowledge of popular songs across all genres and eras.
 
@@ -47,6 +48,10 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  }
+
+  if (!rateLimit(`search:${clientIp(req)}`, 10)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const { query } = (await req.json()) as { query: string };

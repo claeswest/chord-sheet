@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import FeatureCard from "@/components/ui/FeatureCard";
 import TransformationSection from "@/components/ui/TransformationSection";
@@ -165,9 +166,13 @@ export default async function HomePage() {
           {/* Hero photo */}
           <div className="relative w-full max-w-3xl mx-auto mb-4">
             <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
-              <img
+              <Image
                 src="/hero-photo.jpg"
                 alt="Guitarist using ChordSheetMaker on a laptop"
+                width={1536}
+                height={1024}
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
                 className="w-full object-cover max-h-[230px] sm:max-h-none"
                 style={{ objectPosition: "center 20%" }}
               />

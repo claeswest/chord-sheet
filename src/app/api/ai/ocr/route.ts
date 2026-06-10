@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 const PROMPT = `You are looking at a photo or scan of a chord sheet (handwritten, printed, or photographed from a screen/book/paper).
 
@@ -43,6 +44,10 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  }
+
+  if (!rateLimit(`ocr:${clientIp(req)}`, 5)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const { image } = (await req.json()) as { image: string };

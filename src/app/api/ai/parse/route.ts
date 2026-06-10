@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 const SYSTEM_PROMPT = `You are an expert chord sheet formatter and musician. The user has pasted raw text from a chord website (Ultimate Guitar, Chordify, Chordu, etc.) that may contain ads, navigation, tabs, chord diagrams, and other junk.
 
@@ -48,6 +49,10 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  }
+
+  if (!rateLimit(`parse:${clientIp(req)}`, 10)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const { text } = await req.json();

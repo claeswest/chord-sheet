@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const EXAMPLES = [
   { src: "/example1.png", title: "Hotel California", artist: "Eagles" },
@@ -51,11 +52,13 @@ export default function ExamplesSection() {
                   <span className="flex-1 mx-3 text-center text-[10px] text-white/25 font-mono truncate tracking-wide">chordsheetmaker.ai</span>
                 </div>
                 {/* Screenshot */}
-                <div className="aspect-[16/10] overflow-hidden">
-                  <img
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image
                     src={src}
                     alt={`${title} by ${artist} — example chord sheet`}
-                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 480px"
+                    className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>
                 {/* Gradient overlay caption */}

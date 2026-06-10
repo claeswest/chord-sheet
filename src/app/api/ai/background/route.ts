@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 const STYLE_PROMPTS: Record<string, string> = {
   abstract: `You are a visual artist. Given a song title, artist, and lyrics, write a single concise image generation prompt (max 60 words) for an ABSTRACT, PAINTERLY background image that suits the song's mood and genre.
@@ -118,6 +119,11 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  }
+
+  // Image generation is the costliest call — tightest limit.
+  if (!rateLimit(`background:${clientIp(req)}`, 3)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const { title, artist, lyrics, bgStyle = "abstract" } = await req.json();
