@@ -393,15 +393,25 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             {/* AI panel */}
             {bgMode === "ai" && (
               <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+                {/* Step 1 — choose a style */}
+                <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                  <span className="text-[11px] font-medium text-zinc-500">Choose a look for your background</span>
+                </div>
                 <button onClick={() => setShowStylePicker(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 hover:bg-violet-50 transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 mb-1 hover:bg-violet-50 transition-colors text-left"
                 >
-                  <span className="text-base leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
-                  <span className="text-xs font-medium text-zinc-700 flex-1">Image style</span>
-                  <span className="text-[11px] text-zinc-400">{BG_STYLES.find(s => s.id === bgStyle)?.label} ›</span>
+                  <span className="text-lg leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[10px] uppercase tracking-wide text-zinc-400">Image style</span>
+                    <span className="block text-sm font-semibold text-zinc-800">{BG_STYLES.find(s => s.id === bgStyle)?.label}</span>
+                  </span>
+                  <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
                 </button>
+
+                {/* Existing image preview + dim */}
                 {style.backgroundImage && (
-                  <div className="border-b border-zinc-100">
+                  <div className="border-t border-zinc-100">
                     <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
                       <img src={style.backgroundImage} alt="Background" className="w-full h-full object-cover" />
                       <button onClick={removeBackground} className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-lg text-base leading-none transition-colors">×</button>
@@ -419,15 +429,25 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     </div>
                   </div>
                 )}
-                <button onClick={handleAiBackground} disabled={bgLoading}
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-3 transition-colors disabled:opacity-40 font-semibold text-violet-600 hover:bg-violet-50 text-sm"
-                >
-                  {bgLoading
-                    ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
-                    : imageSource === "ai" ? <>↺ Regenerate</>
-                    : imageSource === "upload" ? <>✦ Replace with AI image</>
-                    : <>✦ Generate background image</>}
-                </button>
+
+                {/* Step 2 — generate (primary action) */}
+                <div className="border-t border-zinc-100 px-3 pt-2 pb-3">
+                  {!style.backgroundImage && (
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                      <span className="text-[11px] font-medium text-zinc-500">Generate it with AI</span>
+                    </div>
+                  )}
+                  <button onClick={handleAiBackground} disabled={bgLoading}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-40"
+                  >
+                    {bgLoading
+                      ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
+                      : imageSource === "ai" ? <>↺ Regenerate</>
+                      : imageSource === "upload" ? <>✦ Replace with AI image</>
+                      : <>✦ Generate background image</>}
+                  </button>
+                </div>
               </div>
             )}
 
