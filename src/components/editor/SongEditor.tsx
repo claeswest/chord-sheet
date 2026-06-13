@@ -34,6 +34,7 @@ import type { SongTemplate } from "@/data/templates";
 import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
+import { getSongLimit } from "@/lib/plans";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import {
@@ -158,6 +159,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // editing a song with content, so the path to a free account is always there.
   const [guestEdited, setGuestEdited] = useState(false);
   const guestNudgeFired = useRef(false);
+  // Guests are capped at the free song limit — block saving a new song past it.
+  const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
+  const guestLimitNotified = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
   const [activeChord, setActiveChord] = useState<string | null>(null);
@@ -544,6 +548,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         throw err;
       }
     } else {
+      // Guest cap: block saving a brand-new song once they've hit the free limit.
+      const existing = listSongs();
+      const isNewSong = !existing.some((s) => s.id === songId);
+      const freeLimit = getSongLimit("free");
+      if (isNewSong && freeLimit != null && existing.length >= freeLimit) {
+        if (!guestLimitNotified.current) {
+          guestLimitNotified.current = true;
+          setShowGuestLimitModal(true);
+        }
+        return; // don't persist beyond the free limit
+      }
       // Strip the (potentially huge base64) background image so we don't blow
       // the localStorage quota; everything else (fonts, colours, jazzChords…) persists.
       const { backgroundImage, ...safeStyle } = songStyle;
@@ -1153,6 +1168,30 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           onReplace={handleFindReplace}
           onClose={() => setShowFindReplace(false)}
         />
+      )}
+
+      {/* Guest free-limit wall — can't save a new song past the free limit */}
+      {showGuestLimitModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowGuestLimitModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+            </div>
+            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">You&apos;ve reached the free limit</h2>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-5">
+              {`Free includes ${getSongLimit("free")} songs. `}Create a free account to keep the ones you&apos;ve made, then go Pro for unlimited songs, PDF export and sharing — a 7-day free trial, no card charged today.
+            </p>
+            <Link
+              href="/login?next=/songs&from=save"
+              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              Create a free account →
+            </Link>
+            <button onClick={() => setShowGuestLimitModal(false)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
+              Maybe later
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Auto-save toast — centered bottom */}

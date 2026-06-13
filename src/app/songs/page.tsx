@@ -7,7 +7,8 @@ import SongLibraryPage from "@/components/library/SongLibraryPage";
 export default async function SongsPage() {
   const session = await auth();
 
-  let songLimit: number | null = null;
+  // Guests are capped at the same free-tier limit (they can't exceed Free).
+  let songLimit: number | null = getSongLimit("free");
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({

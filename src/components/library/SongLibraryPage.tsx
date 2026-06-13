@@ -166,8 +166,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     }
   }, [showUpgradeModal]);
 
-  // Which songs are locked: those beyond the plan limit (by current sort order)
-  const lockedSongIds: Set<string> = songLimit !== null && songs.length > songLimit
+  // Which songs are locked: those beyond the plan limit (by current sort order).
+  // Only for logged-in users — guests keep access to songs they already made
+  // locally; the cap just blocks creating new ones.
+  const lockedSongIds: Set<string> = isLoggedIn && songLimit !== null && songs.length > songLimit
     ? new Set(songs.slice(songLimit).map((s) => s.id))
     : new Set();
   const atLimit = songLimit !== null && songs.length >= songLimit;
@@ -800,6 +802,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 {/* Find with AI — primary */}
                 <Link
                   href="/editor/new?start=search"
+                  onClick={atLimit ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                   className="relative overflow-hidden group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
                   style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}
                 >
@@ -817,6 +820,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 {/* Import */}
                 <Link
                   href="/editor/new?start=import"
+                  onClick={atLimit ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                   className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200"
                   style={{ background: "rgba(255,255,255,0.04)" }}
                 >
@@ -1440,12 +1444,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-zinc-900">Unlock all your songs</h2>
-                <p className="text-xs text-zinc-500">Free plan is limited to {songLimit} songs</p>
+                <h2 className="text-base font-semibold text-zinc-900">You&apos;ve reached the free limit</h2>
+                <p className="text-xs text-zinc-500">{`Free includes ${songLimit} songs`}</p>
               </div>
             </div>
             <p className="text-sm text-zinc-600 mb-5 leading-relaxed">
-              All your songs are safely stored — go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong>. Try it free for 7 days; you won&apos;t be charged today.
+              {isLoggedIn
+                ? <>Go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong>. Try it free for 7 days; you won&apos;t be charged today.</>
+                : <>Create a free account to keep your songs, then go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong> — a 7-day free trial, no card charged today.</>}
             </p>
             <div className="flex gap-2">
               <button
@@ -1454,12 +1460,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               >
                 Not now
               </button>
-              <Link
-                href="/pricing"
-                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
-              >
-                Start free trial →
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/pricing"
+                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
+                >
+                  Start free trial →
+                </Link>
+              ) : (
+                <Link
+                  href="/login?next=/pricing&from=save"
+                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
+                >
+                  Create free account →
+                </Link>
+              )}
             </div>
             <p className="text-center text-[11px] text-zinc-400 mt-3">No credit card charged today · cancel anytime</p>
           </div>
