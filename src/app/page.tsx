@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import BuildStamp from "@/components/ui/BuildStamp";
 import FeatureCard from "@/components/ui/FeatureCard";
 import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
@@ -431,6 +432,9 @@ export default async function HomePage() {
           <p className="text-xs text-white/20">
             © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
           </p>
+        </div>
+        <div className="max-w-5xl mx-auto mt-4 text-center sm:text-right">
+          <BuildStamp className="text-[10px] text-white/15 font-mono" />
         </div>
       </footer>
 
