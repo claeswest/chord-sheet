@@ -483,7 +483,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         {isLoggedIn && songLimit !== null && (
           <Link
             href="/pricing"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3 sm:px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
             style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
             title="Go unlimited — start a 7-day free trial"
           >
