@@ -190,6 +190,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const historyStack = useRef<SongLine[][]>([]);
   const [historyPos, setHistoryPos] = useState(0);
   const textSnapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Latest not-yet-committed (debounced) edit, so undo/redo can flush it first.
+  const pendingSnap = useRef<SongLine[] | null>(null);
 
   // Lines state — initializer also seeds the history stack
   const [lines, setLines] = useState<SongLine[]>(() => {
@@ -270,51 +272,66 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   // ── Snapshot helpers ─────────────────────────────────────────────────────────
 
-  // Push a snapshot immediately (structural changes: add/delete line/chord/section)
-  const pushSnap = useCallback((next: SongLine[]) => {
-    markFirstEdit();
-    if (textSnapTimer.current) { clearTimeout(textSnapTimer.current); textSnapTimer.current = null; }
+  // Commit a snapshot at the current position, dropping any redo branch.
+  // historyPos is read from the closure (stable across a StrictMode double-
+  // invocation), so pushing from inside a setLines updater stays idempotent —
+  // both runs re-truncate to the same base and push the same content.
+  const commitSnap = useCallback((next: SongLine[]) => {
     const truncated = historyStack.current.slice(0, historyPos + 1);
     truncated.push(next);
     if (truncated.length > MAX_HISTORY) truncated.shift();
     historyStack.current = truncated;
     setHistoryPos(truncated.length - 1);
-  // historyPos read from closure — intentional, see note below
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyPos]);
+
+  // Commit any pending (debounced) edit right now — called before undo/redo so an
+  // in-progress edit is undoable instead of being silently skipped.
+  const flushSnap = useCallback(() => {
+    if (textSnapTimer.current) { clearTimeout(textSnapTimer.current); textSnapTimer.current = null; }
+    if (pendingSnap.current) { commitSnap(pendingSnap.current); pendingSnap.current = null; }
+  }, [commitSnap]);
+
+  // Push a snapshot immediately (structural changes: add/delete line/chord/section)
+  const pushSnap = useCallback((next: SongLine[]) => {
+    markFirstEdit();
+    if (textSnapTimer.current) { clearTimeout(textSnapTimer.current); textSnapTimer.current = null; }
+    pendingSnap.current = null;
+    commitSnap(next);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commitSnap]);
 
   // Push a snapshot after 600ms of inactivity (text typing / chord renaming)
   const pushSnapDebounced = useCallback((next: SongLine[]) => {
     markFirstEdit();
+    pendingSnap.current = next;
     if (textSnapTimer.current) clearTimeout(textSnapTimer.current);
     textSnapTimer.current = setTimeout(() => {
-      const truncated = historyStack.current.slice(0, historyPos + 1);
-      truncated.push(next);
-      if (truncated.length > MAX_HISTORY) truncated.shift();
-      historyStack.current = truncated;
-      setHistoryPos(truncated.length - 1);
       textSnapTimer.current = null;
+      if (pendingSnap.current) { commitSnap(pendingSnap.current); pendingSnap.current = null; }
     }, 600);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyPos]);
+  }, [commitSnap]);
 
   const undo = useCallback(() => {
+    flushSnap();                       // make sure an in-progress edit is recorded
     setHistoryPos(pos => {
       if (pos <= 0) return pos;
       const next = pos - 1;
       setLines(historyStack.current[next]);
       return next;
     });
-  }, []);
+  }, [flushSnap]);
 
   const redo = useCallback(() => {
+    flushSnap();
     setHistoryPos(pos => {
       if (pos >= historyStack.current.length - 1) return pos;
       const next = pos + 1;
       setLines(historyStack.current[next]);
       return next;
     });
-  }, []);
+  }, [flushSnap]);
 
   // Keyboard shortcuts: Ctrl+Z / Cmd+Z = undo, Ctrl+Y / Ctrl+Shift+Z = redo
   useEffect(() => {
@@ -759,7 +776,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
             <button
               onClick={undo}
-              disabled={historyPos <= 0}
+              disabled={historyPos <= 0 && !pendingSnap.current}
               className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Undo (Ctrl+Z)"
             >
