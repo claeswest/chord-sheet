@@ -854,17 +854,41 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               </div>
 
               {/* Account pitch — secondary, below the value */}
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4 mt-auto">
-                <p className="text-sm font-bold text-white/90">Save your work</p>
-                <p className="text-xs text-white/40 mt-1 mb-3 leading-snug">
-                  Create a free account to keep your charts, sync across devices, and build setlists. No credit card.
-                </p>
+              <div
+                className="rounded-2xl border border-indigo-400/30 p-4 mt-auto relative overflow-hidden"
+                style={{ background: "linear-gradient(160deg, rgba(99,102,241,0.20) 0%, rgba(139,92,246,0.10) 100%)" }}
+              >
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/30 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4 text-indigo-200" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/>
+                    </svg>
+                  </div>
+                  <p className="text-sm font-bold text-white">Save your work</p>
+                </div>
+                <ul className="space-y-1.5 mb-3.5">
+                  {["Keep your charts forever", "Sync across all devices", "Build setlists for gigs"].map((b) => (
+                    <li key={b} className="flex items-center gap-2 text-xs text-white/75">
+                      <svg className="w-3.5 h-3.5 text-indigo-300 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
                 <Link
                   href="/login"
-                  className="flex items-center justify-center w-full bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+                  className="relative overflow-hidden group flex items-center justify-center gap-1.5 w-full text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition-all hover:scale-[1.02]"
+                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 16px rgba(99,102,241,0.4)" }}
                 >
-                  Sign in or create account
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
+                  <span className="relative">Create free account</span>
+                  <svg className="relative w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+                  </svg>
                 </Link>
+                <p className="text-center text-[10px] text-white/40 mt-2">Free forever · No credit card</p>
               </div>
             </div>
           )}
