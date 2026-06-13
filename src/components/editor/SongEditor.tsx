@@ -154,8 +154,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // Demo-first entry: land straight on a populated, playable chart (no start modal).
   const isDemo = initialMode === "demo";
   const [showDemoBanner, setShowDemoBanner] = useState(isDemo);
-  // "Don't lose your work" nudge — shown once per session after a guest's first save.
-  const [showGuestSaveNudge, setShowGuestSaveNudge] = useState(false);
+  // "Don't lose your work" reminder — stays visible the whole time a guest is
+  // editing a song with content, so the path to a free account is always there.
+  const [guestEdited, setGuestEdited] = useState(false);
   const guestNudgeFired = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
@@ -230,6 +231,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const userEditedRef = useRef(false);
   const markFirstEdit = () => {
     userEditedRef.current = true;
+    setGuestEdited(true);
     if (!firstEditTracked.current) { firstEditTracked.current = true; trackFirstEdit(); }
   };
   // Track the last-saved backgroundImage so we only trigger an immediate save on actual changes
@@ -547,14 +549,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       const { backgroundImage, ...safeStyle } = songStyle;
       void backgroundImage;
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString(), style: safeStyle, semitones });
-      // First guest save this session → nudge them to keep their work.
-      try {
-        if (!guestNudgeFired.current && !sessionStorage.getItem("guestSaveNudgeDismissed")) {
-          guestNudgeFired.current = true;
-          trackSignupNudge("shown");
-          setShowGuestSaveNudge(true);
-        }
-      } catch { /* sessionStorage unavailable — skip the nudge */ }
+      setGuestEdited(true); // ensure the "saved on this device" reminder shows
     }
     if (!songSavedTracked.current) {
       songSavedTracked.current = true;
@@ -644,6 +639,24 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     setLines(next);
   };
 
+  // Persistent "saved only on this device" reminder for guests editing a song
+  // with content (one banner at a time: the demo banner takes priority).
+  const guestHasContent =
+    title.trim() !== "" ||
+    artist.trim() !== "" ||
+    lines.some((l) => (l.type === "section" ? !!l.label : (!!l.text || l.chords.length > 0)));
+  // Show for any guest song with content; the unedited demo waits for a first edit.
+  const showGuestSaveReminder =
+    !isLoggedIn && !showDemoBanner && guestHasContent && (!isDemo || guestEdited);
+
+  // Fire the "shown" analytics event once, the first time the reminder appears.
+  useEffect(() => {
+    if (showGuestSaveReminder && !guestNudgeFired.current) {
+      guestNudgeFired.current = true;
+      trackSignupNudge("shown");
+    }
+  }, [showGuestSaveReminder]);
+
   // ── Render ───────────────────────────────────────────────────────────────────
 
   const displayLines = transposeSong(lines, semitones);
@@ -700,7 +713,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Small-screen tip — friendly, and never stacked on top of other banners */}
-      {showSmallScreenBanner && !showDemoBanner && !showGuestSaveNudge && (
+      {showSmallScreenBanner && !showDemoBanner && !showGuestSaveReminder && (
         <div className="md:hidden flex items-center gap-3 px-4 py-2.5 bg-zinc-50 border-b border-zinc-200 text-zinc-600 text-sm">
           <span className="shrink-0">💡</span>
           <span className="flex-1">Tip: editing is easiest on a bigger screen — playing works great right here.</span>
@@ -898,8 +911,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
       )}
 
-      {/* "Don't lose your work" nudge — guests only, after their first save */}
-      {showGuestSaveNudge && !showDemoBanner && !isLoggedIn && (
+      {/* "Don't lose your work" reminder — stays for guests while editing content */}
+      {showGuestSaveReminder && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-emerald-600 text-white shrink-0">
           <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
             <span className="shrink-0">✓</span>
@@ -908,30 +921,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               <span className="text-emerald-100"> Create a free account to keep your song and open it anywhere.</span>
             </span>
           </span>
-          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-            <Link
-              href="/login?next=/songs&from=save"
-              onClick={() => trackSignupNudge("clicked")}
-              className="inline-flex items-center gap-1 bg-white text-emerald-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-emerald-50 transition-colors"
-            >
-              Keep my song
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-              </svg>
-            </Link>
-            <button
-              onClick={() => {
-                setShowGuestSaveNudge(false);
-                try { sessionStorage.setItem("guestSaveNudgeDismissed", "1"); } catch { /* ignore */ }
-              }}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-emerald-200 hover:text-white hover:bg-white/10 transition-colors"
-              aria-label="Dismiss"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+          <Link
+            href="/login?next=/songs&from=save"
+            onClick={() => trackSignupNudge("clicked")}
+            className="inline-flex items-center gap-1 bg-white text-emerald-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-emerald-50 transition-colors shrink-0 self-end sm:self-auto"
+          >
+            Keep my song
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+            </svg>
+          </Link>
         </div>
       )}
 
@@ -950,7 +949,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               <input
                 ref={titleInputRef}
                 value={title}
-                onChange={(e) => { userEditedRef.current = true; setTitle(e.target.value); }}
+                onChange={(e) => { userEditedRef.current = true; setGuestEdited(true); setTitle(e.target.value); }}
                 onFocus={(e) => e.target.select()}
                 placeholder="Song title"
                 className="w-full bg-transparent border-none outline-none"
@@ -967,7 +966,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               />
               <input
                 value={artist}
-                onChange={(e) => { userEditedRef.current = true; setArtist(e.target.value); }}
+                onChange={(e) => { userEditedRef.current = true; setGuestEdited(true); setArtist(e.target.value); }}
                 onFocus={(e) => e.target.select()}
                 placeholder="Artist"
                 className="w-full bg-transparent border-none outline-none mt-1"
