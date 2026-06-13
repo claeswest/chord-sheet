@@ -72,7 +72,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // Plan-gated entitlements (PDF export is a Pro feature). Fetched once; the
   // PDF button re-checks before exporting so free users can never slip through.
   const [entitlements, setEntitlements] = useState<{ pdfExport: boolean; sharing: boolean } | null>(null);
-  const [showPdfUpgrade, setShowPdfUpgrade] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<"pdf" | "share" | null>(null);
   const fetchEntitlements = useCallback(async () => {
     try {
       const res = await fetch("/api/me/entitlements");
@@ -88,6 +88,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   }, []);
   useEffect(() => { fetchEntitlements(); }, [fetchEntitlements]);
   const pdfLocked = entitlements != null && !entitlements.pdfExport;
+  const shareLocked = entitlements != null && !entitlements.sharing;
   const [pdfLoading, setPdfLoading] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
@@ -265,13 +266,18 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   }, [playing]);
 
   const handleShare = useCallback(async () => {
-    // If already on a share page, just copy the current URL
+    // If already on a share page, just copy the current URL (no Pro gate — the
+    // recipient is only copying the link they're already viewing).
     if (window.location.pathname.startsWith("/share/")) {
       await navigator.clipboard.writeText(window.location.href);
       setShareFlash(true);
       setTimeout(() => setShareFlash(false), 2000);
       return;
     }
+    // Creating a share link is a Pro feature.
+    let ent = entitlements;
+    if (!ent) ent = await fetchEntitlements();
+    if (!ent.sharing) { setUpgradeFeature("share"); return; }
     setShareLoading(true);
     try {
       const res = await fetch("/api/share", {
@@ -286,7 +292,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     } finally {
       setShareLoading(false);
     }
-  }, [title, artist, lines, songStyle]);
+  }, [title, artist, lines, songStyle, entitlements, fetchEntitlements]);
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -549,7 +555,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     ? "text-green-300 border-green-400/40"
                     : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
                 }`}
-                title="Copy shareable link"
+                title={shareLocked ? "Share link — a Pro feature" : "Copy shareable link"}
               >
                 {shareFlash ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -566,6 +572,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                   </svg>
                 )}
                 <span className="hidden sm:inline">{shareFlash ? "Copied!" : "Share"}</span>
+                {shareLocked && !shareFlash && !shareLoading && (
+                  <svg className="w-3 h-3 text-amber-300/90" fill="currentColor" viewBox="0 0 24 24" aria-label="Pro feature">
+                    <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/>
+                  </svg>
+                )}
               </button>
             )}
 
@@ -590,7 +601,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               onClick={async () => {
                 let ent = entitlements;
                 if (!ent) ent = await fetchEntitlements();
-                if (!ent.pdfExport) { setShowPdfUpgrade(true); return; }
+                if (!ent.pdfExport) { setUpgradeFeature("pdf"); return; }
                 setPdfLoading(true);
                 try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); }
               }}
@@ -705,14 +716,16 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         <span className="text-[9px] font-semibold tracking-wider text-white/70 uppercase leading-none">Top</span>
       </button>
 
-      {/* PDF export upgrade prompt — shown when a free user taps PDF */}
-      {showPdfUpgrade && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowPdfUpgrade(false)}>
+      {/* Pro-feature upgrade prompt — shown when a free user taps PDF or Share */}
+      {upgradeFeature && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setUpgradeFeature(null)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
             </div>
-            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">PDF export is a Pro feature</h2>
+            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">
+              {upgradeFeature === "pdf" ? "PDF export is a Pro feature" : "Sharing is a Pro feature"}
+            </h2>
             <p className="text-sm text-zinc-500 leading-relaxed mb-5">
               Go Pro to export clean PDFs, share charts, build setlists and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
             </p>
@@ -722,7 +735,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             >
               Start 7-day free trial →
             </Link>
-            <button onClick={() => setShowPdfUpgrade(false)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
+            <button onClick={() => setUpgradeFeature(null)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
               Maybe later
             </button>
           </div>
