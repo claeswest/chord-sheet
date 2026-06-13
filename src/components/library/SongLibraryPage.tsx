@@ -493,7 +493,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         )}
         {isLoggedIn
           ? <UserMenu userName={userName} userImage={userImage} />
-          : <Link href="/login" className="text-sm font-medium px-4 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">Sign in</Link>
+          : (
+            <Link
+              href="/login?next=/songs&from=save"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+            >
+              Sign up
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+            </Link>
+          )
         }
       </header>
 
@@ -524,6 +533,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             </button>
           </div>
         </div>
+      )}
+
+      {/* Guest signup nudge — mobile/tablet only (the desktop sidebar card is hidden there) */}
+      {!isLoggedIn && songs.length > 0 && (
+        <Link
+          href="/login?next=/songs&from=save"
+          className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border-b border-indigo-100 text-sm text-indigo-900/80 active:bg-indigo-100 transition-colors shrink-0"
+        >
+          <span className="shrink-0">✨</span>
+          <span className="flex-1 min-w-0 leading-snug">
+            <strong className="font-semibold">Your songs are saved on this device only.</strong>{" "}
+            <span className="text-indigo-900/55">Tap to create a free account and keep them everywhere.</span>
+          </span>
+          <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" /></svg>
+        </Link>
       )}
 
       <div className="flex flex-1 relative">
