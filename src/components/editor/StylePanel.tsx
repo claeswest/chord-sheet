@@ -485,15 +485,25 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
           {bgError && <p className="text-xs text-red-500">{bgError}</p>}
 
-          {/* Guest notice */}
+          {/* Guest notice — harmonized with the rest of the signup nudges */}
           {!isLoggedIn && (
-            <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-              <span className="text-sm leading-none shrink-0 mt-0.5">⚠️</span>
-              <div>
-                <p className="text-xs font-medium text-amber-800 leading-snug mb-0.5">Background images won't be saved</p>
-                <p className="text-xs text-amber-700 leading-snug mb-1.5">Sign in to keep your generated background.</p>
-                <Link href="/login" className="text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">Sign in →</Link>
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-3">
+              <div className="flex items-start gap-2 mb-2.5">
+                <svg className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z"/>
+                </svg>
+                <div>
+                  <p className="text-xs font-semibold text-indigo-900 leading-snug">Backgrounds aren&apos;t saved for guests</p>
+                  <p className="text-[11px] text-indigo-900/60 leading-snug mt-0.5">Create a free account to keep your generated backgrounds.</p>
+                </div>
               </div>
+              <Link
+                href="/login?next=/songs&from=save"
+                className="flex items-center justify-center gap-1 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+              >
+                Create free account
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+              </Link>
             </div>
           )}
       </div>
