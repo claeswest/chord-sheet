@@ -1054,17 +1054,33 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 </svg>
                 Sheet
               </button>
-              {(["chords", "background", "text"] as const).map((panel) => (
-                <button
-                  key={panel}
-                  onClick={() => setRightPanel(panel)}
-                  className={`flex-1 py-2 text-xs font-medium transition-colors capitalize ${
-                    rightPanel === panel ? "text-indigo-600 border-b-2 border-indigo-600 bg-white" : "text-zinc-400 hover:text-zinc-600"
-                  }`}
-                >
-                  {panel === "chords" ? "Chords" : panel === "background" ? "Background" : "Text"}
-                </button>
-              ))}
+              {([
+                { id: "chords", label: "Chords", icon: (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                ) },
+                { id: "background", label: "Background", icon: (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 15-5-5L5 21" /></svg>
+                ) },
+                { id: "text", label: "Text", icon: (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 7V4h16v3M9 20h6M12 4v16" /></svg>
+                ) },
+              ] as const).map((t) => {
+                const active = rightPanel === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setRightPanel(t.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+                      active
+                        ? "text-indigo-600 border-indigo-600 bg-indigo-50/60"
+                        : "text-zinc-400 border-transparent hover:text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {t.icon}
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
             {rightPanel === "chords" ? (
               <ChordPalette
