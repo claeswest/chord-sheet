@@ -72,6 +72,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  // Free-plan upgrade bar — dismissible per session (path to subscribe stays in the header).
+  const [upgradeBarDismissed, setUpgradeBarDismissed] = useState(false);
+  useEffect(() => {
+    try { if (sessionStorage.getItem("upgradeBarDismissed") === "1") setUpgradeBarDismissed(true); } catch { /* ignore */ }
+  }, []);
   const [importBannerKey, setImportBannerKey] = useState(0); // bump to re-evaluate after import
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -473,11 +478,51 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
           ChordSheet<span className="text-indigo-400">Maker</span>
         </Link>
         <div className="flex-1" />
+        {isLoggedIn && songLimit !== null && (
+          <Link
+            href="/pricing"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
+            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+            title="Go unlimited — start a 7-day free trial"
+          >
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.8 5.7 21.4 8 14 2 9.4h7.6z"/></svg>
+            Upgrade
+          </Link>
+        )}
         {isLoggedIn
           ? <UserMenu userName={userName} userImage={userImage} />
           : <Link href="/login" className="text-sm font-medium px-4 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">Sign in</Link>
         }
       </header>
+
+      {/* Free-plan signpost — makes the path to subscribe clear & always available */}
+      {isLoggedIn && songLimit !== null && !upgradeBarDismissed && (
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2 bg-indigo-50 border-b border-indigo-100 text-sm shrink-0">
+          <span className="flex items-center gap-2 min-w-0 text-indigo-900/80">
+            <span className="shrink-0">✨</span>
+            <span className="truncate">
+              <strong className="font-semibold">Free plan</strong>
+              <span className="text-indigo-900/55"> · {Math.min(songs.length, songLimit)} of {songLimit} songs used — go unlimited with PDF export, sharing &amp; setlists.</span>
+            </span>
+          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-1 bg-indigo-600 text-white font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-700 transition-colors whitespace-nowrap"
+            >
+              Start free trial
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+            </Link>
+            <button
+              onClick={() => { setUpgradeBarDismissed(true); try { sessionStorage.setItem("upgradeBarDismissed", "1"); } catch { /* ignore */ } }}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100 transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 relative">
         {/* Mobile backdrop */}
@@ -1400,7 +1445,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               </div>
             </div>
             <p className="text-sm text-zinc-600 mb-5 leading-relaxed">
-              All your songs are safely stored — upgrade to access your full library, add unlimited songs, and export to PDF.
+              All your songs are safely stored — go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong>. Try it free for 7 days; you won&apos;t be charged today.
             </p>
             <div className="flex gap-2">
               <button
@@ -1413,9 +1458,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 href="/pricing"
                 className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
               >
-                See plans
+                Start free trial →
               </Link>
             </div>
+            <p className="text-center text-[11px] text-zinc-400 mt-3">No credit card charged today · cancel anytime</p>
           </div>
         </div>
       )}

@@ -10,11 +10,13 @@ export const metadata: Metadata = {
     "Sign in to ChordSheetMaker to access your chord sheets from any device. Continue with Google or GitHub.",
 };
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; from?: string }>;
 }) {
+  const { from } = await searchParams;
+  const fromSave = from === "save";
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6"
@@ -31,6 +33,17 @@ export default function LoginPage({
 
       {/* White card */}
       <div className="relative z-10 bg-white rounded-2xl shadow-2xl shadow-black/40 p-10 w-full max-w-sm text-center">
+
+        {/* Contextual reassurance when arriving from the "Keep my song" nudge */}
+        {fromSave && (
+          <div className="flex items-start gap-2.5 text-left bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-6">
+            <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <p className="text-sm text-emerald-800 leading-snug">
+              <strong className="font-semibold">Your song is saved on this device.</strong>{" "}
+              Create a free account to keep it everywhere — it&apos;s waiting for you.
+            </p>
+          </div>
+        )}
 
         {/* Logo */}
         <div className="text-2xl font-bold tracking-tight mb-1">

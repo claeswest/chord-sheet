@@ -910,7 +910,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </span>
           <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
             <Link
-              href="/login?next=/songs"
+              href="/login?next=/songs&from=save"
               onClick={() => trackSignupNudge("clicked")}
               className="inline-flex items-center gap-1 bg-white text-emerald-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-emerald-50 transition-colors"
             >
