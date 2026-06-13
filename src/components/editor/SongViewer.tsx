@@ -68,6 +68,26 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [scrolled, setScrolled] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
+
+  // Plan-gated entitlements (PDF export is a Pro feature). Fetched once; the
+  // PDF button re-checks before exporting so free users can never slip through.
+  const [entitlements, setEntitlements] = useState<{ pdfExport: boolean; sharing: boolean } | null>(null);
+  const [showPdfUpgrade, setShowPdfUpgrade] = useState(false);
+  const fetchEntitlements = useCallback(async () => {
+    try {
+      const res = await fetch("/api/me/entitlements");
+      const data = await res.json();
+      const ent = { pdfExport: !!data.pdfExport, sharing: !!data.sharing };
+      setEntitlements(ent);
+      return ent;
+    } catch {
+      const ent = { pdfExport: false, sharing: false };
+      setEntitlements(ent);
+      return ent;
+    }
+  }, []);
+  useEffect(() => { fetchEntitlements(); }, [fetchEntitlements]);
+  const pdfLocked = entitlements != null && !entitlements.pdfExport;
   const [pdfLoading, setPdfLoading] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
@@ -565,12 +585,18 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               <span className="hidden sm:inline">{perfMode ? "Stage" : "Stage"}</span>
             </button>
 
-            {/* PDF download */}
+            {/* PDF download — Pro feature; gated for free users */}
             <button
-              onClick={async () => { setPdfLoading(true); try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); } }}
+              onClick={async () => {
+                let ent = entitlements;
+                if (!ent) ent = await fetchEntitlements();
+                if (!ent.pdfExport) { setShowPdfUpgrade(true); return; }
+                setPdfLoading(true);
+                try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); }
+              }}
               disabled={pdfLoading}
               className="text-white/70 hover:text-white text-sm px-2.5 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50"
-              title="Download PDF"
+              title={pdfLocked ? "Download PDF — a Pro feature" : "Download PDF"}
             >
               {pdfLoading ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
@@ -584,6 +610,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 </svg>
               )}
               <span className="hidden sm:inline">PDF</span>
+              {pdfLocked && (
+                <svg className="w-3 h-3 text-amber-300/90" fill="currentColor" viewBox="0 0 24 24" aria-label="Pro feature">
+                  <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/>
+                </svg>
+              )}
             </button>
 
             {/* Play / Pause */}
@@ -673,6 +704,30 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         </svg>
         <span className="text-[9px] font-semibold tracking-wider text-white/70 uppercase leading-none">Top</span>
       </button>
+
+      {/* PDF export upgrade prompt — shown when a free user taps PDF */}
+      {showPdfUpgrade && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowPdfUpgrade(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+            </div>
+            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">PDF export is a Pro feature</h2>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-5">
+              Go Pro to export clean PDFs, share charts, build setlists and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
+            </p>
+            <Link
+              href="/pricing"
+              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              Start 7-day free trial →
+            </Link>
+            <button onClick={() => setShowPdfUpgrade(false)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
