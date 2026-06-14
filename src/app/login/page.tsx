@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { signIn, appleEnabled } from "@/lib/auth";
+import { signIn, appleEnabled, emailEnabled } from "@/lib/auth";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -128,6 +128,43 @@ export default async function LoginPage({
             </button>
           </form>
         </div>
+
+        {/* Passwordless email — no third-party account needed */}
+        {emailEnabled && (
+          <>
+            <div className="flex items-center gap-3 my-5">
+              <span className="h-px flex-1 bg-zinc-200" />
+              <span className="text-xs text-zinc-400">or</span>
+              <span className="h-px flex-1 bg-zinc-200" />
+            </div>
+            <form
+              action={async (formData: FormData) => {
+                "use server";
+                const { next } = await searchParams;
+                await signIn("resend", {
+                  email: String(formData.get("email") ?? "").trim(),
+                  redirectTo: next ?? "/songs",
+                });
+              }}
+              className="flex flex-col gap-2"
+            >
+              <input
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@email.com"
+                className="w-full rounded-lg border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+              >
+                Email me a sign-in link
+              </button>
+            </form>
+          </>
+        )}
 
         <p className="text-xs text-zinc-400 mt-6">
           Free forever plan · No credit card required
