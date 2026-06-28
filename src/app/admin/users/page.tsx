@@ -10,6 +10,29 @@ interface Song {
   createdAt: string;
 }
 
+interface ChordToken {
+  id: string;
+  chord: string;
+  position: number;
+}
+
+type SongLine =
+  | { id: string; type: "lyric"; text: string; chords: ChordToken[] }
+  | { id: string; type: "section"; label: string };
+
+interface FullSong {
+  id: string;
+  title: string;
+  artist: string | null;
+  key: string | null;
+  capo: number | null;
+  tempo: number | null;
+  content: { lines: SongLine[] } | null;
+  createdAt: string;
+  updatedAt: string;
+  user: { name: string | null; email: string | null };
+}
+
 interface User {
   id: string;
   name: string | null;
@@ -36,6 +59,117 @@ function formatDate(iso: string) {
   });
 }
 
+/** Render one lyric line with its chords positioned above the text (monospace). */
+function LyricLineView({ text, chords }: { text: string; chords: ChordToken[] }) {
+  // Build the chord row as a fixed-width string so chords sit above the right chars.
+  const sorted = [...chords].sort((a, b) => a.position - b.position);
+  let chordRow = "";
+  for (const c of sorted) {
+    const pos = Math.max(0, c.position);
+    if (chordRow.length < pos) chordRow += " ".repeat(pos - chordRow.length);
+    chordRow += c.chord + " ";
+  }
+  return (
+    <div className="leading-tight">
+      {chordRow.trim() && (
+        <pre className="font-mono text-xs text-indigo-400 whitespace-pre m-0">{chordRow}</pre>
+      )}
+      <pre className="font-mono text-sm text-zinc-200 whitespace-pre m-0">{text || " "}</pre>
+    </div>
+  );
+}
+
+/** Modal showing a full chord sheet, fetched from /api/admin/songs/[id]. */
+function SongPreviewModal({
+  songId,
+  onClose,
+}: {
+  songId: string;
+  onClose: () => void;
+}) {
+  const [song, setSong] = useState<FullSong | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/admin/songs/${songId}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load song");
+        return r.json();
+      })
+      .then((d) => !cancelled && setSong(d.song))
+      .catch((e) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [songId]);
+
+  const lines = song?.content?.lines ?? [];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-zinc-800 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-white truncate">
+              {song?.title ?? "Loading…"}
+            </h2>
+            {song && (
+              <p className="text-sm text-zinc-400 truncate">
+                {song.artist || "Unknown artist"}
+                {song.key ? ` · Key ${song.key}` : ""}
+                {song.capo ? ` · Capo ${song.capo}` : ""}
+                {song.tempo ? ` · ${song.tempo} BPM` : ""}
+              </p>
+            )}
+            {song && (
+              <p className="text-xs text-zinc-600 mt-0.5 truncate">
+                by {song.user.name ?? song.user.email} · created {formatDate(song.createdAt)}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="text-zinc-500 hover:text-white text-xl leading-none shrink-0"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 overflow-y-auto">
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {!song && !error && <p className="text-zinc-500 text-sm">Loading…</p>}
+          {song && lines.length === 0 && (
+            <p className="text-zinc-600 italic text-sm">This song has no content.</p>
+          )}
+          <div className="space-y-1">
+            {lines.map((line) =>
+              line.type === "section" ? (
+                <p
+                  key={line.id}
+                  className="text-xs font-bold uppercase tracking-wide text-amber-400 mt-4 mb-1"
+                >
+                  {line.label}
+                </p>
+              ) : (
+                <LyricLineView key={line.id} text={line.text} chords={line.chords} />
+              )
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminUsersInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,6 +182,7 @@ function AdminUsersInner() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState(currentQ);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+  const [previewSongId, setPreviewSongId] = useState<string | null>(null);
 
   const load = useCallback(
     (page: number, q: string) => {
@@ -230,20 +365,28 @@ function AdminUsersInner() {
                           ) : (
                             <div className="space-y-2">
                               {user.songs.map((song) => (
-                                <div
+                                <button
                                   key={song.id}
-                                  className="flex items-center justify-between gap-4 bg-zinc-900 rounded-lg px-4 py-2.5"
+                                  onClick={() => setPreviewSongId(song.id)}
+                                  className="w-full flex items-center justify-between gap-4 bg-zinc-900 hover:bg-zinc-800 rounded-lg px-4 py-2.5 text-left transition-colors group"
                                 >
-                                  <div>
-                                    <p className="text-sm font-medium text-white">{song.title}</p>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-white truncate group-hover:text-indigo-300">
+                                      {song.title}
+                                    </p>
                                     {song.artist && (
-                                      <p className="text-xs text-zinc-500">{song.artist}</p>
+                                      <p className="text-xs text-zinc-500 truncate">{song.artist}</p>
                                     )}
                                   </div>
-                                  <p className="text-xs text-zinc-600 shrink-0">
-                                    {formatDate(song.createdAt)}
-                                  </p>
-                                </div>
+                                  <span className="flex items-center gap-3 shrink-0">
+                                    <span className="text-xs text-zinc-600">
+                                      {formatDate(song.createdAt)}
+                                    </span>
+                                    <span className="text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      View →
+                                    </span>
+                                  </span>
+                                </button>
                               ))}
                               {user._count.songs > user.songs.length && (
                                 <p className="text-xs text-zinc-600 pl-1">
@@ -290,6 +433,13 @@ function AdminUsersInner() {
             </div>
           )}
         </>
+      )}
+
+      {previewSongId && (
+        <SongPreviewModal
+          songId={previewSongId}
+          onClose={() => setPreviewSongId(null)}
+        />
       )}
     </div>
   );
