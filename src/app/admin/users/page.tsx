@@ -2,6 +2,9 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import SongViewer from "@/components/editor/SongViewer";
+import type { SongLine } from "@/types/song";
+import type { SongStyle } from "@/lib/songStyle";
 
 interface Song {
   id: string;
@@ -10,16 +13,6 @@ interface Song {
   createdAt: string;
 }
 
-interface ChordToken {
-  id: string;
-  chord: string;
-  position: number;
-}
-
-type SongLine =
-  | { id: string; type: "lyric"; text: string; chords: ChordToken[] }
-  | { id: string; type: "section"; label: string };
-
 interface FullSong {
   id: string;
   title: string;
@@ -27,7 +20,7 @@ interface FullSong {
   key: string | null;
   capo: number | null;
   tempo: number | null;
-  content: { lines: SongLine[] } | null;
+  content: { lines: SongLine[]; style?: SongStyle | null } | null;
   createdAt: string;
   updatedAt: string;
   user: { name: string | null; email: string | null };
@@ -59,27 +52,11 @@ function formatDate(iso: string) {
   });
 }
 
-/** Render one lyric line with its chords positioned above the text (monospace). */
-function LyricLineView({ text, chords }: { text: string; chords: ChordToken[] }) {
-  // Build the chord row as a fixed-width string so chords sit above the right chars.
-  const sorted = [...chords].sort((a, b) => a.position - b.position);
-  let chordRow = "";
-  for (const c of sorted) {
-    const pos = Math.max(0, c.position);
-    if (chordRow.length < pos) chordRow += " ".repeat(pos - chordRow.length);
-    chordRow += c.chord + " ";
-  }
-  return (
-    <div className="leading-tight">
-      {chordRow.trim() && (
-        <pre className="font-mono text-xs text-indigo-400 whitespace-pre m-0">{chordRow}</pre>
-      )}
-      <pre className="font-mono text-sm text-zinc-200 whitespace-pre m-0">{text || " "}</pre>
-    </div>
-  );
-}
-
-/** Modal showing a full chord sheet, fetched from /api/admin/songs/[id]. */
+/**
+ * Full-screen preview of a user's chord sheet, fetched from /api/admin/songs/[id]
+ * and rendered with the real SongViewer so it looks exactly as the user styled it
+ * (background image, fonts, chord preset, colors). Read-only — no edit button.
+ */
 function SongPreviewModal({
   songId,
   onClose,
@@ -104,68 +81,55 @@ function SongPreviewModal({
     };
   }, [songId]);
 
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const lines = song?.content?.lines ?? [];
+  const style = song?.content?.style ?? undefined;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+    <div className="fixed inset-0 z-50 flex flex-col bg-zinc-950">
+      {/* Floating close button + owner label, above SongViewer's own controls */}
+      <button
+        onClick={onClose}
+        className="fixed top-3 right-3 z-[70] w-9 h-9 flex items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm text-lg leading-none shadow-lg"
+        title="Close (Esc)"
       >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-zinc-800 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="text-lg font-bold text-white truncate">
-              {song?.title ?? "Loading…"}
-            </h2>
-            {song && (
-              <p className="text-sm text-zinc-400 truncate">
-                {song.artist || "Unknown artist"}
-                {song.key ? ` · Key ${song.key}` : ""}
-                {song.capo ? ` · Capo ${song.capo}` : ""}
-                {song.tempo ? ` · ${song.tempo} BPM` : ""}
-              </p>
-            )}
-            {song && (
-              <p className="text-xs text-zinc-600 mt-0.5 truncate">
-                by {song.user.name ?? song.user.email} · created {formatDate(song.createdAt)}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-500 hover:text-white text-xl leading-none shrink-0"
-          >
-            ×
-          </button>
+        ×
+      </button>
+      {song && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[70] px-3 py-1 rounded-full bg-black/60 text-white/80 text-xs backdrop-blur-sm shadow-lg max-w-[60vw] truncate">
+          {song.user.name ?? song.user.email} · {formatDate(song.createdAt)}
         </div>
+      )}
 
-        {/* Body */}
-        <div className="px-6 py-5 overflow-y-auto">
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          {!song && !error && <p className="text-zinc-500 text-sm">Loading…</p>}
-          {song && lines.length === 0 && (
-            <p className="text-zinc-600 italic text-sm">This song has no content.</p>
-          )}
-          <div className="space-y-1">
-            {lines.map((line) =>
-              line.type === "section" ? (
-                <p
-                  key={line.id}
-                  className="text-xs font-bold uppercase tracking-wide text-amber-400 mt-4 mb-1"
-                >
-                  {line.label}
-                </p>
-              ) : (
-                <LyricLineView key={line.id} text={line.text} chords={line.chords} />
-              )
-            )}
-          </div>
+      {error && (
+        <div className="flex-1 flex items-center justify-center text-red-400 text-sm">{error}</div>
+      )}
+      {!song && !error && (
+        <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">Loading…</div>
+      )}
+      {song && lines.length === 0 && (
+        <div className="flex-1 flex items-center justify-center text-zinc-600 italic text-sm">
+          This song has no content.
         </div>
-      </div>
+      )}
+      {song && lines.length > 0 && (
+        <SongViewer
+          title={song.title}
+          artist={song.artist ?? ""}
+          lines={lines}
+          songStyle={style}
+          songId={song.id}
+          isShared
+        />
+      )}
     </div>
   );
 }
