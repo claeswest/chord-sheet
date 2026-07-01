@@ -35,6 +35,7 @@ interface User {
   createdAt: string;
   _count: { songs: number; categories: number };
   songs: Song[];
+  categories: { id: string; name: string; parentId: string | null }[];
 }
 
 interface UsersResponse {
@@ -332,6 +333,31 @@ function AdminUsersInner() {
                     {expandedUserId === user.id && (
                       <tr key={`${user.id}-expanded`} className="border-b border-zinc-800/50">
                         <td colSpan={6} className="px-5 py-4 bg-zinc-950">
+                          {/* Categories */}
+                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
+                            Categories ({user._count.categories} total)
+                          </p>
+                          {user.categories.length === 0 ? (
+                            <p className="text-sm text-zinc-600 italic mb-4">No categories</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                              {user.categories.map((cat) => (
+                                <span
+                                  key={cat.id}
+                                  className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full ${
+                                    cat.parentId
+                                      ? "bg-zinc-800/60 text-zinc-400 ml-2"
+                                      : "bg-indigo-900/40 text-indigo-300"
+                                  }`}
+                                  title={cat.parentId ? "Subcategory" : "Category"}
+                                >
+                                  {cat.parentId && <span className="text-zinc-600">└</span>}
+                                  {cat.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
                             Songs ({user._count.songs} total)
                             {!userSongs[user.id] && user._count.songs > 0 && (

@@ -41,6 +41,10 @@ export async function GET(req: NextRequest) {
           take: 5,
           select: { id: true, title: true, artist: true, createdAt: true },
         },
+        categories: {
+          orderBy: { order: "asc" },
+          select: { id: true, name: true, parentId: true },
+        },
       },
     }),
   ]);
