@@ -321,7 +321,7 @@ function AdminUsersInner() {
                       <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                         {formatDate(user.createdAt)}
                       </td>
-                      <td className="px-5 py-3 text-zinc-500 text-right">
+                      <td className="pl-4 pr-6 sm:pr-8 py-3 text-zinc-500 text-right">
                         <span className="text-xs">
                           {expandedUserId === user.id ? "▲" : "▼"}
                         </span>
