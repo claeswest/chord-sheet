@@ -23,6 +23,16 @@ const EXAMPLE = `Verse 1
 Chorus
 [C]The [G]sound of [Am]silence`;
 
+// True when the pasted content is essentially just a link (a song URL from
+// Suno/YouTube/Spotify, etc.) rather than lyrics. We can't read a page — the
+// user needs to paste the actual words — so we nudge instead of importing junk.
+function isJustUrl(s: string): boolean {
+  const lines = s.trim().split(/\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0 || lines.length > 2) return false;
+  const urlRe = /^(https?:\/\/|www\.)\S+$/i;
+  return lines.every((l) => urlRe.test(l));
+}
+
 function Spinner({ size = 4 }: { size?: number }) {
   return (
     <svg className={`w-${size} h-${size} animate-spin`} viewBox="0 0 24 24" fill="none">
@@ -109,7 +119,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
       setPreview(parseChordSheet(text));
       if (pendingAutoClean.current) {
         pendingAutoClean.current = false;
-        handleAiClean(text);
+        // Don't waste an AI-clean call on a bare link — nudge the user instead.
+        if (!isJustUrl(text)) handleAiClean(text);
       }
     } else {
       setPreview([]);
@@ -386,6 +397,17 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   <>
                     {aiError && (
                       <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{aiError}</p>
+                    )}
+                    {isJustUrl(text) && (
+                      <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 flex gap-2 items-start">
+                        <span className="shrink-0 text-sm leading-none">🔗</span>
+                        <span className="leading-relaxed">
+                          That looks like a <strong>link</strong>, not lyrics. Open it, copy the
+                          song&apos;s <strong>words</strong>, and paste the text here — we can&apos;t read
+                          a URL. Already-known song? Close this and use{" "}
+                          <strong>Find a song</strong> to search by title.
+                        </span>
+                      </div>
                     )}
                     <div className="relative flex-1 min-h-[220px]">
                       <textarea
