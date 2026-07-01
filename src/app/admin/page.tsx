@@ -9,15 +9,45 @@ interface Stats {
   totalCategories: number;
   newSongsThisWeek: number;
   newUsersThisWeek: number;
+  subscriptions: {
+    paying: number;
+    trialing: number;
+    free: number;
+    mrr: number;
+    trialMrr: number;
+  };
   recentUsers: {
     id: string;
     name: string | null;
     email: string | null;
     image: string | null;
     plan: string | null;
+    stripeSubscriptionStatus: string | null;
     createdAt: string;
     _count: { songs: number };
   }[];
+}
+
+/** Plan badge reflecting real status: trialing, paid, or free. */
+function PlanBadge({ plan, status }: { plan: string | null; status: string | null }) {
+  let label = plan ?? "free";
+  let cls = "bg-zinc-800 text-zinc-400";
+  if (status === "trialing") {
+    label = `trial · ${plan}`;
+    cls = "bg-amber-900/40 text-amber-300";
+  } else if ((plan === "monthly" || plan === "yearly") && status === "active") {
+    cls = "bg-emerald-900/40 text-emerald-300";
+  } else if (plan === "lifetime") {
+    cls = "bg-indigo-900/40 text-indigo-300";
+  } else if (status === "past_due" || status === "canceled") {
+    label = `${plan} · ${status}`;
+    cls = "bg-red-900/40 text-red-300";
+  }
+  return (
+    <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 function StatCard({
@@ -86,6 +116,42 @@ export default function AdminDashboard() {
 
       {stats && (
         <>
+          {/* Revenue / subscriptions — the numbers that matter most */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <StatCard
+              label="MRR"
+              value={`$${stats.subscriptions.mrr}`}
+              sub={
+                stats.subscriptions.trialMrr > 0
+                  ? `+$${stats.subscriptions.trialMrr} in trials`
+                  : "monthly recurring"
+              }
+              color="bg-emerald-950/40 border-emerald-900/50"
+            />
+            <StatCard
+              label="Paying customers"
+              value={stats.subscriptions.paying}
+              sub="active subscriptions"
+              color="bg-emerald-950/40 border-emerald-900/50"
+            />
+            <StatCard
+              label="On trial"
+              value={stats.subscriptions.trialing}
+              sub="converting soon"
+              color="bg-amber-950/40 border-amber-900/50"
+            />
+            <StatCard
+              label="Free users"
+              value={stats.subscriptions.free}
+              sub={
+                stats.totalUsers > 0
+                  ? `${Math.round(((stats.subscriptions.paying + stats.subscriptions.trialing) / stats.totalUsers) * 100)}% converted`
+                  : undefined
+              }
+              color="bg-zinc-900 border-zinc-800"
+            />
+          </div>
+
           {/* Stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard
@@ -173,15 +239,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
                     <td className="px-5 py-3 hidden sm:table-cell">
-                      <span
-                        className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
-                          user.plan === "pro"
-                            ? "bg-indigo-900 text-indigo-300"
-                            : "bg-zinc-800 text-zinc-400"
-                        }`}
-                      >
-                        {user.plan ?? "free"}
-                      </span>
+                      <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} />
                     </td>
                     <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                       {formatDate(user.createdAt)}
