@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
+import PlanBadge from "@/components/admin/PlanBadge";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -32,6 +33,8 @@ interface User {
   email: string | null;
   image: string | null;
   plan: string | null;
+  stripeSubscriptionStatus: string | null;
+  stripeCurrentPeriodEnd: string | null;
   createdAt: string;
   _count: { songs: number; categories: number };
   songs: Song[];
@@ -278,9 +281,8 @@ function AdminUsersInner() {
               </thead>
               <tbody>
                 {data.users.map((user) => (
-                  <>
+                  <Fragment key={user.id}>
                     <tr
-                      key={user.id}
                       className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer ${
                         expandedUserId === user.id ? "bg-zinc-800/20" : ""
                       }`}
@@ -292,6 +294,7 @@ function AdminUsersInner() {
                             <img
                               src={user.image}
                               alt=""
+                              referrerPolicy="no-referrer"
                               className="w-8 h-8 rounded-full object-cover shrink-0"
                             />
                           ) : (
@@ -309,15 +312,11 @@ function AdminUsersInner() {
                       </td>
                       <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
                       <td className="px-5 py-3 hidden sm:table-cell">
-                        <span
-                          className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
-                            user.plan === "pro"
-                              ? "bg-indigo-900 text-indigo-300"
-                              : "bg-zinc-800 text-zinc-400"
-                          }`}
-                        >
-                          {user.plan ?? "free"}
-                        </span>
+                        <PlanBadge
+                          plan={user.plan}
+                          status={user.stripeSubscriptionStatus}
+                          periodEnd={user.stripeCurrentPeriodEnd}
+                        />
                       </td>
                       <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                         {formatDate(user.createdAt)}
@@ -402,7 +401,7 @@ function AdminUsersInner() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

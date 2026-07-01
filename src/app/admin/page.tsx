@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import PlanBadge from "@/components/admin/PlanBadge";
 
 interface Stats {
   totalUsers: number;
@@ -23,31 +24,10 @@ interface Stats {
     image: string | null;
     plan: string | null;
     stripeSubscriptionStatus: string | null;
+    stripeCurrentPeriodEnd: string | null;
     createdAt: string;
     _count: { songs: number };
   }[];
-}
-
-/** Plan badge reflecting real status: trialing, paid, or free. */
-function PlanBadge({ plan, status }: { plan: string | null; status: string | null }) {
-  let label = plan ?? "free";
-  let cls = "bg-zinc-800 text-zinc-400";
-  if (status === "trialing") {
-    label = `trial · ${plan}`;
-    cls = "bg-amber-900/40 text-amber-300";
-  } else if ((plan === "monthly" || plan === "yearly") && status === "active") {
-    cls = "bg-emerald-900/40 text-emerald-300";
-  } else if (plan === "lifetime") {
-    cls = "bg-indigo-900/40 text-indigo-300";
-  } else if (status === "past_due" || status === "canceled") {
-    label = `${plan} · ${status}`;
-    cls = "bg-red-900/40 text-red-300";
-  }
-  return (
-    <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${cls}`}>
-      {label}
-    </span>
-  );
 }
 
 function StatCard({
@@ -222,6 +202,7 @@ export default function AdminDashboard() {
                           <img
                             src={user.image}
                             alt=""
+                            referrerPolicy="no-referrer"
                             className="w-8 h-8 rounded-full object-cover shrink-0"
                           />
                         ) : (
@@ -239,7 +220,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
                     <td className="px-5 py-3 hidden sm:table-cell">
-                      <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} />
+                      <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} />
                     </td>
                     <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                       {formatDate(user.createdAt)}

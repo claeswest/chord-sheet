@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
         email: true,
         image: true,
         plan: true,
+        stripeSubscriptionStatus: true,
+        stripeCurrentPeriodEnd: true,
         createdAt: true,
         _count: { select: { songs: true, categories: true } },
         songs: {
