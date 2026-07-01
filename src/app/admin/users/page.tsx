@@ -147,6 +147,19 @@ function AdminUsersInner() {
   const [search, setSearch] = useState(currentQ);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [previewSongId, setPreviewSongId] = useState<string | null>(null);
+  // Full song lists per user, lazy-loaded when a row is expanded (the list API
+  // only returns the 5 most recent to keep the payload light).
+  const [userSongs, setUserSongs] = useState<Record<string, Song[]>>({});
+
+  function toggleExpand(userId: string) {
+    setExpandedUserId((cur) => (cur === userId ? null : userId));
+    if (!userSongs[userId]) {
+      fetch(`/api/admin/users/${userId}/songs`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
+        .then((d) => setUserSongs((m) => ({ ...m, [userId]: d.songs })))
+        .catch(() => {});
+    }
+  }
 
   const load = useCallback(
     (page: number, q: string) => {
@@ -270,9 +283,7 @@ function AdminUsersInner() {
                       className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer ${
                         expandedUserId === user.id ? "bg-zinc-800/20" : ""
                       }`}
-                      onClick={() =>
-                        setExpandedUserId(expandedUserId === user.id ? null : user.id)
-                      }
+                      onClick={() => toggleExpand(user.id)}
                     >
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
@@ -322,13 +333,16 @@ function AdminUsersInner() {
                       <tr key={`${user.id}-expanded`} className="border-b border-zinc-800/50">
                         <td colSpan={6} className="px-5 py-4 bg-zinc-950">
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
-                            Recent songs ({user._count.songs} total)
+                            Songs ({user._count.songs} total)
+                            {!userSongs[user.id] && user._count.songs > 0 && (
+                              <span className="ml-2 text-zinc-600 normal-case font-normal">loading…</span>
+                            )}
                           </p>
-                          {user.songs.length === 0 ? (
+                          {(userSongs[user.id] ?? user.songs).length === 0 ? (
                             <p className="text-sm text-zinc-600 italic">No songs yet</p>
                           ) : (
                             <div className="space-y-2">
-                              {user.songs.map((song) => (
+                              {(userSongs[user.id] ?? user.songs).map((song) => (
                                 <button
                                   key={song.id}
                                   onClick={() => setPreviewSongId(song.id)}
@@ -352,9 +366,9 @@ function AdminUsersInner() {
                                   </span>
                                 </button>
                               ))}
-                              {user._count.songs > user.songs.length && (
+                              {!userSongs[user.id] && user._count.songs > user.songs.length && (
                                 <p className="text-xs text-zinc-600 pl-1">
-                                  + {user._count.songs - user.songs.length} more
+                                  + {user._count.songs - user.songs.length} more…
                                 </p>
                               )}
                             </div>
