@@ -75,8 +75,8 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-zinc-400 text-sm mt-1">Overview of ChordSheet Creator</p>
       </div>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Recent signups */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-x-auto">
             <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
               <h2 className="font-semibold text-white">Recent signups</h2>
               <Link
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
                   <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
                     Songs
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden sm:table-cell">
+                  <th className="text-left px-4 sm:px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
                     Plan
                   </th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden lg:table-cell">
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                       {user.email}
                     </td>
                     <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
-                    <td className="px-5 py-3 hidden sm:table-cell">
+                    <td className="px-4 sm:px-5 py-3">
                       <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} />
                     </td>
                     <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">

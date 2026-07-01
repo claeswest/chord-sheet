@@ -201,8 +201,8 @@ function AdminUsersInner() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">Users</h1>
           {data && (
@@ -213,13 +213,13 @@ function AdminUsersInner() {
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex gap-2 w-full sm:w-auto">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email…"
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 sm:flex-none sm:w-64"
           />
           <button
             type="submit"
@@ -257,7 +257,7 @@ function AdminUsersInner() {
 
       {data && !loading && (
         <>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800">
@@ -270,7 +270,7 @@ function AdminUsersInner() {
                   <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
                     Songs
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden sm:table-cell">
+                  <th className="text-left px-4 sm:px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
                     Plan
                   </th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden lg:table-cell">
@@ -311,7 +311,7 @@ function AdminUsersInner() {
                         <span className="truncate block max-w-[200px]">{user.email}</span>
                       </td>
                       <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
-                      <td className="px-5 py-3 hidden sm:table-cell">
+                      <td className="px-4 sm:px-5 py-3">
                         <PlanBadge
                           plan={user.plan}
                           status={user.stripeSubscriptionStatus}
