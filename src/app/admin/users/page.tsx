@@ -374,9 +374,15 @@ function AdminUsersInner() {
                                   className="w-full flex items-center justify-between gap-4 bg-zinc-900 hover:bg-zinc-800 rounded-lg px-4 py-2.5 text-left transition-colors group"
                                 >
                                   <div className="min-w-0">
-                                    <p className="text-sm font-medium text-white truncate group-hover:text-indigo-300">
-                                      {song.title}
-                                    </p>
+                                    {song.title?.trim() ? (
+                                      <p className="text-sm font-medium text-white truncate group-hover:text-indigo-300">
+                                        {song.title}
+                                      </p>
+                                    ) : (
+                                      <p className="text-sm font-medium italic text-zinc-500 truncate group-hover:text-indigo-300">
+                                        Untitled song
+                                      </p>
+                                    )}
                                     {song.artist && (
                                       <p className="text-xs text-zinc-500 truncate">{song.artist}</p>
                                     )}
