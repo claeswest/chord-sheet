@@ -6,6 +6,7 @@ import AppleProvider from "next-auth/providers/apple";
 import ResendProvider from "next-auth/providers/resend";
 import type { Provider } from "next-auth/providers";
 import { prisma } from "./prisma";
+import { notifyAdmin } from "./notify";
 
 // Whether "Sign in with Apple" is configured. Read in one place so the auth
 // config and the login page agree on whether to offer it.
@@ -117,6 +118,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
           session.user.id = user.id;
         }
         return session;
+      },
+    },
+    events: {
+      // Fires once, when a brand-new account is created (any provider).
+      async createUser({ user }) {
+        await notifyAdmin("🎉 New ChordSheetMaker signup", [
+          `${user.name || "New user"} (${user.email ?? "no email"}) just created an account.`,
+        ]);
       },
     },
     pages: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { notifyAdmin } from "@/lib/notify";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -56,6 +57,8 @@ export async function POST(req: NextRequest) {
 
       if (!plan) break;
 
+      const prevStatus = user.stripeSubscriptionStatus;
+
       await prisma.user.update({
         where: { id: user.id },
         data: {
@@ -68,6 +71,19 @@ export async function POST(req: NextRequest) {
           ),
         },
       });
+
+      // Notify: a brand-new subscription, or a trial converting to paying.
+      const who = `${user.name || "A user"} (${user.email ?? "?"})`;
+      if (event.type === "customer.subscription.created") {
+        await notifyAdmin(
+          `💰 New subscriber — ${plan}${sub.status === "trialing" ? " (trial)" : ""}`,
+          [`${who} started a ${plan} plan. Status: ${sub.status}.`]
+        );
+      } else if (prevStatus !== "active" && sub.status === "active") {
+        await notifyAdmin(`💳 Trial converted to paid — ${plan}`, [
+          `${who} converted to a paying ${plan} subscription.`,
+        ]);
+      }
       break;
     }
 

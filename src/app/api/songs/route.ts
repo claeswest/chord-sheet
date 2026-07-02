@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { planFromUser, getSongLimit } from "@/lib/plans";
+import { notifyAdmin } from "@/lib/notify";
 
 // GET /api/songs — list all songs for the current user
 export async function GET() {
@@ -118,6 +119,18 @@ export async function POST(req: Request) {
       content: { lines, tags: tags ?? [], style: style ?? null, semitones: semitones ?? 0 },
     },
   });
+
+  // Notify on a genuinely new song (not on every autosave — those hit `update`).
+  if (!existing) {
+    const u = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true },
+    });
+    const who = u?.name || u?.email || "A user";
+    await notifyAdmin("🎵 New song created", [
+      `${who} (${u?.email ?? "?"}) created a song: "${song.title || "Untitled Song"}"${song.artist ? ` — ${song.artist}` : ""}.`,
+    ]);
+  }
 
   return NextResponse.json(song);
 }
