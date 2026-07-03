@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import WelcomeModal from "./WelcomeModal";
 import GuestImportBanner from "./GuestImportBanner";
 import { encodeSong } from "@/lib/songUrl";
-import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, type DbSong } from "@/lib/songDb";
+import { fetchSongs, removeSong, duplicateSong, reorderAllSongs, upsertSong, SongLimitError, type DbSong } from "@/lib/songDb";
 import { listSongs, deleteSong } from "@/lib/storage";
 import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
@@ -15,7 +15,7 @@ import {
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
-import { trackPaywallSeen } from "@/lib/analytics";
+import { trackPaywallSeen, trackSignUp } from "@/lib/analytics";
 
 /** Returns true if a hex colour is dark (luminance < 0.18) */
 function isDarkColour(hex: string): boolean {
@@ -60,9 +60,11 @@ interface Props {
   userImage?: string | null;
   /** null = unlimited (paid plan). number = max songs allowed on free plan. */
   songLimit?: number | null;
+  /** ISO timestamp of account creation — used to fire the sign_up event once. */
+  userCreatedAt?: string | null;
 }
 
-export default function SongLibraryPage({ isLoggedIn, userName, userImage, songLimit = null }: Props) {
+export default function SongLibraryPage({ isLoggedIn, userName, userImage, songLimit = null, userCreatedAt = null }: Props) {
   const searchParams = useSearchParams();
   const forceWelcome = searchParams.get("welcome") === "1";
 
@@ -182,11 +184,47 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     return () => { window.removeEventListener("dragend", clear); window.removeEventListener("drop", clear); };
   }, []);
 
+  // Fire the GA sign_up event once, on the first visit after registration.
+  // The account is created server-side (OAuth/magic link), where gtag can't
+  // run — so we detect a freshly created account here and guard with
+  // localStorage so it can't double-fire.
+  useEffect(() => {
+    if (!isLoggedIn || !userCreatedAt) return;
+    const ageMs = Date.now() - new Date(userCreatedAt).getTime();
+    if (ageMs < 0 || ageMs > 15 * 60 * 1000) return; // only brand-new accounts
+    const guard = "cs_signup_tracked";
+    if (localStorage.getItem(guard)) return;
+    localStorage.setItem(guard, "1");
+    trackSignUp();
+  }, [isLoggedIn, userCreatedAt]);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
         if (isLoggedIn) {
+          // Migrate guest songs into the account — the signup nudge promises
+          // "create an account to keep it everywhere", so device-local songs
+          // must follow the user in. Oldest first so newest ends up on top.
+          const guestSongs = listSongs();
+          for (const s of [...guestSongs].reverse()) {
+            try {
+              await upsertSong({
+                id: s.id,
+                title: s.title,
+                artist: s.artist,
+                lines: s.lines,
+                tags: s.tags ?? [],
+                style: s.style,
+                semitones: s.semitones,
+              });
+              deleteSong(s.id); // only clear the local copy once it's in the DB
+            } catch (e) {
+              if (e instanceof SongLimitError) break; // plan full — keep the rest local
+              // other errors (e.g. offline): keep local copy, retry next visit
+            }
+          }
+
           const [db, cats] = await Promise.all([fetchSongs(), fetchCategories()]);
           setSongs(db.map((s) => ({ ...s, categoryIds: s.categoryIds ?? [], source: "db" as const })));
           setCategories(cats);

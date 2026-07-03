@@ -9,6 +9,7 @@ export default async function SongsPage() {
 
   // Guests are capped at the same free-tier limit (they can't exceed Free).
   let songLimit: number | null = getSongLimit("free");
+  let userCreatedAt: string | null = null;
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -16,6 +17,7 @@ export default async function SongsPage() {
       select: {
         id: true,
         plan: true,
+        createdAt: true,
         stripeSubscriptionId: true,
         stripeCurrentPeriodEnd: true,
         stripeSubscriptionStatus: true,
@@ -26,6 +28,7 @@ export default async function SongsPage() {
       const synced = await syncStaleSubscription(user);
       if (synced) Object.assign(user, synced);
       songLimit = getSongLimit(planFromUser(user));
+      userCreatedAt = user.createdAt.toISOString();
     }
   }
 
@@ -35,6 +38,7 @@ export default async function SongsPage() {
       userName={session?.user?.name ?? null}
       userImage={session?.user?.image ?? null}
       songLimit={songLimit}
+      userCreatedAt={userCreatedAt}
     />
   );
 }

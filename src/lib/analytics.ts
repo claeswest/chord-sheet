@@ -77,3 +77,8 @@ export const trackTrialStarted = (plan: string) =>
 /** The "don't lose your work" signup nudge was shown to / clicked by a guest. */
 export const trackSignupNudge = (action: "shown" | "clicked") =>
   track("signup_nudge", { action });
+
+/** A new account was created (fired once, client-side, on the first visit
+ *  after registration). GA4-recommended event name — mark as key event so
+ *  Traffic acquisition can attribute signups to channel/campaign. */
+export const trackSignUp = () => track("sign_up");

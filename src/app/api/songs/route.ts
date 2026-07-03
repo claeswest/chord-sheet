@@ -103,22 +103,30 @@ export async function POST(req: Request) {
     }
   }
 
-  const song = await prisma.song.upsert({
-    where: { id: id ?? "__new__" },
-    update: {
-      title: title ?? "Untitled Song",
-      artist: artist ?? "",
-      content: { lines, tags: tags ?? [], style: style ?? null, semitones: semitones ?? 0 },
-      updatedAt: new Date(),
-    },
-    create: {
-      id,
-      userId: session.user.id,
-      title: title ?? "Untitled Song",
-      artist: artist ?? "",
-      content: { lines, tags: tags ?? [], style: style ?? null, semitones: semitones ?? 0 },
-    },
-  });
+  const data = {
+    title: title ?? "Untitled Song",
+    artist: artist ?? "",
+    content: { lines, tags: tags ?? [], style: style ?? null, semitones: semitones ?? 0 },
+  };
+
+  let song;
+  if (existing) {
+    // Ownership verified above — safe to update by id.
+    song = await prisma.song.update({
+      where: { id: existing.id },
+      data: { ...data, updatedAt: new Date() },
+    });
+  } else {
+    // Create-only path: if the id already exists (i.e. belongs to another
+    // user), the unique constraint rejects it instead of overwriting theirs.
+    try {
+      song = await prisma.song.create({
+        data: { id, userId: session.user.id, ...data },
+      });
+    } catch {
+      return NextResponse.json({ error: "conflict" }, { status: 409 });
+    }
+  }
 
   // Notify on a genuinely new song (not on every autosave — those hit `update`).
   if (!existing) {
