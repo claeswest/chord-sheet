@@ -424,10 +424,12 @@ export default async function HomePage() {
           <span className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-400">Maker</span>
           </span>
-          <nav className="flex items-center gap-6 text-xs text-white/30">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/30">
             <Link href="#features" className="hover:text-white/60 transition-colors">Features</Link>
             <Link href="#pricing"  className="hover:text-white/60 transition-colors">Pricing</Link>
             <Link href="/songs"    className="hover:text-white/60 transition-colors">App</Link>
+            <Link href="/terms"    className="hover:text-white/60 transition-colors">Terms</Link>
+            <a href="mailto:claes@clavos.se" className="hover:text-white/60 transition-colors">Contact</a>
           </nav>
           <p className="text-xs text-white/20">
             © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians

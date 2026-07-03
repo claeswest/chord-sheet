@@ -166,6 +166,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
   const [activeChord, setActiveChord] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
+  // Play mode on an empty song renders a blank white screen — nudge instead.
+  const [showEmptyPlayHint, setShowEmptyPlayHint] = useState(false);
+  const emptyPlayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(
     initialMode === "search" ? "search" : initialMode === "import" ? "text" : false
   );
@@ -343,13 +346,31 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Enter play mode — but not on an empty sheet, where the viewer is just a
+  // blank white screen that looks broken. Nudge to add content instead.
+  const enterPlayMode = () => {
+    const playable = lines.some((l) =>
+      l.type === "section" ? !!l.label : (!!l.text.trim() || l.chords.length > 0)
+    );
+    if (!playable) {
+      setShowEmptyPlayHint(true);
+      if (emptyPlayTimer.current) clearTimeout(emptyPlayTimer.current);
+      emptyPlayTimer.current = setTimeout(() => setShowEmptyPlayHint(false), 3500);
+      return;
+    }
+    setViewMode(true);
+  };
+  // Keep a ref so the stable keyboard listener always calls the fresh closure.
+  const enterPlayModeRef = useRef(enterPlayMode);
+  useEffect(() => { enterPlayModeRef.current = enterPlayMode; });
+
   // P = Play mode, E = Edit mode (only when not typing in an input/textarea)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
-      if (e.key === "p" || e.key === "P") setViewMode(true);
+      if (e.key === "p" || e.key === "P") enterPlayModeRef.current();
       if (e.key === "e" || e.key === "E") setViewMode(false);
       if (e.key === "s" || e.key === "S") router.push("/songs");
     };
@@ -744,6 +765,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
   return (
     <div className="flex flex-col h-screen bg-white">
+      {/* "Nothing to play yet" hint — shown when Play is tapped on an empty sheet */}
+      {showEmptyPlayHint && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 bg-zinc-900 text-white text-sm px-4 py-2.5 rounded-full shadow-xl whitespace-nowrap">
+          <span>🎸</span> Nothing to play yet — add some lyrics or chords first
+        </div>
+      )}
+
       {/* Small-screen tip — friendly, and never stacked on top of other banners */}
       {showSmallScreenBanner && !showDemoBanner && !showGuestSaveReminder && (
         <div className="md:hidden flex items-center gap-3 px-4 py-2.5 bg-zinc-50 border-b border-zinc-200 text-zinc-600 text-sm">
@@ -852,7 +880,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
           {/* Play / performance mode — always visible (one tap on mobile) */}
           <button
-            onClick={() => setViewMode(true)}
+            onClick={enterPlayMode}
             className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-lg text-sm font-medium bg-white/10 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
             title="Play mode — hands-free auto-scroll"
           >
@@ -885,7 +913,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"/></svg>
                   Find &amp; Replace
                 </button>
-                <button onClick={() => { setViewMode(true); setShowOverflow(false); }}
+                <button onClick={() => { setShowOverflow(false); enterPlayMode(); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
                   Play <Kbd variant="light" className="ml-auto">P</Kbd>
