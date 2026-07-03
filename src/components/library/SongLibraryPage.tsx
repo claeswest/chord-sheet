@@ -532,14 +532,23 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         {isLoggedIn
           ? <UserMenu userName={userName} userImage={userImage} />
           : (
-            <Link
-              href="/login?next=/songs&from=save"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
-            >
-              Sign up
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Returning users need a visible way in — the pill alone reads as signup-only */}
+              <Link
+                href="/login?next=/songs"
+                className="text-sm text-white/70 hover:text-white transition-colors whitespace-nowrap"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/login?next=/songs&from=save"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
+                style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+              >
+                Sign up
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+              </Link>
+            </div>
           )
         }
       </header>

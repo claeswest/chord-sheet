@@ -84,11 +84,11 @@ export default async function HomePage() {
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
-        <div className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-          <span className="text-xl font-extrabold tracking-tight text-zinc-900" style={{ fontFamily: "var(--font-nunito)" }}>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 max-w-6xl mx-auto w-full">
+          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-600">Maker</span>
           </span>
-          <nav className="flex items-center gap-6 text-sm text-zinc-600">
+          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
             <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
             <Link href="#pricing"  className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
             {session ? (
@@ -97,7 +97,7 @@ export default async function HomePage() {
               </Link>
             ) : (
               <>
-                <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
+                <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap">Sign in</Link>
                 <CtaLink from="home-header" href="/editor/new?start=demo"
                   className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
                   style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}

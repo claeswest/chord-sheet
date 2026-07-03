@@ -78,14 +78,14 @@ export default async function LandingPage({ params }: Props) {
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
-        <div className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" className="text-xl font-extrabold tracking-tight text-zinc-900" style={{ fontFamily: "var(--font-nunito)" }}>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 max-w-6xl mx-auto w-full">
+          <Link href="/" className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-600">Maker</span>
           </Link>
-          <nav className="flex items-center gap-6 text-sm text-zinc-600">
+          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
             <Link href="/#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
             <Link href="/pricing" className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
-            <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
+            <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap">Sign in</Link>
             <CtaLink
               from={page.slug}
               href="/songs?welcome=1"
