@@ -128,8 +128,9 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
               <div
                 key={planKey}
                 className={`relative bg-white rounded-2xl flex flex-col overflow-hidden transition-all ${
-                  // On mobile lead with the paid plans; Free drops to the bottom.
-                  isFree ? "order-last md:order-none " : ""
+                  // On mobile lead with the recommended plan: Yearly ("Most
+                  // popular") first, Free drops to the bottom. Desktop unchanged.
+                  isFree ? "order-last md:order-none " : isPopular ? "order-first md:order-none " : ""
                 }${
                   isPopular
                     ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-100"

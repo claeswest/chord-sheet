@@ -15,8 +15,14 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string; from?: string }>;
 }) {
-  const { from } = await searchParams;
+  const { from, next } = await searchParams;
   const fromSave = from === "save";
+  // Arriving from "Start 7-day free trial" on pricing — next looks like
+  // "/pricing?plan=monthly". Checkout auto-resumes after sign-in, so say so.
+  const planIntent = next?.match(/[?&]plan=(monthly|yearly)/)?.[1] as
+    | "monthly"
+    | "yearly"
+    | undefined;
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6"
@@ -33,6 +39,18 @@ export default async function LoginPage({
 
       {/* White card */}
       <div className="relative z-10 bg-white rounded-2xl shadow-2xl shadow-black/40 p-10 w-full max-w-sm text-center">
+
+        {/* Contextual continuity when arriving from "Start 7-day free trial" */}
+        {planIntent && (
+          <div className="flex items-start gap-2.5 text-left bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 mb-6">
+            <svg className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <p className="text-sm text-indigo-900 leading-snug">
+              <strong className="font-semibold">One step left:</strong> create your account
+              below and your <strong className="font-semibold">7-day free {planIntent} trial</strong>{" "}
+              continues right after — no charge today.
+            </p>
+          </div>
+        )}
 
         {/* Contextual reassurance when arriving from the "Keep my song" nudge */}
         {fromSave && (
@@ -169,17 +187,25 @@ export default async function LoginPage({
         </form>
 
         <p className="text-xs text-zinc-400 mt-6">
-          Free forever plan · No credit card required
+          {planIntent
+            ? "7 days free · cancel anytime during the trial"
+            : "Free forever plan · No credit card required"}
         </p>
         <p className="text-xs text-zinc-300 mt-2">
-          By signing in you agree to our terms of service
+          By signing in you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-zinc-500 transition-colors">
+            terms of service
+          </Link>
         </p>
 
-        <div className="mt-6 pt-6 border-t border-zinc-100">
-          <Link href="/songs" className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
-            Continue without an account
-          </Link>
-        </div>
+        {/* No escape hatch when the user is mid-checkout — it dead-ends the trial */}
+        {!planIntent && (
+          <div className="mt-6 pt-6 border-t border-zinc-100">
+            <Link href="/songs" className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
+              Continue without an account
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
