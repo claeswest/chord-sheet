@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import CtaLink from "@/components/ui/CtaLink";
 import { LANDING_PAGES, LANDING_SLUGS, getLandingPage } from "@/data/landingPages";
 
 const BASE_URL = "https://chordsheetmaker.ai";
@@ -85,7 +86,8 @@ export default async function LandingPage({ params }: Props) {
             <Link href="/#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
             <Link href="/pricing" className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
             <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
-            <Link
+            <CtaLink
+              from={page.slug}
               href="/songs?welcome=1"
               className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
@@ -94,7 +96,7 @@ export default async function LandingPage({ params }: Props) {
               <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
-            </Link>
+            </CtaLink>
           </nav>
         </div>
       </header>
@@ -123,7 +125,8 @@ export default async function LandingPage({ params }: Props) {
             {page.intro}
           </p>
 
-          <Link
+          <CtaLink
+            from={page.slug}
             href="/songs?welcome=1"
             className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03]"
             style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
@@ -136,7 +139,7 @@ export default async function LandingPage({ params }: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
             </span>
-          </Link>
+          </CtaLink>
           <p className="relative mt-4 text-xs text-white/30">No credit card required · Free forever plan available</p>
 
           {/* Trust signals */}
@@ -305,7 +308,8 @@ export default async function LandingPage({ params }: Props) {
             <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
               {page.ctaBody}
             </p>
-            <Link
+            <CtaLink
+              from={page.slug}
               href="/songs?welcome=1"
               className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
@@ -316,7 +320,7 @@ export default async function LandingPage({ params }: Props) {
               <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
-            </Link>
+            </CtaLink>
             <div className="mt-8">
               <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
                 See pricing →

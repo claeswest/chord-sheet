@@ -114,6 +114,26 @@ export default function WelcomeModal({ onDismiss }: Props) {
             </svg>
           </Link>
 
+          {/* Demo — the instant wow, no work required */}
+          <Link
+            href="/editor/new?start=demo"
+            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
+            style={{ background: "rgba(255,255,255,0.04)" }}
+          >
+            <div className="w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">Just show me a demo</p>
+              <p className="text-xs text-white/30 mt-0.5">Play with a finished chart — no work required</p>
+            </div>
+            <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+            </svg>
+          </Link>
+
         </div>
 
         {/* Footer — sign in only, × handles dismiss */}

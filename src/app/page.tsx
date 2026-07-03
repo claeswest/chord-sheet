@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import CtaLink from "@/components/ui/CtaLink";
 import BuildStamp from "@/components/ui/BuildStamp";
 import FeatureCard from "@/components/ui/FeatureCard";
 import TransformationSection from "@/components/ui/TransformationSection";
@@ -97,7 +98,7 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/login" className="hover:text-zinc-900 transition-colors hidden sm:block">Sign in</Link>
-                <Link href="/editor/new?start=demo"
+                <CtaLink from="home-header" href="/editor/new?start=demo"
                   className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
                   style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
                 >
@@ -107,7 +108,7 @@ export default async function HomePage() {
                   <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                   </svg>
-                </Link>
+                </CtaLink>
               </>
             )}
           </nav>
@@ -141,7 +142,8 @@ export default async function HomePage() {
           </p>
 
           <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
-            <Link
+            <CtaLink
+              from="home-hero"
               href={session ? "/songs" : "/editor/new?start=demo"}
               className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03] text-center"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
@@ -155,7 +157,7 @@ export default async function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
               </span>
-            </Link>
+            </CtaLink>
             <Link
               href="#features"
               className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
@@ -393,7 +395,8 @@ export default async function HomePage() {
               Build, transpose and perform your chord charts — from any device, any stage.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
+              <CtaLink
+                from="home-bottom"
                 href={session ? "/songs" : "/editor/new?start=demo"}
                 className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
                 style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
@@ -404,7 +407,7 @@ export default async function HomePage() {
                 <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
-              </Link>
+              </CtaLink>
               {!session && (
                 <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
                   See pricing
