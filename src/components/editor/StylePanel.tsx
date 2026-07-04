@@ -359,27 +359,47 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       >
 
           {/* ── Page color ── */}
-          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-            <button
-              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-50 transition-colors text-left"
-              onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
-            >
-              <span className="w-5 h-5 rounded-full border border-zinc-200 shadow-sm shrink-0" style={{ background: bg }} />
-              <span className="text-xs font-medium text-zinc-700 flex-1">Page color</span>
-              <span className="text-[11px] text-zinc-400 font-mono">{bg}</span>
+          <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
+            <div className="flex items-center mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400 flex-1">Page color</p>
+              <span className="text-[11px] text-zinc-300 font-mono">{bg}</span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* One-tap presets — paper tones first, stage-dark tones after */}
+              {["#ffffff", "#faf6ee", "#f4f4f5", "#fdf2f8", "#e8eef7", "#1a1a2e", "#0f0c29", "#18181b"].map((c) => {
+                const active = bg.toLowerCase() === c;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => onChange({ ...style, background: c })}
+                    title={c}
+                    className={`w-7 h-7 rounded-full border transition-all hover:scale-110 ${
+                      active ? "ring-2 ring-indigo-500 ring-offset-2 border-transparent" : "border-zinc-200"
+                    }`}
+                    style={{ background: c }}
+                  />
+                );
+              })}
+              {/* Custom — opens the native picker */}
+              <button
+                onClick={() => (document.getElementById("bg-color-input") as HTMLInputElement)?.click()}
+                title="Custom color"
+                className="w-7 h-7 rounded-full border border-zinc-200 transition-all hover:scale-110 shrink-0"
+                style={{ background: "conic-gradient(#f87171, #fbbf24, #34d399, #60a5fa, #a78bfa, #f87171)" }}
+              />
               <input id="bg-color-input" type="color" value={bg} onChange={(e) => onChange({ ...style, background: e.target.value })} className="sr-only" />
-            </button>
+            </div>
           </div>
 
           {/* ── Background image — segmented toggle ── */}
           <div>
             {/* Toggle */}
-            <div className="flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 mb-2">
+            <div className="flex rounded-xl border border-zinc-200 bg-zinc-100 p-1 mb-2">
               <button onClick={() => setBgMode("ai")}
-                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${bgMode === "ai" ? "bg-white text-zinc-800 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+                className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition-all ${bgMode === "ai" ? "bg-white text-indigo-600 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
               >✦ Generate with AI</button>
               <button onClick={() => setBgMode("upload")}
-                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${bgMode === "upload" ? "bg-white text-zinc-800 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+                className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition-all ${bgMode === "upload" ? "bg-white text-indigo-600 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
               >
                 <span className="flex items-center justify-center gap-1">
                   <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -392,7 +412,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* AI panel */}
             {bgMode === "ai" && (
-              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
                 {/* Step 1 — choose a style */}
                 <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-1.5">
                   <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
@@ -439,7 +459,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     </div>
                   )}
                   <button onClick={handleAiBackground} disabled={bgLoading}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-40"
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 hover:opacity-90 text-white text-sm font-semibold transition-opacity shadow-md shadow-indigo-500/25 disabled:opacity-40"
                   >
                     {bgLoading
                       ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
@@ -453,7 +473,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* Upload panel */}
             {bgMode === "upload" && (
-              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
                 {style.backgroundImage && (
                   <>
                     <div className="relative overflow-hidden mx-3 mt-3 rounded-lg" style={{ height: 72 }}>
