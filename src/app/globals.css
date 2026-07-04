@@ -27,6 +27,87 @@ html {
   animation: fadeInUp 0.18s ease both;
 }
 
+/* ── Landing hero effects ─────────────────────────────────────────────────────
+   All decorative: gated behind prefers-reduced-motion, cheap transforms only. */
+
+/* Slow-drifting aurora blobs behind the hero */
+@keyframes aurora-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(60px, 40px) scale(1.15); }
+}
+@keyframes aurora-b {
+  0%, 100% { transform: translate(0, 0) scale(1.1); }
+  50%      { transform: translate(-70px, -30px) scale(0.95); }
+}
+.aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Animated gradient headline */
+@keyframes gradient-slide {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.gradient-text {
+  background: linear-gradient(90deg, #818cf8 0%, #c084fc 30%, #f472b6 55%, #818cf8 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Floating chord chips */
+@keyframes chip-float {
+  0%, 100% { transform: translateY(0) rotate(var(--chip-tilt, 0deg)); }
+  50%      { transform: translateY(-14px) rotate(var(--chip-tilt, 0deg)); }
+}
+.chord-chip {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  font-weight: 700;
+  color: rgba(199, 210, 254, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 6px 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Staggered hero entrance */
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-reveal   { animation: hero-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-reveal-1 { animation-delay: 0.05s; }
+.hero-reveal-2 { animation-delay: 0.15s; }
+.hero-reveal-3 { animation-delay: 0.25s; }
+.hero-reveal-4 { animation-delay: 0.35s; }
+.hero-reveal-5 { animation-delay: 0.5s; }
+
+/* Pulsing glow behind the primary CTA */
+@keyframes cta-glow {
+  0%, 100% { box-shadow: 0 0 24px 2px rgba(99, 102, 241, 0.45), 0 8px 32px rgba(0, 0, 0, 0.35); }
+  50%      { box-shadow: 0 0 44px 8px rgba(139, 92, 246, 0.55), 0 8px 32px rgba(0, 0, 0, 0.35); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .aurora-a       { animation: aurora-a 14s ease-in-out infinite; }
+  .aurora-b       { animation: aurora-b 18s ease-in-out infinite; }
+  .gradient-text  { animation: gradient-slide 6s ease-in-out infinite; }
+  .chord-chip     { animation: chip-float 7s ease-in-out infinite; }
+  .cta-glow       { animation: cta-glow 3.2s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal { animation: none; }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

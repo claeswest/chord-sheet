@@ -127,25 +127,45 @@ export default async function HomePage() {
             background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
           }} />
 
-          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
+          {/* Drifting aurora blobs */}
+          <div className="aurora aurora-a" style={{
+            width: 480, height: 480, top: -140, left: "8%",
+            background: "radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)",
+          }} />
+          <div className="aurora aurora-b" style={{
+            width: 520, height: 520, top: 60, right: "4%",
+            background: "radial-gradient(circle, rgba(192,132,252,0.28) 0%, transparent 70%)",
+          }} />
+
+          {/* Floating chord chips — desktop only, purely decorative */}
+          <div aria-hidden className="hidden lg:block absolute inset-0 pointer-events-none">
+            <span className="chord-chip text-sm" style={{ top: "16%", left: "10%", ["--chip-tilt" as never]: "-8deg", animationDelay: "0s" }}>Am7</span>
+            <span className="chord-chip text-base" style={{ top: "34%", left: "5%", ["--chip-tilt" as never]: "5deg", animationDelay: "1.6s" }}>G</span>
+            <span className="chord-chip text-sm" style={{ top: "55%", left: "12%", ["--chip-tilt" as never]: "-4deg", animationDelay: "3.1s" }}>Dsus4</span>
+            <span className="chord-chip text-base" style={{ top: "18%", right: "9%", ["--chip-tilt" as never]: "7deg", animationDelay: "0.9s" }}>Cmaj7</span>
+            <span className="chord-chip text-sm" style={{ top: "38%", right: "5%", ["--chip-tilt" as never]: "-6deg", animationDelay: "2.4s" }}>Em</span>
+            <span className="chord-chip text-base" style={{ top: "58%", right: "11%", ["--chip-tilt" as never]: "4deg", animationDelay: "4s" }}>F♯m7</span>
+          </div>
+
+          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
             For gigging musicians, singers & cover bands
           </span>
 
-          <h1 className="relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
+          <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
             Turn any song into a{" "}
-            <span className="text-indigo-400">stage-ready chord chart</span>
+            <span className="gradient-text">stage-ready chord chart</span>
           </h1>
 
-          <p className="relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
+          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
             Get a clean chart with the chords in the right places, transpose it to your singer&apos;s key,
             and play hands-free with auto-scroll — on your phone, tablet or laptop.
           </p>
 
-          <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
+          <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
             <CtaLink
               from="home-hero"
               href={session ? "/songs" : "/editor/new?start=demo"}
-              className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03] text-center"
+              className="cta-glow relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 hover:scale-[1.03] text-center"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
             >
               {/* shimmer sweep */}
@@ -166,19 +186,28 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Hero photo */}
-          <div className="relative w-full max-w-3xl mx-auto mb-4">
-            <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
-              <Image
-                src="/hero-photo.jpg"
-                alt="Guitarist using ChordSheetMaker on a laptop"
-                width={1536}
-                height={1024}
-                priority
-                sizes="(max-width: 768px) 100vw, 768px"
-                className="w-full object-cover max-h-[230px] sm:max-h-none"
-                style={{ objectPosition: "center 20%" }}
-              />
+          {/* Hero photo — gradient frame + glow */}
+          <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl mx-auto mb-4">
+            {/* Glow halo behind the photo */}
+            <div className="absolute -inset-4 rounded-3xl pointer-events-none" style={{
+              background: "radial-gradient(ellipse 60% 55% at 50% 40%, rgba(129,140,248,0.35) 0%, transparent 70%)",
+              filter: "blur(24px)",
+            }} />
+            <div className="relative rounded-t-2xl p-[1.5px]" style={{
+              background: "linear-gradient(135deg, rgba(129,140,248,0.7) 0%, rgba(192,132,252,0.5) 50%, rgba(244,114,182,0.35) 100%)",
+            }}>
+              <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
+                <Image
+                  src="/hero-photo.jpg"
+                  alt="Guitarist using ChordSheetMaker on a laptop"
+                  width={1536}
+                  height={1024}
+                  priority
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  className="w-full object-cover max-h-[230px] sm:max-h-none"
+                  style={{ objectPosition: "center 20%" }}
+                />
+              </div>
             </div>
             {/* Fade bottom of photo into section bg */}
             <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-40" style={{
@@ -199,8 +228,8 @@ export default async function HomePage() {
               { icon: "▶️", title: "Hands-free on stage",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
             ].map((h) => (
               <div key={h.title}
-                className="flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)" }}>
+                className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"
+                style={{ background: "rgba(255,255,255,0.06)" }}>
                 <span className="text-3xl md:text-4xl md:mb-4 shrink-0">{h.icon}</span>
                 <div>
                   <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
