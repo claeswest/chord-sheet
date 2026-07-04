@@ -16,6 +16,18 @@ interface Props {
   activeTab?: "background" | "text";
 }
 
+/** True for colors too light to read on a white panel (used to pick the
+ *  "Aa" preview chip's backing so the swatch is always visible). */
+function isLightColor(hex?: string): boolean {
+  if (!hex) return false;
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return false;
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.72;
+}
+
 function TextSection({
   label,
   value,
@@ -337,7 +349,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
           <button
             onClick={handleAiStyle}
             disabled={aiLoading}
-            className="w-full flex items-center justify-center gap-1.5 text-xs border border-violet-300 text-violet-600 bg-violet-50 px-3 py-2 rounded-lg hover:bg-violet-100 hover:border-violet-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+            className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-br from-indigo-500 to-violet-600 px-3 py-2.5 rounded-xl hover:opacity-90 transition-opacity shadow-md shadow-indigo-500/25 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {aiLoading ? (
               <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
@@ -635,7 +647,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* ── Presets ── */}
             <div className="px-4 pt-3 pb-1">
-              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">Presets</p>
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-2">Presets</p>
               <div className="grid grid-cols-3 gap-2">
                 {STYLE_PRESETS.map((p) => (
                   <button
@@ -648,7 +660,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                       });
                       onChange({ ...style, ...p.style });
                     }}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-zinc-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors py-2.5 px-1"
+                    className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-200/80 bg-white shadow-sm hover:border-indigo-300 hover:-translate-y-0.5 hover:shadow-md hover:shadow-indigo-100 transition-all duration-150 py-2.5 px-1"
                     title={`Apply the ${p.label} style`}
                   >
                     <span className="text-lg leading-none">{p.emoji}</span>
@@ -660,29 +672,45 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* ── Compact preview rows ── */}
             <div className="px-4 py-2">
-              <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
                 {ELEMENTS.map(e => {
                   const font = fontByStack(e.value.fontFamily ?? "");
-                  const previewStyle = {
-                    fontFamily: e.value.fontFamily,
-                    fontSize: Math.min(e.value.fontSize ?? 14, 15),
-                    color: e.value.color ?? "#000",
-                    fontWeight: e.value.bold ? "700" : "400",
-                    fontStyle: e.value.italic ? "italic" : "normal",
-                  } as const;
+                  const color = e.value.color ?? "#000000";
+                  // Light colors are invisible on white — back the chip with dark navy.
+                  const lightColor = isLightColor(color);
                   return (
                     <button key={e.key} onClick={() => setEditingElement(e.key)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition-colors group text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-indigo-50/40 transition-colors group text-left"
                     >
+                      {/* "Aa" chip — shows font + color on a contrast-safe backing */}
+                      <span
+                        className="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 shadow-sm"
+                        style={{
+                          background: lightColor ? "#241f4d" : "#ffffff",
+                          borderColor: lightColor ? "transparent" : "rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        <span style={{
+                          fontFamily: e.value.fontFamily,
+                          fontSize: 15,
+                          color,
+                          fontWeight: e.value.bold ? "700" : "400",
+                          fontStyle: e.value.italic ? "italic" : "normal",
+                          lineHeight: 1,
+                        }}>Aa</span>
+                      </span>
                       <span className="flex-1 min-w-0">
-                        <span className="block truncate" style={previewStyle}>{e.label}</span>
+                        <span
+                          className="block truncate text-sm font-semibold text-zinc-800"
+                          style={{
+                            fontFamily: e.value.fontFamily,
+                            fontStyle: e.value.italic ? "italic" : "normal",
+                          }}
+                        >{e.label}</span>
                         <span className="block text-[10px] text-zinc-400 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
                       </span>
-                      <span className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] text-zinc-400 font-mono">{e.value.color ?? "#000000"}</span>
-                        <span className="w-4 h-4 rounded-full border border-white shadow-sm shrink-0" style={{ background: e.value.color ?? "#000" }} />
-                      </span>
-                      <span className="text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors shrink-0 px-1">›</span>
+                      <span className="text-[10px] text-zinc-300 font-mono shrink-0">{color}</span>
+                      <span className="text-sm text-zinc-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all shrink-0 px-1">›</span>
                     </button>
                   );
                 })}
