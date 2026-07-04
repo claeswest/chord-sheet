@@ -216,7 +216,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const overlayOpacity = style.overlayOpacity ?? 0.5;
 
   return (
-    <div className="flex-1 overflow-y-auto relative bg-zinc-50">
+    <div className="flex-1 overflow-y-auto relative bg-[#f4f3fa]">
 
       {/* ── Background style picker modal ── */}
       {showStylePicker && (

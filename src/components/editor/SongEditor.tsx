@@ -795,7 +795,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           style={{ background: "rgba(24, 22, 58, 0.92)" }}>
           <span className="text-sm whitespace-nowrap">
             Placing <strong className="font-bold text-indigo-300">{activeChord}</strong>
-            <span className="text-white/60"> — click a lyric line</span>
+            <span className="text-white/60">
+              {" — "}
+              <span className="sm:hidden">tap</span>
+              <span className="hidden sm:inline">click</span>
+              {" a lyric line"}
+            </span>
           </span>
           <button
             onClick={() => setActiveChord(null)}
@@ -1217,8 +1222,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
 
         {/* Right panel with tabs — always visible on desktop, toggled on mobile */}
-        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-zinc-200 flex-col overflow-hidden bg-white ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
-            <div className="flex border-b border-zinc-200 shrink-0 bg-white">
+        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-zinc-200 flex-col overflow-hidden bg-[#f4f3fa] ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
+            <div className="flex shrink-0 border-b border-white/10" style={{ background: "linear-gradient(160deg, #241f4d 0%, #302b63 100%)" }}>
               {/* Back to the sheet — mobile only; mirrors the toolbar Tools/Sheet pill */}
               <button
                 onClick={() => setShowRightPanel(false)}
@@ -1248,8 +1253,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                     onClick={() => setRightPanel(t.id)}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
                       active
-                        ? "text-indigo-600 border-indigo-600 bg-indigo-50/60"
-                        : "text-zinc-400 border-transparent hover:text-zinc-600 hover:bg-zinc-50"
+                        ? "text-white border-indigo-400 bg-white/10"
+                        : "text-white/50 border-transparent hover:text-white/80 hover:bg-white/5"
                     }`}
                   >
                     {t.icon}
@@ -1270,7 +1275,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 songChords={Array.from(new Set(
                   lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
                 ))}
-                asideClassName="flex flex-col overflow-hidden flex-1 bg-zinc-50"
+                asideClassName="flex flex-col overflow-hidden flex-1 bg-[#f4f3fa]"
               />
             ) : (
               <StylePanel

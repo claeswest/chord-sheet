@@ -138,7 +138,11 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
               <p className="text-2xl font-bold text-white leading-none">{activeChord}</p>
             </div>
             <div className="text-right flex flex-col items-end gap-1.5">
-              <p className="text-xs text-indigo-200">Tap a lyric line to place</p>
+              <p className="text-xs text-indigo-200">
+                <span className="sm:hidden">Tap</span>
+                <span className="hidden sm:inline">Click</span>{" "}
+                a lyric line to place
+              </p>
               <div className="flex gap-1.5">
                 <button
                   onClick={() => onSelectChord(null)}
@@ -155,7 +159,12 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-zinc-200 px-3 py-2 text-center">
-            <p className="text-xs text-zinc-500">Pick a root note, then click a lyric line to place it.</p>
+            <p className="text-xs text-zinc-500">
+              Pick a root note, then{" "}
+              <span className="sm:hidden">tap</span>
+              <span className="hidden sm:inline">click</span>{" "}
+              a lyric line to place it.
+            </p>
           </div>
         )}
 
