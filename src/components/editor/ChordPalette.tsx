@@ -122,23 +122,30 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
     }
   };
 
-  const btnBase = "px-2.5 py-1.5 rounded border text-sm font-semibold transition-colors";
-  const btnActive = "bg-indigo-600 border-indigo-600 text-white";
-  const btnIdle = "bg-white border-zinc-300 text-zinc-900 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600";
+  const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
+  const btnActive = "bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent text-white shadow-md shadow-indigo-500/30";
+  const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 hover:-translate-y-[1px] hover:shadow-sm";
+  const heading = "text-[11px] font-semibold uppercase tracking-widest text-zinc-400";
 
   return (
     <aside className={asideClassName ?? "w-80 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5">
 
         {/* ── Active chord display ── */}
         {activeChord ? (
-          <div className="flex items-center justify-between bg-indigo-600 rounded-xl px-4 py-3">
-            <div>
-              <p className="text-xs text-indigo-200 mb-0.5">Selected chord</p>
-              <p className="text-2xl font-bold text-white leading-none">{activeChord}</p>
+          <div
+            className="relative overflow-hidden flex items-center justify-between rounded-2xl px-4 py-3 shadow-lg shadow-indigo-500/25"
+            style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 65%, #8b5cf6 100%)" }}
+          >
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: "radial-gradient(ellipse 60% 80% at 20% 0%, rgba(255,255,255,0.18) 0%, transparent 60%)",
+            }} />
+            <div className="relative">
+              <p className="text-[11px] uppercase tracking-widest text-indigo-200 mb-0.5">Selected chord</p>
+              <p className="text-3xl font-extrabold text-white leading-none drop-shadow-sm">{activeChord}</p>
             </div>
-            <div className="text-right flex flex-col items-end gap-1.5">
-              <p className="text-xs text-indigo-200">
+            <div className="relative text-right flex flex-col items-end gap-1.5">
+              <p className="text-xs text-indigo-100">
                 <span className="sm:hidden">Tap</span>
                 <span className="hidden sm:inline">Click</span>{" "}
                 a lyric line to place
@@ -146,20 +153,21 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
               <div className="flex gap-1.5">
                 <button
                   onClick={() => onSelectChord(null)}
-                  className="text-xs text-indigo-200 hover:text-white transition-colors border border-indigo-400 hover:border-indigo-200 rounded-lg px-2 py-1"
+                  className="text-xs text-indigo-100 hover:text-white transition-colors border border-white/30 hover:border-white/70 hover:bg-white/10 rounded-lg px-2.5 py-1"
                 >Clear</button>
                 {onConfirmChord && (
                   <button
                     onClick={onConfirmChord}
-                    className="sm:hidden text-xs bg-white text-indigo-600 font-semibold rounded-lg px-2 py-1 hover:bg-indigo-50 transition-colors"
+                    className="sm:hidden text-xs bg-white text-indigo-600 font-semibold rounded-lg px-2.5 py-1 hover:bg-indigo-50 transition-colors shadow-sm"
                   >Place →</button>
                 )}
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-zinc-200 px-3 py-2 text-center">
-            <p className="text-xs text-zinc-500">
+          <div className="flex items-center gap-2.5 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/50 px-3.5 py-2.5">
+            <span className="flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-500 text-sm">♪</span>
+            <p className="text-xs text-zinc-600 leading-relaxed">
               Pick a root note, then{" "}
               <span className="sm:hidden">tap</span>
               <span className="hidden sm:inline">click</span>{" "}
@@ -170,12 +178,12 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
 
         {/* ── Chords in this song ── */}
         {songChords.length > 0 && (
-          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden px-3 py-2.5">
-            <p className="text-xs font-semibold text-zinc-600 mb-2">In this song</p>
-            <div className="flex gap-1 flex-wrap">
+          <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
+            <p className={`${heading} mb-2`}>In this song</p>
+            <div className="flex gap-1.5 flex-wrap">
               {songChords.map((chord) => (
                 <button key={chord} onClick={() => { onSelectChord(chord); onConfirmChord?.(); }}
-                  className={`${btnBase} ${activeChord === chord ? btnActive : btnIdle}`}
+                  className={`${btnBase} !rounded-full px-3 ${activeChord === chord ? btnActive : btnIdle}`}
                 >{chord}</button>
               ))}
             </div>
@@ -183,44 +191,40 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         )}
 
         {/* ── Chord builder card ── */}
-        <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+        <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
 
-          {/* Root */}
-          <div className="px-3 py-2.5 border-b border-zinc-100">
-            <p className="text-xs font-semibold text-zinc-600 mb-2">Root</p>
+          {/* Root + accidental — one visual step */}
+          <div className="px-3.5 py-3 border-b border-zinc-100">
+            <p className={`${heading} mb-2`}>Root</p>
             <div className="grid grid-cols-7 gap-1">
               {ROOTS.map((note) => (
                 <button key={note} onClick={() => handleRootClick(note)}
-                  className={`${btnBase} text-center ${root === note ? btnActive : btnIdle}`}
+                  className={`${btnBase} !px-0 text-center ${root === note ? btnActive : btnIdle}`}
                 >{note}</button>
               ))}
             </div>
-          </div>
-
-          {/* Accidental */}
-          <div className="px-3 py-2.5 border-b border-zinc-100">
-            <p className="text-xs font-semibold text-zinc-600 mb-2">Accidental</p>
-            <div className="flex gap-1.5">
+            <div className="flex items-center gap-1.5 mt-1.5">
               {ACCIDENTALS.map((a) => (
                 <button key={a.label} onClick={() => handleAccidentalClick(a.value)}
                   disabled={!root}
-                  style={{ fontFamily: "'Noto Music', sans-serif", fontSize: 18 }}
-                  className={`${btnBase} text-center disabled:opacity-55 disabled:cursor-not-allowed ${
+                  style={{ fontFamily: "'Noto Music', sans-serif", fontSize: 17 }}
+                  className={`${btnBase} w-12 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
                     accidental === a.value && root ? btnActive : btnIdle
                   }`}
                 >{a.label}</button>
               ))}
+              <span className="text-[11px] text-zinc-300 ml-1">sharp / flat</span>
             </div>
           </div>
 
           {/* Quality */}
-          <div className="px-3 py-2.5">
-            <p className="text-xs font-semibold text-zinc-600 mb-2">Quality</p>
+          <div className="px-3.5 py-3">
+            <p className={`${heading} mb-2`}>Quality</p>
             <div className="grid grid-cols-4 gap-1">
               {QUALITIES.map((q) => (
                 <button key={q.label} onClick={() => handleQualityClick(q.value)}
                   disabled={!root}
-                  className={`${btnBase} text-center disabled:opacity-55 disabled:cursor-not-allowed ${
+                  className={`${btnBase} !px-0 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
                     quality === q.value && root ? btnActive : btnIdle
                   }`}
                 >{q.label}</button>
@@ -233,7 +237,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
                 {ADVANCED_QUALITIES.map((q) => (
                   <button key={q.label} onClick={() => handleQualityClick(q.value)}
                     disabled={!root}
-                    className={`${btnBase} text-center disabled:opacity-55 disabled:cursor-not-allowed ${
+                    className={`${btnBase} !px-0 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
                       quality === q.value && root ? btnActive : btnIdle
                     }`}
                   >{q.label}</button>
@@ -244,7 +248,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
             <button
               type="button"
               onClick={toggleAdvanced}
-              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors py-1"
+              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors py-1.5"
             >
               {showAdvanced || qualityIsAdvanced ? "Fewer chords" : "More chords"}
               <svg className={`w-3 h-3 transition-transform ${showAdvanced || qualityIsAdvanced ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -255,23 +259,23 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         </div>
 
         {/* ── Custom chord card ── */}
-        <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden px-3 py-2.5">
-          <p className="text-xs font-semibold text-zinc-600 mb-2">Custom <span className="text-zinc-300 font-normal">(e.g. D/F#)</span></p>
+        <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
+          <p className={`${heading} mb-2`}>Custom <span className="text-zinc-300 normal-case tracking-normal font-normal">(e.g. D/F#)</span></p>
           <form onSubmit={handleCustomSubmit} className="flex gap-1.5">
             <input
               value={customChord}
               onChange={(e) => setCustomChord(e.target.value)}
               placeholder="D/F#, Badd11…"
-              className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-400 bg-zinc-50"
+              className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-zinc-50 transition-shadow"
             />
             <button type="submit"
-              className="shrink-0 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              className="shrink-0 text-xs bg-gradient-to-br from-indigo-500 to-violet-600 text-white px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-opacity font-semibold shadow-sm shadow-indigo-500/30"
             >Use</button>
           </form>
         </div>
 
         {/* ── Tip ── */}
-        <p className="text-xs text-zinc-400">💡 Drag to reposition · Double-click to rename</p>
+        <p className="text-[11px] text-zinc-400 px-1">💡 Drag a placed chord to move it · double-click to rename</p>
 
       </div>
     </aside>
