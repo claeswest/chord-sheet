@@ -1276,7 +1276,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       onDragLeave={() => setDragOverSongId(null)}
                       onDrop={(e) => handleDropOnSong(e, song.id)}
                       onClick={() => isLocked ? setShowUpgradeModal(true) : (window.location.href = viewUrl)}
-                      className={`group relative flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
+                      className={`group relative flex items-center gap-4 px-5 py-2.5 transition-colors cursor-pointer ${
                         isLocked ? "opacity-50 hover:opacity-70 hover:bg-amber-50/40" : "hover:bg-indigo-50/60"
                       } ${
                         idx !== 0 || expandedSongId !== null ? "border-t border-zinc-100" : ""
@@ -1300,7 +1300,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                       {/* Drag handle */}
                       {isLoggedIn && (
-                        <div className="w-3 shrink-0 text-zinc-400 group-hover:text-zinc-600 cursor-grab active:cursor-grabbing transition-colors select-none text-sm leading-none">
+                        <div className="w-3 shrink-0 text-zinc-200 group-hover:text-zinc-500 cursor-grab active:cursor-grabbing transition-colors select-none text-sm leading-none">
                           ⠿
                         </div>
                       )}
@@ -1308,7 +1308,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Title — flex-1 wrapper keeps clef + link together */}
                       <div className="flex-1 min-w-0 flex items-center gap-1.5">
                         <span
-                          className="shrink-0 text-4xl leading-none select-none"
+                          className="shrink-0 text-3xl leading-none select-none"
                           style={{
   color: rowBg ? (isDarkColour(rowBg) ? "#d4aa7a" : rowBg) : "#c4c4c8",
   opacity: rowBg ? 1 : 0.9,
@@ -1353,7 +1353,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                 {cat.name}
                                 <button
                                   onClick={() => handleRemoveFromCategory(song.id, catId)}
-                                  className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity"
+                                  className="opacity-0 group-hover:opacity-60 hover:!opacity-100 ml-0.5 leading-none transition-opacity"
                                   title={`Remove from ${cat.name}`}
                                 >
                                   ×
@@ -1381,8 +1381,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         )}
                       </button>
 
-                      {/* Actions — grouped pill */}
-                      <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px]" onClick={(e) => e.stopPropagation()}>
+                      {/* Actions — grouped pill, revealed on row hover to keep rows calm */}
+                      <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
                         {/* View */}
                         <Link href={viewUrl} title="View"
