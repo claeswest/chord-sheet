@@ -17,7 +17,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import type { SongLine, LyricLine, SectionHeader } from "@/types/song";
-import LyricLineEditor from "./LyricLineEditor";
+import LyricLineEditor, { SECTION_LABELS } from "./LyricLineEditor";
 import SectionHeaderBlock from "./SectionHeaderBlock";
 import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
@@ -169,6 +169,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // Play mode on an empty song renders a blank white screen — nudge instead.
   const [showEmptyPlayHint, setShowEmptyPlayHint] = useState(false);
   const emptyPlayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Keyboard-shortcut cheatsheet ("?" or the toolbar keyboard icon)
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  // "+ Section" picker at the end of the sheet
+  const [showEndSectionPicker, setShowEndSectionPicker] = useState(false);
   const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(
     initialMode === "search" ? "search" : initialMode === "import" ? "text" : false
   );
@@ -373,10 +377,23 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       if (e.key === "p" || e.key === "P") enterPlayModeRef.current();
       if (e.key === "e" || e.key === "E") setViewMode(false);
       if (e.key === "s" || e.key === "S") router.push("/songs");
+      if (e.key === "?") { e.preventDefault(); setShowShortcuts((v) => !v); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Escape = cancel chord placement / close overlays (works even while typing)
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (activeChord) setActiveChord(null);
+      setShowShortcuts(false);
+      setShowEndSectionPicker(false);
+    };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, [activeChord]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -772,6 +789,73 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
       )}
 
+      {/* Chord placement mode — floating status pill with an exit */}
+      {activeChord && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 pl-4 pr-1.5 py-1.5 rounded-full text-white shadow-2xl border border-indigo-400/40 backdrop-blur-md"
+          style={{ background: "rgba(24, 22, 58, 0.92)" }}>
+          <span className="text-sm whitespace-nowrap">
+            Placing <strong className="font-bold text-indigo-300">{activeChord}</strong>
+            <span className="text-white/60"> — click a lyric line</span>
+          </span>
+          <button
+            onClick={() => setActiveChord(null)}
+            className="text-[11px] font-medium bg-white/10 hover:bg-white/25 rounded-full px-2.5 py-1 transition-colors"
+            title="Cancel (Esc)"
+          >
+            Esc
+          </button>
+        </div>
+      )}
+
+      {/* Keyboard shortcuts cheatsheet */}
+      {showShortcuts && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowShortcuts(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+              <h2 className="text-base font-bold text-zinc-900">Keyboard shortcuts</h2>
+              <button onClick={() => setShowShortcuts(false)} className="text-zinc-400 hover:text-zinc-600 text-lg leading-none">✕</button>
+            </div>
+            <div className="px-6 py-4 space-y-5">
+              {([
+                { group: "Editing", rows: [
+                  ["Ctrl+Z", "Undo"],
+                  ["Ctrl+Y / Ctrl+Shift+Z", "Redo"],
+                  ["Enter", "New line below"],
+                  ["Esc", "Cancel chord placement"],
+                ]},
+                { group: "Navigate", rows: [
+                  ["P", "Play mode"],
+                  ["E", "Back to edit"],
+                  ["S", "Song library"],
+                  ["?", "This cheatsheet"],
+                ]},
+                { group: "Play mode", rows: [
+                  ["Space", "Play / pause auto-scroll"],
+                  ["← / →", "Scroll slower / faster"],
+                  ["+ / −", "Bigger / smaller text"],
+                  ["T", "Back to top"],
+                ]},
+              ] as const).map((g) => (
+                <div key={g.group}>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-indigo-500 mb-2">{g.group}</p>
+                  <div className="space-y-1.5">
+                    {g.rows.map(([keys, what]) => (
+                      <div key={keys} className="flex items-center justify-between gap-4">
+                        <span className="text-sm text-zinc-600">{what}</span>
+                        <kbd className="shrink-0 text-[11px] font-mono font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200 rounded-md px-2 py-0.5">{keys}</kbd>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="px-6 pb-5 text-xs text-zinc-400">
+              Tip: drag a chord to move it · double-click a chord to rename it.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Small-screen tip — friendly, and never stacked on top of other banners */}
       {showSmallScreenBanner && !showDemoBanner && !showGuestSaveReminder && (
         <div className="md:hidden flex items-center gap-3 px-4 py-2.5 bg-zinc-50 border-b border-zinc-200 text-zinc-600 text-sm">
@@ -824,6 +908,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </button>
           </div>
 
+          {/* Keyboard shortcuts */}
+          <button
+            onClick={() => setShowShortcuts(true)}
+            className="hidden lg:flex w-7 h-7 items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            title="Keyboard shortcuts (?)"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+              <rect x="2" y="6" width="20" height="12" rx="2" />
+              <path strokeLinecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
+            </svg>
+          </button>
 
           {/* Transpose: − key + */}
           <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
@@ -917,6 +1012,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M8 5v14l11-7z"/></svg>
                   Play <Kbd variant="light" className="ml-auto">P</Kbd>
+                </button>
+                <button onClick={() => { setShowOverflow(false); setShowShortcuts(true); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
+                  <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" /><path strokeLinecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" /></svg>
+                  Keyboard shortcuts <Kbd variant="light" className="ml-auto">?</Kbd>
                 </button>
               </div>
             )}
@@ -1081,6 +1181,37 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 </div>
               ))
             )}
+
+            {/* End-of-sheet: always-visible way to grow the song */}
+            <div className="flex items-center gap-2 mt-6 pl-4 pb-4">
+              <button
+                onClick={() => addLineAfter(lastLineId)}
+                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-indigo-600 border border-dashed border-zinc-300 hover:border-indigo-400 rounded-lg px-3 py-1.5 transition-colors"
+              >
+                <span className="text-sm leading-none">＋</span> Line
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowEndSectionPicker((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-indigo-600 border border-dashed border-zinc-300 hover:border-indigo-400 rounded-lg px-3 py-1.5 transition-colors"
+                >
+                  <span className="text-sm leading-none">＋</span> Section
+                </button>
+                {showEndSectionPicker && (
+                  <div className="absolute left-0 bottom-full mb-1.5 w-36 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-30">
+                    {SECTION_LABELS.map((label) => (
+                      <button
+                        key={label}
+                        onClick={() => { addSectionAfter(lastLineId, label); setShowEndSectionPicker(false); }}
+                        className="block w-full text-left px-3 py-1.5 text-sm text-zinc-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
           </div>
         </div>

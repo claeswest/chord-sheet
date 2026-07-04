@@ -29,7 +29,7 @@ function measureWidth(text: string, size: number, family: string): number {
   return ctx.measureText(text).width;
 }
 
-const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chorus", "Solo"];
+export const SECTION_LABELS = ["Verse", "Chorus", "Bridge", "Intro", "Outro", "Pre-Chorus", "Solo"];
 
 export default function LyricLineEditor({
   line,
