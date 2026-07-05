@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { planFromUser, getSongLimit } from "@/lib/plans";
 import { notifyAdmin } from "@/lib/notify";
+import { logActivity, logActivityThrottled } from "@/lib/activity";
 
 // GET /api/songs — list all songs for the current user
 export async function GET() {
@@ -128,8 +129,14 @@ export async function POST(req: Request) {
     }
   }
 
+  if (existing) {
+    // Autosaves are frequent — one song_edited row per song per 30 min.
+    await logActivityThrottled("song_edited", session.user.id, song.id, { title: song.title });
+  }
+
   // Notify on a genuinely new song (not on every autosave — those hit `update`).
   if (!existing) {
+    await logActivity("song_created", session.user.id, { songId: song.id, title: song.title });
     const u = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, email: true },

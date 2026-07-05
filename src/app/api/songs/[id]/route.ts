@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logActivityThrottled } from "@/lib/activity";
 
 // GET /api/songs/[id]
 export async function GET(
@@ -19,6 +20,9 @@ export async function GET(
   });
 
   if (!song) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  await logActivityThrottled("song_opened", session.user.id, id, { title: song.title });
+
   return NextResponse.json(song);
 }
 

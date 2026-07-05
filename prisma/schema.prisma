@@ -33,6 +33,24 @@ model User {
   sessions   Session[]
   songs      Song[]
   categories Category[]
+  activities ActivityLog[]
+}
+
+// Generic activity log — one row per notable event (account_created, login,
+// sub_started, song_created, ...). meta holds event context (songId, title,
+// plan, source). userId is nullable so logs survive user deletion.
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  type      String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }
 
 model Account {

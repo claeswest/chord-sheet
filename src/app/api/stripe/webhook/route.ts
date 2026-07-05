@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { notifyAdmin } from "@/lib/notify";
+import { logActivity } from "@/lib/activity";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -75,11 +76,13 @@ export async function POST(req: NextRequest) {
       // Notify: a brand-new subscription, or a trial converting to paying.
       const who = `${user.name || "A user"} (${user.email ?? "?"})`;
       if (event.type === "customer.subscription.created") {
+        await logActivity("sub_started", user.id, { plan, status: sub.status });
         await notifyAdmin(
           `💰 New subscriber — ${plan}${sub.status === "trialing" ? " (trial)" : ""}`,
           [`${who} started a ${plan} plan. Status: ${sub.status}.`]
         );
       } else if (prevStatus !== "active" && sub.status === "active") {
+        await logActivity("sub_changed", user.id, { plan, status: sub.status, from: prevStatus });
         await notifyAdmin(`💳 Trial converted to paid — ${plan}`, [
           `${who} converted to a paying ${plan} subscription.`,
         ]);
@@ -94,6 +97,7 @@ export async function POST(req: NextRequest) {
       });
       if (!user) break;
 
+      await logActivity("sub_ended", user.id, { plan: user.plan });
       await prisma.user.update({
         where: { id: user.id },
         data: {
