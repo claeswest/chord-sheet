@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 
   // Log for signed-in users (guests can use AI too, but are not logged)
   const session = await auth();
-  if (session?.user?.id) await logActivity("ai_styled", session.user.id);
+  if (session?.user?.id) await logActivity("ai_styled", session.user.id, { title });
 
   return NextResponse.json({
     theme: parsed.theme ?? "",
