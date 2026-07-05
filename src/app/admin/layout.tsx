@@ -34,6 +34,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span>👥</span>
             Users
           </Link>
+          <Link
+            href="/admin/activity"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+          >
+            <span>📋</span>
+            Activity
+          </Link>
         </nav>
 
         <div className="px-3 py-4 border-t border-zinc-800">
@@ -68,6 +75,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               className="px-2.5 py-1.5 rounded-lg text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
             >
               Users
+            </Link>
+            <Link
+              href="/admin/activity"
+              className="px-2.5 py-1.5 rounded-lg text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+            >
+              Activity
             </Link>
           </nav>
           <Link
