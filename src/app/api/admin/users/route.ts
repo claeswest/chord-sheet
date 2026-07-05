@@ -38,6 +38,13 @@ export async function GET(req: NextRequest) {
         stripeCurrentPeriodEnd: true,
         createdAt: true,
         _count: { select: { songs: true, categories: true } },
+        // Latest session — its expiry minus the 30-day session lifetime tells
+        // us roughly when the user was last active (sessions roll on activity).
+        sessions: {
+          orderBy: { expires: "desc" },
+          take: 1,
+          select: { expires: true },
+        },
         songs: {
           orderBy: { createdAt: "desc" },
           take: 5,

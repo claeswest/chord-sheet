@@ -3,7 +3,7 @@
 import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
-import PlanBadge from "@/components/admin/PlanBadge";
+import PlanBadge, { relativeTime } from "@/components/admin/PlanBadge";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 
@@ -39,6 +39,16 @@ interface User {
   _count: { songs: number; categories: number };
   songs: Song[];
   categories: { id: string; name: string; parentId: string | null }[];
+  sessions: { expires: string }[];
+}
+
+// NextAuth database sessions live 30 days and roll forward on activity, so
+// the newest session's expiry minus 30 days ≈ when the user was last active.
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+function lastActiveIso(user: User): string | null {
+  const exp = user.sessions?.[0]?.expires;
+  if (!exp) return null;
+  return new Date(new Date(exp).getTime() - SESSION_MAX_AGE_MS).toISOString();
 }
 
 interface UsersResponse {
@@ -276,6 +286,9 @@ function AdminUsersInner() {
                   <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden lg:table-cell">
                     Joined
                   </th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden md:table-cell">
+                    Last active
+                  </th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -321,6 +334,14 @@ function AdminUsersInner() {
                       <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                         {formatDate(user.createdAt)}
                       </td>
+                      <td className="px-5 py-3 text-xs hidden md:table-cell">
+                        {(() => {
+                          const seen = lastActiveIso(user);
+                          return seen
+                            ? <span className="text-zinc-300">{relativeTime(seen)}</span>
+                            : <span className="text-zinc-600">—</span>;
+                        })()}
+                      </td>
                       <td className="pl-4 pr-6 sm:pr-8 py-3 text-zinc-500 text-right">
                         <span className="text-xs">
                           {expandedUserId === user.id ? "▲" : "▼"}
@@ -331,7 +352,18 @@ function AdminUsersInner() {
                     {/* Expanded: recent songs */}
                     {expandedUserId === user.id && (
                       <tr key={`${user.id}-expanded`} className="border-b border-zinc-800/50">
-                        <td colSpan={6} className="px-5 py-4 bg-zinc-950">
+                        <td colSpan={7} className="px-5 py-4 bg-zinc-950">
+                          {/* Account dates — visible on all sizes (columns hide on mobile) */}
+                          <p className="text-xs text-zinc-500 mb-4">
+                            Joined <span className="text-zinc-300">{formatDate(user.createdAt)}</span>
+                            <span className="mx-2 text-zinc-700">·</span>
+                            Last active{" "}
+                            {(() => {
+                              const seen = lastActiveIso(user);
+                              return <span className="text-zinc-300">{seen ? relativeTime(seen) : "—"}</span>;
+                            })()}
+                          </p>
+
                           {/* Categories */}
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                             Categories ({user._count.categories} total)
