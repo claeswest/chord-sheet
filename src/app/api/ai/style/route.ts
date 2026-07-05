@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ALL_FONTS } from "@/lib/songStyle";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { auth } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 // Derived directly from songStyle.ts — always in sync with the actual font list
 const AVAILABLE_FONTS = ALL_FONTS.map(f => f.name);
@@ -133,6 +135,10 @@ export async function POST(req: NextRequest) {
   });
 
   const sec = parsed.section ?? parsed.chords;
+
+  // Log for signed-in users (guests can use AI too, but are not logged)
+  const session = await auth();
+  if (session?.user?.id) await logActivity("ai_styled", session.user.id);
 
   return NextResponse.json({
     theme: parsed.theme ?? "",

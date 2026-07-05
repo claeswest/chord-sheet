@@ -15,7 +15,9 @@ export type ActivityType =
   | "song_edited"
   | "chord_added"
   | "pdf_exported"
-  | "song_imported";
+  | "song_imported"
+  | "bg_generated"
+  | "ai_styled";
 
 export async function logActivity(
   type: ActivityType,

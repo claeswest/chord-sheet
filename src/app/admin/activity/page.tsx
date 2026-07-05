@@ -31,6 +31,8 @@ const TYPES: Record<string, { label: string; cls: string }> = {
   chord_added:     { label: "Chord added",   cls: "bg-zinc-800 text-zinc-400" },
   pdf_exported:    { label: "PDF exported",  cls: "bg-cyan-900/40 text-cyan-300" },
   song_imported:   { label: "Song imported", cls: "bg-blue-900/40 text-blue-300" },
+  bg_generated:    { label: "AI background", cls: "bg-fuchsia-900/40 text-fuchsia-300" },
+  ai_styled:       { label: "AI text style", cls: "bg-purple-900/40 text-purple-300" },
 };
 
 function metaSummary(item: Item): string {

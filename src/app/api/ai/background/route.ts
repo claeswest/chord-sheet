@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { auth } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 const STYLE_PROMPTS: Record<string, string> = {
   abstract: `You are a visual artist. Given a song title, artist, and lyrics, write a single concise image generation prompt (max 60 words) for an ABSTRACT, PAINTERLY background image that suits the song's mood and genre.
@@ -190,6 +192,10 @@ export async function POST(req: NextRequest) {
 
   const b64: string = imagePart.inlineData.data;
   const mimeType: string = imagePart.inlineData.mimeType ?? "image/png";
+
+  // Log for signed-in users (guests can use AI too, but are not logged)
+  const session = await auth();
+  if (session?.user?.id) await logActivity("bg_generated", session.user.id);
 
   return NextResponse.json({
     image: `data:${mimeType};base64,${b64}`,
