@@ -17,7 +17,8 @@ export type ActivityType =
   | "pdf_exported"
   | "song_imported"
   | "bg_generated"
-  | "ai_styled";
+  | "ai_styled"
+  | "marketing_email";
 
 export async function logActivity(
   type: ActivityType,

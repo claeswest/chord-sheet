@@ -35,6 +35,8 @@ interface User {
   plan: string | null;
   stripeSubscriptionStatus: string | null;
   stripeCurrentPeriodEnd: string | null;
+  marketingOptOut: boolean;
+  lastMarketingEmailAt: string | null;
   createdAt: string;
   _count: { songs: number; categories: number };
   songs: Song[];
@@ -161,6 +163,23 @@ function AdminUsersInner() {
   const [search, setSearch] = useState(currentQ);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [previewSongId, setPreviewSongId] = useState<string | null>(null);
+  // Upgrade-nudge email feedback per user: "sending" | API SendResult
+  const [emailStatus, setEmailStatus] = useState<Record<string, string>>({});
+
+  async function sendNudge(userId: string) {
+    setEmailStatus((m) => ({ ...m, [userId]: "sending" }));
+    try {
+      const res = await fetch("/api/admin/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+      const d = await res.json();
+      setEmailStatus((m) => ({ ...m, [userId]: d.results?.[userId] ?? "failed" }));
+    } catch {
+      setEmailStatus((m) => ({ ...m, [userId]: "failed" }));
+    }
+  }
   // Full song lists per user, lazy-loaded when a row is expanded (the list API
   // only returns the 5 most recent to keep the payload light).
   const [userSongs, setUserSongs] = useState<Record<string, Song[]>>({});
@@ -363,6 +382,33 @@ function AdminUsersInner() {
                               return <span className="text-zinc-300">{seen ? relativeTime(seen) : "—"}</span>;
                             })()}
                           </p>
+
+                          {/* Upgrade-nudge email (free users only) */}
+                          {(user.plan === "free" || !user.plan) && (
+                            <div className="flex items-center gap-3 mb-4">
+                              {user.marketingOptOut ? (
+                                <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => sendNudge(user.id)}
+                                    disabled={emailStatus[user.id] === "sending"}
+                                    className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                  >
+                                    ✉️ Send upgrade email
+                                  </button>
+                                  {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
+                                  {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
+                                  {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within 7 days</span>}
+                                  {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
+                                  {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
+                                  {!emailStatus[user.id] && user.lastMarketingEmailAt && (
+                                    <span className="text-xs text-zinc-500">Last emailed {formatDate(user.lastMarketingEmailAt)}</span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
 
                           {/* Categories */}
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">

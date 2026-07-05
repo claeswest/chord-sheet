@@ -19,6 +19,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Marketing emails (admin-triggered nudges): opt-out + anti-double-send marker
+  marketingOptOut      Boolean   @default(false)
+  lastMarketingEmailAt DateTime?
+
   // Plan tier: free | monthly | yearly | lifetime
   plan                   String    @default("free")
 

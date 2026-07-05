@@ -36,6 +36,8 @@ export async function GET(req: NextRequest) {
         plan: true,
         stripeSubscriptionStatus: true,
         stripeCurrentPeriodEnd: true,
+        marketingOptOut: true,
+        lastMarketingEmailAt: true,
         createdAt: true,
         _count: { select: { songs: true, categories: true } },
         // Latest session — its expiry minus the 30-day session lifetime tells
