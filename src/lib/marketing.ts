@@ -6,6 +6,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
+import { adminRecipients } from "./notify";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
@@ -62,6 +63,7 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
     body: JSON.stringify({
       from: FROM,
       to: user.email,
+      bcc: adminRecipients(), // owner gets a copy of every nudge
       subject: n > 0 ? `Your ${n} song${n === 1 ? "" : "s"} deserve the full stage 🎸` : "Take ChordSheetMaker to the stage 🎸",
       text: `Hi ${firstName},\n\n${songLine}\n\nWith Pro you get unlimited songs, PDF export, public sharing and setlists — and it starts with a 7-day free trial (cancel anytime, no charge during the trial).\n\nStart your free trial: ${cta}\n\n— Claes, ChordSheetMaker\n\nUnsubscribe from these emails: ${unsubUrl}`,
       html: `<!doctype html><html><body style="margin:0;padding:0;background:#f0f0f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">

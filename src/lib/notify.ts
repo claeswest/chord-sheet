@@ -6,7 +6,7 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
 
-function adminRecipients(): string[] {
+export function adminRecipients(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim())

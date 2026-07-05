@@ -68,6 +68,9 @@ async function sendMagicLink(params: {
   if (!res.ok) {
     throw new Error("Resend error: " + JSON.stringify(await res.json()));
   }
+  // Tell the owner a link went out — deliberately WITHOUT the link itself
+  // (BCC would put live login links in the admin inbox).
+  await notifyAdmin("✉️ Sign-in link sent", [`A magic sign-in link was emailed to ${to}.`]);
 }
 
 // Lazy initialization so env vars are read fresh on every request,
