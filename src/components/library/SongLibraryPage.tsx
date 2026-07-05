@@ -1317,7 +1317,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         >
                           𝄞
                         </span>
-                        <Link href={viewUrl} className="min-w-0 group/title">
+                        <Link
+                          href={isLocked ? "#" : viewUrl}
+                          onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
+                          className="min-w-0 group/title"
+                        >
                           <div className="text-sm font-medium truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
                             {song.title
                               ? song.title
@@ -1384,22 +1388,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Actions — grouped pill, revealed on row hover to keep rows calm */}
                       <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
-                        {/* View */}
-                        <Link href={viewUrl} title="View"
+                        {/* View — locked songs route to the upgrade modal */}
+                        <Link href={isLocked ? "#" : viewUrl} title="View"
+                          onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                           className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
                           </svg>
                         </Link>
                         {/* Edit */}
-                        <Link href={editUrl} title="Edit"
+                        <Link href={isLocked ? "#" : editUrl} title="Edit"
+                          onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                           className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
                           </svg>
                         </Link>
                         {/* Duplicate */}
-                        {song.source === "db" && (
+                        {song.source === "db" && !isLocked && (
                           <button onClick={() => handleDuplicate(song)} disabled={isDuplicating}
                             title="Duplicate"
                             className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors disabled:opacity-30">
@@ -1441,15 +1447,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       <div className="xl:hidden border-t border-zinc-100 bg-zinc-50/80 px-5 py-3" onClick={(e) => e.stopPropagation()}>
                         {/* Action buttons */}
                         <div className="flex items-center gap-2 flex-wrap mb-2">
-                          <Link href={editUrl}
+                          <Link href={isLocked ? "#" : editUrl}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-sm"
-                            onClick={() => setExpandedSongId(null)}>
+                            onClick={isLocked
+                              ? (e) => { e.preventDefault(); setExpandedSongId(null); setShowUpgradeModal(true); }
+                              : () => setExpandedSongId(null)}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                               <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
                             </svg>
                             Edit
                           </Link>
-                          {song.source === "db" && (
+                          {song.source === "db" && !isLocked && (
                             <button
                               onClick={() => { handleDuplicate(song); setExpandedSongId(null); }}
                               disabled={isDuplicating}
