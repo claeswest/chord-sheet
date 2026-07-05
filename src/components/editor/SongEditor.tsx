@@ -39,7 +39,7 @@ import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import {
   trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
-  trackDemoStarted, trackFirstEdit, trackSignupNudge,
+  trackDemoStarted, trackFirstEdit, trackSignupNudge, activityBeacon,
 } from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
@@ -550,6 +550,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       pushSnap(next);
       return next;
     });
+    // Activity log — server throttles to one row per song per 30 min.
+    activityBeacon("chord_added", { songId, title });
   }, [pushSnap, semitones]);
 
   const updateChord = useCallback((lineId: string, chordId: string, chord: string) => {

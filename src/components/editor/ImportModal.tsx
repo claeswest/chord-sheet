@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { SongLine } from "@/types/song";
 import { parseChordSheet } from "@/lib/parseChordSheet";
-import { trackAiSearch, trackImportSuccess } from "@/lib/analytics";
+import { trackAiSearch, trackImportSuccess, activityBeacon } from "@/lib/analytics";
 
 interface ImportMeta {
   title?: string;
@@ -276,6 +276,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const handleImport = () => {
     if (preview.length > 0) {
       trackImportSuccess(importSource.current);
+      activityBeacon("song_imported", { source: importSource.current });
       onImport(preview, meta);
       onClose(true);
     }

@@ -8,7 +8,7 @@ import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/son
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
-import { trackStageModeStarted } from "@/lib/analytics";
+import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
 import Kbd from "@/components/ui/Kbd";
 import PrintView from "./PrintView";
 import ChordLabel from "./ChordLabel";
@@ -603,7 +603,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 if (!ent) ent = await fetchEntitlements();
                 if (!ent.pdfExport) { setUpgradeFeature("pdf"); return; }
                 setPdfLoading(true);
-                try { await downloadPdf(`${title || "chord-sheet"}.pdf`); } finally { setPdfLoading(false); }
+                try { await downloadPdf(`${title || "chord-sheet"}.pdf`); activityBeacon("pdf_exported", { songId, title }); } finally { setPdfLoading(false); }
               }}
               disabled={pdfLoading}
               className="text-white/70 hover:text-white text-sm px-2.5 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50"

@@ -82,3 +82,15 @@ export const trackSignupNudge = (action: "shown" | "clicked") =>
  *  after registration). GA4-recommended event name — mark as key event so
  *  Traffic acquisition can attribute signups to channel/campaign. */
 export const trackSignUp = () => track("sign_up");
+
+// ── Server activity log beacon (admin /activity feed) ───────────────────────
+export function activityBeacon(type: string, data: Record<string, unknown> = {}): void {
+  try {
+    fetch("/api/activity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, ...data }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch { /* never break the UI */ }
+}
