@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
 
   // Log for signed-in users (guests can use AI too, but are not logged)
   const session = await auth();
-  if (session?.user?.id) await logActivity("bg_generated", session.user.id, { title, style: bgStyle });
+  if (session?.user?.id) await logActivity("bg_generated", session.user.id, { title, source: bgStyle });
 
   return NextResponse.json({
     image: `data:${mimeType};base64,${b64}`,
