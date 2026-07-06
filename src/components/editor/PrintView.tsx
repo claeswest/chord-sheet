@@ -12,6 +12,17 @@ import ChordLabel from "./ChordLabel";
 // So 12pt ≈ 16px, which is what the baseline print CSS targets.
 const PT_TO_PX = 96 / 72;
 
+// Perceived-luminance check for the glow: light page colors need a light halo
+// (a dark one smudges dark text into "blur"), dark pages need a dark halo.
+function isLightBg(hex?: string): boolean {
+  if (!hex) return true;
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return true;
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55;
+}
+
+
 function measureWidth(text: string, fontPx: number, family: string, weight = "400", italic = false): number {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
@@ -72,7 +83,9 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         ...bgStyle,
         // Legibility over photo backgrounds — inherited by all sheet text
         textShadow: s.backgroundImage
-          ? "0 1px 6px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.4)"
+          ? isLightBg(s.background)
+            ? "0 0 6px rgba(255,255,255,0.85), 0 0 2px rgba(255,255,255,0.6)"
+            : "0 1px 6px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.4)"
           : undefined,
       }}
     >

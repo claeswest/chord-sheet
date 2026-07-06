@@ -48,6 +48,17 @@ const SPEED_PX_PER_MS: Record<number, number> = {
 };
 const MAX_SPEED = 20;
 
+// Perceived-luminance check for the glow: light page colors need a light halo
+// (a dark one smudges dark text into "blur"), dark pages need a dark halo.
+function isLightBg(hex?: string): boolean {
+  if (!hex) return true;
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return true;
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55;
+}
+
+
 export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -101,7 +112,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // #1 Legibility over photo backgrounds: soft shadow behind all sheet text
   // when a background image is set (undefined = no style emitted on plain bg).
   const textGlow = s.backgroundImage
-    ? "0 1px 8px rgba(0,0,0,0.65), 0 0 2px rgba(0,0,0,0.45)"
+    ? isLightBg(s.background)
+      ? "0 0 6px rgba(255,255,255,0.85), 0 0 2px rgba(255,255,255,0.6)"
+      : "0 1px 8px rgba(0,0,0,0.65), 0 0 2px rgba(0,0,0,0.45)"
     : undefined;
   const perfBoost = perfMode ? 8 : 0;
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust + perfBoost;
