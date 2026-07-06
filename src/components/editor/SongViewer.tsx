@@ -462,7 +462,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     // Compute overlap-free display positions
                     // fontSeq is read here so chord positions are recalculated after fonts load
                     void fontSeq;
-                    const CHORD_GAP = 6;
+                    // Chord-only lines (intros/outros) get musical spacing —
+                    // each gap reads as a bar instead of a crammed run.
+                    const CHORD_GAP = line.text.trim() ? 6 : chordPx * 1.5;
                     const lyricFam = s.lyrics.fontFamily ?? MONO_STACK;
                     const chordFam = s.chords.fontFamily ?? MONO_STACK;
                     const raw = line.chords.map((c) => ({
@@ -507,20 +509,24 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                       </div>
                     );
                   })()}
-                  {/* Lyric */}
-                  <div
-                    className="whitespace-pre"
-                    style={{
-                      fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
-                      fontSize: lyricPx,
-                      fontWeight: s.lyrics.bold ? "bold" : "normal",
-                      fontStyle: s.lyrics.italic ? "italic" : "normal",
-                      color: s.lyrics.color ?? "#27272a",
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    {line.text || "\u00A0"}
-                  </div>
+                  {/* Lyric \u2014 skipped entirely on chord-only lines so intros/outros
+                      don't carry a phantom empty text row (empty lines WITHOUT
+                      chords still render as deliberate spacers) */}
+                  {(line.text !== "" || !hasChords) && (
+                    <div
+                      className="whitespace-pre"
+                      style={{
+                        fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
+                        fontSize: lyricPx,
+                        fontWeight: s.lyrics.bold ? "bold" : "normal",
+                        fontStyle: s.lyrics.italic ? "italic" : "normal",
+                        color: s.lyrics.color ?? "#27272a",
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {line.text || "\u00A0"}
+                    </div>
+                  )}
                 </div>
               );
             })}

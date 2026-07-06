@@ -132,8 +132,9 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         const isChordOnly = hasChords && !line.text;
 
         // Compute raw positions from lyric offsets, then push overlapping chords rightward
-        const CHORD_GAP = 6;
         const chordFontPx = chordPt * PT_TO_PX;
+        // Chord-only lines (intros/outros) get musical spacing in print too
+        const CHORD_GAP = line.text.trim() ? 6 : chordFontPx * 1.5;
         const charW = measureWidth("M", lyricFontPx, lyricFamily, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic);
         const rawPositions = line.chords.map((chord) => ({
           id: chord.id,
@@ -182,6 +183,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
                   color:      "transparent",
                   userSelect: "none",
                   pointerEvents: "none",
+                  lineHeight: 0.4, // chord-only: collapse the phantom text row
                 }}
               >
                 &nbsp;
