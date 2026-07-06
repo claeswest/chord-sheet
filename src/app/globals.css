@@ -179,12 +179,13 @@ body {
   padding-top: 0;
 }
 
-/* #4 A section header holds on to its first line — less headroom there */
+/* #4 A section header holds on to its first line — less headroom there
+   (but enough to clear the divider line) */
 .print-section + .print-lyric-block {
-  padding-top: 12pt;
+  padding-top: 14pt;
 }
 .print-section + .print-lyric-block .print-chord-row {
-  height: 12pt;
+  height: 14pt;
 }
 
 /* Consecutive chord-only lines read as one progression block */

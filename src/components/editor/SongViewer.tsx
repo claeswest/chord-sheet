@@ -476,8 +476,12 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               const prev = i > 0 ? cleanLines[i - 1] : null;
               const chordOnly = (l: SongLine | null | undefined) =>
                 !!l && l.type === "lyric" && !l.text && l.chords.length > 0;
-              const tightPrev = prev != null && (prev.type === "section" || chordOnly(prev));
-              const chordPad = tightPrev ? "1.15em" : "2em";
+              // After a header: keep it close, but clear the divider line when
+              // one is drawn. After a chord-only line: tight. Otherwise: full.
+              const chordPad =
+                prev?.type === "section"
+                  ? (s.sectionDivider ?? true) ? "1.5em" : "1.15em"
+                  : chordOnly(prev) ? "1.15em" : "2em";
               // An empty spacer line BETWEEN two chord-only lines (common in
               // imports) shrinks, so intro progressions stack as one block.
               const squeezedSpacer =
