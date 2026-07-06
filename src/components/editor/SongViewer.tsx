@@ -39,12 +39,15 @@ interface Props {
   isShared?: boolean; // hides the share button on public share pages
 }
 
-// Pixels per millisecond at each speed step (display-rate independent)
+// Pixels per millisecond at each speed step (display-rate independent).
+// Tuned for performance reading: 1 is glacial (~0.8 px/s), the default 3 is
+// a touch slower than the old speed 1, and the old comfortable range (1-3)
+// spreads across ~3-7 for finer control. Top speeds halved — nobody used them.
 const SPEED_PX_PER_MS: Record<number, number> = {
-  1: 0.00375, 2: 0.00625, 3: 0.0095, 4: 0.013, 5: 0.017,
-  6: 0.02125, 7: 0.02625, 8: 0.032, 9: 0.03875, 10: 0.04625,
-  11: 0.055, 12: 0.065, 13: 0.07625, 14: 0.08875, 15: 0.1025,
-  16: 0.1175, 17: 0.135, 18: 0.15375, 19: 0.175, 20: 0.2,
+  1: 0.0008, 2: 0.0018, 3: 0.003, 4: 0.0042, 5: 0.0055,
+  6: 0.007, 7: 0.0088, 8: 0.011, 9: 0.0135, 10: 0.0165,
+  11: 0.02, 12: 0.024, 13: 0.029, 14: 0.035, 15: 0.042,
+  16: 0.05, 17: 0.06, 18: 0.072, 19: 0.086, 20: 0.103,
 };
 const MAX_SPEED = 20;
 
