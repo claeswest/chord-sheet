@@ -6,6 +6,7 @@ import FaqSection from "@/components/ui/FaqSection";
 import StickyMobileCta from "@/components/ui/StickyMobileCta";
 import BuildStamp from "@/components/ui/BuildStamp";
 import FeatureCard from "@/components/ui/FeatureCard";
+import HeroDemo from "@/components/ui/HeroDemo";
 import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
@@ -189,38 +190,23 @@ export default async function HomePage() {
             </CtaLink>
           </div>
 
-          {/* Hero photo — gradient frame + glow */}
+          {/* Hero demo — the product auto-scrolling a chart, live */}
           <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl mx-auto mb-4">
-            {/* Glow halo behind the photo */}
+            {/* Glow halo behind the frame */}
             <div className="absolute -inset-4 rounded-3xl pointer-events-none" style={{
               background: "radial-gradient(ellipse 60% 55% at 50% 40%, rgba(129,140,248,0.35) 0%, transparent 70%)",
               filter: "blur(24px)",
             }} />
-            <div className="relative rounded-t-2xl p-[1.5px]" style={{
+            <div className="relative rounded-2xl p-[1.5px]" style={{
               background: "linear-gradient(135deg, rgba(129,140,248,0.7) 0%, rgba(192,132,252,0.5) 50%, rgba(244,114,182,0.35) 100%)",
             }}>
-              <div className="rounded-t-2xl overflow-hidden shadow-2xl shadow-black/60">
-                <Image
-                  src="/hero-photo.jpg"
-                  alt="Guitarist using ChordSheetMaker on a laptop"
-                  width={1536}
-                  height={1024}
-                  priority
-                  sizes="(max-width: 768px) 100vw, 768px"
-                  className="w-full object-cover max-h-[230px] sm:max-h-none"
-                  style={{ objectPosition: "center 20%" }}
-                />
-              </div>
+              <HeroDemo />
             </div>
-            {/* Fade bottom of photo into section bg */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-40" style={{
-              background: "linear-gradient(to bottom, transparent 0%, #1a1640 100%)",
-            }} />
           </div>
 
           {/* Caption */}
           <p className="relative text-xs text-white/25 mb-8 sm:mb-12">
-            A real chord chart in ChordSheetMaker — transposed and ready to perform
+            Auto-scroll in action — hands-free play mode, exactly as it looks on stage
           </p>
 
           {/* 3 highlights — horizontal until md, then 3-column vertical */}
