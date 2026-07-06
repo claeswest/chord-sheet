@@ -264,6 +264,33 @@ export default async function HomePage() {
         {/* ── Transformation ───────────────────────────────────────────────── */}
         <TransformationSection />
 
+        {/* ── Testimonial ──────────────────────────────────────────────────── */}
+        <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
+          <figure className="relative max-w-2xl mx-auto text-center">
+            <span aria-hidden className="block text-6xl leading-none text-indigo-200 font-serif mb-2">&ldquo;</span>
+            <blockquote className="text-lg sm:text-xl text-zinc-700 leading-relaxed">
+              ChordSheetMaker has made playing at home much easier for me. I have loads of
+              little songs in old notebooks, and now I can just take a photo and turn them
+              into chord sheets instead of typing everything out.
+              <span className="block mt-4 text-base text-zinc-500">
+                My handwriting is a bit messy so I sometimes need to fix a few things, but
+                it&apos;s still way quicker. I also like adding backgrounds and fonts, probably
+                more than I should. Then I put it on my tablet, change the key if needed,
+                and just play.
+              </span>
+            </blockquote>
+            <figcaption className="mt-6 flex items-center justify-center gap-3">
+              <span className="flex w-10 h-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-sm font-bold shadow-md shadow-indigo-200">
+                EL
+              </span>
+              <span className="text-left">
+                <span className="block text-sm font-bold text-zinc-800">Emma Larson</span>
+                <span className="block text-xs text-zinc-400">Hobby guitarist · Liverpool</span>
+              </span>
+            </figcaption>
+          </figure>
+        </section>
+
         {/* ── Examples ─────────────────────────────────────────────────────── */}
         <ExamplesSection />
 
