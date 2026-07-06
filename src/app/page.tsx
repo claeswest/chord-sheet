@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
+import FaqSection from "@/components/ui/FaqSection";
+import StickyMobileCta from "@/components/ui/StickyMobileCta";
 import BuildStamp from "@/components/ui/BuildStamp";
 import FeatureCard from "@/components/ui/FeatureCard";
 import TransformationSection from "@/components/ui/TransformationSection";
@@ -178,12 +180,13 @@ export default async function HomePage() {
                 </svg>
               </span>
             </CtaLink>
-            <Link
-              href="#features"
+            <CtaLink
+              from="home-see-how"
+              href={session ? "#features" : "/editor/new?start=demo"}
               className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
             >
               See how it works
-            </Link>
+            </CtaLink>
           </div>
 
           {/* Hero photo — gradient frame + glow */}
@@ -410,6 +413,9 @@ export default async function HomePage() {
 
         {/* ── CTA ──────────────────────────────────────────────────────────── */}
         <div style={{ background: "rgba(99,102,241,0.25)", height: 1 }} />
+        {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+        <FaqSection />
+
         <section
           className="relative px-5 sm:px-6 py-16 sm:py-28 text-center overflow-hidden"
           style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
@@ -499,6 +505,7 @@ export default async function HomePage() {
         </div>
       </footer>
 
+      {!session && <StickyMobileCta />}
       <ScrollToTop />
     </div>
   );
