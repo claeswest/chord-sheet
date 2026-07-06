@@ -117,6 +117,14 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
       backgroundColor: null,
     });
 
+    // Section header positions (canvas px) — a page must not end just after
+    // a header; if it would, we cut before the header instead (#5 widows).
+    const cloneTop = clone.getBoundingClientRect().top;
+    const scaleY = contentCanvas.height / clone.getBoundingClientRect().height;
+    const sectionTops = Array.from(clone.querySelectorAll(".print-section")).map(
+      (el) => (el.getBoundingClientRect().top - cloneTop) * scaleY
+    );
+
     // Read all pixel data once — used for gap detection
     const contentCtx  = contentCanvas.getContext("2d")!;
     const pixelData   = contentCtx.getImageData(0, 0, contentCanvas.width, contentCanvas.height).data;
@@ -127,8 +135,17 @@ export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
     while (curY < contentCanvas.height) {
       const limit = curY + CONTENT_H_PX;
       if (limit >= contentCanvas.height) break;
-      const breakY = findBreakRow(pixelData, contentCanvas.width, limit, curY);
+      let breakY = findBreakRow(pixelData, contentCanvas.width, limit, curY);
       if (breakY <= curY) break; // safety
+      // Keep a section header with its first lines: if the break lands within
+      // ~3 text lines after a header, move the break to just above the header.
+      const KEEP_PX = 130 * (contentCanvas.width / A4_W_CSS);
+      for (const top of sectionTops) {
+        if (top > curY + 40 && top < breakY && breakY - top < KEEP_PX) {
+          breakY = Math.max(curY + 1, Math.floor(top) - 4);
+          break;
+        }
+      }
       pageStarts.push(breakY);
       curY = breakY;
     }

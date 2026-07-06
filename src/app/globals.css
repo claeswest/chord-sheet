@@ -164,7 +164,8 @@ body {
   padding-bottom: 3pt;
   border-bottom: 0.5pt solid #dde;
   margin-bottom: 4pt;
-  break-after: avoid;
+  break-after: avoid; /* #5 never strand a header at a page bottom (Ctrl+P) */
+  break-inside: avoid;
 }
 
 .print-lyric-block {
@@ -176,6 +177,14 @@ body {
 
 .print-lyric-block.no-chords {
   padding-top: 0;
+}
+
+/* #4 A section header holds on to its first line — less headroom there */
+.print-section + .print-lyric-block {
+  padding-top: 12pt;
+}
+.print-section + .print-lyric-block .print-chord-row {
+  height: 12pt;
 }
 
 .print-chord-row {

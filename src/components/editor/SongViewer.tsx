@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { SongLine } from "@/types/song";
+import { extractInlineChords } from "@/lib/parseChordSheet";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
@@ -20,10 +21,10 @@ function getCtx(): CanvasRenderingContext2D | null {
   if (!_ctx) _ctx = document.createElement("canvas").getContext("2d")!;
   return _ctx;
 }
-function measureWidth(text: string, size: number, family: string): number {
+function measureWidth(text: string, size: number, family: string, weight = "400", italic = false): number {
   const ctx = getCtx();
   if (!ctx) return 0;
-  ctx.font = `${size}px ${family}`;
+  ctx.font = `${italic ? "italic " : ""}${weight} ${size}px ${family}`;
   return ctx.measureText(text).width;
 }
 
@@ -101,6 +102,35 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust + perfBoost;
   const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust + perfBoost;
   const titleSize = (s.title.fontSize ?? 20) + sizeAdjust + perfBoost;
+
+  // #3 Convert leftover inline [Em7] tokens into real positioned chords
+  const cleanLines = useMemo(() => extractInlineChords(lines), [lines]);
+
+  // #1 Long lines must not clip: shrink type until the longest line fits.
+  const [viewportW, setViewportW] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024
+  );
+  useEffect(() => {
+    const on = () => setViewportW(window.innerWidth);
+    window.addEventListener("resize", on);
+    return () => window.removeEventListener("resize", on);
+  }, []);
+  const fitScale = useMemo(() => {
+    void fontSeq; // re-measure once fonts load
+    const fam = s.lyrics.fontFamily ?? MONO_STACK;
+    const w = s.lyrics.bold ? "700" : "400";
+    const avail = Math.min(viewportW, 672) - (viewportW < 640 ? 40 : 80);
+    let maxW = 0;
+    for (const l of cleanLines) {
+      if (l.type === "lyric" && l.text) {
+        maxW = Math.max(maxW, measureWidth(l.text, lyricSize, fam, w, !!s.lyrics.italic));
+      }
+    }
+    if (maxW === 0 || maxW <= avail) return 1;
+    return Math.max(0.62, avail / maxW);
+  }, [cleanLines, lyricSize, s.lyrics.fontFamily, s.lyrics.bold, s.lyrics.italic, viewportW, fontSeq]);
+  const lyricPx = lyricSize * fitScale;
+  const chordPx = chordSize * fitScale;
 
   // Persist speed to localStorage whenever it changes
   useEffect(() => {
@@ -395,7 +425,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
           {/* Lines */}
           <div className="space-y-0">
-            {lines.map((line) => {
+            {cleanLines.map((line, i) => {
               if (line.type === "section") {
                 const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
                 const sectionSize = (s.section?.fontSize ?? (s.lyrics.fontSize ?? 14) - 3) + sizeAdjust;
@@ -423,8 +453,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               }
 
               const hasChords = line.chords.length > 0;
+              // #4 A header should hold on to its first line - less headroom there
+              const chordPad = i > 0 && cleanLines[i - 1].type === "section" ? "1.15em" : "2em";
               return (
-                <div key={line.id} className="relative" style={{ paddingTop: hasChords ? "2em" : 0 }}>
+                <div key={line.id} className="relative" style={{ paddingTop: hasChords ? chordPad : 0 }}>
                   {/* Chord row */}
                   {hasChords && (() => {
                     // Compute overlap-free display positions
@@ -437,12 +469,12 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                       id: c.id,
                       chord: c.chord,
                       px: (() => {
-                        const charW = measureWidth("M", lyricSize, lyricFam);
+                        const charW = measureWidth("M", lyricPx, lyricFam, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic);
                         if (!line.text) return c.position * charW;
                         if (c.position >= line.text.length) {
-                          return measureWidth(line.text, lyricSize, lyricFam) + (c.position - line.text.length) * charW;
+                          return measureWidth(line.text, lyricPx, lyricFam, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic) + (c.position - line.text.length) * charW;
                         }
-                        return measureWidth(line.text.slice(0, c.position), lyricSize, lyricFam);
+                        return measureWidth(line.text.slice(0, c.position), lyricPx, lyricFam, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic);
                       })(),
                     }));
                     raw.sort((a, b) => a.px - b.px);
@@ -451,17 +483,17 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     for (const item of raw) {
                       const x = Math.max(item.px, prevRight + CHORD_GAP);
                       positions.set(item.id, x);
-                      prevRight = x + measureWidth(item.chord, chordSize, chordFam);
+                      prevRight = x + measureWidth(item.chord, chordPx, chordFam, s.chords.bold !== false ? "700" : "400", !!s.chords.italic);
                     }
                     return (
-                      <div className="absolute top-0 left-0 w-full" style={{ height: "2em" }}>
+                      <div className="absolute top-0 left-0 w-full" style={{ height: chordPad }}>
                         {line.chords.map((chord) => (
                           <span
                             key={chord.id}
                             className="absolute whitespace-nowrap"
                             style={{
                               left: positions.get(chord.id) ?? 0,
-                              fontSize: chordSize,
+                              fontSize: chordPx,
                               fontFamily: chordFam,
                               fontWeight: s.chords.bold !== false ? "bold" : "normal",
                               fontStyle: s.chords.italic ? "italic" : "normal",
@@ -480,7 +512,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     className="whitespace-pre"
                     style={{
                       fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
-                      fontSize: lyricSize,
+                      fontSize: lyricPx,
                       fontWeight: s.lyrics.bold ? "bold" : "normal",
                       fontStyle: s.lyrics.italic ? "italic" : "normal",
                       color: s.lyrics.color ?? "#27272a",
@@ -698,7 +730,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       )}
 
       {/* Hidden print view — required for PDF export */}
-      <PrintView title={title} artist={artist} lines={lines} songStyle={songStyle} watermark />
+      <PrintView title={title} artist={artist} lines={cleanLines} songStyle={songStyle} watermark />
 
       {/* Scroll to top button — appears once scrolled down, sits above the control bar */}
       <button

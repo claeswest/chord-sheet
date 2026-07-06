@@ -177,3 +177,49 @@ export function parseChordSheet(text: string): SongLine[] {
     ? result
     : [{ id: genId(), type: "lyric", text: "", chords: [] }];
 }
+
+// ── #3 Leftover ChordPro-style tokens ────────────────────────────────────────
+const INLINE_CHORD_RE = /\[([A-G][#b]?[A-Za-z0-9#b+\-/]{0,10})\]/g;
+
+/**
+ * Converts leftover inline "[Em7]" tokens inside lyric text into positioned
+ * chord tokens (display-time cleanup — also fixes songs already stored with
+ * mixed systems). Existing chord positions are shifted left as text shrinks.
+ */
+export function extractInlineChords(lines: SongLine[]): SongLine[] {
+  let changed = false;
+  const out = lines.map((line) => {
+    if (line.type !== "lyric" || !line.text.includes("[")) return line;
+    let text = line.text;
+    const newChords: ChordToken[] = [];
+    const shifts: { at: number; len: number }[] = [];
+    let m: RegExpExecArray | null;
+    INLINE_CHORD_RE.lastIndex = 0;
+    while ((m = INLINE_CHORD_RE.exec(text)) !== null) {
+      newChords.push({ id: genId(), chord: m[1], position: m.index });
+      shifts.push({ at: m.index, len: m[0].length });
+    }
+    if (newChords.length === 0) return line;
+    changed = true;
+    // Remove tokens from text (right-to-left so indices stay valid), and trim
+    // one following space so lyrics don't gain double spaces.
+    for (let i = shifts.length - 1; i >= 0; i--) {
+      const { at, len } = shifts[i];
+      const extra = text[at + len] === " " ? 1 : 0;
+      text = text.slice(0, at) + text.slice(at + len + extra);
+      shifts[i].len = len + extra;
+    }
+    // Re-map positions: subtract lengths of all tokens removed before them
+    const remap = (pos: number) => {
+      let d = 0;
+      for (const sh of shifts) if (sh.at < pos) d += Math.min(sh.len, pos - sh.at);
+      return Math.max(0, pos - d);
+    };
+    const merged = [
+      ...line.chords.map((c) => ({ ...c, position: remap(c.position) })),
+      ...newChords.map((c) => ({ ...c, position: remap(c.position + 0.0) })),
+    ].sort((a, b) => a.position - b.position);
+    return { ...line, text, chords: merged };
+  });
+  return changed ? out : lines;
+}

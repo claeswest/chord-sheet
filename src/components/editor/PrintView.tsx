@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { extractInlineChords } from "@/lib/parseChordSheet";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle } from "@/lib/songStyle";
@@ -11,10 +12,10 @@ import ChordLabel from "./ChordLabel";
 // So 12pt ≈ 16px, which is what the baseline print CSS targets.
 const PT_TO_PX = 96 / 72;
 
-function measureWidth(text: string, fontPx: number, family: string): number {
+function measureWidth(text: string, fontPx: number, family: string, weight = "400", italic = false): number {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  ctx.font = `${fontPx}px ${family}`;
+  ctx.font = `${italic ? "italic " : ""}${weight} ${fontPx}px ${family}`;
   return ctx.measureText(text).width;
 }
 
@@ -101,7 +102,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       )}
 
       {/* Lines */}
-      {lines.map((line) => {
+      {extractInlineChords(lines).map((line) => {
         if (line.type === "section") {
           const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
           const sectionPt = toPt(s.section?.fontSize ?? 11);
@@ -133,13 +134,13 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         // Compute raw positions from lyric offsets, then push overlapping chords rightward
         const CHORD_GAP = 6;
         const chordFontPx = chordPt * PT_TO_PX;
-        const charW = measureWidth("M", lyricFontPx, lyricFamily);
+        const charW = measureWidth("M", lyricFontPx, lyricFamily, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic);
         const rawPositions = line.chords.map((chord) => ({
           id: chord.id,
           chord: chord.chord,
           px: chord.position >= line.text.length
-            ? measureWidth(line.text, lyricFontPx, lyricFamily) + (chord.position - line.text.length) * charW
-            : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily),
+            ? measureWidth(line.text, lyricFontPx, lyricFamily, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic) + (chord.position - line.text.length) * charW
+            : measureWidth(line.text.slice(0, chord.position), lyricFontPx, lyricFamily, s.lyrics.bold ? "700" : "400", !!s.lyrics.italic),
         }));
         rawPositions.sort((a, b) => a.px - b.px);
         let prevRight = -Infinity;
@@ -147,7 +148,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
         for (const item of rawPositions) {
           const x = Math.max(item.px, prevRight + CHORD_GAP);
           positions.set(item.id, x);
-          prevRight = x + measureWidth(item.chord, chordFontPx, chordFamily);
+          prevRight = x + measureWidth(item.chord, chordFontPx, chordFamily, s.chords.bold !== false ? "700" : "400", !!s.chords.italic);
         }
 
         const chordSpans = line.chords.map((chord) => (
