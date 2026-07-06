@@ -108,7 +108,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
       )}
 
       {/* Lines */}
-      {extractInlineChords(lines).map((line) => {
+      {extractInlineChords(lines).map((line, i, all) => {
         if (line.type === "section") {
           const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
           const sectionPt = toPt(s.section?.fontSize ?? 11);
@@ -136,6 +136,9 @@ export default function PrintView({ title, artist, lines, watermark = true, song
 
         const hasChords = line.chords.length > 0;
         const isChordOnly = hasChords && !line.text;
+        const chordOnly = (l?: SongLine) => !!l && l.type === "lyric" && !l.text && l.chords.length > 0;
+        // Empty spacer between two chord-only lines: shrink it (intro blocks)
+        const squeezedSpacer = !hasChords && !line.text && chordOnly(all[i - 1]) && chordOnly(all[i + 1]);
 
         // Compute raw positions from lyric offsets, then push overlapping chords rightward
         const chordFontPx = chordPt * PT_TO_PX;
@@ -209,7 +212,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
             <div
               className="print-lyric"
               style={{
-                fontSize:   `${lyricPt}pt`,
+                fontSize:   squeezedSpacer ? `${Math.round(lyricPt * 0.35)}pt` : `${lyricPt}pt`,
                 fontFamily: lyricFamily,
                 fontWeight: s.lyrics.bold ? "bold" : "normal",
                 fontStyle:  s.lyrics.italic ? "italic" : "normal",

@@ -461,11 +461,14 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               // Less chord headroom after a section header (it should hold its
               // first line) and after another chord-only line (intro blocks).
               const prev = i > 0 ? cleanLines[i - 1] : null;
-              const tightPrev = prev != null && (
-                prev.type === "section" ||
-                (prev.type === "lyric" && !prev.text && prev.chords.length > 0)
-              );
+              const chordOnly = (l: SongLine | null | undefined) =>
+                !!l && l.type === "lyric" && !l.text && l.chords.length > 0;
+              const tightPrev = prev != null && (prev.type === "section" || chordOnly(prev));
               const chordPad = tightPrev ? "1.15em" : "2em";
+              // An empty spacer line BETWEEN two chord-only lines (common in
+              // imports) shrinks, so intro progressions stack as one block.
+              const squeezedSpacer =
+                !hasChords && !line.text && chordOnly(prev) && chordOnly(cleanLines[i + 1]);
               return (
                 <div key={line.id} className="relative" style={{ paddingTop: hasChords ? chordPad : 0 }}>
                   {/* Chord row */}
@@ -528,7 +531,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                       className="whitespace-pre"
                       style={{
                         fontFamily: s.lyrics.fontFamily ?? MONO_STACK,
-                        fontSize: lyricPx,
+                        fontSize: squeezedSpacer ? lyricPx * 0.35 : lyricPx,
                         fontWeight: s.lyrics.bold ? "bold" : "normal",
                         fontStyle: s.lyrics.italic ? "italic" : "normal",
                         color: s.lyrics.color ?? "#27272a",
