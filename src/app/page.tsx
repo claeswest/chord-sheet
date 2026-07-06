@@ -131,11 +131,11 @@ export default async function HomePage() {
           }} />
 
           {/* Drifting aurora blobs */}
-          <div className="aurora aurora-a" style={{
+          <div className="aurora aurora-a hidden sm:block" style={{
             width: 480, height: 480, top: -140, left: "8%",
             background: "radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)",
           }} />
-          <div className="aurora aurora-b" style={{
+          <div className="aurora aurora-b hidden sm:block" style={{
             width: 520, height: 520, top: 60, right: "4%",
             background: "radial-gradient(circle, rgba(192,132,252,0.28) 0%, transparent 70%)",
           }} />
