@@ -68,7 +68,13 @@ export default function PrintView({ title, artist, lines, watermark = true, song
     <div
       id="print-view"
       className={watermark ? "watermarked" : ""}
-      style={bgStyle}
+      style={{
+        ...bgStyle,
+        // Legibility over photo backgrounds — inherited by all sheet text
+        textShadow: s.backgroundImage
+          ? "0 1px 6px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.4)"
+          : undefined,
+      }}
     >
       {/* Song header */}
       <div
@@ -173,7 +179,7 @@ export default function PrintView({ title, artist, lines, watermark = true, song
           // Chord-only line: identical structure to regular lines, but lyric text is invisible
           // This ensures html2canvas renders chords in the same layout context as working lines
           return (
-            <div key={line.id} className="print-lyric-block">
+            <div key={line.id} className="print-lyric-block chord-only">
               <div className="print-chord-row">{chordSpans}</div>
               <div
                 className="print-lyric"

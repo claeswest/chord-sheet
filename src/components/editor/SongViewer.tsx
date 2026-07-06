@@ -98,6 +98,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const bgImgRef = useRef<HTMLImageElement>(null);
 
   const s = songStyle ?? DEFAULT_STYLE;
+  // #1 Legibility over photo backgrounds: soft shadow behind all sheet text
+  // when a background image is set (undefined = no style emitted on plain bg).
+  const textGlow = s.backgroundImage
+    ? "0 1px 8px rgba(0,0,0,0.65), 0 0 2px rgba(0,0,0,0.45)"
+    : undefined;
   const perfBoost = perfMode ? 8 : 0;
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust + perfBoost;
   const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust + perfBoost;
@@ -392,9 +397,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         className="flex-1 overflow-y-auto overflow-x-hidden relative z-20"
         onClick={perfMode ? togglePlay : undefined}
       >
-        <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64">
+        <div className="max-w-2xl mx-auto px-5 sm:px-10 pt-16 pb-64" style={{ textShadow: textGlow }}>
           {/* Song header */}
-          <div className="mb-10" style={{ textAlign: s.titleAlign ?? "center" }}>
+          <div className="mb-6" style={{ textAlign: s.titleAlign ?? "center" }}>
             <h1
               className="leading-tight"
               style={{
@@ -453,8 +458,14 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               }
 
               const hasChords = line.chords.length > 0;
-              // #4 A header should hold on to its first line - less headroom there
-              const chordPad = i > 0 && cleanLines[i - 1].type === "section" ? "1.15em" : "2em";
+              // Less chord headroom after a section header (it should hold its
+              // first line) and after another chord-only line (intro blocks).
+              const prev = i > 0 ? cleanLines[i - 1] : null;
+              const tightPrev = prev != null && (
+                prev.type === "section" ||
+                (prev.type === "lyric" && !prev.text && prev.chords.length > 0)
+              );
+              const chordPad = tightPrev ? "1.15em" : "2em";
               return (
                 <div key={line.id} className="relative" style={{ paddingTop: hasChords ? chordPad : 0 }}>
                   {/* Chord row */}

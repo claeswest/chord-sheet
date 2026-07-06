@@ -187,6 +187,14 @@ body {
   height: 12pt;
 }
 
+/* Consecutive chord-only lines read as one progression block */
+.print-lyric-block.chord-only + .print-lyric-block {
+  padding-top: 12pt;
+}
+.print-lyric-block.chord-only + .print-lyric-block .print-chord-row {
+  height: 12pt;
+}
+
 .print-chord-row {
   position: absolute;
   top: 0;
