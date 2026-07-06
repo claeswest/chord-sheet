@@ -424,7 +424,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
               const hasChords = line.chords.length > 0;
               return (
-                <div key={line.id} className="relative" style={{ paddingTop: hasChords ? "1.6em" : 0 }}>
+                <div key={line.id} className="relative" style={{ paddingTop: hasChords ? "2em" : 0 }}>
                   {/* Chord row */}
                   {hasChords && (() => {
                     // Compute overlap-free display positions
@@ -454,7 +454,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                       prevRight = x + measureWidth(item.chord, chordSize, chordFam);
                     }
                     return (
-                      <div className="absolute top-0 left-0 w-full" style={{ height: "1.5em" }}>
+                      <div className="absolute top-0 left-0 w-full" style={{ height: "2em" }}>
                         {line.chords.map((chord) => (
                           <span
                             key={chord.id}
@@ -466,7 +466,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                               fontWeight: s.chords.bold !== false ? "bold" : "normal",
                               fontStyle: s.chords.italic ? "italic" : "normal",
                               color: s.chords.color ?? "#4f46e5",
-                              top: 0,
+                              bottom: "0.18em", // hug the lyric below (proximity), air above
                             }}
                           >
                             <ChordLabel chord={chord.chord} jazz={s.jazzChords} />
