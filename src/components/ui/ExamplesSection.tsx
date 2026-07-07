@@ -75,7 +75,8 @@ export default function ExamplesSection() {
         <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Examples</span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">Play a real chord sheet</h2>
         <p className="text-center text-zinc-500 mb-14 max-w-xl mx-auto text-lg leading-relaxed">
-          These are live sheets made with ChordSheetMaker — open one, press <strong className="text-zinc-700">play</strong>, and watch it scroll hands-free.
+          Real sheets, AI backgrounds and fonts — charts you&apos;ll actually enjoy looking at.
+          Open one, press <strong className="text-zinc-700">play</strong>, and watch it scroll hands-free.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">

@@ -70,8 +70,8 @@ const features = [
   },
   {
     icon: "📄",
-    title: "Setlists, PDF & sharing",
-    description: "Organize songs into setlists for each gig, export a clean PDF, or share a link with your band — all synced across devices.",
+    title: "Setlists, collections & PDF",
+    description: "Group songs into setlists for gigs — or simple collections for practicing at home. Export a clean PDF or share a link, all synced across devices.",
     hex: "#f43f5e",
     iconBg: "rgba(244,63,94,0.12)",
     cardBg: "rgba(244,63,94,0.04)",
@@ -160,8 +160,9 @@ export default async function HomePage() {
           </h1>
 
           <p className="hero-reveal hero-reveal-3 relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
-            Get a clean chart with the chords in the right places, transpose it to your singer&apos;s key,
-            and play hands-free with auto-scroll — on your phone, tablet or laptop.
+            Get a beautiful chart with every chord in the right place — styled with AI backgrounds
+            and fonts — then transpose it to your key and play hands-free with auto-scroll.
+            At home on the sofa, or on stage.
           </p>
 
           <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
@@ -234,7 +235,7 @@ export default async function HomePage() {
           {/* 3 highlights — horizontal until md, then 3-column vertical */}
           <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { icon: "⚡", title: "Any song, clean chart",   body: "Type a title and AI lays the chords over the lyrics, perfectly aligned — ready in seconds." },
+              { icon: "⚡", title: "Any song, a stunning chart", body: "Type a title and AI lays the chords over the lyrics, perfectly aligned — then style it with backgrounds and fonts until it's yours." },
               { icon: "🎚️", title: "In your singer's key",    body: "Transpose the whole chart up or down with one tap. No rewriting, no capo math."  },
               { icon: "▶️", title: "Hands-free on stage",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
             ].map((h) => (
