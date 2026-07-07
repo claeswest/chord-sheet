@@ -72,11 +72,12 @@ export default function ExamplesSection() {
   return (
     <section className="relative px-4 sm:px-6 py-14 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
       <div className="relative max-w-5xl mx-auto">
-        <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Examples</span>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">Play a real chord sheet</h2>
+        <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Made with ChordSheetMaker</span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">Your sheets can look like this</h2>
         <p className="text-center text-zinc-500 mb-14 max-w-xl mx-auto text-lg leading-relaxed">
-          Real sheets, AI backgrounds and fonts — charts you&apos;ll actually enjoy looking at.
-          Open one, press <strong className="text-zinc-700">play</strong>, and watch it scroll hands-free.
+          Three real charts, styled in minutes with AI backgrounds and fonts — no design skills
+          needed. Open one, press <strong className="text-zinc-700">play</strong>, feel the
+          auto-scroll — then make your own just like them.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
