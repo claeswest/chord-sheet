@@ -110,7 +110,7 @@ html {
   .gradient-text  { animation: gradient-slide 6s ease-in-out infinite; }
   .chord-chip     { animation: chip-float 7s ease-in-out infinite; }
   .cta-glow       { animation: cta-glow 3.2s ease-in-out infinite; }
-  .hero-scroll    { animation: hero-sheet-scroll 26s linear infinite; }
+  .hero-scroll    { animation: hero-sheet-scroll 48s linear infinite; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-reveal { animation: none; }
