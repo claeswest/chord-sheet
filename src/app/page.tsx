@@ -190,17 +190,39 @@ export default async function HomePage() {
             </CtaLink>
           </div>
 
-          {/* Hero demo — the product auto-scrolling a chart, live */}
-          <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl mx-auto mb-4">
-            {/* Glow halo behind the frame */}
+          {/* Hero composite — musician scene with the live demo card floating over it */}
+          <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl md:max-w-4xl mx-auto mb-4">
+            {/* Glow halo */}
             <div className="absolute -inset-4 rounded-3xl pointer-events-none" style={{
               background: "radial-gradient(ellipse 60% 55% at 50% 40%, rgba(129,140,248,0.35) 0%, transparent 70%)",
               filter: "blur(24px)",
             }} />
-            <div className="relative rounded-2xl p-[1.5px]" style={{
-              background: "linear-gradient(135deg, rgba(129,140,248,0.7) 0%, rgba(192,132,252,0.5) 50%, rgba(244,114,182,0.35) 100%)",
-            }}>
-              <HeroDemo />
+
+            {/* Photo backdrop — the human context, desktop only */}
+            <div className="hidden md:block relative ml-auto w-[76%] rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
+              <Image
+                src="/hero-photo.jpg"
+                alt="Guitarist playing along with ChordSheetMaker"
+                width={1536}
+                height={1024}
+                priority
+                sizes="(max-width: 768px) 0px, 700px"
+                className="w-full object-cover"
+                style={{ objectPosition: "center 20%" }}
+              />
+              {/* Dim + blend: darker on the left (under the card), fade into section bg below */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: "linear-gradient(90deg, rgba(15,12,41,0.6) 0%, rgba(15,12,41,0.12) 55%, rgba(15,12,41,0.25) 100%), linear-gradient(to top, rgba(26,22,64,0.7) 0%, transparent 35%)",
+              }} />
+            </div>
+
+            {/* Demo card — floats over the scene on desktop, stands alone on mobile */}
+            <div className="relative md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-[48%] w-full">
+              <div className="relative rounded-2xl p-[1.5px] shadow-2xl shadow-black/50" style={{
+                background: "linear-gradient(135deg, rgba(129,140,248,0.7) 0%, rgba(192,132,252,0.5) 50%, rgba(244,114,182,0.35) 100%)",
+              }}>
+                <HeroDemo />
+              </div>
             </div>
           </div>
 
