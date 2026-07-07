@@ -151,7 +151,7 @@ export default async function HomePage() {
           </div>
 
           <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
-            For gigging musicians, singers & cover bands
+            For every musician — from sofa to stage
           </span>
 
           <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
@@ -257,7 +257,7 @@ export default async function HomePage() {
               Everything you need on stage
             </h2>
             <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-base sm:text-lg">
-              Built for musicians who play live — focus on the performance, not the formatting.
+              Whether you play the living room or the main stage — focus on the music, not the formatting.
             </p>
           </div>
         </section>
