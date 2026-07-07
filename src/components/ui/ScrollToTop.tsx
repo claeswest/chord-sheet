@@ -13,7 +13,21 @@ export default function ScrollToTop() {
     const check = () => setVisible(window.scrollY > 120);
     check();
     window.addEventListener("scroll", check, { passive: true });
-    return (
+    return () => window.removeEventListener("scroll", check);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === "t" || e.key === "T") scrollToTop();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [scrollToTop]);
+
+  return (
     <button
       onClick={scrollToTop}
       aria-label="Scroll to top"
