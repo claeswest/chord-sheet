@@ -60,6 +60,7 @@ export default function AdminActivityPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
+  const [includeAdmins, setIncludeAdmins] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -70,13 +71,14 @@ export default function AdminActivityPage() {
     if (q) p.set("q", q);
     if (from) p.set("from", from);
     if (to) p.set("to", to);
+    if (includeAdmins) p.set("admins", "1");
     p.set("page", String(page));
     fetch(`/api/admin/activity?${p}`)
       .then((r) => { if (!r.ok) throw new Error("Failed to load activity"); return r.json(); })
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [type, userId, q, from, to, page]);
+  }, [type, userId, q, from, to, page, includeAdmins]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -102,6 +104,15 @@ export default function AdminActivityPage() {
           <input value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder="Search user or song…" className={`${inputCls} w-48`} />
           <button type="submit" className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">Search</button>
         </form>
+        <label className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 px-1 cursor-pointer select-none transition-colors">
+          <input
+            type="checkbox"
+            checked={includeAdmins}
+            onChange={(e) => { setIncludeAdmins(e.target.checked); setPage(1); }}
+            className="w-3.5 h-3.5 accent-indigo-500"
+          />
+          Include my activity
+        </label>
         {userId && (
           <span className="inline-flex items-center gap-1.5 text-xs bg-indigo-900/40 text-indigo-300 px-2.5 py-1.5 rounded-full">
             {userLabel || "User"}

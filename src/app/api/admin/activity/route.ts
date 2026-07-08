@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { adminRecipients } from "@/lib/notify";
 import type { Prisma } from "@/generated/prisma";
 
 // Admin-only: paginated activity feed with type/user/date/text filters.
@@ -19,6 +20,12 @@ export async function GET(req: NextRequest) {
   const to = sp.get("to")?.trim();
 
   const where: Prisma.ActivityLogWhereInput = {};
+  // The admin's own test activity is noise — excluded unless ?admins=1.
+  // (Events with a deleted/null user still show.)
+  if (sp.get("admins") !== "1") {
+    const admins = adminRecipients();
+    if (admins.length) where.NOT = { user: { email: { in: admins } } };
+  }
   if (type) where.type = type;
   if (userId) where.userId = userId;
   if (from || to) {
