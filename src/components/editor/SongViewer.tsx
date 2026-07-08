@@ -79,6 +79,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     typeof window !== "undefined" && window.innerWidth < 640 ? -3 : 0
   );
   const [perfMode, setPerfMode] = useState(false);
+  // Lyrics-only mode for vocalists — device-wide preference, so a singer who
+  // opens a bandmate's share link keeps it across songs.
+  const [hideChords, setHideChords] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem("hideChords") === "1"
+  );
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [shareFlash, setShareFlash] = useState(false);
@@ -127,6 +132,22 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // #3 Convert leftover inline [Em7] tokens into real positioned chords
   const cleanLines = useMemo(() => extractInlineChords(lines), [lines]);
 
+  // Lyrics-only mode: drop chord-only lines (intros/outros mean nothing to a
+  // singer) and collapse the blank stacks they leave behind.
+  const visibleLines = useMemo(() => {
+    if (!hideChords) return cleanLines;
+    const out: typeof cleanLines = [];
+    for (const l of cleanLines) {
+      if (l.type === "lyric" && !l.text.trim() && l.chords.length > 0) continue;
+      const isBlank = l.type === "lyric" && !l.text.trim();
+      const prev = out[out.length - 1];
+      const prevBreaks = !prev || prev.type === "section" || (prev.type === "lyric" && !prev.text.trim());
+      if (isBlank && prevBreaks) continue;
+      out.push(l);
+    }
+    return out;
+  }, [cleanLines, hideChords]);
+
   // #1 Long lines must not clip: shrink type until the longest line fits.
   const [viewportW, setViewportW] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1024
@@ -157,6 +178,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   useEffect(() => {
     if (speedKey) localStorage.setItem(speedKey, String(speed));
   }, [speed, speedKey]);
+
+  // Persist lyrics-only preference (device-wide)
+  useEffect(() => {
+    localStorage.setItem("hideChords", hideChords ? "1" : "0");
+  }, [hideChords]);
 
   // Re-measure chord positions once all fonts have finished loading.
   // Without this, chords are positioned using fallback-font metrics and then
@@ -283,6 +309,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       } else if (e.key === "-") {
         e.preventDefault();
         setSizeAdjust((s) => Math.max(-6, s - 1));
+        revealControls();
+      } else if ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        setHideChords((h) => !h);
         revealControls();
       }
     };
@@ -446,7 +475,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
           {/* Lines */}
           <div className="space-y-0">
-            {cleanLines.map((line, i) => {
+            {visibleLines.map((line, i) => {
               if (line.type === "section") {
                 const sectionColor = s.section?.color ?? s.chords.color ?? "#4f46e5";
                 const sectionSize = (s.section?.fontSize ?? (s.lyrics.fontSize ?? 14) - 3) + sizeAdjust;
@@ -473,10 +502,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 );
               }
 
-              const hasChords = line.chords.length > 0;
+              const hasChords = !hideChords && line.chords.length > 0;
               // Less chord headroom after a section header (it should hold its
               // first line) and after another chord-only line (intro blocks).
-              const prev = i > 0 ? cleanLines[i - 1] : null;
+              const prev = i > 0 ? visibleLines[i - 1] : null;
               const chordOnly = (l: SongLine | null | undefined) =>
                 !!l && l.type === "lyric" && !l.text && l.chords.length > 0;
               // After a header: keep it close, but clear the divider line when
@@ -488,7 +517,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               // An empty spacer line BETWEEN two chord-only lines (common in
               // imports) shrinks, so intro progressions stack as one block.
               const squeezedSpacer =
-                !hasChords && !line.text && chordOnly(prev) && chordOnly(cleanLines[i + 1]);
+                !hasChords && !line.text && chordOnly(prev) && chordOnly(visibleLines[i + 1]);
               return (
                 <div key={line.id} className="relative" style={{ paddingTop: hasChords ? chordPad : 0 }}>
                   {/* Chord row */}
@@ -555,10 +584,14 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                         fontWeight: s.lyrics.bold ? "bold" : "normal",
                         fontStyle: s.lyrics.italic ? "italic" : "normal",
                         color: s.lyrics.color ?? "#27272a",
-                        lineHeight: 1.35,
+                        // Lyrics-only: chord rows no longer separate the lines,
+                        // so open up the leading for comfortable reading
+                        lineHeight: hideChords ? 1.7 : 1.35,
                       }}
                     >
-                      {line.text || "\u00A0"}
+                      {/* Leading indent encodes "chord lands before the first
+                          syllable" \u2014 meaningless with chords hidden, so trim */}
+                      {(hideChords ? line.text.replace(/^\s+/, "") : line.text) || "\u00A0"}
                     </div>
                   )}
                 </div>
@@ -651,6 +684,24 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 )}
               </button>
             )}
+
+            {/* Lyrics-only toggle — for vocalists who don't need the chords */}
+            <button
+              onClick={() => { setHideChords(h => !h); revealControls(); }}
+              className={`text-sm px-2.5 py-1.5 rounded-lg border transition-colors backdrop-blur-sm flex items-center gap-1.5 ${
+                hideChords
+                  ? "text-cyan-300 border-cyan-400/40 bg-cyan-500/10"
+                  : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
+              }`}
+              title={hideChords ? "Show chords (C)" : "Lyrics only — hide chords (C)"}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+              </svg>
+              <span className="hidden sm:inline">Lyrics</span>
+            </button>
 
             {/* Performance mode toggle — mobile only */}
             <button
