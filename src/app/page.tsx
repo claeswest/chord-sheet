@@ -33,22 +33,22 @@ const features = [
     glow: "rgba(99,102,241,0.18)",
   },
   {
-    icon: "🎚️",
-    title: "Transpose to your key",
-    description: "Move the whole chart up or down with one tap to fit your singer's range. Every chord updates instantly — no capo math.",
-    hex: "#8b5cf6",
-    iconBg: "rgba(139,92,246,0.12)",
-    cardBg: "rgba(139,92,246,0.04)",
-    glow: "rgba(139,92,246,0.18)",
+    icon: "📷",
+    title: "Snap a photo",
+    description: "Photograph a handwritten or printed chord sheet — AI reads it and turns it into a fully editable chart. Old notebooks welcome.",
+    hex: "#14b8a6",
+    iconBg: "rgba(20,184,166,0.12)",
+    cardBg: "rgba(20,184,166,0.04)",
+    glow: "rgba(20,184,166,0.18)",
   },
   {
-    icon: "▶️",
-    title: "Auto-scroll on stage",
-    description: "Hit play and the chart scrolls hands-free at your pace — large, readable text on phone, tablet or laptop. Keep both hands on your instrument.",
-    hex: "#10b981",
-    iconBg: "rgba(16,185,129,0.12)",
-    cardBg: "rgba(16,185,129,0.04)",
-    glow: "rgba(16,185,129,0.18)",
+    icon: "📋",
+    title: "Paste from any site",
+    description: "Copy lyrics and chords from anywhere on the web and paste them in — AI cleans up the formatting into a proper chart automatically.",
+    hex: "#06b6d4",
+    iconBg: "rgba(6,182,212,0.12)",
+    cardBg: "rgba(6,182,212,0.04)",
+    glow: "rgba(6,182,212,0.18)",
   },
   {
     icon: "🎸",
@@ -60,22 +60,49 @@ const features = [
     glow: "rgba(59,130,246,0.18)",
   },
   {
-    icon: "📷",
-    title: "Import photos & paste",
-    description: "Snap a photo of a paper or printed chord sheet, or paste from any site — AI cleans it up into a fully editable chart.",
-    hex: "#14b8a6",
-    iconBg: "rgba(20,184,166,0.12)",
-    cardBg: "rgba(20,184,166,0.04)",
-    glow: "rgba(20,184,166,0.18)",
+    icon: "🎚️",
+    title: "Transpose to your key",
+    description: "Move the whole chart up or down with one tap to fit your singer's range. Every chord updates instantly — no capo math.",
+    hex: "#8b5cf6",
+    iconBg: "rgba(139,92,246,0.12)",
+    cardBg: "rgba(139,92,246,0.04)",
+    glow: "rgba(139,92,246,0.18)",
+  },
+  {
+    icon: "▶️",
+    title: "Hands-free auto-scroll",
+    description: "Hit play and the chart scrolls at your pace — large, readable text on phone, tablet or laptop. On the sofa or mid-gig, keep both hands on your instrument.",
+    hex: "#10b981",
+    iconBg: "rgba(16,185,129,0.12)",
+    cardBg: "rgba(16,185,129,0.04)",
+    glow: "rgba(16,185,129,0.18)",
+  },
+  {
+    icon: "🗂️",
+    title: "Setlists & collections",
+    description: "Group songs into setlists for gigs, or collections for practicing at home — drag them into the order you want to play.",
+    hex: "#f59e0b",
+    iconBg: "rgba(245,158,11,0.12)",
+    cardBg: "rgba(245,158,11,0.04)",
+    glow: "rgba(245,158,11,0.18)",
   },
   {
     icon: "📄",
-    title: "Setlists, collections & PDF",
-    description: "Group songs into setlists for gigs — or simple collections for practicing at home. Export a clean PDF or share a link, all synced across devices.",
+    title: "One-tap PDF export",
+    description: "Export a clean, print-ready PDF with every chord still perfectly aligned — for the music stand, the folder, or the rest of the band.",
     hex: "#f43f5e",
     iconBg: "rgba(244,63,94,0.12)",
     cardBg: "rgba(244,63,94,0.04)",
     glow: "rgba(244,63,94,0.18)",
+  },
+  {
+    icon: "🔗",
+    title: "Share & sync",
+    description: "Send a link anyone can open and play, auto-scroll included — no account needed. Your own library stays synced across all your devices.",
+    hex: "#ec4899",
+    iconBg: "rgba(236,72,153,0.12)",
+    cardBg: "rgba(236,72,153,0.04)",
+    glow: "rgba(236,72,153,0.18)",
   },
 ];
 
@@ -156,7 +183,7 @@ export default async function HomePage() {
 
           <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
             Turn any song into a{" "}
-            <span className="gradient-text">stage-ready chord chart</span>
+            <span className="gradient-text">stunning, play-ready chord chart</span>
           </h1>
 
           <p className="hero-reveal hero-reveal-3 relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
@@ -229,7 +256,7 @@ export default async function HomePage() {
 
           {/* Caption */}
           <p className="relative text-xs text-white/25 mb-8 sm:mb-12">
-            Auto-scroll in action — hands-free play mode, exactly as it looks on stage
+            Auto-scroll in action — hands-free play mode, exactly as it looks when you play
           </p>
 
           {/* 3 highlights — horizontal until md, then 3-column vertical */}
@@ -237,7 +264,7 @@ export default async function HomePage() {
             {[
               { icon: "⚡", title: "Any song, a stunning chart", body: "Type a title and AI lays the chords over the lyrics, perfectly aligned — then style it with backgrounds and fonts until it's yours." },
               { icon: "🎚️", title: "In your singer's key",    body: "Transpose the whole chart up or down with one tap. No rewriting, no capo math."  },
-              { icon: "▶️", title: "Hands-free on stage",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
+              { icon: "▶️", title: "Hands-free playing",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
             ].map((h) => (
               <div key={h.title}
                 className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"
@@ -254,7 +281,7 @@ export default async function HomePage() {
           <div id="features" className="relative w-full max-w-6xl mx-auto pt-12 sm:pt-16 pb-2">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">
-              Everything you need on stage
+              Everything you need to play
             </h2>
             <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-base sm:text-lg">
               Whether you play the living room or the main stage — focus on the music, not the formatting.
@@ -463,7 +490,7 @@ export default async function HomePage() {
               Your songs deserve<br />a better home.
             </h2>
             <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
-              Build, transpose and perform your chord charts — from any device, any stage.
+              Build, transpose and play your chord charts — on any device, at home or on stage.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <CtaLink

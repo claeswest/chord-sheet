@@ -33,7 +33,7 @@ export default function TransformationSection() {
           Go from this to this — in 30 seconds
         </h2>
         <p className="text-center text-zinc-500 mb-10 sm:mb-14 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
-          Snap a photo of any handwritten chord sheet. AI reads it and turns it into a polished, stage-ready version — instantly.
+          Snap a photo of any handwritten chord sheet. AI reads it and turns it into a polished, play-ready version — instantly.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">

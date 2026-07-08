@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | ChordSheetMaker",
   },
   description:
-    "Create, edit and perform chord sheets with AI. Search any song by name, drag chords above lyrics, auto-scroll on stage, and export to PDF. Free to start.",
+    "Create, edit and play chord sheets with AI. Search any song by name, drag chords above lyrics, auto-scroll hands-free at home or on stage, and export to PDF. Free to start.",
   keywords: [
     "chord sheets",
     "chord chart",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     siteName: "ChordSheetMaker",
     title: "ChordSheetMaker — AI Chord Sheets for Musicians",
     description:
-      "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll on stage, export to PDF.",
+      "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll hands-free, export to PDF.",
     images: [
       {
         url: "/hero-photo.jpg",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ChordSheetMaker — AI Chord Sheets for Musicians",
     description:
-      "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll on stage, export to PDF.",
+      "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll hands-free, export to PDF.",
     images: ["/hero-photo.jpg"],
   },
   robots: {
