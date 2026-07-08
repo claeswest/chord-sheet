@@ -17,19 +17,6 @@ import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackPaywallSeen, trackSignUp } from "@/lib/analytics";
 
-/** Returns true if a hex colour is dark (luminance < 0.18) */
-function isDarkColour(hex: string): boolean {
-  const clean = hex.replace("#", "");
-  if (clean.length !== 6) return false;
-  const r = parseInt(clean.slice(0, 2), 16) / 255;
-  const g = parseInt(clean.slice(2, 4), 16) / 255;
-  const b = parseInt(clean.slice(4, 6), 16) / 255;
-  // Relative luminance (WCAG formula)
-  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-  return luminance < 0.18;
-}
-
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -1219,9 +1206,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 {/* Column headers */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  {/* Invisible clef spacer so SONG label aligns with title text */}
-                  <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                    <span className="shrink-0 text-4xl leading-none select-none invisible" aria-hidden>𝄞</span>
+                  {/* Invisible icon spacer so SONG label aligns with title text */}
+                  <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                    <span className="shrink-0 w-8" aria-hidden />
                     <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
                       Song
                       {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
@@ -1242,8 +1229,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                   const titleColor = "#3f3f46";
                   const artistColor = "#71717a";
-                  const rowBg = song.style?.background;
-
                   const isReorderTarget = dragOverSongId === song.id;
                   const firstCatAccent = song.categoryIds[0] ? getCatColor(song.categoryIds[0], categories).accent : null;
 
@@ -1284,8 +1269,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
                       }`}
                     >
-                      {/* Left-edge accent bar — category colour only (song colour shown via dot instead) */}
-                      {!rowBg && firstCatAccent ? (
+                      {/* Left-edge accent bar — category colour */}
+                      {firstCatAccent ? (
                         <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-50 ${firstCatAccent}`} />
                       ) : null}
 
@@ -1305,17 +1290,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         </div>
                       )}
 
-                      {/* Title — flex-1 wrapper keeps clef + link together */}
-                      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                      {/* Title — flex-1 wrapper keeps icon + link together */}
+                      <div className="flex-1 min-w-0 flex items-center gap-2.5">
                         <span
-                          className="shrink-0 text-3xl leading-none select-none"
-                          style={{
-  color: rowBg ? (isDarkColour(rowBg) ? "#d4aa7a" : rowBg) : "#c4c4c8",
-  opacity: rowBg ? 1 : 0.9,
-  filter: rowBg && !isDarkColour(rowBg) ? "saturate(1.6)" : undefined,
-}}
+                          className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
+                          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.16) 100%)" }}
                         >
-                          𝄞
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#6d6af8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                            <path d="M9 18V5l12-2v13" />
+                            <circle cx="6" cy="18" r="3" />
+                            <circle cx="18" cy="16" r="3" />
+                          </svg>
                         </span>
                         <Link
                           href={isLocked ? "#" : viewUrl}
