@@ -22,6 +22,10 @@ const FAQS = [
     a: "Yes. Paste text from anywhere, or snap a photo of a printed or handwritten sheet — AI reads it and turns it into a clean, editable chart in seconds.",
   },
   {
+    q: "Can my bandmates use a chart without an account?",
+    a: "Yes — send them a share link and it opens right in the browser, ready to play with auto-scroll. No account needed. A singer can even hide the chords and see just the lyrics.",
+  },
+  {
     q: "Is my music private?",
     a: "Completely. Your songs are visible only to you. If you want to share a chart with your band, you create a share link explicitly — nothing is ever public by default.",
   },

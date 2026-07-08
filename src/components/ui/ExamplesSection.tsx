@@ -70,7 +70,7 @@ function MiniSheet({ accents, lyric }: { accents: string[]; lyric: string }) {
 
 export default function ExamplesSection() {
   return (
-    <section className="relative px-4 sm:px-6 py-14 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
+    <section id="examples" className="relative px-4 sm:px-6 py-14 sm:py-24 overflow-hidden scroll-mt-16" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
       <div className="relative max-w-5xl mx-auto">
         <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Made with ChordSheetMaker</span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">Your sheets can look like this</h2>

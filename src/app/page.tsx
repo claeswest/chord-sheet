@@ -119,6 +119,7 @@ export default async function HomePage() {
             ChordSheet<span className="text-indigo-600">Maker</span>
           </span>
           <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
+            <Link href="#examples" className="hover:text-zinc-900 transition-colors hidden sm:block">Examples</Link>
             <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
             <Link href="#pricing"  className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
             {session ? (
@@ -187,12 +188,11 @@ export default async function HomePage() {
           </h1>
 
           <p className="hero-reveal hero-reveal-3 relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
-            Get a beautiful chart with every chord in the right place — styled with AI backgrounds
-            and fonts — then transpose it to your key and play hands-free with auto-scroll.
-            At home on the sofa, or on stage.
+            Get a beautiful chart with every chord in the right place — then press play
+            and perform it hands-free.
           </p>
 
-          <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-16 w-full sm:w-auto max-w-xs sm:max-w-none">
+          <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 w-full sm:w-auto max-w-xs sm:max-w-none">
             <CtaLink
               from="home-hero"
               href={session ? "/songs" : "/editor/new?start=demo"}
@@ -211,12 +211,17 @@ export default async function HomePage() {
             </CtaLink>
             <CtaLink
               from="home-see-how"
-              href={session ? "#features" : "/editor/new?start=demo"}
+              href={session ? "#how" : "/editor/new?start=demo"}
               className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
             >
               See how it works
             </CtaLink>
           </div>
+
+          {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
+          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/40 mb-10 sm:mb-14">
+            Free to start · No credit card · Ready in 30 seconds
+          </p>
 
           {/* Hero composite — musician scene with the live demo card floating over it */}
           <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl md:max-w-4xl mx-auto mb-4">
@@ -259,39 +264,42 @@ export default async function HomePage() {
             Auto-scroll in action — hands-free play mode, exactly as it looks when you play
           </p>
 
-          {/* 3 highlights — horizontal until md, then 3-column vertical */}
-          <div className="relative w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              { icon: "⚡", title: "Any song, a stunning chart", body: "Type a title and AI lays the chords over the lyrics, perfectly aligned — then style it with backgrounds and fonts until it's yours." },
-              { icon: "🎚️", title: "In your singer's key",    body: "Transpose the whole chart up or down with one tap. No rewriting, no capo math."  },
-              { icon: "▶️", title: "Hands-free playing",     body: "Hit play and the chart scrolls at your pace. Keep both hands on your instrument." },
-            ].map((h) => (
-              <div key={h.title}
-                className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"
-                style={{ background: "rgba(255,255,255,0.06)" }}>
-                <span className="text-3xl md:text-4xl md:mb-4 shrink-0">{h.icon}</span>
-                <div>
-                  <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
-                  <p className="text-xs md:text-sm text-white/50 leading-relaxed">{h.body}</p>
+          {/* How it works — 3 numbered steps ("See how it works" lands here) */}
+          <div id="how" className="relative w-full max-w-4xl mx-auto scroll-mt-24">
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-5">How it works</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
+                { n: 2, title: "Make it yours",            body: "Style it with AI backgrounds and fonts, drag chords into place, transpose to your key." },
+                { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — on phone, tablet or laptop." },
+              ].map((h) => (
+                <div key={h.n}
+                  className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"
+                  style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <span className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-indigo-500/25 border border-indigo-400/40 text-indigo-200 font-extrabold text-base md:text-lg shrink-0 md:mb-4 md:mx-auto">{h.n}</span>
+                  <div>
+                    <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
+                    <p className="text-xs md:text-sm text-white/50 leading-relaxed">{h.body}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {/* Features heading — inside the dark section so no hard cut */}
-          <div id="features" className="relative w-full max-w-6xl mx-auto pt-12 sm:pt-16 pb-2">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">
-              Everything you need to play
-            </h2>
-            <p className="text-center text-white/40 mb-0 max-w-xl mx-auto text-base sm:text-lg">
-              Whether you play the living room or the main stage — focus on the music, not the formatting.
-            </p>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── Features cards — light background ────────────────────────────── */}
-        <section className="px-4 sm:px-6 pt-8 sm:pt-10 pb-10 sm:pb-12" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
+        {/* ── Examples — the strongest proof, straight after the hero ──────── */}
+        <ExamplesSection />
+
+        {/* ── Features — heading + cards in one section ────────────────────── */}
+        <section id="features" className="px-4 sm:px-6 pt-12 sm:pt-16 pb-10 sm:pb-12 scroll-mt-16" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
           <div className="max-w-6xl mx-auto">
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">
+              Everything you need to play
+            </h2>
+            <p className="text-center text-zinc-500 mb-10 sm:mb-12 max-w-xl mx-auto text-base sm:text-lg">
+              Focus on the music, not the formatting.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {features.map((f) => (
                 <FeatureCard key={f.title} {...f} />
@@ -303,8 +311,8 @@ export default async function HomePage() {
         {/* ── Transformation ───────────────────────────────────────────────── */}
         <TransformationSection />
 
-        {/* ── Testimonial ──────────────────────────────────────────────────── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
+        {/* ── Testimonial — reassurance right before the pricing decision ──── */}
+        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
           <figure className="relative max-w-2xl mx-auto text-center">
             <span aria-hidden className="block text-6xl leading-none text-indigo-200 font-serif mb-2">&ldquo;</span>
             <blockquote className="text-lg sm:text-xl text-zinc-700 leading-relaxed">
@@ -330,9 +338,6 @@ export default async function HomePage() {
           </figure>
         </section>
 
-        {/* ── Examples ─────────────────────────────────────────────────────── */}
-        <ExamplesSection />
-
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
         <section id="pricing" className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
           {/* Radial glow */}
@@ -342,7 +347,10 @@ export default async function HomePage() {
           <div className="relative max-w-5xl mx-auto">
             <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Pricing</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">Plans &amp; pricing</h2>
-            <p className="text-center text-zinc-400 mb-8 sm:mb-12">Start free. Upgrade when you&apos;re ready.</p>
+            <p className="text-center text-zinc-400 mb-2">Start free. Upgrade when you&apos;re ready.</p>
+            <p className="text-center text-xs text-indigo-300/70 mb-8 sm:mb-12">
+              Every plan includes AI song search, photo import, and AI backgrounds &amp; fonts.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
               {PLAN_ORDER.map((planKey) => {
                 const plan = PLANS[planKey];
@@ -388,7 +396,9 @@ export default async function HomePage() {
 
                       {/* Description — fixed height, single line */}
                       <div className="h-6 flex items-center mt-1 justify-center sm:justify-start">
-                        <p className="text-xs text-zinc-400">{plan.description}</p>
+                        <p className="text-xs text-zinc-400">
+                          {planKey === "yearly" ? "≈ $6.60/month, billed yearly" : plan.description}
+                        </p>
                       </div>
                     </div>
 
@@ -501,7 +511,7 @@ export default async function HomePage() {
               >
                 <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                <span className="relative">{session ? "Go to my songs" : "Try it free"}</span>
+                <span className="relative">{session ? "Go to my songs" : "Create your first chart free"}</span>
                 <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
@@ -513,7 +523,7 @@ export default async function HomePage() {
               )}
             </div>
             {!session && (
-              <p className="mt-4 text-xs text-white/30">No credit card required · Free forever plan available</p>
+              <p className="mt-4 text-xs text-white/30">Free to start · No credit card · Works on any device</p>
             )}
           </div>
         </section>
