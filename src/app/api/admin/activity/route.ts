@@ -35,10 +35,21 @@ export async function GET(req: NextRequest) {
     if (to) where.createdAt.lte = new Date(new Date(to).getTime() + 24 * 60 * 60 * 1000 - 1);
   }
   if (q) {
+    // Prisma JSON filters have no case-insensitive mode, so match the song
+    // title against common capitalisations of the query ("boat" must find
+    // "Out of the Boat").
+    const titleCase = q.replace(/\S+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
+    const variants = Array.from(new Set([
+      q,
+      q.toLowerCase(),
+      q.toUpperCase(),
+      q[0].toUpperCase() + q.slice(1).toLowerCase(),
+      titleCase,
+    ]));
     where.OR = [
       { user: { name: { contains: q, mode: "insensitive" } } },
       { user: { email: { contains: q, mode: "insensitive" } } },
-      { meta: { path: ["title"], string_contains: q } },
+      ...variants.map((v) => ({ meta: { path: ["title"], string_contains: v } })),
     ];
   }
 
