@@ -7,6 +7,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
 import { adminRecipients } from "./notify";
+import { PLANS } from "./plans";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
@@ -51,9 +52,33 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
 
   const firstName = (user.name ?? "").split(" ")[0] || "there";
   const n = user._count.songs;
-  const songLine = n > 0
-    ? `You've built ${n} chord chart${n === 1 ? "" : "s"} on ChordSheetMaker — nice!`
-    : `Your ChordSheetMaker account is ready whenever you are.`;
+  const freeLimit = typeof PLANS.free.features.songLimit === "number" ? PLANS.free.features.songLimit : 5;
+  const atLimit = n >= freeLimit;
+  const monthly = PLANS.monthly.price;
+  const yearly = PLANS.yearly.price;
+
+  // The at-limit variant is the strongest nudge; below the limit, celebrate
+  // what they've built; zero songs gets a gentle "ready when you are".
+  const subject = atLimit
+    ? `Your free song slots are full — keep the music coming 🎸`
+    : n > 0
+    ? `Your ${n} chord chart${n === 1 ? " is" : "s are"} just the start 🎸`
+    : `Make your first stunning chord chart ✨`;
+  const songLine = atLimit
+    ? `You've built ${n} chord charts and filled all ${freeLimit} free slots — your next song needs a bigger home. Pro gives you:`
+    : n > 0
+    ? `You've built ${n} chord chart${n === 1 ? "" : "s"} on ChordSheetMaker — nice! Here's what Pro adds:`
+    : `Your ChordSheetMaker account is ready whenever you are — and Pro turns it into the full toolkit:`;
+
+  const benefits: [string, string][] = [
+    ["Unlimited songs", "build your whole repertoire, not just " + freeLimit],
+    ["PDF export", "print-ready charts with every chord perfectly aligned"],
+    ["Share links", "bandmates open and play with auto-scroll — no account needed"],
+    ["Setlists & collections", "organised for the gig, or just for the sofa"],
+  ];
+  const priceLine = `7-day free trial, then $${monthly}/month or $${yearly}/year. Cancel anytime — no charge during the trial.`;
+  const preheader = `Unlimited songs, PDF export, share links & setlists — try Pro free for 7 days.`;
+
   const unsubUrl = `${BASE_URL}/unsubscribe?u=${user.id}&t=${unsubscribeToken(user.id)}`;
   const cta = `${BASE_URL}/pricing`;
 
@@ -64,9 +89,17 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
       from: FROM,
       to: user.email,
       bcc: adminRecipients(), // owner gets a copy of every nudge
-      subject: n > 0 ? `Your ${n} song${n === 1 ? "" : "s"} deserve the full stage 🎸` : "Take ChordSheetMaker to the stage 🎸",
-      text: `Hi ${firstName},\n\n${songLine}\n\nWith Pro you get unlimited songs, PDF export, public sharing and setlists — and it starts with a 7-day free trial (cancel anytime, no charge during the trial).\n\nStart your free trial: ${cta}\n\n— Claes, ChordSheetMaker\n\nUnsubscribe from these emails: ${unsubUrl}`,
+      reply_to: adminRecipients()[0], // replies land with the founder
+      // Gmail/Yahoo bulk-sender requirement: one-click list unsubscribe.
+      // Points at the POST endpoint (RFC 8058); the footer link keeps the page.
+      headers: {
+        "List-Unsubscribe": `<${BASE_URL}/api/unsubscribe?u=${user.id}&t=${unsubscribeToken(user.id)}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+      subject,
+      text: `Hi ${firstName},\n\n${songLine}\n\n${benefits.map(([t, d]) => `- ${t} — ${d}`).join("\n")}\n\n${priceLine}\n\nStart your free trial: ${cta}\n\n— Claes, ChordSheetMaker\n\nUnsubscribe from these emails: ${unsubUrl}`,
       html: `<!doctype html><html><body style="margin:0;padding:0;background:#f0f0f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f5;padding:32px 16px;">
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
@@ -76,8 +109,11 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
         <tr><td style="padding:32px;">
           <h1 style="margin:0 0 8px;font-size:20px;color:#18181b;">Hi ${firstName} 👋</h1>
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#52525b;">${songLine}</p>
-          <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#52525b;">With <strong>Pro</strong> you get unlimited songs, PDF export, public sharing and setlists for every gig — starting with a <strong>7-day free trial</strong>. Cancel anytime, no charge during the trial.</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+            ${benefits.map(([t, d]) => `<tr><td style="padding:0 8px 10px 0;font-size:14px;line-height:1.5;color:#4f46e5;vertical-align:top;">&#10003;</td><td style="padding:0 0 10px;font-size:14px;line-height:1.5;color:#52525b;"><strong style="color:#18181b;">${t}</strong> — ${d}</td></tr>`).join("")}
+          </table>
           <a href="${cta}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 28px;border-radius:999px;">Start 7-day free trial →</a>
+          <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#a1a1aa;">${priceLine}</p>
           <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">— Claes, ChordSheetMaker</p>
         </td></tr>
         <tr><td style="padding:0 32px 24px;">
