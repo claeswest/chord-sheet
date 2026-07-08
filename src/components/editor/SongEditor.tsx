@@ -183,6 +183,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     ((initialSong.lines?.[0] as any)?.chords?.length ?? 0) === 0
   );
   const [startModalDismissed, setStartModalDismissed] = useState(!isBlankNew || !!initialMode);
+  // Activity provenance: how this song came to be — sent with the first save
+  // (the server only records it on create, so later saves are harmless).
+  const creationOrigin = useRef<string>(initialMode === "demo" ? "demo" : "scratch");
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [semitones, setSemitones] = useState(initialSong?.semitones ?? 0);
@@ -595,7 +598,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const persistSong = useCallback(async (opts?: { flash?: boolean }) => {
     if (isLoggedIn) {
       try {
-        await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle, semitones });
+        await upsertSong({ id: songId, title, artist, lines, tags: [], style: songStyle, semitones, origin: creationOrigin.current });
       } catch (err) {
         if (err instanceof SongLimitError) {
           // Redirect to songs page where the upgrade modal will guide the user
@@ -1282,7 +1285,11 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             ) : (
               <StylePanel
                 style={songStyle}
-                onChange={setSongStyle}
+                onChange={(s) => {
+                  // Throttled server-side (one row per song per 30 min)
+                  activityBeacon("style_changed", { songId, title });
+                  setSongStyle(s);
+                }}
                 songTitle={title}
                 songArtist={artist}
                 isLoggedIn={isLoggedIn}
@@ -1326,6 +1333,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         <TemplateModal
           onBack={() => setShowTemplateModal(false)}
           onSelect={(t: SongTemplate) => {
+            creationOrigin.current = "template";
             const built = t.build();
             suppressAutoSave.current = true; // don't save until user actually edits
             setLines(built);
@@ -1341,7 +1349,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {showImport && (
         <ImportModal
           defaultTab={showImport}
-          onImport={(imported, meta) => {
+          onImport={(imported, meta, source) => {
+            creationOrigin.current =
+              source === "search" ? "ai-search" : source === "photo" ? "photo" : "pasted-text";
             setLines(imported);
             if (meta?.title && meta.title !== "Unknown") setTitle(meta.title);
             if (meta?.artist) setArtist(meta.artist);

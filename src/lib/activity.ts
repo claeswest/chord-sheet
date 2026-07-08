@@ -18,6 +18,7 @@ export type ActivityType =
   | "song_imported"
   | "bg_generated"
   | "ai_styled"
+  | "style_changed"
   | "marketing_email";
 
 export async function logActivity(

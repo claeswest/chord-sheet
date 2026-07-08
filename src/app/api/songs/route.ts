@@ -82,6 +82,9 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const { id, title, artist, lines, tags, style, semitones } = body;
+  // Provenance tag from the editor (ai-search / pasted-text / photo / template /
+  // scratch / demo / duplicate) — only recorded on create, never trusted beyond a label.
+  const origin = typeof body.origin === "string" ? body.origin.slice(0, 30) : undefined;
 
   // Check if this is a new song (no existing record for this id + user)
   const existing = id
@@ -136,14 +139,18 @@ export async function POST(req: Request) {
 
   // Notify on a genuinely new song (not on every autosave — those hit `update`).
   if (!existing) {
-    await logActivity("song_created", session.user.id, { songId: song.id, title: song.title });
+    await logActivity("song_created", session.user.id, {
+      songId: song.id,
+      title: song.title,
+      ...(origin ? { origin } : {}),
+    });
     const u = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, email: true },
     });
     const who = u?.name || u?.email || "A user";
     await notifyAdmin("🎵 New song created", [
-      `${who} (${u?.email ?? "?"}) created a song: "${song.title || "Untitled Song"}"${song.artist ? ` — ${song.artist}` : ""}.`,
+      `${who} (${u?.email ?? "?"}) created a song: "${song.title || "Untitled Song"}"${song.artist ? ` — ${song.artist}` : ""}${origin ? ` (via ${origin})` : ""}.`,
     ]);
   }
 

@@ -11,7 +11,7 @@ interface ImportMeta {
 }
 
 interface Props {
-  onImport: (lines: SongLine[], meta?: ImportMeta) => void;
+  onImport: (lines: SongLine[], meta?: ImportMeta, source?: "search" | "text" | "photo") => void;
   onClose: (didImport?: boolean) => void;
   defaultTab?: "search" | "text" | "image";
 }
@@ -276,8 +276,8 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const handleImport = () => {
     if (preview.length > 0) {
       trackImportSuccess(importSource.current);
-      activityBeacon("song_imported", { source: importSource.current });
-      onImport(preview, meta);
+      activityBeacon("song_imported", { source: importSource.current, title: meta.title });
+      onImport(preview, meta, importSource.current);
       onClose(true);
     }
   };

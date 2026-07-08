@@ -24,7 +24,9 @@ export class SongLimitError extends Error {
   constructor() { super("limit_reached"); this.name = "SongLimitError"; }
 }
 
-export async function upsertSong(song: Omit<DbSong, "updatedAt">): Promise<DbSong> {
+/** `origin` tags how a brand-new song came to be (ai-search, pasted-text,
+ *  photo, template, scratch, demo, duplicate) — only read on create. */
+export async function upsertSong(song: Omit<DbSong, "updatedAt"> & { origin?: string }): Promise<DbSong> {
   const res = await fetch("/api/songs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -85,6 +87,7 @@ export async function duplicateSong(song: DbSong): Promise<DbSong> {
     lines: song.lines,
     tags: song.tags ?? [],
     style: fullStyle,
+    origin: "duplicate",
   });
 }
 

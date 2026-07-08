@@ -33,7 +33,21 @@ const TYPES: Record<string, { label: string; cls: string }> = {
   song_imported:   { label: "Song imported", cls: "bg-blue-900/40 text-blue-300" },
   bg_generated:    { label: "AI background", cls: "bg-fuchsia-900/40 text-fuchsia-300" },
   ai_styled:       { label: "AI text style", cls: "bg-purple-900/40 text-purple-300" },
+  style_changed:   { label: "Styled",        cls: "bg-pink-900/40 text-pink-300" },
   marketing_email: { label: "Nudge email sent", cls: "bg-orange-900/40 text-orange-300" },
+};
+
+// Friendly labels for song_created origins (and song_imported sources)
+const ORIGIN_LABELS: Record<string, string> = {
+  "ai-search": "AI search",
+  "pasted-text": "pasted text",
+  photo: "photo",
+  template: "template",
+  scratch: "written from scratch",
+  demo: "demo song",
+  duplicate: "duplicated",
+  search: "AI search", // song_imported beacon uses "search"
+  text: "pasted text",
 };
 
 function metaSummary(item: Item): string {
@@ -41,7 +55,8 @@ function metaSummary(item: Item): string {
   const parts: string[] = [];
   if (typeof m.title === "string" && m.title) parts.push(`"${m.title}"`);
   if (typeof m.plan === "string") parts.push(m.plan + (typeof m.status === "string" ? ` (${m.status})` : ""));
-  if (typeof m.source === "string") parts.push(`via ${m.source}`);
+  if (typeof m.source === "string") parts.push(`via ${ORIGIN_LABELS[m.source] ?? m.source}`);
+  if (typeof m.origin === "string") parts.push(`via ${ORIGIN_LABELS[m.origin] ?? m.origin}`);
   if (typeof m.email === "string" && !item.user) parts.push(m.email);
   return parts.join(" · ");
 }

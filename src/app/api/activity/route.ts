@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { logActivity, logActivityThrottled, type ActivityType } from "@/lib/activity";
 
 // Beacon for client-side events. Whitelisted types only; requires a session
-// (guest events are silently ignored). chord_added is throttled per song.
-const CLIENT_TYPES = new Set(["chord_added", "pdf_exported", "song_imported"]);
+// (guest events are silently ignored). chord_added/style_changed are throttled per song.
+const CLIENT_TYPES = new Set(["chord_added", "pdf_exported", "song_imported", "style_changed"]);
+const THROTTLED_TYPES = new Set(["chord_added", "style_changed"]);
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -21,8 +22,8 @@ export async function POST(req: Request) {
   if (typeof body.title === "string" && body.title) meta.title = body.title.slice(0, 200);
   if (typeof body.source === "string" && body.source) meta.source = body.source.slice(0, 50);
 
-  if (type === "chord_added" && songId) {
-    await logActivityThrottled(type, session.user.id, songId, meta);
+  if (THROTTLED_TYPES.has(type) && songId) {
+    await logActivityThrottled(type as ActivityType, session.user.id, songId, meta);
   } else {
     await logActivity(type as ActivityType, session.user.id, songId ? { songId, ...meta } : meta);
   }
