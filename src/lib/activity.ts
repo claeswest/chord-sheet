@@ -44,7 +44,7 @@ const THROTTLE_MS = 30 * 60 * 1000;
  */
 export async function logActivityThrottled(
   type: ActivityType,
-  userId: string,
+  userId: string | null, // null = guest event (song ids are per-browser unique)
   songId: string,
   meta?: Record<string, unknown>
 ): Promise<void> {

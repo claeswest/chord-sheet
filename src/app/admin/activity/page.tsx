@@ -153,7 +153,9 @@ export default function AdminActivityPage() {
             )}
             {data.items.map((item) => {
               const t = TYPES[item.type] ?? { label: item.type, cls: "bg-zinc-800 text-zinc-400" };
-              const who = item.user?.name ?? item.user?.email ?? "Deleted user";
+              // Anonymous visitors carry a per-browser id in meta.guest
+              const guestId = !item.user && typeof item.meta?.guest === "string" ? item.meta.guest : null;
+              const who = item.user?.name ?? item.user?.email ?? (guestId ? `Guest ${guestId}` : "Deleted user");
               return (
                 <div key={item.id} className="flex items-center gap-3 px-4 sm:px-5 py-2.5">
                   {/* User (click = filter) */}
@@ -166,8 +168,8 @@ export default function AdminActivityPage() {
                     {item.user?.image ? (
                       <img src={item.user.image} alt="" referrerPolicy="no-referrer" className="w-7 h-7 rounded-full object-cover shrink-0" />
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                        {who[0]?.toUpperCase() ?? "?"}
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${guestId ? "bg-zinc-700" : "bg-indigo-600"}`}>
+                        {guestId ? "?" : who[0]?.toUpperCase() ?? "?"}
                       </div>
                     )}
                     <span className="text-sm text-white truncate group-hover:text-indigo-300 transition-colors">{who}</span>

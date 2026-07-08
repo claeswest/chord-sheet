@@ -625,6 +625,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       void backgroundImage;
       saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString(), style: safeStyle, semitones });
       setGuestEdited(true); // ensure the "saved on this device" reminder shows
+      // Guest songs never hit /api/songs, so log create/edit from here
+      // (server records them anonymously; edits throttled per song).
+      if (isNewSong) {
+        activityBeacon("song_created", { songId, title, origin: creationOrigin.current });
+      } else {
+        activityBeacon("song_edited", { songId, title });
+      }
     }
     if (!songSavedTracked.current) {
       songSavedTracked.current = true;

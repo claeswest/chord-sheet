@@ -84,12 +84,28 @@ export const trackSignupNudge = (action: "shown" | "clicked") =>
 export const trackSignUp = () => track("sign_up");
 
 // ── Server activity log beacon (admin /activity feed) ───────────────────────
+
+/** Stable per-browser id so guest (not-logged-in) activity shows up in the
+ *  admin feed as "Guest a3f2k9" instead of being dropped entirely. */
+function anonId(): string | undefined {
+  try {
+    let id = localStorage.getItem("csm_anon");
+    if (!id) {
+      id = Math.random().toString(36).slice(2, 8);
+      localStorage.setItem("csm_anon", id);
+    }
+    return id;
+  } catch {
+    return undefined;
+  }
+}
+
 export function activityBeacon(type: string, data: Record<string, unknown> = {}): void {
   try {
     fetch("/api/activity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, ...data }),
+      body: JSON.stringify({ type, anon: anonId(), ...data }),
       keepalive: true,
     }).catch(() => {});
   } catch { /* never break the UI */ }
