@@ -12,9 +12,10 @@ interface Props {
   artist: string;
   lines: SongLine[];
   style?: SongStyle;
+  token?: string;
 }
 
-export default function ShareViewer({ title, artist, lines, style }: Props) {
+export default function ShareViewer({ title, artist, lines, style, token }: Props) {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <SongViewer
@@ -22,6 +23,9 @@ export default function ShareViewer({ title, artist, lines, style }: Props) {
         artist={artist}
         lines={lines}
         songStyle={style}
+        // Share token doubles as the per-song id so viewer preferences
+        // (scroll speed, hide chords) persist for this link
+        songId={token}
         isShared
       />
     </div>

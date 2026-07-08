@@ -20,6 +20,7 @@ export default async function SharePage({ params }: Props) {
       artist={share.artist}
       lines={content.lines ?? []}
       style={content.style ?? undefined}
+      token={token}
     />
   );
 }

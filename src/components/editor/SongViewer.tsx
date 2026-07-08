@@ -79,10 +79,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     typeof window !== "undefined" && window.innerWidth < 640 ? -3 : 0
   );
   const [perfMode, setPerfMode] = useState(false);
-  // Lyrics-only mode for vocalists — device-wide preference, so a singer who
-  // opens a bandmate's share link keeps it across songs.
+  // Lyrics-only mode for vocalists — remembered per song, like scroll speed.
+  const hideChordsKey = songId ? `hideChords:${songId}` : null;
   const [hideChords, setHideChords] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem("hideChords") === "1"
+    () => !!hideChordsKey && typeof window !== "undefined" && localStorage.getItem(hideChordsKey) === "1"
   );
   const [showControls, setShowControls] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -179,10 +179,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
     if (speedKey) localStorage.setItem(speedKey, String(speed));
   }, [speed, speedKey]);
 
-  // Persist lyrics-only preference (device-wide)
+  // Persist lyrics-only preference (per song)
   useEffect(() => {
-    localStorage.setItem("hideChords", hideChords ? "1" : "0");
-  }, [hideChords]);
+    if (hideChordsKey) localStorage.setItem(hideChordsKey, hideChords ? "1" : "0");
+  }, [hideChords, hideChordsKey]);
 
   // Re-measure chord positions once all fonts have finished loading.
   // Without this, chords are positioned using fallback-font metrics and then
