@@ -163,16 +163,16 @@ function AdminUsersInner() {
   const [search, setSearch] = useState(currentQ);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [previewSongId, setPreviewSongId] = useState<string | null>(null);
-  // Upgrade-nudge email feedback per user: "sending" | API SendResult
+  // Marketing email feedback per user: "sending" | API SendResult
   const [emailStatus, setEmailStatus] = useState<Record<string, string>>({});
 
-  async function sendNudge(userId: string) {
+  async function sendEmail(userId: string, template: string) {
     setEmailStatus((m) => ({ ...m, [userId]: "sending" }));
     try {
       const res = await fetch("/api/admin/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds: [userId] }),
+        body: JSON.stringify({ userIds: [userId], template }),
       });
       const d = await res.json();
       setEmailStatus((m) => ({ ...m, [userId]: d.results?.[userId] ?? "failed" }));
@@ -383,19 +383,34 @@ function AdminUsersInner() {
                             })()}
                           </p>
 
-                          {/* Upgrade-nudge email (free users only) */}
-                          {(user.plan === "free" || !user.plan) && (
-                            <div className="flex items-center gap-3 mb-4">
+                          {/* Marketing emails — upgrade only makes sense for free users */}
+                          <div className="flex flex-wrap items-center gap-2 mb-4">
                               {user.marketingOptOut ? (
                                 <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
                               ) : (
                                 <>
+                                  {(user.plan === "free" || !user.plan) && (
+                                    <button
+                                      onClick={() => sendEmail(user.id, "upgrade_nudge")}
+                                      disabled={emailStatus[user.id] === "sending"}
+                                      className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                      ✉️ Upgrade nudge
+                                    </button>
+                                  )}
                                   <button
-                                    onClick={() => sendNudge(user.id)}
+                                    onClick={() => sendEmail(user.id, "welcome_tips")}
                                     disabled={emailStatus[user.id] === "sending"}
-                                    className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                    className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
                                   >
-                                    ✉️ Send upgrade email
+                                    👋 Welcome tips
+                                  </button>
+                                  <button
+                                    onClick={() => sendEmail(user.id, "winback")}
+                                    disabled={emailStatus[user.id] === "sending"}
+                                    className="flex items-center gap-1.5 text-xs font-semibold bg-violet-700 hover:bg-violet-600 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                  >
+                                    🎶 Win-back
                                   </button>
                                   {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
                                   {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
@@ -407,8 +422,7 @@ function AdminUsersInner() {
                                   )}
                                 </>
                               )}
-                            </div>
-                          )}
+                          </div>
 
                           {/* Categories */}
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">

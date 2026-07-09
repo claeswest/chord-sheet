@@ -32,9 +32,90 @@ export function verifyUnsubscribeToken(userId: string, token: string): boolean {
 
 export type SendResult = "sent" | "skipped_optout" | "skipped_recent" | "failed";
 
-/** Sends the upgrade-nudge email to one user. Skips opt-outs and anyone
- *  emailed within the last 7 days. */
-export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
+export const MARKETING_TEMPLATES = ["upgrade_nudge", "welcome_tips", "winback"] as const;
+export type MarketingTemplate = (typeof MARKETING_TEMPLATES)[number];
+
+type EmailContent = {
+  subject: string;
+  preheader: string;
+  intro: string;              // paragraph under "Hi X 👋"
+  items: [string, string][];  // checkmark rows: [title, description]
+  ctaLabel: string;
+  ctaUrl: string;
+  footnote?: string;          // small print under the CTA (price etc.)
+};
+
+function buildContent(template: MarketingTemplate, firstName: string, n: number): EmailContent {
+  const freeLimit = typeof PLANS.free.features.songLimit === "number" ? PLANS.free.features.songLimit : 5;
+  const monthly = PLANS.monthly.price;
+  const yearly = PLANS.yearly.price;
+
+  if (template === "welcome_tips") {
+    return {
+      subject: `Welcome, ${firstName} — 3 tricks worth knowing 🎸`,
+      preheader: "Photograph old sheets, style with AI, play hands-free.",
+      intro: "Great to have you on ChordSheetMaker! Here are three things musicians love that are easy to miss:",
+      items: [
+        ["Snap a photo", "photograph a handwritten or printed sheet — AI turns it into an editable chart"],
+        ["Make it beautiful", "open the Style panel and try an AI background and fonts — your chart, your look"],
+        ["Play hands-free", "press play and the chart scrolls at your pace. Singers can even hide the chords"],
+      ],
+      ctaLabel: "Open your songs →",
+      ctaUrl: `${BASE_URL}/songs`,
+      footnote: "Stuck on anything? Just reply to this email — I read every message.",
+    };
+  }
+
+  if (template === "winback") {
+    return {
+      subject: n > 0
+        ? `Your ${n} chord chart${n === 1 ? "" : "s"} miss${n === 1 ? "es" : ""} you 🎶`
+        : `Come see what's new on ChordSheetMaker 🎶`,
+      preheader: "Lyrics-only mode for singers, smarter imports, more beautiful charts.",
+      intro: n > 0
+        ? `It's been a while! Your chord charts are right where you left them — and ChordSheetMaker has picked up some new tricks since your last visit:`
+        : `It's been a while! ChordSheetMaker has picked up some new tricks since your last visit:`,
+      items: [
+        ["Lyrics-only mode", "singers can hide the chords with one tap and get a clean lyric sheet"],
+        ["More beautiful charts", "sharper chord typography and smarter AI styling"],
+        ["Share links", "send a chart to a bandmate — they play along with auto-scroll, no account needed"],
+      ],
+      ctaLabel: "Pick up where you left off →",
+      ctaUrl: `${BASE_URL}/songs`,
+      footnote: "Anything missing that would make it more useful for you? Reply and tell me — I read every message.",
+    };
+  }
+
+  // upgrade_nudge — the at-limit variant is the strongest; below the limit,
+  // celebrate what they've built; zero songs gets a gentle "ready when you are".
+  const atLimit = n >= freeLimit;
+  return {
+    subject: atLimit
+      ? `Your free song slots are full — keep the music coming 🎸`
+      : n > 0
+      ? `Your ${n} chord chart${n === 1 ? " is" : "s are"} just the start 🎸`
+      : `Make your first stunning chord chart ✨`,
+    preheader: "Unlimited songs, PDF export, share links & setlists — try Pro free for 7 days.",
+    intro: atLimit
+      ? `You've built ${n} chord charts and filled all ${freeLimit} free slots — your next song needs a bigger home. Pro gives you:`
+      : n > 0
+      ? `You've built ${n} chord chart${n === 1 ? "" : "s"} on ChordSheetMaker — nice! Here's what Pro adds:`
+      : `Your ChordSheetMaker account is ready whenever you are — and Pro turns it into the full toolkit:`,
+    items: [
+      ["Unlimited songs", "build your whole repertoire, not just " + freeLimit],
+      ["PDF export", "print-ready charts with every chord perfectly aligned"],
+      ["Share links", "bandmates open and play with auto-scroll — no account needed"],
+      ["Setlists & collections", "organised for the gig, or just for the sofa"],
+    ],
+    ctaLabel: "Start 7-day free trial →",
+    ctaUrl: `${BASE_URL}/pricing`,
+    footnote: `7-day free trial, then $${monthly}/month or $${yearly}/year. Cancel anytime — no charge during the trial.`,
+  };
+}
+
+/** Sends one marketing email to one user. Skips opt-outs and anyone
+ *  emailed within the last 7 days (shared across templates). */
+export async function sendMarketingEmail(userId: string, template: MarketingTemplate): Promise<SendResult> {
   if (!RESEND_API_KEY) return "failed";
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -51,36 +132,10 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
   }
 
   const firstName = (user.name ?? "").split(" ")[0] || "there";
-  const n = user._count.songs;
-  const freeLimit = typeof PLANS.free.features.songLimit === "number" ? PLANS.free.features.songLimit : 5;
-  const atLimit = n >= freeLimit;
-  const monthly = PLANS.monthly.price;
-  const yearly = PLANS.yearly.price;
-
-  // The at-limit variant is the strongest nudge; below the limit, celebrate
-  // what they've built; zero songs gets a gentle "ready when you are".
-  const subject = atLimit
-    ? `Your free song slots are full — keep the music coming 🎸`
-    : n > 0
-    ? `Your ${n} chord chart${n === 1 ? " is" : "s are"} just the start 🎸`
-    : `Make your first stunning chord chart ✨`;
-  const songLine = atLimit
-    ? `You've built ${n} chord charts and filled all ${freeLimit} free slots — your next song needs a bigger home. Pro gives you:`
-    : n > 0
-    ? `You've built ${n} chord chart${n === 1 ? "" : "s"} on ChordSheetMaker — nice! Here's what Pro adds:`
-    : `Your ChordSheetMaker account is ready whenever you are — and Pro turns it into the full toolkit:`;
-
-  const benefits: [string, string][] = [
-    ["Unlimited songs", "build your whole repertoire, not just " + freeLimit],
-    ["PDF export", "print-ready charts with every chord perfectly aligned"],
-    ["Share links", "bandmates open and play with auto-scroll — no account needed"],
-    ["Setlists & collections", "organised for the gig, or just for the sofa"],
-  ];
-  const priceLine = `7-day free trial, then $${monthly}/month or $${yearly}/year. Cancel anytime — no charge during the trial.`;
-  const preheader = `Unlimited songs, PDF export, share links & setlists — try Pro free for 7 days.`;
+  const { subject, preheader, intro, items, ctaLabel, ctaUrl, footnote } =
+    buildContent(template, firstName, user._count.songs);
 
   const unsubUrl = `${BASE_URL}/unsubscribe?u=${user.id}&t=${unsubscribeToken(user.id)}`;
-  const cta = `${BASE_URL}/pricing`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -97,7 +152,7 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
       subject,
-      text: `Hi ${firstName},\n\n${songLine}\n\n${benefits.map(([t, d]) => `- ${t} — ${d}`).join("\n")}\n\n${priceLine}\n\nStart your free trial: ${cta}\n\n— Claes, ChordSheetMaker\n\nUnsubscribe from these emails: ${unsubUrl}`,
+      text: `Hi ${firstName},\n\n${intro}\n\n${items.map(([t, d]) => `- ${t} — ${d}`).join("\n")}\n\n${footnote ? footnote + "\n\n" : ""}${ctaLabel.replace(" →", "")}: ${ctaUrl}\n\n— Claes, ChordSheetMaker\n\nUnsubscribe from these emails: ${unsubUrl}`,
       html: `<!doctype html><html><body style="margin:0;padding:0;background:#f0f0f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f5;padding:32px 16px;">
@@ -108,12 +163,12 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
         </td></tr>
         <tr><td style="padding:32px;">
           <h1 style="margin:0 0 8px;font-size:20px;color:#18181b;">Hi ${firstName} 👋</h1>
-          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#52525b;">${songLine}</p>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#52525b;">${intro}</p>
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            ${benefits.map(([t, d]) => `<tr><td style="padding:0 8px 10px 0;font-size:14px;line-height:1.5;color:#4f46e5;vertical-align:top;">&#10003;</td><td style="padding:0 0 10px;font-size:14px;line-height:1.5;color:#52525b;"><strong style="color:#18181b;">${t}</strong> — ${d}</td></tr>`).join("")}
+            ${items.map(([t, d]) => `<tr><td style="padding:0 8px 10px 0;font-size:14px;line-height:1.5;color:#4f46e5;vertical-align:top;">&#10003;</td><td style="padding:0 0 10px;font-size:14px;line-height:1.5;color:#52525b;"><strong style="color:#18181b;">${t}</strong> — ${d}</td></tr>`).join("")}
           </table>
-          <a href="${cta}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 28px;border-radius:999px;">Start 7-day free trial →</a>
-          <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#a1a1aa;">${priceLine}</p>
+          <a href="${ctaUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 28px;border-radius:999px;">${ctaLabel}</a>
+          ${footnote ? `<p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#a1a1aa;">${footnote}</p>` : ""}
           <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">— Claes, ChordSheetMaker</p>
         </td></tr>
         <tr><td style="padding:0 32px 24px;">
@@ -128,6 +183,6 @@ export async function sendUpgradeNudge(userId: string): Promise<SendResult> {
   if (!res.ok) return "failed";
 
   await prisma.user.update({ where: { id: user.id }, data: { lastMarketingEmailAt: new Date() } });
-  await logActivity("marketing_email", user.id, { template: "upgrade_nudge" });
+  await logActivity("marketing_email", user.id, { template });
   return "sent";
 }
