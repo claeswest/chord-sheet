@@ -13,9 +13,10 @@ interface Props {
   lines: SongLine[];
   style?: SongStyle;
   token?: string;
+  promo?: boolean;
 }
 
-export default function ShareViewer({ title, artist, lines, style, token }: Props) {
+export default function ShareViewer({ title, artist, lines, style, token, promo }: Props) {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <SongViewer
@@ -27,6 +28,7 @@ export default function ShareViewer({ title, artist, lines, style, token }: Prop
         // (scroll speed, hide chords) persist for this link
         songId={token}
         isShared
+        promoCta={promo}
       />
     </div>
   );

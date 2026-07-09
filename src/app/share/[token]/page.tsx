@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
 import ShareViewer from "./ShareViewer";
 
 interface Props {
@@ -8,7 +9,10 @@ interface Props {
 
 export default async function SharePage({ params }: Props) {
   const { token } = await params;
-  const share = await prisma.share.findUnique({ where: { id: token } });
+  const [share, session] = await Promise.all([
+    prisma.share.findUnique({ where: { id: token } }),
+    auth(),
+  ]);
 
   if (!share) notFound();
 
@@ -21,6 +25,8 @@ export default async function SharePage({ params }: Props) {
       lines={content.lines ?? []}
       style={content.style ?? undefined}
       token={token}
+      // Growth loop: recipients without an account get a "create your own" CTA
+      promo={!session?.user}
     />
   );
 }

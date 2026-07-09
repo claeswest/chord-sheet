@@ -11,6 +11,7 @@ import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@/lib/pdfExport";
 import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
 import Kbd from "@/components/ui/Kbd";
+import CtaLink from "@/components/ui/CtaLink";
 import PrintView from "./PrintView";
 import ChordLabel from "./ChordLabel";
 
@@ -37,6 +38,7 @@ interface Props {
   songId?: string;
   loading?: boolean; // parent can keep overlay up while fetching data
   isShared?: boolean; // hides the share button on public share pages
+  promoCta?: boolean; // share pages: viewer has no account → show "create your own" CTA
 }
 
 // Pixels per millisecond at each speed step (display-rate independent).
@@ -62,7 +64,7 @@ function isLightBg(hex?: string): boolean {
 }
 
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -607,21 +609,36 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         style={{ transition: showControls ? "opacity 200ms ease-in" : "opacity 1200ms ease-out" }}
       >
         <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
-          {/* Logo */}
-          <Link href="/songs" className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
+          {/* Logo — account-less share viewers land on the marketing page */}
+          <Link href={promoCta ? "/" : "/songs"} className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-300">Maker</span>
           </Link>
           <div className="flex-1" />
-          {/* Songs link */}
-          <Link
-            href="/songs"
-            className="text-sm font-bold text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Songs
-          </Link>
+          {promoCta ? (
+            /* Growth loop: this viewer got the link from a bandmate — the
+               warmest possible lead. One tasteful CTA, fades with the UI. */
+            <CtaLink
+              from="share-page"
+              href="/editor/new?start=demo"
+              className="text-sm font-bold text-white hover:scale-[1.03] transition-all px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-indigo-900/50"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+            >
+              Make your own — free
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+              </svg>
+            </CtaLink>
+          ) : (
+            <Link
+              href="/songs"
+              className="text-sm font-bold text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Songs
+            </Link>
+          )}
         </div>
       </div>
 
