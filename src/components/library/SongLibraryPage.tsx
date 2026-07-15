@@ -694,27 +694,40 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             className="hidden sm:inline shrink-0 text-white/20 hover:text-white/60 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
                             title="Drag to reorder"
                           >⠿</span>
-                          {/* ▲ ▼ buttons — mobile only */}
-                          <span className="sm:hidden flex flex-col shrink-0 -my-1">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "up"); }}
-                              className="text-white/30 hover:text-white transition-colors leading-none py-0.5"
-                              title="Move up"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "down"); }}
-                              className="text-white/30 hover:text-white transition-colors leading-none py-0.5"
-                              title="Move down"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          </span>
+                          {/* ▲ ▼ reorder pill — mobile only (no drag on touch).
+                              Joined buttons with real tap areas; arrows that
+                              can't move further are dimmed and inert. */}
+                          {(() => {
+                            const sibs = categories.filter((c) => (c.parentId ?? null) === (cat.parentId ?? null));
+                            const idx = sibs.findIndex((c) => c.id === cat.id);
+                            return (
+                              <span className="sm:hidden flex flex-col shrink-0 mr-1 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "up"); }}
+                                  disabled={idx <= 0}
+                                  className="text-white/40 active:bg-white/20 active:text-white transition-colors px-1.5 pt-1.5 pb-1 disabled:opacity-20"
+                                  title="Move up"
+                                  aria-label={`Move ${cat.name} up`}
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </button>
+                                <span className="h-px bg-white/10" />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "down"); }}
+                                  disabled={idx >= sibs.length - 1}
+                                  className="text-white/40 active:bg-white/20 active:text-white transition-colors px-1.5 pt-1 pb-1.5 disabled:opacity-20"
+                                  title="Move down"
+                                  aria-label={`Move ${cat.name} down`}
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </span>
+                            );
+                          })()}
                           <span className="w-4 h-4 shrink-0 flex items-center justify-center">
                             {children.length > 0 && (
                               <button onClick={() => toggleCollapse(cat.id)} className="text-white/60 hover:text-white transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
