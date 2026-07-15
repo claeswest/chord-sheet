@@ -32,7 +32,7 @@ export function verifyUnsubscribeToken(userId: string, token: string): boolean {
 
 export type SendResult = "sent" | "skipped_optout" | "skipped_recent" | "failed";
 
-export const MARKETING_TEMPLATES = ["upgrade_nudge", "welcome_tips", "winback"] as const;
+export const MARKETING_TEMPLATES = ["upgrade_nudge", "welcome_tips", "winback", "ai_magic", "band_share"] as const;
 export type MarketingTemplate = (typeof MARKETING_TEMPLATES)[number];
 
 type EmailContent = {
@@ -83,6 +83,38 @@ function buildContent(template: MarketingTemplate, firstName: string, n: number)
       ctaLabel: "Pick up where you left off →",
       ctaUrl: `${BASE_URL}/songs`,
       footnote: "Anything missing that would make it more useful for you? Reply and tell me — I read every message.",
+    };
+  }
+
+  if (template === "ai_magic") {
+    return {
+      subject: `Your song picks its own look 🎨`,
+      preheader: "The AI reads your lyrics — colors, fonts and background follow the song.",
+      intro: "Here's a little secret about the Style panel: the AI doesn't pick colors at random. It reads what your song is about and designs for it:",
+      items: [
+        ["Colors from the lyrics", "a moody ballad gets dusk tones, a summer tune gets warmth — the palette follows the story"],
+        ["Fonts with feeling", "typefaces are matched to the mood, from clean and modern to warm and handwritten"],
+        ["A background that fits", "the AI background illustrates your song — neon city, ocean mist, an autumn road…"],
+      ],
+      ctaLabel: "Style one of your songs →",
+      ctaUrl: `${BASE_URL}/songs`,
+      footnote: "Open a song → Style → generate. Try it on your most-played song first — and reply if you want tips, I read every message.",
+    };
+  }
+
+  if (template === "band_share") {
+    return {
+      subject: `Your whole band can play from your charts 🎤`,
+      preheader: "One link — bandmates play with auto-scroll; singers see just the lyrics.",
+      intro: "Play with other people? Every chart you make can be shared with a single link:",
+      items: [
+        ["One link, ready to play", "bandmates open it in any browser and play along with auto-scroll — no account needed"],
+        ["Singers get their own view", "one tap hides the chords and leaves a clean lyric sheet"],
+        ["Everyone in the same key", "transpose before you share, and the whole band reads the same chart"],
+      ],
+      ctaLabel: "Share a chart →",
+      ctaUrl: `${BASE_URL}/songs`,
+      footnote: `Share links are part of Pro — 7-day free trial, then $${monthly}/month. Cancel anytime.`,
     };
   }
 

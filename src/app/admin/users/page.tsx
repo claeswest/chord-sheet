@@ -60,6 +60,22 @@ interface UsersResponse {
   pages: number;
 }
 
+interface EmailHistoryItem {
+  id: string;
+  sentAt: string;
+  template: string;
+}
+
+// Labels for the marketing-email templates (mirror MARKETING_TEMPLATES)
+const EMAIL_TEMPLATES: [string, string][] = [
+  ["upgrade_nudge", "✉️ Upgrade nudge"],
+  ["welcome_tips", "👋 Welcome tips"],
+  ["winback", "🎶 Win-back"],
+  ["ai_magic", "🎨 AI magic"],
+  ["band_share", "🎤 Band sharing"],
+];
+const TEMPLATE_LABELS = Object.fromEntries(EMAIL_TEMPLATES);
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
@@ -165,6 +181,17 @@ function AdminUsersInner() {
   const [previewSongId, setPreviewSongId] = useState<string | null>(null);
   // Marketing email feedback per user: "sending" | API SendResult
   const [emailStatus, setEmailStatus] = useState<Record<string, string>>({});
+  // Selected template in the per-user send dropdown
+  const [emailTemplate, setEmailTemplate] = useState<Record<string, string>>({});
+  // Full send history per user (from the activity log), lazy-loaded on expand
+  const [userEmails, setUserEmails] = useState<Record<string, EmailHistoryItem[]>>({});
+
+  function loadEmailHistory(userId: string) {
+    fetch(`/api/admin/users/${userId}/emails`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
+      .then((d) => setUserEmails((m) => ({ ...m, [userId]: d.emails })))
+      .catch(() => {});
+  }
 
   async function sendEmail(userId: string, template: string) {
     setEmailStatus((m) => ({ ...m, [userId]: "sending" }));
@@ -175,7 +202,9 @@ function AdminUsersInner() {
         body: JSON.stringify({ userIds: [userId], template }),
       });
       const d = await res.json();
-      setEmailStatus((m) => ({ ...m, [userId]: d.results?.[userId] ?? "failed" }));
+      const result = d.results?.[userId] ?? "failed";
+      setEmailStatus((m) => ({ ...m, [userId]: result }));
+      if (result === "sent") loadEmailHistory(userId); // reflect the new send
     } catch {
       setEmailStatus((m) => ({ ...m, [userId]: "failed" }));
     }
@@ -192,6 +221,7 @@ function AdminUsersInner() {
         .then((d) => setUserSongs((m) => ({ ...m, [userId]: d.songs })))
         .catch(() => {});
     }
+    if (!userEmails[userId]) loadEmailHistory(userId);
   }
 
   const load = useCallback(
@@ -389,40 +419,52 @@ function AdminUsersInner() {
                                 <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
                               ) : (
                                 <>
-                                  {(user.plan === "free" || !user.plan) && (
-                                    <button
-                                      onClick={() => sendEmail(user.id, "upgrade_nudge")}
-                                      disabled={emailStatus[user.id] === "sending"}
-                                      className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                    >
-                                      ✉️ Upgrade nudge
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => sendEmail(user.id, "welcome_tips")}
-                                    disabled={emailStatus[user.id] === "sending"}
-                                    className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                  <select
+                                    value={emailTemplate[user.id] ?? ((user.plan === "free" || !user.plan) ? "upgrade_nudge" : "welcome_tips")}
+                                    onChange={(e) => setEmailTemplate((m) => ({ ...m, [user.id]: e.target.value }))}
+                                    className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg px-2 py-1.5"
                                   >
-                                    👋 Welcome tips
-                                  </button>
+                                    {EMAIL_TEMPLATES
+                                      // Upgrade pitch makes no sense for paying users
+                                      .filter(([key]) => key !== "upgrade_nudge" || user.plan === "free" || !user.plan)
+                                      .map(([key, label]) => (
+                                        <option key={key} value={key}>{label}</option>
+                                      ))}
+                                  </select>
                                   <button
-                                    onClick={() => sendEmail(user.id, "winback")}
+                                    onClick={() => sendEmail(user.id, emailTemplate[user.id] ?? ((user.plan === "free" || !user.plan) ? "upgrade_nudge" : "welcome_tips"))}
                                     disabled={emailStatus[user.id] === "sending"}
-                                    className="flex items-center gap-1.5 text-xs font-semibold bg-violet-700 hover:bg-violet-600 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                    className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
                                   >
-                                    🎶 Win-back
+                                    Send email
                                   </button>
                                   {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
                                   {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
                                   {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within 7 days</span>}
                                   {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
                                   {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
-                                  {!emailStatus[user.id] && user.lastMarketingEmailAt && (
-                                    <span className="text-xs text-zinc-500">Last emailed {formatDate(user.lastMarketingEmailAt)}</span>
-                                  )}
                                 </>
                               )}
                           </div>
+
+                          {/* Email history — every marketing send, from the activity log */}
+                          {(userEmails[user.id]?.length ?? 0) > 0 ? (
+                            <div className="mb-4">
+                              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
+                                Emails sent ({userEmails[user.id].length})
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {userEmails[user.id].map((e) => (
+                                  <span key={e.id} className="text-[11px] px-2 py-1 rounded-lg bg-zinc-800/70 text-zinc-300">
+                                    {TEMPLATE_LABELS[e.template] ?? e.template}
+                                    <span className="text-zinc-500"> · {formatDate(e.sentAt)}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-zinc-600 mb-4">No marketing emails sent yet.</p>
+                          )}
 
                           {/* Categories */}
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
