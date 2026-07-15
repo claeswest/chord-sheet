@@ -38,9 +38,10 @@ export async function logActivity(
 const THROTTLE_MS = 30 * 60 * 1000;
 
 /**
- * Log at most once per (type, user, songId) per 30 minutes — for noisy events
- * like song_opened / song_edited / chord_added, so one editing session is one
- * row instead of hundreds.
+ * One row per (type, user, songId) per 30 minutes — for noisy events like
+ * song_opened / song_edited / chord_added, so one editing session is one row
+ * instead of hundreds. Repeats within the window aren't dropped: they bump
+ * meta.count and append to meta.times, so the admin feed can expand them.
  */
 export async function logActivityThrottled(
   type: ActivityType,
@@ -56,9 +57,24 @@ export async function logActivityThrottled(
         createdAt: { gte: new Date(Date.now() - THROTTLE_MS) },
         meta: { path: ["songId"], equals: songId },
       },
-      select: { id: true },
+      select: { id: true, meta: true },
     });
-    if (recent) return;
+    if (recent) {
+      const m = (recent.meta ?? {}) as Record<string, unknown>;
+      const times = Array.isArray(m.times) ? (m.times as string[]) : [];
+      if (times.length < 200) times.push(new Date().toISOString());
+      await prisma.activityLog.update({
+        where: { id: recent.id },
+        data: {
+          meta: {
+            ...m,
+            count: (typeof m.count === "number" ? m.count : 1) + 1,
+            times,
+          } as never,
+        },
+      });
+      return;
+    }
     await logActivity(type, userId, { songId, ...meta });
   } catch {
     /* never break the caller */

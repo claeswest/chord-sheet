@@ -10,11 +10,14 @@ function formatDate(iso: string) {
   });
 }
 
-/** "just now" / "3h ago" / "5d ago" / "Jun 12" — for the last-active column. */
+/** "4 min ago" / "3h ago" / "5d ago" / "Jun 12" — for the last-active column. */
 export function relativeTime(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const h = Math.floor(ms / 3_600_000);
-  if (h < 1) return "just now";
+  if (h < 1) {
+    const m = Math.floor(ms / 60_000);
+    return m < 1 ? "<1 min ago" : `${m} min ago`;
+  }
   if (h < 24) return `${h}h ago`;
   const d = Math.floor(h / 24);
   if (d < 30) return `${d}d ago`;

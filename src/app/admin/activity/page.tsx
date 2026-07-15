@@ -76,6 +76,8 @@ export default function AdminActivityPage() {
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
   const [includeAdmins, setIncludeAdmins] = useState(false);
+  // Throttled events carry repeats in meta.times — this expands them per row
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -156,8 +158,13 @@ export default function AdminActivityPage() {
               // Anonymous visitors carry a per-browser id in meta.guest
               const guestId = !item.user && typeof item.meta?.guest === "string" ? item.meta.guest : null;
               const who = item.user?.name ?? item.user?.email ?? (guestId ? `Guest ${guestId}` : "Deleted user");
+              // Throttle window repeats: count + individual timestamps
+              const count = typeof item.meta?.count === "number" ? item.meta.count : 1;
+              const times: string[] = [item.createdAt, ...(Array.isArray(item.meta?.times) ? (item.meta.times as string[]) : [])];
+              const expanded = expandedEventId === item.id;
               return (
-                <div key={item.id} className="flex items-center gap-3 px-4 sm:px-5 py-2.5">
+                <div key={item.id}>
+                <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5">
                   {/* User (click = filter) */}
                   <button
                     onClick={() => { if (item.user) { setUserId(item.user.id); setUserLabel(who); setPage(1); } }}
@@ -179,6 +186,17 @@ export default function AdminActivityPage() {
                     {t.label}
                   </span>
 
+                  {/* Repeats within the 30-min throttle window — click to expand */}
+                  {count > 1 && (
+                    <button
+                      onClick={() => setExpandedEventId(expanded ? null : item.id)}
+                      className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors whitespace-nowrap"
+                      title={`${count} times within 30 min — click to ${expanded ? "collapse" : "expand"}`}
+                    >
+                      ×{count} {expanded ? "▴" : "▾"}
+                    </button>
+                  )}
+
                   <span className="flex-1 min-w-0 text-xs text-zinc-400 truncate">{metaSummary(item)}</span>
 
                   <span
@@ -187,6 +205,18 @@ export default function AdminActivityPage() {
                   >
                     {relativeTime(item.createdAt)}
                   </span>
+                </div>
+                {expanded && (
+                  <div className="px-4 sm:px-5 pb-3 pl-16 sm:pl-20">
+                    <div className="flex flex-wrap gap-1.5">
+                      {times.map((ts, i) => (
+                        <span key={i} className="text-[11px] px-2 py-0.5 rounded bg-zinc-800/60 text-zinc-400 font-mono">
+                          {new Date(ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 </div>
               );
             })}
