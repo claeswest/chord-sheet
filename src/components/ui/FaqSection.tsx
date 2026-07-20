@@ -22,6 +22,10 @@ const FAQS = [
     a: "Yes. Paste text from anywhere, or snap a photo of a printed or handwritten sheet — AI reads it and turns it into a clean, editable chart in seconds.",
   },
   {
+    q: "Can I organise songs into setlists?",
+    a: "Yes — group songs into folders: setlists for gigs, or collections like 'Campfire' or 'Sunday practice' for playing at home. Drag songs in and put them in the order you want to play them.",
+  },
+  {
     q: "Can my bandmates use a chart without an account?",
     a: "Yes — send them a share link and it opens right in the browser, ready to play with auto-scroll. No account needed. A singer can even hide the chords and see just the lyrics.",
   },

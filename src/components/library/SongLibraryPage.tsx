@@ -15,7 +15,7 @@ import {
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
-import { trackPaywallSeen, trackSignUp } from "@/lib/analytics";
+import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analytics";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -140,6 +140,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
   // Sidebar open/close — hidden by default on mobile, open on desktop
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Categories discovery tip — almost nobody finds the feature on their own
+  const [categoriesTipDismissed, setCategoriesTipDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem("categoriesTipDismissed") === "1"
+  );
+  const categoriesTipFired = useRef(false);
   useEffect(() => {
     if (window.innerWidth >= 1024) setSidebarOpen(true);
   }, []);
@@ -1058,6 +1063,47 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 }}
               />
             )}
+
+            {/* Categories discovery tip — 3+ songs, zero categories, once per device */}
+            {isLoggedIn && !loading && !categoriesTipDismissed && songs.length >= 3 && categories.length === 0 && (() => {
+              if (!categoriesTipFired.current) { categoriesTipFired.current = true; trackCategoriesTip("shown"); }
+              return (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-3 mt-4">
+                  <span className="flex items-start sm:items-center gap-2.5 min-w-0 text-sm text-zinc-600">
+                    <span className="shrink-0 text-lg" aria-hidden>🗂️</span>
+                    <span>
+                      <strong className="font-semibold text-zinc-800">Your songs can live in folders.</strong>{" "}
+                      Group them into setlists for gigs or collections for practice — then drag any song onto a folder to file it.
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                    <button
+                      onClick={() => {
+                        trackCategoriesTip("clicked");
+                        setCategoriesTipDismissed(true);
+                        localStorage.setItem("categoriesTipDismissed", "1");
+                        setSidebarOpen(true);       // mobile: reveal the drawer
+                        setShowAddCategory(true);   // focus the "Add category" input
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm transition-colors"
+                    >
+                      Create a folder
+                    </button>
+                    <button
+                      onClick={() => {
+                        trackCategoriesTip("dismissed");
+                        setCategoriesTipDismissed(true);
+                        localStorage.setItem("categoriesTipDismissed", "1");
+                      }}
+                      aria-label="Dismiss"
+                      className="text-zinc-400 hover:text-zinc-600 px-1.5 py-1 transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                </div>
+              );
+            })()}
 
             {loading ? (
               <div className="flex items-center justify-center pb-40" style={{ height: "50vh" }}>

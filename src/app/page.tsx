@@ -18,7 +18,7 @@ const FEATURE_LABELS: Record<string, string> = {
   chordTranspose: "Chord transposition",
   pdfExport: "PDF export",
   sharing: "Public song sharing",
-  setlists: "Setlists / folders",
+  setlists: "Setlists & collections",
   prioritySupport: "Priority support",
 };
 
@@ -271,7 +271,7 @@ export default async function HomePage() {
               {[
                 { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
                 { n: 2, title: "Make it yours",            body: "Style it with AI backgrounds and fonts, drag chords into place, transpose to your key." },
-                { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — on phone, tablet or laptop." },
+                { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — then file it into a setlist or collection for next time." },
               ].map((h) => (
                 <div key={h.n}
                   className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"

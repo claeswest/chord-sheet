@@ -86,6 +86,10 @@ export const trackKeepModal = (action: "shown" | "clicked" | "dismissed") =>
 export const trackStunningTip = (action: "shown" | "clicked" | "dismissed") =>
   track("stunning_tip", { action });
 
+/** Library callout that drives discovery of categories (setlists/collections). */
+export const trackCategoriesTip = (action: "shown" | "clicked" | "dismissed") =>
+  track("categories_tip", { action });
+
 /** A new account was created (fired once, client-side, on the first visit
  *  after registration). GA4-recommended event name — mark as key event so
  *  Traffic acquisition can attribute signups to channel/campaign. */
