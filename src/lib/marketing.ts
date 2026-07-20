@@ -32,8 +32,13 @@ export function verifyUnsubscribeToken(userId: string, token: string): boolean {
 
 export type SendResult = "sent" | "skipped_optout" | "skipped_recent" | "failed";
 
-export const MARKETING_TEMPLATES = ["upgrade_nudge", "welcome_tips", "winback", "ai_magic", "band_share"] as const;
+export const MARKETING_TEMPLATES = [
+  "upgrade_nudge", "welcome_tips", "winback", "ai_magic", "band_share", "photo_rescue", "feedback_ask",
+] as const;
 export type MarketingTemplate = (typeof MARKETING_TEMPLATES)[number];
+
+/** Minimum gap between marketing emails to the same user. */
+export const EMAIL_COOLDOWN_DAYS = 3;
 
 type EmailContent = {
   subject: string;
@@ -118,6 +123,38 @@ function buildContent(template: MarketingTemplate, firstName: string, n: number)
     };
   }
 
+  if (template === "photo_rescue") {
+    return {
+      subject: `That binder of old chord sheets? 📷`,
+      preheader: "Photograph a page — AI turns it into a clean, editable chart.",
+      intro: "Got a binder or notebook full of handwritten chord sheets? You don't have to type them in:",
+      items: [
+        ["Snap a photo", "photograph the page — printed or handwritten, even messy"],
+        ["AI does the typing", "lyrics and chords come out as a clean, editable chart"],
+        ["Fix the details", "drag any chord to the right syllable, transpose, restyle — done"],
+      ],
+      ctaLabel: "Rescue a song →",
+      ctaUrl: `${BASE_URL}/songs`,
+      footnote: "Works best with one song per photo. Reply with a photo if you'd like me to test one for you!",
+    };
+  }
+
+  if (template === "feedback_ask") {
+    return {
+      subject: `Quick question from the maker of ChordSheetMaker 💬`,
+      preheader: "One-man band here — your reply goes straight to me.",
+      intro: "I'm Claes, and I build ChordSheetMaker single-handedly. You've tried it — and honest feedback from real musicians is the most valuable thing I can get. Three things I'd love to know:",
+      items: [
+        ["What were you trying to make?", "a song for practice, a setlist for a gig, something else?"],
+        ["Where did it fall short?", "anything confusing, missing or annoying"],
+        ["What would make it a keeper?", "the one thing that would bring you back"],
+      ],
+      ctaLabel: "Just hit reply 💬",
+      ctaUrl: `mailto:claes@clavos.se`,
+      footnote: "No survey, no forms — replies land straight in my inbox, and I answer every one.",
+    };
+  }
+
   // upgrade_nudge — the at-limit variant is the strongest; below the limit,
   // celebrate what they've built; zero songs gets a gentle "ready when you are".
   const atLimit = n >= freeLimit;
@@ -159,7 +196,7 @@ export async function sendMarketingEmail(userId: string, template: MarketingTemp
   });
   if (!user?.email) return "failed";
   if (user.marketingOptOut) return "skipped_optout";
-  if (user.lastMarketingEmailAt && Date.now() - user.lastMarketingEmailAt.getTime() < 7 * 24 * 3600_000) {
+  if (user.lastMarketingEmailAt && Date.now() - user.lastMarketingEmailAt.getTime() < EMAIL_COOLDOWN_DAYS * 24 * 3600_000) {
     return "skipped_recent";
   }
 

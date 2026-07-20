@@ -68,13 +68,26 @@ interface EmailHistoryItem {
 
 // Labels for the marketing-email templates (mirror MARKETING_TEMPLATES)
 const EMAIL_TEMPLATES: [string, string][] = [
-  ["upgrade_nudge", "✉️ Upgrade nudge"],
   ["welcome_tips", "👋 Welcome tips"],
-  ["winback", "🎶 Win-back"],
   ["ai_magic", "🎨 AI magic"],
+  ["photo_rescue", "📷 Photo rescue"],
   ["band_share", "🎤 Band sharing"],
+  ["upgrade_nudge", "✉️ Upgrade nudge"],
+  ["feedback_ask", "💬 Feedback ask"],
+  ["winback", "🎶 Win-back"],
 ];
 const TEMPLATE_LABELS = Object.fromEntries(EMAIL_TEMPLATES);
+
+// Suggested drip order. Win-back sits outside the sequence — it's situational
+// (send when someone goes quiet, not as a scheduled step).
+const EMAIL_SEQUENCE = ["welcome_tips", "ai_magic", "photo_rescue", "band_share", "upgrade_nudge", "feedback_ask"];
+const EMAIL_COOLDOWN_DAYS = 3; // mirror EMAIL_COOLDOWN_DAYS in lib/marketing
+
+/** First unsent step in the sequence (skipping the upgrade pitch for payers). */
+function suggestNextTemplate(sentTemplates: Set<string>, plan: string | null): string {
+  const seq = EMAIL_SEQUENCE.filter((t) => t !== "upgrade_nudge" || plan === "free" || !plan);
+  return seq.find((t) => !sentTemplates.has(t)) ?? "winback";
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -413,58 +426,88 @@ function AdminUsersInner() {
                             })()}
                           </p>
 
-                          {/* Marketing emails — upgrade only makes sense for free users */}
-                          <div className="flex flex-wrap items-center gap-2 mb-4">
-                              {user.marketingOptOut ? (
-                                <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
-                              ) : (
-                                <>
-                                  <select
-                                    value={emailTemplate[user.id] ?? ((user.plan === "free" || !user.plan) ? "upgrade_nudge" : "welcome_tips")}
-                                    onChange={(e) => setEmailTemplate((m) => ({ ...m, [user.id]: e.target.value }))}
-                                    className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg px-2 py-1.5"
-                                  >
-                                    {EMAIL_TEMPLATES
-                                      // Upgrade pitch makes no sense for paying users
-                                      .filter(([key]) => key !== "upgrade_nudge" || user.plan === "free" || !user.plan)
-                                      .map(([key, label]) => (
-                                        <option key={key} value={key}>{label}</option>
-                                      ))}
-                                  </select>
-                                  <button
-                                    onClick={() => sendEmail(user.id, emailTemplate[user.id] ?? ((user.plan === "free" || !user.plan) ? "upgrade_nudge" : "welcome_tips"))}
-                                    disabled={emailStatus[user.id] === "sending"}
-                                    className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                  >
-                                    Send email
-                                  </button>
-                                  {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
-                                  {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
-                                  {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within 7 days</span>}
-                                  {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
-                                  {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
-                                </>
-                              )}
-                          </div>
+                          {/* Marketing emails — drip tracker + send controls */}
+                          {(() => {
+                            const history = userEmails[user.id] ?? [];
+                            const sentByTemplate = new Map<string, string>(); // template → latest sentAt
+                            history.forEach((e) => { if (!sentByTemplate.has(e.template)) sentByTemplate.set(e.template, e.sentAt); });
+                            const suggested = suggestNextTemplate(new Set(sentByTemplate.keys()), user.plan);
+                            const selected = emailTemplate[user.id] ?? suggested;
+                            const last = user.lastMarketingEmailAt ? new Date(user.lastMarketingEmailAt).getTime() : null;
+                            const cooldownUntil = last ? last + EMAIL_COOLDOWN_DAYS * 86400000 : null;
+                            const coolingDown = cooldownUntil !== null && cooldownUntil > Date.now();
+                            const trackerSteps = [
+                              ...EMAIL_SEQUENCE.filter((t) => t !== "upgrade_nudge" || user.plan === "free" || !user.plan),
+                              "winback",
+                            ];
+                            return (
+                              <div className="mb-4">
+                                {/* Sequence tracker: ✓ sent · ● suggested next · rest pending */}
+                                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Email sequence</p>
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                  {trackerSteps.map((t) => {
+                                    const sentAt = sentByTemplate.get(t);
+                                    const isNext = !user.marketingOptOut && t === suggested;
+                                    return (
+                                      <span
+                                        key={t}
+                                        className={`text-[11px] px-2 py-1 rounded-lg border ${
+                                          sentAt
+                                            ? "bg-emerald-900/30 border-emerald-800/60 text-emerald-300"
+                                            : isNext
+                                            ? "bg-indigo-900/40 border-indigo-500 text-indigo-200 font-semibold"
+                                            : "bg-zinc-800/50 border-zinc-800 text-zinc-500"
+                                        }`}
+                                        title={sentAt ? `Sent ${formatDate(sentAt)}` : isNext ? "Suggested next" : "Not sent yet"}
+                                      >
+                                        {sentAt ? "✓ " : isNext ? "● " : ""}{TEMPLATE_LABELS[t] ?? t}
+                                        {sentAt && <span className="text-emerald-500/70"> · {formatDate(sentAt)}</span>}
+                                        {isNext && !sentAt && <span className="text-indigo-400"> · next</span>}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
 
-                          {/* Email history — every marketing send, from the activity log */}
-                          {(userEmails[user.id]?.length ?? 0) > 0 ? (
-                            <div className="mb-4">
-                              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
-                                Emails sent ({userEmails[user.id].length})
-                              </p>
-                              <div className="flex flex-wrap gap-1.5">
-                                {userEmails[user.id].map((e) => (
-                                  <span key={e.id} className="text-[11px] px-2 py-1 rounded-lg bg-zinc-800/70 text-zinc-300">
-                                    {TEMPLATE_LABELS[e.template] ?? e.template}
-                                    <span className="text-zinc-500"> · {formatDate(e.sentAt)}</span>
-                                  </span>
-                                ))}
+                                {user.marketingOptOut ? (
+                                  <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
+                                ) : (
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                      value={selected}
+                                      onChange={(e) => setEmailTemplate((m) => ({ ...m, [user.id]: e.target.value }))}
+                                      className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg px-2 py-1.5"
+                                    >
+                                      {EMAIL_TEMPLATES
+                                        // Upgrade pitch makes no sense for paying users
+                                        .filter(([key]) => key !== "upgrade_nudge" || user.plan === "free" || !user.plan)
+                                        .map(([key, label]) => (
+                                          <option key={key} value={key}>
+                                            {label}{key === suggested ? "  (next)" : sentByTemplate.has(key) ? "  ✓ sent" : ""}
+                                          </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                      onClick={() => sendEmail(user.id, selected)}
+                                      disabled={emailStatus[user.id] === "sending" || coolingDown}
+                                      className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                      Send email
+                                    </button>
+                                    {coolingDown && (
+                                      <span className="text-xs text-amber-400/90">
+                                        ⏳ Cooldown — can send again {formatDate(new Date(cooldownUntil!).toISOString())}
+                                      </span>
+                                    )}
+                                    {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
+                                    {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
+                                    {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within {EMAIL_COOLDOWN_DAYS} days</span>}
+                                    {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
+                                    {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
+                                  </div>
+                                )}
                               </div>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-zinc-600 mb-4">No marketing emails sent yet.</p>
-                          )}
+                            );
+                          })()}
 
                           {/* Categories */}
                           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
