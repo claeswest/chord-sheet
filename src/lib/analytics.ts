@@ -78,6 +78,10 @@ export const trackTrialStarted = (plan: string) =>
 export const trackSignupNudge = (action: "shown" | "clicked") =>
   track("signup_nudge", { action });
 
+/** One-time "keep your song" modal for guests — the strongest signup moment. */
+export const trackKeepModal = (action: "shown" | "clicked" | "dismissed") =>
+  track("guest_keep_modal", { action });
+
 /** A new account was created (fired once, client-side, on the first visit
  *  after registration). GA4-recommended event name — mark as key event so
  *  Traffic acquisition can attribute signups to channel/campaign. */

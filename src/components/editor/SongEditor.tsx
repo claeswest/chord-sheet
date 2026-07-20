@@ -39,7 +39,7 @@ import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import {
   trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
-  trackDemoStarted, trackFirstEdit, trackSignupNudge, activityBeacon,
+  trackDemoStarted, trackFirstEdit, trackSignupNudge, trackKeepModal, activityBeacon,
 } from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
@@ -161,6 +161,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const guestNudgeFired = useRef(false);
   // Guests are capped at the free song limit — block saving a new song past it.
   const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
+  // One-time "keep your song" modal for guests — fired at a moment of pride
+  // (leaving play mode) or at an idle pause, never twice per device.
+  const [showKeepModal, setShowKeepModal] = useState(false);
   const guestLimitNotified = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
@@ -721,6 +724,29 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     setLines(next);
   };
 
+  // The strongest signup moment: the guest has built something and paused.
+  // Shown once per device, ever — respect beats repetition.
+  const maybeShowKeepModal = useCallback(() => {
+    if (isLoggedIn || typeof window === "undefined") return;
+    if (localStorage.getItem("guestKeepModalShown") === "1") return;
+    if (isDemo && !guestEdited) return; // the untouched demo isn't "their" chart yet
+    const hasContent =
+      title.trim() !== "" || artist.trim() !== "" ||
+      lines.some((l) => (l.type === "section" ? !!l.label : (!!l.text || l.chords.length > 0)));
+    if (!hasContent) return;
+    localStorage.setItem("guestKeepModalShown", "1");
+    setShowKeepModal(true);
+    trackKeepModal("shown");
+  }, [isLoggedIn, isDemo, guestEdited, title, artist, lines]);
+
+  // Fallback trigger: 3 minutes after the last guest edit (a natural pause).
+  // The play-exit trigger below usually fires first.
+  useEffect(() => {
+    if (!guestEdited || isLoggedIn) return;
+    const t = setTimeout(maybeShowKeepModal, 3 * 60_000);
+    return () => clearTimeout(t);
+  }, [guestEdited, isLoggedIn, maybeShowKeepModal]);
+
   // Persistent "saved only on this device" reminder for guests editing a song
   // with content (one banner at a time: the demo banner takes priority).
   const guestHasContent =
@@ -749,7 +775,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         title={title}
         artist={artist}
         lines={displayLines}
-        onEdit={() => setViewMode(false)}
+        onEdit={() => { setViewMode(false); maybeShowKeepModal(); }}
         songStyle={songStyle}
         songId={songId}
       />
@@ -1405,6 +1431,37 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </Link>
             <button onClick={() => setShowGuestLimitModal(false)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
               Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* "Keep your song" modal — one-time guest signup moment */}
+      {showKeepModal && !showGuestLimitModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+          onClick={() => { setShowKeepModal(false); trackKeepModal("dismissed"); }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-4xl mb-3" aria-hidden>🎉</div>
+            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">Your chart looks great!</h2>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-5">
+              Right now it lives only in this browser — clear your history and it&apos;s gone.
+              Create a free account in 30 seconds and your songs follow you to any device.
+              Everything you&apos;ve made moves over automatically.
+            </p>
+            <Link
+              href="/login?next=/songs&from=save"
+              onClick={() => trackKeepModal("clicked")}
+              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              Keep my songs — free →
+            </Link>
+            <button
+              onClick={() => { setShowKeepModal(false); trackKeepModal("dismissed"); }}
+              className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              Not now
             </button>
           </div>
         </div>
