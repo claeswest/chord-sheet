@@ -355,6 +355,9 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
               <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
             ) : "✦ Style with AI"}
           </button>
+          <p className="text-[11px] text-zinc-400 leading-snug mt-1.5 text-center">
+            The AI reads your lyrics and picks fonts, sizes &amp; colours to match the song&apos;s mood.
+          </p>
           {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
           <div className="flex items-center gap-2 mt-3">
             <div className="flex-1 h-px bg-zinc-200" />
@@ -369,6 +372,13 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-4"}
         onPaste={handlePaste}
       >
+
+          {/* Why the AI results feel personal — most users never realise this */}
+          <p className="text-[11px] leading-snug rounded-xl border border-violet-100 bg-violet-50 px-3 py-2 text-violet-900/70">
+            ✦ <strong className="font-semibold text-violet-700">The AI reads your song.</strong>{" "}
+            Generate a background and it paints what your lyrics are about — a moody
+            ballad gets dusk tones, a summer tune gets light.
+          </p>
 
           {/* ── Page color ── */}
           <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">

@@ -39,7 +39,7 @@ import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import {
   trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
-  trackDemoStarted, trackFirstEdit, trackSignupNudge, trackKeepModal, activityBeacon,
+  trackDemoStarted, trackFirstEdit, trackSignupNudge, trackKeepModal, trackStunningTip, activityBeacon,
 } from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
@@ -164,6 +164,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // One-time "keep your song" modal for guests — fired at a moment of pride
   // (leaving play mode) or at an idle pause, never twice per device.
   const [showKeepModal, setShowKeepModal] = useState(false);
+  const [stunningTipDismissed, setStunningTipDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem("stunningTipDismissed") === "1"
+  );
   const guestLimitNotified = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
@@ -757,6 +760,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const showGuestSaveReminder =
     !isLoggedIn && !showDemoBanner && guestHasContent && (!isDemo || guestEdited);
 
+  // "Make it stunning" callout — most users never discover that the AI reads
+  // the song and designs for it. Shown while a song with content is still on
+  // the plain default look; disappears forever once styled or dismissed.
+  const looksUnstyled =
+    !songStyle.backgroundImage && (songStyle.background ?? "#ffffff").toLowerCase() === "#ffffff";
+  const showStunningTip =
+    !stunningTipDismissed && looksUnstyled && guestHasContent &&
+    !showGuestSaveReminder && !showDemoBanner;
+  const stunningTipShownFired = useRef(false);
+  useEffect(() => {
+    if (showStunningTip && !stunningTipShownFired.current) {
+      stunningTipShownFired.current = true;
+      trackStunningTip("shown");
+    }
+  }, [showStunningTip]);
+
   // Fire the "shown" analytics event once, the first time the reminder appears.
   useEffect(() => {
     if (showGuestSaveReminder && !guestNudgeFired.current) {
@@ -1134,6 +1153,47 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
             </svg>
           </Link>
+        </div>
+      )}
+
+      {/* "Make it stunning" callout — surfaces the AI styling nobody finds */}
+      {showStunningTip && (
+        <div
+          className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 text-white shrink-0"
+          style={{ background: "linear-gradient(90deg, #4338ca 0%, #7c3aed 60%, #a21caf 100%)" }}
+        >
+          <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
+            <span className="shrink-0">✨</span>
+            <span>
+              <strong className="font-semibold">Make it stunning.</strong>
+              <span className="text-white/80"> The AI reads your song and designs a background &amp; matching style for it.</span>
+            </span>
+          </span>
+          <span className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => {
+                trackStunningTip("clicked");
+                setStunningTipDismissed(true);
+                localStorage.setItem("stunningTipDismissed", "1");
+                setRightPanel("background");
+                setShowRightPanel(true);
+              }}
+              className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors"
+            >
+              Try it
+            </button>
+            <button
+              onClick={() => {
+                trackStunningTip("dismissed");
+                setStunningTipDismissed(true);
+                localStorage.setItem("stunningTipDismissed", "1");
+              }}
+              aria-label="Dismiss"
+              className="text-white/60 hover:text-white px-1.5 py-1 transition-colors"
+            >
+              ✕
+            </button>
+          </span>
         </div>
       )}
 

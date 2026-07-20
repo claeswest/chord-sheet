@@ -82,6 +82,10 @@ export const trackSignupNudge = (action: "shown" | "clicked") =>
 export const trackKeepModal = (action: "shown" | "clicked" | "dismissed") =>
   track("guest_keep_modal", { action });
 
+/** "Make it stunning" callout — drives discovery of AI styling/backgrounds. */
+export const trackStunningTip = (action: "shown" | "clicked" | "dismissed") =>
+  track("stunning_tip", { action });
+
 /** A new account was created (fired once, client-side, on the first visit
  *  after registration). GA4-recommended event name — mark as key event so
  *  Traffic acquisition can attribute signups to channel/campaign. */
