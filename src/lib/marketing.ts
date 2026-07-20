@@ -174,7 +174,6 @@ function buildContent(template: MarketingTemplate, firstName: string, n: number)
       ["Unlimited songs", "build your whole repertoire, not just " + freeLimit],
       ["PDF export", "print-ready charts with every chord perfectly aligned"],
       ["Share links", "bandmates open and play with auto-scroll — no account needed"],
-      ["Setlists & collections", "organised for the gig, or just for the sofa"],
     ],
     ctaLabel: "Start 7-day free trial →",
     ctaUrl: `${BASE_URL}/pricing`,

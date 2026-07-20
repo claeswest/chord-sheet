@@ -552,7 +552,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             <span className="shrink-0">✨</span>
             <span className="truncate">
               <strong className="font-semibold">Free plan</strong>
-              <span className="text-indigo-900/55"> · {Math.min(songs.length, songLimit)} of {songLimit} songs used — go unlimited with PDF export, sharing &amp; setlists.</span>
+              <span className="text-indigo-900/55"> · {Math.min(songs.length, songLimit)} of {songLimit} songs used — go unlimited with PDF export &amp; sharing.</span>
             </span>
           </span>
           <div className="flex items-center gap-1 shrink-0">

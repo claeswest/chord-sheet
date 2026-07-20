@@ -28,7 +28,9 @@ export const PLANS: Record<Plan, PlanConfig> = {
       songLimit: 5,
       pdfExport: false,
       sharing: false,
-      setlists: false,
+      // Deliberately free: organising songs builds the return habit that the
+      // paid features later monetise. The API never gated it anyway.
+      setlists: true,
       chordTranspose: true,
       prioritySupport: false,
     },

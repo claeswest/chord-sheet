@@ -867,7 +867,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               {upgradeFeature === "pdf" ? "PDF export is a Pro feature" : "Sharing is a Pro feature"}
             </h2>
             <p className="text-sm text-zinc-500 leading-relaxed mb-5">
-              Go Pro to export clean PDFs, share charts, build setlists and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
+              Go Pro to export clean PDFs, share charts and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
             </p>
             <Link
               href="/pricing"

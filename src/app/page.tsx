@@ -349,7 +349,7 @@ export default async function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">Plans &amp; pricing</h2>
             <p className="text-center text-zinc-400 mb-2">Start free. Upgrade when you&apos;re ready.</p>
             <p className="text-center text-xs text-indigo-300/70 mb-8 sm:mb-12">
-              Every plan includes AI song search, photo import, and AI backgrounds &amp; fonts.
+              Every plan includes AI song search, photo import, AI backgrounds &amp; fonts, and setlists &amp; collections.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
               {PLAN_ORDER.map((planKey) => {
