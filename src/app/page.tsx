@@ -150,7 +150,7 @@ export default async function HomePage() {
 
         {/* ── Hero + Highlights (one dark section, zero seam) ──────────────── */}
         <section
-          className="relative flex flex-col items-center text-center px-5 sm:px-6 pt-14 sm:pt-24 pb-10 sm:pb-16 overflow-hidden"
+          className="relative flex flex-col items-center text-center px-5 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-16 overflow-hidden"
           style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #1a1640 100%)" }}
         >
           {/* Radial glow */}
@@ -178,18 +178,18 @@ export default async function HomePage() {
             <span className="chord-chip text-base" style={{ top: "58%", right: "11%", ["--chip-tilt" as never]: "4deg", animationDelay: "4s" }}>F♯m7</span>
           </div>
 
-          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
+          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
             For every musician — from sofa to stage
           </span>
 
-          <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
+          {/* Two lines at every width — a third line pushes the product below the fold */}
+          <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-4 max-w-3xl">
             Turn any song into a{" "}
-            <span className="gradient-text">stunning, play-ready chord chart</span>
+            <span className="gradient-text">stunning chord chart</span>
           </h1>
 
-          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
-            Get a beautiful chart with every chord in the right place — then press play
-            and perform it hands-free.
+          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-lg text-zinc-300 max-w-xl mb-6 leading-relaxed">
+            Every chord in the right place — then press play and perform it hands-free.
           </p>
 
           <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 w-full sm:w-auto max-w-xs sm:max-w-none">
@@ -209,9 +209,11 @@ export default async function HomePage() {
                 </svg>
               </span>
             </CtaLink>
+            {/* Secondary CTA must lead somewhere else — it used to point at the
+                same demo editor as the primary button, so the choice was fake. */}
             <CtaLink
               from="home-see-how"
-              href={session ? "#how" : "/editor/new?start=demo"}
+              href="#how"
               className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
             >
               See how it works
@@ -219,7 +221,7 @@ export default async function HomePage() {
           </div>
 
           {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
-          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/40 mb-10 sm:mb-14">
+          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/40 mb-7 sm:mb-9">
             Free to start · No credit card · Ready in 30 seconds
           </p>
 
@@ -260,7 +262,7 @@ export default async function HomePage() {
           </div>
 
           {/* Caption */}
-          <p className="relative text-xs text-white/25 mb-8 sm:mb-12">
+          <p className="relative text-xs text-white/55 mb-8 sm:mb-12">
             Auto-scroll in action — hands-free play mode, exactly as it looks when you play
           </p>
 
@@ -552,7 +554,8 @@ export default async function HomePage() {
       </footer>
 
       {!session && <StickyMobileCta />}
-      <ScrollToTop />
+      {/* Guests get the sticky CTA on phones — lift the button clear of it */}
+      <ScrollToTop raised={!session} />
     </div>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-export default function ScrollToTop() {
+/** `raised` lifts the button on phones so it clears a sticky bottom CTA. */
+export default function ScrollToTop({ raised = false }: { raised?: boolean }) {
   const [visible, setVisible] = useState(false);
 
   const scrollToTop = useCallback(() => {
@@ -32,7 +33,7 @@ export default function ScrollToTop() {
       onClick={scrollToTop}
       aria-label="Scroll to top"
       title="Back to top (T)"
-      className={`fixed bottom-5 right-5 z-50 flex items-center justify-center w-11 h-11 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:scale-110 ${
+      className={`fixed ${raised ? "bottom-20 sm:bottom-5" : "bottom-5"} right-5 z-50 flex items-center justify-center w-11 h-11 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:scale-110 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
       }`}
       style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", color: "#fff", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}
