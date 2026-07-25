@@ -1,72 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 // Live examples — each card opens a real public share where visitors can hit
-// play and feel the auto-scroll. Previews are lightweight CSS impressions of
-// each sheet's actual styling (no screenshot assets to keep in sync).
+// play and feel the auto-scroll. The previews are actual screenshots of those
+// share pages (captured at 860x592), so what you see is exactly what you get.
 
 const EXAMPLES = [
   {
     href: "/share/cmr9haxoo000004ks4mcgmddi",
+    img: "/examples/dansa-i-neon.jpg",
     title: "Dansa i Neon",
     artist: "Lena Philipsson",
     vibe: "Neon city — dark stage look",
-    bg: "linear-gradient(150deg, #14102e 0%, #241b4d 45%, #3b1060 100%)",
-    accents: ["#22d3ee", "#f472b6"],
-    titleColor: "#e8f95c",
-    lyric: "rgba(255,255,255,0.75)",
   },
   {
     href: "/share/cmr9hfayp000204ksybupx8cp",
+    img: "/examples/wildflowers.jpg",
     title: "Wildflowers",
     artist: "Tom Petty",
     vibe: "Watercolor sail — light & airy",
-    bg: "linear-gradient(150deg, #fdf6ec 0%, #f6e9d8 55%, #eadfce 100%)",
-    accents: ["#2f7d4f", "#2f7d4f"],
-    titleColor: "#8a4b2d",
-    lyric: "rgba(60,45,30,0.75)",
   },
   {
     href: "/share/cmr9hft4e000104jvpw9wc11v",
+    img: "/examples/nothings-gonna-change.jpg",
     title: "Nothing's Gonna Change My Love For You",
     artist: "George Benson",
     vibe: "Lighthouse mist — jazz chords",
-    bg: "linear-gradient(150deg, #f3f2f0 0%, #e7e4e0 55%, #d9d4cf 100%)",
-    accents: ["#0e7490", "#0e7490"],
-    titleColor: "#8b1d2c",
-    lyric: "rgba(50,45,40,0.75)",
   },
 ];
-
-/** Impression of a chord sheet: a few chord+lyric line pairs. */
-function MiniSheet({ accents, lyric }: { accents: string[]; lyric: string }) {
-  const rows = [
-    [16, 52, 78],
-    [22, 60],
-    [14, 44, 70],
-  ];
-  return (
-    <div className="space-y-2.5">
-      {rows.map((chords, r) => (
-        <div key={r}>
-          <div className="relative h-2.5 mb-1">
-            {chords.map((left, i) => (
-              <span
-                key={i}
-                className="absolute top-0 text-[8px] font-bold font-mono leading-none"
-                style={{ left: `${left}%`, color: accents[i % accents.length] }}
-              >
-                {["Am", "F", "C", "G", "Dm"][(r + i) % 5]}
-              </span>
-            ))}
-          </div>
-          <div className="h-1.5 rounded-full" style={{ background: lyric, opacity: 0.55, width: `${88 - r * 14}%` }} />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default function ExamplesSection() {
   return (
@@ -102,14 +65,18 @@ export default function ExamplesSection() {
                   <span className="flex-1 mx-3 text-center text-[10px] text-white/25 font-mono truncate tracking-wide">chordsheetmaker.ai</span>
                 </div>
 
-                {/* Styled mini preview */}
-                <div className="relative aspect-[16/11] overflow-hidden px-5 pt-4" style={{ background: ex.bg }}>
-                  <p className="text-center font-extrabold text-sm truncate" style={{ color: ex.titleColor }}>{ex.title}</p>
-                  <p className="text-center text-[9px] italic mb-3" style={{ color: ex.lyric }}>{ex.artist}</p>
-                  <MiniSheet accents={ex.accents} lyric={ex.lyric} />
+                {/* Real screenshot of the share page */}
+                <div className="relative aspect-[16/11] overflow-hidden bg-zinc-100">
+                  <Image
+                    src={ex.img}
+                    alt={`${ex.title} chord sheet made with ChordSheetMaker`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 340px"
+                    className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
                   {/* Play affordance */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600/90 text-white shadow-lg shadow-indigo-900/40 transition-transform duration-300 group-hover:scale-110">
+                    <span className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600/90 text-white shadow-lg shadow-indigo-900/40 backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-110">
                       <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 4.2a1 1 0 0 0-1.3.95v9.7a1 1 0 0 0 1.3.95l9-4.85a1 1 0 0 0 0-1.9L6.3 4.2z" /></svg>
                     </span>
                   </div>
