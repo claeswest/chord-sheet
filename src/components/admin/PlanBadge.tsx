@@ -28,14 +28,30 @@ export default function PlanBadge({
   plan,
   status,
   periodEnd,
+  cancelAt,
 }: {
   plan: string | null;
   status: string | null;
   periodEnd?: string | null;
+  /** Set when a cancellation is scheduled — status stays trialing/active until then. */
+  cancelAt?: string | null;
 }) {
   let label = plan ?? "free";
   let cls = "bg-zinc-800 text-zinc-400";
   let title: string | undefined;
+
+  // A pending cancellation outranks the status: someone still "active" who has
+  // already left is the one thing you want to spot in the list.
+  if (cancelAt) {
+    return (
+      <span
+        title={`Cancelled — access ends ${formatDate(cancelAt)}`}
+        className="inline-block text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap bg-red-900/40 text-red-300"
+      >
+        ⚠ {plan} · ends {formatDate(cancelAt)}
+      </span>
+    );
+  }
 
   if (status === "trialing") {
     label = `trial · ${plan}`;

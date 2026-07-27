@@ -32,6 +32,7 @@ model User {
   stripePriceId            String?
   stripeCurrentPeriodEnd   DateTime?
   stripeSubscriptionStatus String?   // trialing | active | past_due | canceled
+  stripeCancelAt           DateTime? // set when a cancellation is scheduled
 
   accounts   Account[]
   sessions   Session[]

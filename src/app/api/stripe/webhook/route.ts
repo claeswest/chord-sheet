@@ -59,6 +59,18 @@ export async function POST(req: NextRequest) {
       if (!plan) break;
 
       const prevStatus = user.stripeSubscriptionStatus;
+      const prevCancelAt = user.stripeCancelAt;
+
+      // A pending cancellation shows up in two shapes depending on how it was
+      // made: cancel_at_period_end, or an explicit cancel_at timestamp (which
+      // is what the customer portal sets). Either way the status stays
+      // trialing/active until the date arrives, so this is the only signal
+      // that someone has left.
+      const cancelAt = sub.cancel_at
+        ? new Date(sub.cancel_at * 1000)
+        : sub.cancel_at_period_end
+        ? new Date(sub.items.data[0].current_period_end * 1000)
+        : null;
 
       await prisma.user.update({
         where: { id: user.id },
@@ -67,6 +79,7 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: sub.id,
           stripePriceId: priceId,
           stripeSubscriptionStatus: sub.status, // trialing | active | past_due | canceled
+          stripeCancelAt: cancelAt,
           stripeCurrentPeriodEnd: new Date(
             sub.items.data[0].current_period_end * 1000
           ),
@@ -81,10 +94,33 @@ export async function POST(req: NextRequest) {
           `💰 New subscriber — ${plan}${sub.status === "trialing" ? " (trial)" : ""}`,
           [`${who} started a ${plan} plan. Status: ${sub.status}.`]
         );
-      } else if (prevStatus !== "active" && sub.status === "active") {
+        break;
+      }
+
+      if (prevStatus !== "active" && sub.status === "active") {
         await logActivity("sub_changed", user.id, { plan, status: sub.status, from: prevStatus });
         await notifyAdmin(`💳 Trial converted to paid — ${plan}`, [
           `${who} converted to a paying ${plan} subscription.`,
+        ]);
+      }
+
+      // Cancellation scheduled / reversed — logged the moment it happens, not
+      // when the subscription finally lapses (which can be a year away).
+      const ends = cancelAt?.toISOString().slice(0, 10);
+      if (!prevCancelAt && cancelAt) {
+        await logActivity("sub_changed", user.id, {
+          plan, status: sub.status, event: "cancel_scheduled", cancelAt: cancelAt.toISOString(),
+        });
+        await notifyAdmin(`⚠️ Cancellation scheduled — ${plan}`, [
+          `${who} cancelled their ${plan} plan. Access runs until ${ends}.`,
+          `Status is still "${sub.status}" until then — a good window to reach out and ask why.`,
+        ]);
+      } else if (prevCancelAt && !cancelAt) {
+        await logActivity("sub_changed", user.id, {
+          plan, status: sub.status, event: "cancel_reverted",
+        });
+        await notifyAdmin(`🎉 Cancellation reversed — ${plan}`, [
+          `${who} resumed their ${plan} subscription.`,
         ]);
       }
       break;

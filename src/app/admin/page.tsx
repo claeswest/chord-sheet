@@ -25,6 +25,7 @@ interface Stats {
     plan: string | null;
     stripeSubscriptionStatus: string | null;
     stripeCurrentPeriodEnd: string | null;
+  stripeCancelAt: string | null;
     createdAt: string;
     _count: { songs: number };
   }[];
@@ -220,7 +221,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
                     <td className="px-4 sm:px-5 py-3">
-                      <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} />
+                      <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} cancelAt={user.stripeCancelAt} />
                     </td>
                     <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
                       {formatDate(user.createdAt)}

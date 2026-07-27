@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         plan: true,
         stripeSubscriptionStatus: true,
         stripeCurrentPeriodEnd: true,
+        stripeCancelAt: true,
         marketingOptOut: true,
         lastMarketingEmailAt: true,
         createdAt: true,

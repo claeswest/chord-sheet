@@ -54,6 +54,13 @@ function metaSummary(item: Item): string {
   const m = item.meta ?? {};
   const parts: string[] = [];
   if (typeof m.title === "string" && m.title) parts.push(`"${m.title}"`);
+  // Subscription lifecycle: say what actually happened, not just the plan
+  if (m.event === "cancel_scheduled") {
+    const until = typeof m.cancelAt === "string" ? new Date(m.cancelAt).toLocaleDateString("sv-SE") : null;
+    parts.push(`⚠️ cancelled${until ? ` — access until ${until}` : ""}`);
+  } else if (m.event === "cancel_reverted") {
+    parts.push("🎉 cancellation reversed");
+  }
   if (typeof m.plan === "string") parts.push(m.plan + (typeof m.status === "string" ? ` (${m.status})` : ""));
   if (typeof m.source === "string") parts.push(`via ${ORIGIN_LABELS[m.source] ?? m.source}`);
   if (typeof m.origin === "string") parts.push(`via ${ORIGIN_LABELS[m.origin] ?? m.origin}`);

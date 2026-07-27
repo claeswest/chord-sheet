@@ -35,6 +35,7 @@ interface User {
   plan: string | null;
   stripeSubscriptionStatus: string | null;
   stripeCurrentPeriodEnd: string | null;
+  stripeCancelAt: string | null;
   marketingOptOut: boolean;
   lastMarketingEmailAt: string | null;
   createdAt: string;
@@ -391,6 +392,7 @@ function AdminUsersInner() {
                           plan={user.plan}
                           status={user.stripeSubscriptionStatus}
                           periodEnd={user.stripeCurrentPeriodEnd}
+                          cancelAt={user.stripeCancelAt}
                         />
                       </td>
                       <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
