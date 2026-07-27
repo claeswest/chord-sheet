@@ -125,7 +125,11 @@ Deploy = `git push` to `master`. Vercel builds and promotes automatically.
   `npm install` (which triggers `prisma generate`) before typechecking will pass.
 - **Canonical domain is non-www.** Stripe webhook URLs must point at
   `https://chordsheetmaker.ai/...` — the www variant 308-redirects and Stripe does not
-  follow redirects.
+  follow redirects. This silently broke trial→active updates once: every delivery
+  failed with a 308 and subscription data went stale. `src/lib/stripeSync.ts` now
+  self-heals by reconciling with Stripe when a stored period end has passed, but
+  webhooks are still the primary path — when subscription state looks wrong, check
+  **Stripe Dashboard → Webhooks → deliveries** first.
 - **Never commit `.env`.** If a key leaks, rotate it in the provider *and* in Vercel.
 
 ## Layout
