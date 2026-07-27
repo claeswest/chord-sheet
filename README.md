@@ -43,11 +43,25 @@ npx vercel env pull .env
 **Or** copy `.env` from the old machine through something secure (password manager,
 USB stick). Not email or chat.
 
+⚠️ **After pulling, fix one value.** `vercel env pull` fetches the *production*
+values, so `AUTH_URL` arrives as the live domain and sign-in will bounce you
+there instead of localhost. Edit `.env`:
+
+```
+AUTH_URL=http://localhost:3000
+```
+
 Finally:
 
 ```bash
-npm run dev          # http://localhost:3000
+npm run dev
 ```
+
+Then open **`http://localhost:3000`** — type the `http://` explicitly. Browsers
+silently upgrade a bare `localhost:3000` to HTTPS, and `next dev` serves plain
+HTTP, which shows up as *"The site can't provide a secure connection"*. If that
+sticks, clear it at `chrome://net-internals/#hsts` → *Delete domain security
+policies* → `localhost`, or just use `http://127.0.0.1:3000`.
 
 Requires **Node 20+** (developed on 22.14, npm 10.9).
 
