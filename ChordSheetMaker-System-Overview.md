@@ -270,9 +270,16 @@ across posters so the set looks like a family:
 
 **Working tips**
 - Ask for the aspect ratio you need — each prompt suggests one.
-- If labels come out garbled, regenerate with *fewer* boxes; text quality
-  degrades fast past ~10 words in an image.
-- Best workflow: generate the *look*, then overlay correct text in Canva/Figma.
+- Best workflow if text does break: generate the *look*, then overlay correct
+  text in Canva/Figma.
+
+> **Tested (Jul 2026):** poster #1 run through ChatGPT's image model came back
+> with every label spelled correctly — including "Next.js on Vercel" — plus
+> correct Next.js, Gemini and Stripe logos and accurate captions it wrote
+> itself. Longer labels are safer than the usual advice suggests with that
+> model; Midjourney still garbles them. Corrections asked for in follow-up
+> messages ("change Postgres to Neon Postgres") were applied without disturbing
+> the rest of the image.
 
 ### How to actually run these in ChatGPT
 
@@ -312,8 +319,8 @@ modern geometric sans-serif, generous negative space, flat design. Left: a small
 group of device silhouettes labeled "Musicians". Center: one large glowing
 rounded box labeled "Next.js on Vercel" containing three thin stacked bars
 labeled "Pages", "API", "Logic". Right: four separate service cards stacked
-vertically, each with one simple icon, labeled "Postgres", "Gemini AI",
-"Stripe", "Email". Arrows flow left to right. 16:9.
+vertically, each with one simple icon, labeled "Neon Postgres", "Gemini AI",
+"Stripe", "Resend". Arrows flow left to right. 16:9.
 ```
 
 ### 2. From song to stage
@@ -341,10 +348,12 @@ Flat vector layered tech stack poster titled "Tech Stack". Deep indigo-to-violet
 gradient background, white and pale lavender text, glowing indigo accents,
 rounded rectangles, modern geometric sans-serif, generous negative space, flat
 design. Five horizontal bands stacked like a cake, each a rounded rectangle with
-a short label on the left and two small icon circles on the right. Bands labeled
-top to bottom: "Frontend", "Backend", "Database", "AI", "Services". Each band
-glows slightly brighter than the one below it. A thin vertical line connects the
-bands down the middle. Minimal, elegant, lots of empty space. 4:5 vertical.
+a bold label on the left, a smaller subtitle beneath it, and two small icon
+circles on the right. Bands top to bottom: "Frontend" subtitle "Next.js · React
+· Tailwind"; "Backend" subtitle "API routes · Prisma"; "Database" subtitle "Neon
+Postgres"; "AI" subtitle "Google Gemini"; "Services" subtitle "Stripe · Resend ·
+Vercel". Each band glows slightly brighter than the one below it. A thin
+vertical line connects the bands down the middle. 4:5 vertical.
 ```
 
 ### 4. Code architecture
@@ -355,10 +364,13 @@ bands down the middle. Minimal, elegant, lots of empty space. 4:5 vertical.
 Flat vector software architecture diagram titled "Code Architecture". Deep
 indigo-to-violet gradient background, white text, glowing indigo and violet
 accents, thin connector lines with arrowheads, modern geometric sans-serif, flat
-design, blueprint feel. Four wide horizontal tiers stacked vertically, each
-containing three small evenly spaced boxes. Tier labels on the left edge:
-"Routes", "Components", "Logic", "Data". Downward arrows between tiers. Calm,
-technical, plenty of dark negative space. 16:9.
+design, blueprint feel. Four wide horizontal tiers stacked vertically, each with
+a tier label on the left edge and three small labeled boxes inside. Top tier
+"Routes" containing "Landing", "Editor", "Admin". Second tier "Components"
+containing "Editor", "Library", "UI". Third tier "Logic" containing "Parsing",
+"Styling", "Plans". Bottom tier "Data" containing "Prisma", "Postgres",
+"Storage". Downward arrows between tiers. Calm, technical, plenty of dark
+negative space. 16:9.
 ```
 
 ### 5. Data model
