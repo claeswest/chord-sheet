@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ChordSheetMaker — How it all fits together</title>
 <style>
@@ -155,7 +156,7 @@
 const SLIDES = [
   { type:"title" },
 
-  { n:1, img:"infographics/01-system-architecture.png",
+  { n:1, img:"01-system-architecture.png",
     kicker:"Architecture",
     title:"One application, four services",
     lead:"Everything a musician touches is served by a single Next.js app on Vercel. It renders the pages, exposes the API and holds the business logic. Four managed services do the specialised work.",
@@ -167,7 +168,7 @@ const SLIDES = [
     ],
     chips:["28 API endpoints","Deploys on git push","No servers to manage"] },
 
-  { n:2, img:"infographics/02-song-to-stage.png",
+  { n:2, img:"02-song-to-stage.png",
     kicker:"Product flow",
     title:"Four ways in, one chart, three ways out",
     lead:"A song can arrive as a search, a photograph, a paste, or a blank page. All four converge on the same structured chart — and that one chart then leaves in whichever form the moment needs.",
@@ -178,7 +179,7 @@ const SLIDES = [
     ],
     chips:["Photo → editable chart in seconds","Transposition is free for everyone"] },
 
-  { n:3, img:"infographics/03-tech-stack.png",
+  { n:3, img:"03-tech-stack.png",
     kicker:"Tech stack",
     title:"Managed everywhere it counts",
     lead:"Five layers, all managed services. Nothing here needs a server babysat at 2am — which is precisely what makes a one-person product sustainable.",
@@ -190,7 +191,7 @@ const SLIDES = [
     ],
     chips:["~17,000 lines","116 files","TypeScript end to end"] },
 
-  { n:4, img:"infographics/04-code-architecture.png",
+  { n:4, img:"04-code-architecture.png",
     kicker:"Code architecture",
     title:"Four tiers, dependencies point down",
     lead:"Routes render, components interact, the lib layer does the thinking, and only the bottom tier touches data. Keeping logic out of components is what stops a solo codebase turning to soup.",
@@ -202,7 +203,7 @@ const SLIDES = [
     ],
     chips:["plans.ts = one source of truth for tiers","Logic is unit-testable in isolation"] },
 
-  { n:5, img:"infographics/05-data-model.png",
+  { n:5, img:"05-data-model.png",
     kicker:"Data model",
     title:"A whole song is one row",
     lead:"Nine tables with the user at the centre. The interesting decision: an entire chart — lines, chords, fonts, colours, background — lives in a single JSON column rather than being shredded across tables.",
@@ -214,7 +215,7 @@ const SLIDES = [
     ],
     chips:["9 tables","15 event types","JSON where structure would only get in the way"] },
 
-  { n:6, img:"infographics/06-growth-funnel.png",
+  { n:6, img:"06-growth-funnel.png",
     kicker:"Growth",
     title:"Let them build something first",
     lead:"A musician will happily make one chart. They will not fill in a form to find out whether it was worth it. So the entire editor works with no account, and the ask comes only after the value has landed.",
@@ -226,7 +227,7 @@ const SLIDES = [
     ],
     chips:["Free","$9 / month","$79 / year"] },
 
-  { n:7, img:"infographics/07-overview.png",
+  { n:7, img:"07-overview.png",
     kicker:"In one picture",
     title:"Create · Style · Play · Organise",
     lead:"Four verbs cover the whole product. Everything else — the parser, the alignment maths, the trial logic — exists to make those four feel effortless to someone holding an instrument.",

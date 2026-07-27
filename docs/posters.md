@@ -1,10 +1,13 @@
 # Infographics
 
+The posters and the slide deck live in [`public/tour/`](../public/tour/) so the
+deck can also be reached at **`/tour/`** on the deployed site.
+
 Generated posters of how ChordSheetMaker fits together. The prompts that produce
-them live in [`ChordSheetMaker-System-Overview.md`](../../ChordSheetMaker-System-Overview.md)
+them live in [`ChordSheetMaker-System-Overview.md`](../ChordSheetMaker-System-Overview.md)
 (Part 2); the exact, non-AI diagrams are in that file's appendix.
 
-**To present these:** open [`../presentation.html`](../presentation.html) in a
+**To present these:** open [`public/tour/index.html`](../public/tour/index.html) in a
 browser — a self-contained slide deck of all seven posters with explanatory
 text. Arrow keys navigate, `O` opens a thumbnail overview, `F` goes fullscreen.
 No server or build step; just double-click the file.

@@ -24,7 +24,7 @@ Three things in one document:
 - [Appendix — exact diagrams](#appendix--exact-diagrams-mermaid)
 
 > **About Part 2:** the seven posters below were generated from these prompts and
-> are checked into [`docs/infographics/`](docs/infographics/). ChatGPT's image
+> are checked into [`public/tour/`](public/tour/). ChatGPT's image
 > model rendered them with correct spelling and real product logos — better than
 > AI image generators usually manage, so don't be shy about detailed labels.
 > Midjourney still garbles text; Ideogram is the safer alternative there.
@@ -258,7 +258,7 @@ button. Bandmates are the warmest possible leads.
 
 Six posters plus an optional summary. Paste one at a time.
 
-**Where the finished images live:** [`docs/infographics/`](docs/infographics/),
+**Where the finished images live:** [`public/tour/`](public/tour/),
 named `01-system-architecture.png`, `02-song-to-stage.png`, … so each poster
 stays paired with the prompt number that produced it.
 
@@ -320,7 +320,7 @@ Notes for other tools:
 
 ### 1. System architecture
 
-![1. System architecture](docs/infographics/01-system-architecture.png)
+![1. System architecture](public/tour/01-system-architecture.png)
 
 *Should say at a glance: one app in the middle, four services around it.*
 
@@ -338,7 +338,7 @@ vertically, each with one simple icon, labeled "Neon Postgres", "Gemini AI",
 
 ### 2. From song to stage
 
-![2. From song to stage](docs/infographics/02-song-to-stage.png)
+![2. From song to stage](public/tour/02-song-to-stage.png)
 
 *Should say at a glance: four ways in, one chart, three ways out.*
 
@@ -356,7 +356,7 @@ far right edge. Faint floating music notes in the background. 16:9.
 
 ### 3. Tech stack
 
-![3. Tech stack](docs/infographics/03-tech-stack.png)
+![3. Tech stack](public/tour/03-tech-stack.png)
 
 *Should say at a glance: five clean layers, modern tooling.*
 
@@ -375,7 +375,7 @@ vertical line connects the bands down the middle. 4:5 vertical.
 
 ### 4. Code architecture
 
-![4. Code architecture](docs/infographics/04-code-architecture.png)
+![4. Code architecture](public/tour/04-code-architecture.png)
 
 *Should say at a glance: four tiers, dependencies point downward.*
 
@@ -394,7 +394,7 @@ negative space. 16:9.
 
 ### 5. Data model
 
-![5. Data model](docs/infographics/05-data-model.png)
+![5. Data model](public/tour/05-data-model.png)
 
 *Should say at a glance: the user is the hub.*
 
@@ -411,7 +411,7 @@ clutter. 1:1 square.
 
 ### 6. Growth funnel
 
-![6. Growth funnel](docs/infographics/06-growth-funnel.png)
+![6. Growth funnel](public/tour/06-growth-funnel.png)
 
 *Should say at a glance: narrowing path, with loops feeding back in.*
 
@@ -428,7 +428,7 @@ floating cards with curved arrows pointing back into the funnel, labeled
 
 ### 7. One-page overview (optional)
 
-![7. One-page overview (optional)](docs/infographics/07-overview.png)
+![7. One-page overview (optional)](public/tour/07-overview.png)
 
 ```
 Flat vector overview poster titled "ChordSheetMaker". Deep indigo-to-violet
