@@ -8,6 +8,7 @@ import { prisma } from "./prisma";
 import { logActivity } from "./activity";
 import { adminRecipients } from "./notify";
 import { PLANS } from "./plans";
+import { templateBlockReason, type Audience } from "./marketingRules";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
@@ -30,15 +31,19 @@ export function verifyUnsubscribeToken(userId: string, token: string): boolean {
   }
 }
 
-export type SendResult = "sent" | "skipped_optout" | "skipped_recent" | "failed";
+export type SendResult =
+  | "sent" | "skipped_optout" | "skipped_recent" | "skipped_ineligible" | "failed";
 
-export const MARKETING_TEMPLATES = [
-  "upgrade_nudge", "welcome_tips", "winback", "ai_magic", "band_share", "photo_rescue", "feedback_ask",
-] as const;
-export type MarketingTemplate = (typeof MARKETING_TEMPLATES)[number];
-
-/** Minimum gap between marketing emails to the same user. */
-export const EMAIL_COOLDOWN_DAYS = 3;
+// Template list, cooldown and sequence live in marketingRules so the admin UI
+// can import them without pulling in prisma. Re-exported here so existing
+// callers keep working.
+export {
+  MARKETING_TEMPLATES,
+  EMAIL_COOLDOWN_DAYS,
+  EMAIL_SEQUENCE,
+  type MarketingTemplate,
+} from "./marketingRules";
+import { EMAIL_COOLDOWN_DAYS, type MarketingTemplate } from "./marketingRules";
 
 type EmailContent = {
   subject: string;
@@ -50,10 +55,21 @@ type EmailContent = {
   footnote?: string;          // small print under the CTA (price etc.)
 };
 
-function buildContent(template: MarketingTemplate, firstName: string, n: number): EmailContent {
+function buildContent(
+  template: MarketingTemplate,
+  firstName: string,
+  n: number,
+  /** Trial already spent — don't offer one again. */
+  trialSpent = false,
+): EmailContent {
   const freeLimit = typeof PLANS.free.features.songLimit === "number" ? PLANS.free.features.songLimit : 5;
   const monthly = PLANS.monthly.price;
   const yearly = PLANS.yearly.price;
+  // Offering "7 days free" to someone who has already used their trial is
+  // simply untrue, and it's untrue in a purchase pitch — the worst place for it.
+  const priceLine = trialSpent
+    ? `$${monthly}/month or $${yearly}/year. Cancel anytime.`
+    : `7-day free trial, then $${monthly}/month or $${yearly}/year. Cancel anytime — no charge during the trial.`;
 
   if (template === "welcome_tips") {
     return {
@@ -119,7 +135,9 @@ function buildContent(template: MarketingTemplate, firstName: string, n: number)
       ],
       ctaLabel: "Share a chart →",
       ctaUrl: `${BASE_URL}/songs`,
-      footnote: `Share links are part of Pro — 7-day free trial, then $${monthly}/month. Cancel anytime.`,
+      footnote: trialSpent
+        ? `Share links are part of Pro — $${monthly}/month. Cancel anytime.`
+        : `Share links are part of Pro — 7-day free trial, then $${monthly}/month. Cancel anytime.`,
     };
   }
 
@@ -175,9 +193,9 @@ function buildContent(template: MarketingTemplate, firstName: string, n: number)
       ["PDF export", "print-ready charts with every chord perfectly aligned"],
       ["Share links", "bandmates open and play with auto-scroll — no account needed"],
     ],
-    ctaLabel: "Start 7-day free trial →",
+    ctaLabel: trialSpent ? "See Pro plans →" : "Start 7-day free trial →",
     ctaUrl: `${BASE_URL}/pricing`,
-    footnote: `7-day free trial, then $${monthly}/month or $${yearly}/year. Cancel anytime — no charge during the trial.`,
+    footnote: priceLine,
   };
 }
 
@@ -190,6 +208,7 @@ export async function sendMarketingEmail(userId: string, template: MarketingTemp
     select: {
       id: true, name: true, email: true,
       marketingOptOut: true, lastMarketingEmailAt: true,
+      plan: true, stripeCancelAt: true, stripeCustomerId: true,
       _count: { select: { songs: true } },
     },
   });
@@ -199,9 +218,19 @@ export async function sendMarketingEmail(userId: string, template: MarketingTemp
     return "skipped_recent";
   }
 
+  // Reaching Stripe checkout at all means the one 7-day trial is gone.
+  const audience: Audience = {
+    plan: user.plan,
+    cancelAt: user.stripeCancelAt,
+    hasSubscribedBefore: !!user.stripeCustomerId,
+  };
+  // Enforced here rather than only in the admin UI, so an automated drip
+  // inherits the rules instead of quietly bypassing them.
+  if (templateBlockReason(template, audience)) return "skipped_ineligible";
+
   const firstName = (user.name ?? "").split(" ")[0] || "there";
   const { subject, preheader, intro, items, ctaLabel, ctaUrl, footnote } =
-    buildContent(template, firstName, user._count.songs);
+    buildContent(template, firstName, user._count.songs, audience.hasSubscribedBefore);
 
   const unsubUrl = `${BASE_URL}/unsubscribe?u=${user.id}&t=${unsubscribeToken(user.id)}`;
 

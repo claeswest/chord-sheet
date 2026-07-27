@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
         stripeSubscriptionStatus: true,
         stripeCurrentPeriodEnd: true,
         stripeCancelAt: true,
+        stripeCustomerId: true, // mapped to a boolean below — the id never leaves the server
         marketingOptOut: true,
         lastMarketingEmailAt: true,
         createdAt: true,
@@ -61,5 +62,12 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  return NextResponse.json({ users, total, page, pages: Math.ceil(total / limit) });
+  // Swap the Stripe customer id for the one fact the UI needs from it: whether
+  // this person has ever been through checkout, and so has spent their trial.
+  const safeUsers = users.map(({ stripeCustomerId, ...u }) => ({
+    ...u,
+    hasSubscribedBefore: !!stripeCustomerId,
+  }));
+
+  return NextResponse.json({ users: safeUsers, total, page, pages: Math.ceil(total / limit) });
 }

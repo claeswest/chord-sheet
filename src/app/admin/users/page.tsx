@@ -6,6 +6,16 @@ import SongViewer from "@/components/editor/SongViewer";
 import PlanBadge, { relativeTime } from "@/components/admin/PlanBadge";
 import type { SongLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
+import {
+  EMAIL_COOLDOWN_DAYS,
+  EMAIL_SEQUENCE,
+  allowedTemplates,
+  isLeaving,
+  suggestNextTemplate,
+  templateBlockReason,
+  type Audience,
+  type MarketingTemplate,
+} from "@/lib/marketingRules";
 
 interface Song {
   id: string;
@@ -36,6 +46,7 @@ interface User {
   stripeSubscriptionStatus: string | null;
   stripeCurrentPeriodEnd: string | null;
   stripeCancelAt: string | null;
+  hasSubscribedBefore: boolean;
   marketingOptOut: boolean;
   lastMarketingEmailAt: string | null;
   createdAt: string;
@@ -79,15 +90,13 @@ const EMAIL_TEMPLATES: [string, string][] = [
 ];
 const TEMPLATE_LABELS = Object.fromEntries(EMAIL_TEMPLATES);
 
-// Suggested drip order. Win-back sits outside the sequence — it's situational
-// (send when someone goes quiet, not as a scheduled step).
-const EMAIL_SEQUENCE = ["welcome_tips", "ai_magic", "photo_rescue", "band_share", "upgrade_nudge", "feedback_ask"];
-const EMAIL_COOLDOWN_DAYS = 3; // mirror EMAIL_COOLDOWN_DAYS in lib/marketing
-
-/** First unsent step in the sequence (skipping the upgrade pitch for payers). */
-function suggestNextTemplate(sentTemplates: Set<string>, plan: string | null): string {
-  const seq = EMAIL_SEQUENCE.filter((t) => t !== "upgrade_nudge" || plan === "free" || !plan);
-  return seq.find((t) => !sentTemplates.has(t)) ?? "winback";
+/** Everything the send rules need to know about one user. */
+function audienceOf(user: User): Audience {
+  return {
+    plan: user.plan,
+    cancelAt: user.stripeCancelAt,
+    hasSubscribedBefore: user.hasSubscribedBefore,
+  };
 }
 
 function formatDate(iso: string) {
@@ -433,19 +442,25 @@ function AdminUsersInner() {
                             const history = userEmails[user.id] ?? [];
                             const sentByTemplate = new Map<string, string>(); // template → latest sentAt
                             history.forEach((e) => { if (!sentByTemplate.has(e.template)) sentByTemplate.set(e.template, e.sentAt); });
-                            const suggested = suggestNextTemplate(new Set(sentByTemplate.keys()), user.plan);
+                            const audience = audienceOf(user);
+                            const allowed = new Set(allowedTemplates(audience));
+                            const suggested = suggestNextTemplate(new Set(sentByTemplate.keys()), audience);
                             const selected = emailTemplate[user.id] ?? suggested;
                             const last = user.lastMarketingEmailAt ? new Date(user.lastMarketingEmailAt).getTime() : null;
                             const cooldownUntil = last ? last + EMAIL_COOLDOWN_DAYS * 86400000 : null;
                             const coolingDown = cooldownUntil !== null && cooldownUntil > Date.now();
-                            const trackerSteps = [
-                              ...EMAIL_SEQUENCE.filter((t) => t !== "upgrade_nudge" || user.plan === "free" || !user.plan),
-                              "winback",
-                            ];
+                            const trackerSteps = [...EMAIL_SEQUENCE, "winback" as MarketingTemplate]
+                              .filter((t) => allowed.has(t));
                             return (
                               <div className="mb-4">
                                 {/* Sequence tracker: ✓ sent · ● suggested next · rest pending */}
                                 <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Email sequence</p>
+                                {isLeaving(audience) && (
+                                  <p className="text-[11px] text-amber-300/90 mb-2">
+                                    ⚠ Cancelling — asking why beats pitching. Templates that assume they&apos;re
+                                    staying, or that they still have a trial to spend, are hidden.
+                                  </p>
+                                )}
                                 <div className="flex flex-wrap gap-1.5 mb-3">
                                   {trackerSteps.map((t) => {
                                     const sentAt = sentByTemplate.get(t);
@@ -479,14 +494,21 @@ function AdminUsersInner() {
                                       onChange={(e) => setEmailTemplate((m) => ({ ...m, [user.id]: e.target.value }))}
                                       className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg px-2 py-1.5"
                                     >
-                                      {EMAIL_TEMPLATES
-                                        // Upgrade pitch makes no sense for paying users
-                                        .filter(([key]) => key !== "upgrade_nudge" || user.plan === "free" || !user.plan)
-                                        .map(([key, label]) => (
-                                          <option key={key} value={key}>
-                                            {label}{key === suggested ? "  (next)" : sentByTemplate.has(key) ? "  ✓ sent" : ""}
+                                      {EMAIL_TEMPLATES.map(([key, label]) => {
+                                        const blocked = templateBlockReason(key as MarketingTemplate, audience);
+                                        return (
+                                          <option key={key} value={key} disabled={!!blocked}>
+                                            {label}
+                                            {blocked
+                                              ? `  — ${blocked}`
+                                              : key === suggested
+                                              ? "  (next)"
+                                              : sentByTemplate.has(key)
+                                              ? "  ✓ sent"
+                                              : ""}
                                           </option>
-                                        ))}
+                                        );
+                                      })}
                                     </select>
                                     <button
                                       onClick={() => sendEmail(user.id, selected)}
@@ -504,6 +526,7 @@ function AdminUsersInner() {
                                     {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
                                     {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within {EMAIL_COOLDOWN_DAYS} days</span>}
                                     {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
+                                    {emailStatus[user.id] === "skipped_ineligible" && <span className="text-xs text-amber-400">Skipped — not appropriate for this user</span>}
                                     {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
                                   </div>
                                 )}
