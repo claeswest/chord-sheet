@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ChordSheetMaker
 
-## Getting Started
+AI chord-sheet app for musicians — [chordsheetmaker.ai](https://chordsheetmaker.ai)
 
-First, run the development server:
+Search any song (or photograph a paper sheet) and get a chord chart with the chords
+sitting exactly above the right syllables. Style it with AI backgrounds and fonts,
+transpose it, then play it hands-free with auto-scroll. Free tier + Pro subscription
+(Stripe), Google/GitHub/Apple/email sign-in, and an admin area for user and activity
+insight.
+
+## Stack
+
+| Piece | What |
+| --- | --- |
+| Framework | Next.js (App Router) + React + TypeScript |
+| Styling | Tailwind CSS v4 |
+| Database | PostgreSQL on [Neon](https://neon.tech) via Prisma (`@prisma/adapter-neon`) |
+| Auth | NextAuth v5 (Google, GitHub, Apple, Resend magic links) |
+| AI | Google Gemini (song search/parse, OCR photo import, background images) |
+| Email | [Resend](https://resend.com) (magic links + marketing) |
+| Payments | Stripe (monthly/yearly, 7-day trial) |
+| Hosting | Vercel — pushing to `master` deploys production |
+
+## Setting up on a new machine
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/claeswest/chord-sheet.git
+cd chord-sheet
+npm install          # also runs `prisma generate` via postinstall
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then create the environment file — **this is the only part git can't give you**
+(secrets are gitignored, and they must never be committed).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Recommended — pull them from Vercel:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx vercel login
+npx vercel link
+npx vercel env pull .env
+```
 
-## Learn More
+**Or** copy `.env` from the old machine through something secure (password manager,
+USB stick). Not email or chat.
 
-To learn more about Next.js, take a look at the following resources:
+Finally:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev          # http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Requires **Node 20+** (developed on 22.14, npm 10.9).
 
-## Deploy on Vercel
+Verified path: a fresh `git clone` + `npm install` alone is enough for
+`npx tsc --noEmit` to pass — `postinstall` generates the Prisma client for you.
+`.env` is the only thing you have to bring yourself.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Google sign-in on localhost
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For OAuth to work locally, `http://localhost:3000/api/auth/callback/google` must be
+listed as an authorized redirect URI in the Google Cloud console for the client id
+you're using. Same idea for GitHub.
+
+## Environment variables
+
+| Variable | Needed for | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | everything | Neon connection string. **See the warning below.** |
+| `AUTH_SECRET` | auth, unsubscribe links | Any long random string; also signs email unsubscribe tokens, so changing it invalidates links in already-sent emails |
+| `AUTH_URL` | auth | `http://localhost:3000` locally |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google sign-in | |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub sign-in | optional |
+| `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET` | Apple sign-in | optional — the button hides itself when unset |
+| `GEMINI_API_KEY` | AI song search, photo OCR, AI backgrounds | without it those endpoints return a clear 500 |
+| `RESEND_API_KEY` | magic-link + marketing email | without it email sign-in and admin emails are disabled |
+| `EMAIL_FROM` | email sender | e.g. `ChordSheetMaker <hello@chordsheetmaker.ai>`; falls back to Resend's shared sender, which only delivers to the Resend account owner |
+| `ADMIN_EMAILS` | `/admin` access | comma-separated; also the BCC/notification recipients and the "exclude my own activity" filter |
+| `STRIPE_SECRET_KEY` | checkout | |
+| `STRIPE_WEBHOOK_SECRET` | subscription status | |
+| `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_YEARLY` / `STRIPE_PRICE_LIFETIME` | plans | price ids |
+| `NEXT_PUBLIC_GA_ID` | GA4 analytics | optional; analytics no-op without it |
+| `ERROR_WEBHOOK_URL` | error alerts | optional |
+
+## ⚠️ Local dev talks to the production database
+
+There is no separate dev database — `DATABASE_URL` points at the same Neon instance
+the live site uses. Anything you create, edit or delete while running `npm run dev`
+is **real production data**, and test signups/songs show up in the admin activity
+feed. Either be careful, or create a separate Neon branch for development and point
+your local `.env` at that.
+
+## Everyday commands
+
+```bash
+npm run dev            # dev server
+npm run build          # production build (run before pushing anything risky)
+npx tsc --noEmit       # typecheck
+npm run lint           # eslint
+npx prisma studio      # browse/edit the database in a GUI
+npx prisma db push     # apply schema.prisma changes (additive changes are safe)
+npx prisma generate    # regenerate the client if types look stale
+```
+
+Deploy = `git push` to `master`. Vercel builds and promotes automatically.
+
+## Gotchas
+
+- **`.next` EPERM on Windows** — if a build fails with a permission error, delete the
+  folder first: `rm -rf .next && npm run build`.
+- **Prisma client is gitignored** (`/src/generated/prisma`), so a fresh clone must run
+  `npm install` (which triggers `prisma generate`) before typechecking will pass.
+- **Canonical domain is non-www.** Stripe webhook URLs must point at
+  `https://chordsheetmaker.ai/...` — the www variant 308-redirects and Stripe does not
+  follow redirects.
+- **Never commit `.env`.** If a key leaks, rotate it in the provider *and* in Vercel.
+
+## Layout
+
+```
+src/app/            routes: landing, editor, /songs, /share/[token], /admin, /api/*
+src/components/     editor (SongEditor, SongViewer, StylePanel), library, ui
+src/lib/            prisma, auth, plans/entitlements, activity log, marketing email,
+                    song parsing & styling, pdf export, analytics
+prisma/schema.prisma
+public/examples/    landing-page screenshots of the three public example sheets
+```
+
+Admin lives at `/admin` (dashboard, users, activity) and is gated by `ADMIN_EMAILS`.
+
+## Other docs in this repo
+
+- `ChordSheetMaker-Brief.md` — product brief: positioning, audience, pricing, roadmap
+- `APPLE_SIGNIN_SETUP.md` — how to obtain the Apple client id/secret (secret expires ≤6 months)
+- `AGENTS.md` / `CLAUDE.md` — note for AI coding assistants: this Next.js version differs
+  from what models were trained on; read `node_modules/next/dist/docs/` before using new APIs
