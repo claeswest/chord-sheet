@@ -129,6 +129,9 @@ Admin lives at `/admin` (dashboard, users, activity) and is gated by `ADMIN_EMAI
 
 ## Other docs in this repo
 
+- **[`docs/status.md`](docs/status.md) — start here in a new session.** What was
+  learned, what was decided and why, and what's worth doing next.
+
 - `ChordSheetMaker-Brief.md` — product brief: positioning, audience, pricing, roadmap
 - `APPLE_SIGNIN_SETUP.md` — how to obtain the Apple client id/secret (secret expires ≤6 months)
 - `AGENTS.md` / `CLAUDE.md` — note for AI coding assistants: this Next.js version differs
