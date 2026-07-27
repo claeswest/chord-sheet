@@ -274,6 +274,30 @@ across posters so the set looks like a family:
   degrades fast past ~10 words in an image.
 - Best workflow: generate the *look*, then overlay correct text in Canva/Figma.
 
+### How to actually run these in ChatGPT
+
+**Don't** upload this whole file and ask for "images of the system" — it will
+summarise 400 lines into its own idea of a poster and you lose the careful
+prompts. Instead, one poster per message:
+
+> Create an image using exactly the description below. Follow it literally —
+> do not rewrite, shorten or add to it. Aspect ratio 16:9.
+>
+> [paste one prompt block from below]
+
+Then iterate in the same chat: *"same style, but make the four service cards on
+the right larger and the text bigger."* Keeping it in one conversation is how
+you get a consistent set.
+
+Notes for other tools:
+- **Midjourney** — append `--ar 16:9`; drop the sentence "titled ..." if the
+  title comes out misspelled, and add the title yourself afterwards.
+- **Ideogram** — best text rendering of the mainstream tools; paste as-is.
+- **Stable Diffusion / ComfyUI** — use the negative prompt above.
+- **Mermaid appendix** — *not* for image generators. Paste those into
+  [mermaid.live](https://mermaid.live) and export SVG/PNG, or just view the file
+  on GitHub, which renders them natively.
+
 ---
 
 ### 1. System architecture
