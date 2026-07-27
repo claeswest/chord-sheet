@@ -258,10 +258,13 @@ button. Bandmates are the warmest possible leads.
 
 Six posters plus an optional summary. Paste one at a time.
 
-**Where the finished images live:** save them into
-[`docs/infographics/`](docs/infographics/) using the filenames listed in that
-folder's README (`01-system-architecture.png`, `02-song-to-stage.png`, …), so
-each poster stays paired with the prompt number that produced it.
+**Where the finished images live:** [`docs/infographics/`](docs/infographics/),
+named `01-system-architecture.png`, `02-song-to-stage.png`, … so each poster
+stays paired with the prompt number that produced it.
+
+**To present them:** open [`docs/presentation.html`](docs/presentation.html) in
+a browser — a self-contained slide deck of all seven posters with explanatory
+text, keyboard navigation and a thumbnail overview. No server, no build step.
 
 **Reusable style block** — every prompt already contains it; keep it identical
 across posters so the set looks like a family:

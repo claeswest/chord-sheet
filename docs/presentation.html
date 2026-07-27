@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChordSheetMaker — How it all fits together</title>
+<style>
+  :root{
+    --ink:#f4f3ff; --dim:#a9a4d0; --faint:#6f6a9c;
+    --indigo:#6366f1; --violet:#8b5cf6; --pink:#f472b6;
+    --card:rgba(255,255,255,.045); --line:rgba(255,255,255,.10);
+    --font:"Segoe UI",-apple-system,BlinkMacSystemFont,Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#0b0920; color:var(--ink); font-family:var(--font);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  /* ambient background */
+  .bg{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .bg::before,.bg::after{content:"";position:absolute;border-radius:50%;filter:blur(120px);opacity:.5}
+  .bg::before{width:900px;height:900px;top:-380px;left:-220px;background:radial-gradient(circle,rgba(99,102,241,.5),transparent 70%)}
+  .bg::after{width:1000px;height:1000px;bottom:-460px;right:-260px;background:radial-gradient(circle,rgba(139,92,246,.42),transparent 70%)}
+
+  /* ── slides ─────────────────────────────────────────── */
+  .deck{position:relative;z-index:1;height:100%}
+  .slide{
+    position:absolute;inset:0;display:none;
+    padding:3.6vh 2.8vw 8.5vh;
+    animation:in .45s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .slide.on{display:flex}
+  @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* title slide */
+  .title{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.1rem}
+  .badge{
+    font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:#c3bdf5;background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.4);
+    padding:.5rem 1.1rem;border-radius:999px;
+  }
+  .title h1{font-size:clamp(2.2rem,5.4vw,4.4rem);line-height:1.05;letter-spacing:-.025em;font-weight:800}
+  .grad{background:linear-gradient(95deg,#a5b4fc,#c084fc 45%,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .title p{color:var(--dim);font-size:clamp(1rem,1.5vw,1.3rem);max-width:44ch;line-height:1.6}
+  .hint{margin-top:1.4rem;color:var(--faint);font-size:.85rem}
+  kbd{
+    background:rgba(255,255,255,.09);border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:6px;padding:.15rem .5rem;font:inherit;font-size:.8rem;color:var(--dim)
+  }
+
+  /* content slide: poster + explanation */
+  .content{gap:clamp(1.2rem,2.6vw,3rem);align-items:center}
+  @media (max-width:1000px){.content{flex-direction:column;padding-bottom:9vh;overflow-y:auto}}
+  .visual{flex:1 1 64%;min-width:0;display:flex;align-items:center;justify-content:center}
+  .visual img{
+    width:100%;height:auto;max-height:84vh;object-fit:contain;border-radius:14px;
+    border:1px solid var(--line);box-shadow:0 30px 70px rgba(0,0,0,.55);
+  }
+  .text{flex:1 1 36%;min-width:0;max-width:46ch}
+  .eyebrow{
+    display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;
+    font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#8b86c9;
+  }
+  .eyebrow span.n{
+    display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;
+    background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;font-size:.75rem;letter-spacing:0
+  }
+  .text h2{font-size:clamp(1.5rem,2.5vw,2.25rem);line-height:1.15;letter-spacing:-.02em;margin-bottom:.7rem;font-weight:800}
+  .lead{color:#d8d4f5;font-size:clamp(.98rem,1.15vw,1.12rem);line-height:1.6;margin-bottom:1.1rem}
+  ul{list-style:none;display:flex;flex-direction:column;gap:.62rem}
+  li{position:relative;padding-left:1.3rem;color:var(--dim);font-size:clamp(.88rem,1.02vw,1rem);line-height:1.55}
+  li::before{
+    content:"";position:absolute;left:0;top:.55em;width:.42rem;height:.42rem;border-radius:50%;
+    background:linear-gradient(135deg,var(--indigo),var(--violet));
+  }
+  li b{color:#eae7ff;font-weight:650}
+  .chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.2rem}
+  .chip{
+    font-size:.74rem;color:#c9c4f0;background:var(--card);border:1px solid var(--line);
+    padding:.34rem .7rem;border-radius:999px;white-space:nowrap
+  }
+
+  /* numbers slide */
+  .numbers{flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .numbers h2{font-size:clamp(1.6rem,3vw,2.6rem);font-weight:800;margin-bottom:2.2rem;letter-spacing:-.02em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;width:min(1100px,92vw)}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.4rem 1rem}
+  .stat .big{font-size:clamp(1.5rem,2.6vw,2.2rem);font-weight:800;
+    background:linear-gradient(120deg,#a5b4fc,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .lbl{color:var(--dim);font-size:.82rem;margin-top:.3rem;line-height:1.4}
+
+  /* ── chrome ─────────────────────────────────────────── */
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:3;height:6.5vh;min-height:46px;
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:0 clamp(1rem,3vw,2.4rem);
+    background:linear-gradient(to top,rgba(11,9,32,.96),transparent);
+  }
+  .dots{display:flex;gap:.42rem;align-items:center}
+  .dot{width:.5rem;height:.5rem;border-radius:50%;background:rgba(255,255,255,.2);border:0;cursor:pointer;padding:0;transition:.22s}
+  .dot:hover{background:rgba(255,255,255,.45);transform:scale(1.25)}
+  .dot.on{width:1.5rem;border-radius:999px;background:linear-gradient(90deg,var(--indigo),var(--violet))}
+  .ctrls{display:flex;align-items:center;gap:.5rem}
+  .btn{
+    background:var(--card);border:1px solid var(--line);color:var(--dim);cursor:pointer;
+    border-radius:9px;padding:.42rem .8rem;font:inherit;font-size:.82rem;transition:.18s
+  }
+  .btn:hover{background:rgba(255,255,255,.11);color:#fff;border-color:rgba(255,255,255,.28)}
+  .btn:disabled{opacity:.3;cursor:default}
+  .count{color:var(--faint);font-size:.8rem;font-variant-numeric:tabular-nums;min-width:3.4rem;text-align:center}
+  .brand{color:var(--faint);font-size:.8rem;font-weight:600;letter-spacing:.01em}
+  .brand b{color:#b6b0e8;font-weight:700}
+  .progress{position:fixed;top:0;left:0;height:2px;z-index:4;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--pink));transition:width .3s}
+
+  /* overview grid */
+  .ov{position:fixed;inset:0;z-index:5;background:#080618;display:none;padding:5vh 4vw;overflow-y:auto}
+  .ov.on{display:block}
+  .ov h3{text-align:center;color:var(--dim);font-size:.95rem;font-weight:600;margin-bottom:1.6rem;letter-spacing:.02em}
+  .ovgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem;max-width:1400px;margin:0 auto}
+  .thumb{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s;text-align:left;padding:0;font:inherit;color:inherit}
+  .thumb:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.6);box-shadow:0 16px 34px rgba(0,0,0,.5)}
+  .thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#12102c}
+  .thumb .cap{padding:.6rem .75rem;font-size:.82rem;color:var(--dim)}
+  .thumb .cap b{display:block;color:#e9e6ff;font-weight:650;margin-bottom:.1rem}
+  .noimg{display:grid;place-items:center;aspect-ratio:16/9;background:linear-gradient(135deg,#1b1740,#2a2159);color:var(--faint);font-size:.8rem}
+
+  @media print{.bar,.ov,.progress,.bg{display:none}.slide{display:flex!important;position:static;page-break-after:always;height:100vh}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="progress" id="prog"></div>
+
+<div class="deck" id="deck"></div>
+
+<div class="bar">
+  <div class="brand">Chord<b>SheetMaker</b></div>
+  <div class="dots" id="dots"></div>
+  <div class="ctrls">
+    <button class="btn" id="ovBtn" title="Overview (O)">Overview</button>
+    <button class="btn" id="prev" title="Previous (←)">←</button>
+    <span class="count" id="count">1 / 9</span>
+    <button class="btn" id="next" title="Next (→)">→</button>
+    <button class="btn" id="fs" title="Fullscreen (F)">⛶</button>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <h3>Jump to a slide — press <kbd>Esc</kbd> to close</h3>
+  <div class="ovgrid" id="ovgrid"></div>
+</div>
+
+<script>
+const SLIDES = [
+  { type:"title" },
+
+  { n:1, img:"infographics/01-system-architecture.png",
+    kicker:"Architecture",
+    title:"One application, four services",
+    lead:"Everything a musician touches is served by a single Next.js app on Vercel. It renders the pages, exposes the API and holds the business logic. Four managed services do the specialised work.",
+    points:[
+      "<b>Any browser, no install</b> — phone on a music stand, tablet at rehearsal, laptop on the sofa.",
+      "<b>Neon Postgres</b> stores users, songs, setlists and the activity log.",
+      "<b>Google Gemini</b> powers song search, photo OCR and background image generation.",
+      "<b>Stripe</b> runs the subscriptions; <b>Resend</b> sends sign-in links and email."
+    ],
+    chips:["28 API endpoints","Deploys on git push","No servers to manage"] },
+
+  { n:2, img:"infographics/02-song-to-stage.png",
+    kicker:"Product flow",
+    title:"Four ways in, one chart, three ways out",
+    lead:"A song can arrive as a search, a photograph, a paste, or a blank page. All four converge on the same structured chart — and that one chart then leaves in whichever form the moment needs.",
+    points:[
+      "<b>The parser</b> turns loose text into lines with each chord pinned to a character position in the lyric.",
+      "<b>The editor</b> is where a chord gets dragged onto the exact syllable, the key changes, and AI styles the page.",
+      "<b>Play mode</b> scrolls hands-free, <b>PDF</b> prints for the music stand, a <b>link</b> goes to the band."
+    ],
+    chips:["Photo → editable chart in seconds","Transposition is free for everyone"] },
+
+  { n:3, img:"infographics/03-tech-stack.png",
+    kicker:"Tech stack",
+    title:"Managed everywhere it counts",
+    lead:"Five layers, all managed services. Nothing here needs a server babysat at 2am — which is precisely what makes a one-person product sustainable.",
+    points:[
+      "<b>Next.js App Router</b>, React and TypeScript, styled with Tailwind v4.",
+      "<b>Prisma</b> over Neon's serverless Postgres — it scales to zero between gigs.",
+      "<b>Gemini</b> for the AI features; <b>Stripe</b> and <b>Resend</b> for money and mail.",
+      "<b>Vercel</b> hosts it: push to master and production updates itself."
+    ],
+    chips:["~17,000 lines","116 files","TypeScript end to end"] },
+
+  { n:4, img:"infographics/04-code-architecture.png",
+    kicker:"Code architecture",
+    title:"Four tiers, dependencies point down",
+    lead:"Routes render, components interact, the lib layer does the thinking, and only the bottom tier touches data. Keeping logic out of components is what stops a solo codebase turning to soup.",
+    points:[
+      "<b>Routes</b> — marketing pages, the editor, the library, admin, and 28 API endpoints.",
+      "<b>Components</b> — editor workbench, play view, style panel, song library.",
+      "<b>Logic (23 modules)</b> — chord parsing, transposition, PDF export, plans, activity, email.",
+      "<b>Data</b> — Prisma and Postgres, plus browser storage for guests."
+    ],
+    chips:["plans.ts = one source of truth for tiers","Logic is unit-testable in isolation"] },
+
+  { n:5, img:"infographics/05-data-model.png",
+    kicker:"Data model",
+    title:"A whole song is one row",
+    lead:"Nine tables with the user at the centre. The interesting decision: an entire chart — lines, chords, fonts, colours, background — lives in a single JSON column rather than being shredded across tables.",
+    points:[
+      "<b>Chords store a character index</b>, not a pixel. The renderer measures real text width, so alignment survives any font, size or screen.",
+      "<b>Categories nest</b>, so a setlist can hold sub-folders.",
+      "<b>Shares are detached snapshots</b> — the link keeps working exactly as sent, even after the song changes.",
+      "<b>The activity log</b> records 15 event types, including anonymous guests."
+    ],
+    chips:["9 tables","15 event types","JSON where structure would only get in the way"] },
+
+  { n:6, img:"infographics/06-growth-funnel.png",
+    kicker:"Growth",
+    title:"Let them build something first",
+    lead:"A musician will happily make one chart. They will not fill in a form to find out whether it was worth it. So the entire editor works with no account, and the ask comes only after the value has landed.",
+    points:[
+      "<b>Guests build charts</b> saved in the browser; those songs migrate into the account on signup.",
+      "<b>Free covers 5 songs</b> — enough to be genuinely useful, small enough to outgrow.",
+      "<b>The limit is the conversion moment</b>, followed by a 7-day trial with no charge up front.",
+      "<b>Shared charts recruit bandmates</b> — someone already looking at the product is the warmest lead there is."
+    ],
+    chips:["Free","$9 / month","$79 / year"] },
+
+  { n:7, img:"infographics/07-overview.png",
+    kicker:"In one picture",
+    title:"Create · Style · Play · Organise",
+    lead:"Four verbs cover the whole product. Everything else — the parser, the alignment maths, the trial logic — exists to make those four feel effortless to someone holding an instrument.",
+    points:[
+      "<b>Create</b> from a search, a photo, a paste or a blank page.",
+      "<b>Style</b> it with AI backgrounds and fonts that read the song's own lyrics.",
+      "<b>Play</b> it hands-free, or print it, or send it.",
+      "<b>Organise</b> it into setlists for the gig and collections for the sofa."
+    ],
+    chips:["From sofa to stage"] },
+
+  { type:"numbers" }
+];
+
+const STATS = [
+  ["~17k","lines of TypeScript"],
+  ["116","source files"],
+  ["28","API endpoints"],
+  ["9","database tables"],
+  ["15","tracked event types"],
+  ["11","SEO landing pages"],
+  ["20","auto-scroll speeds"],
+  ["1","developer"]
+];
+
+const deck = document.getElementById("deck");
+const dots = document.getElementById("dots");
+const ovgrid = document.getElementById("ovgrid");
+
+SLIDES.forEach((s, i) => {
+  const el = document.createElement("section");
+  el.className = "slide";
+  if (s.type === "title") {
+    el.classList.add("title");
+    el.innerHTML = `
+      <span class="badge">A visual tour</span>
+      <h1>ChordSheetMaker<br><span class="grad">how it all fits together</span></h1>
+      <p>The product, the stack, the code and the business — in seven pictures.</p>
+      <p class="hint"><kbd>←</kbd> <kbd>→</kbd> to navigate · <kbd>O</kbd> overview · <kbd>F</kbd> fullscreen</p>`;
+  } else if (s.type === "numbers") {
+    el.classList.add("numbers");
+    el.innerHTML = `<h2>By the numbers</h2><div class="grid">` +
+      STATS.map(([b,l]) => `<div class="stat"><div class="big">${b}</div><div class="lbl">${l}</div></div>`).join("") +
+      `</div>`;
+  } else {
+    el.classList.add("content");
+    el.innerHTML = `
+      <div class="visual"><img src="${s.img}" alt="${s.title}" loading="lazy"></div>
+      <div class="text">
+        <div class="eyebrow"><span class="n">${s.n}</span>${s.kicker}</div>
+        <h2>${s.title}</h2>
+        <p class="lead">${s.lead}</p>
+        <ul>${s.points.map(p => `<li>${p}</li>`).join("")}</ul>
+        <div class="chips">${s.chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
+      </div>`;
+  }
+  deck.appendChild(el);
+
+  const d = document.createElement("button");
+  d.className = "dot"; d.title = s.title || (s.type === "title" ? "Title" : "By the numbers");
+  d.onclick = () => go(i);
+  dots.appendChild(d);
+
+  const t = document.createElement("button");
+  t.className = "thumb";
+  t.innerHTML = (s.img ? `<img src="${s.img}" alt="">` : `<div class="noimg">${s.type === "title" ? "Title" : "By the numbers"}</div>`) +
+    `<div class="cap"><b>${s.title || (s.type === "title" ? "ChordSheetMaker" : "By the numbers")}</b>${s.kicker || "&nbsp;"}</div>`;
+  t.onclick = () => { go(i); toggleOv(false); };
+  ovgrid.appendChild(t);
+});
+
+let cur = 0;
+const slides = [...document.querySelectorAll(".slide")];
+const dotEls = [...document.querySelectorAll(".dot")];
+
+function go(i){
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  slides.forEach((s, k) => s.classList.toggle("on", k === cur));
+  dotEls.forEach((d, k) => d.classList.toggle("on", k === cur));
+  document.getElementById("count").textContent = `${cur + 1} / ${SLIDES.length}`;
+  document.getElementById("prev").disabled = cur === 0;
+  document.getElementById("next").disabled = cur === SLIDES.length - 1;
+  document.getElementById("prog").style.width = ((cur + 1) / SLIDES.length * 100) + "%";
+  location.hash = cur ? "s" + cur : "";
+}
+const toggleOv = on => document.getElementById("ov").classList.toggle("on", on);
+
+document.getElementById("next").onclick = () => go(cur + 1);
+document.getElementById("prev").onclick = () => go(cur - 1);
+document.getElementById("ovBtn").onclick = () => toggleOv(!document.getElementById("ov").classList.contains("on"));
+document.getElementById("fs").onclick = () =>
+  document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+
+addEventListener("keydown", e => {
+  const ovOn = document.getElementById("ov").classList.contains("on");
+  if (e.key === "Escape") return toggleOv(false);
+  if (e.key === "o" || e.key === "O") return toggleOv(!ovOn);
+  if (["ArrowRight"," ","PageDown"].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (["ArrowLeft","PageUp"].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  if (e.key === "Home") go(0);
+  if (e.key === "End") go(SLIDES.length - 1);
+  if (e.key === "f" || e.key === "F") document.getElementById("fs").onclick();
+});
+
+// swipe on touch devices
+let x0 = null;
+addEventListener("touchstart", e => x0 = e.touches[0].clientX, {passive:true});
+addEventListener("touchend", e => {
+  if (x0 === null) return;
+  const dx = e.changedTouches[0].clientX - x0;
+  if (Math.abs(dx) > 55) go(cur + (dx < 0 ? 1 : -1));
+  x0 = null;
+}, {passive:true});
+
+go(location.hash.startsWith("#s") ? +location.hash.slice(2) || 0 : 0);
+</script>
+</body>
+</html>
