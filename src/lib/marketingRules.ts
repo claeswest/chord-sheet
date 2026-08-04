@@ -28,14 +28,26 @@ export type Audience = {
 };
 
 /**
+ * A scheduled cancellation that hasn't taken effect yet.
+ *
+ * The date matters, not merely its presence: `stripeCancelAt` is never cleared
+ * when the subscription finally lapses, so a churned user keeps a past date on
+ * their row forever. Anything testing `if (cancelAt)` will call them "leaving"
+ * for the rest of time.
+ */
+export function cancellationPending(cancelAt: Date | string | null | undefined): boolean {
+  if (!cancelAt) return false;
+  return new Date(cancelAt).getTime() > Date.now();
+}
+
+/**
  * Cancelled but still inside the notice period: `plan` still reads "monthly"
  * and the status is still trialing/active, so plan alone can't tell you this
  * person is on their way out. Once the date passes they're an ordinary free
  * user again and the normal rules apply.
  */
 export function isLeaving(a: Audience): boolean {
-  if (!a.cancelAt) return false;
-  return new Date(a.cancelAt).getTime() > Date.now();
+  return cancellationPending(a.cancelAt);
 }
 
 /** Paying and staying — the only group an upgrade pitch is wrong for. */

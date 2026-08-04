@@ -2,6 +2,8 @@
 // reflect real Stripe status (trialing / active / past_due) rather than a plain
 // plan name. Hovering a trial badge shows when it converts.
 
+import { cancellationPending } from "@/lib/marketingRules";
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
@@ -41,14 +43,17 @@ export default function PlanBadge({
   let title: string | undefined;
 
   // A pending cancellation outranks the status: someone still "active" who has
-  // already left is the one thing you want to spot in the list.
-  if (cancelAt) {
+  // already left is the one thing you want to spot in the list. Only while it
+  // is still pending, though — stripeCancelAt is never cleared once the
+  // subscription lapses, so testing for its presence alone would leave churned
+  // accounts flagged "⚠ ends <date>" forever, hiding what they actually are now.
+  if (cancellationPending(cancelAt)) {
     return (
       <span
-        title={`Cancelled — access ends ${formatDate(cancelAt)}`}
+        title={`Cancelled — access ends ${formatDate(cancelAt!)}`}
         className="inline-block text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap bg-red-900/40 text-red-300"
       >
-        ⚠ {plan} · ends {formatDate(cancelAt)}
+        ⚠ {plan} · ends {formatDate(cancelAt!)}
       </span>
     );
   }
@@ -65,6 +70,13 @@ export default function PlanBadge({
   } else if (status === "past_due" || status === "canceled") {
     label = `${plan} · ${status}`;
     cls = "bg-red-900/40 text-red-300";
+  }
+
+  // Churn that already completed: they read as an ordinary free user now, which
+  // is correct — but keep the fact on hover rather than losing it. Rows written
+  // before the deleted-handler cleared this field still carry the old date.
+  if (cancelAt && !status) {
+    title = `Cancelled — access ended ${formatDate(cancelAt)}`;
   }
 
   return (

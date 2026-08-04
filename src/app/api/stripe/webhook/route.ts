@@ -142,6 +142,10 @@ export async function POST(req: NextRequest) {
           stripePriceId: null,
           stripeCurrentPeriodEnd: null,
           stripeSubscriptionStatus: null,
+          // The cancellation has now happened, so it is no longer pending.
+          // Leaving the old date behind marks a churned account as forever
+          // "about to cancel" anywhere that tests the field for presence.
+          stripeCancelAt: null,
         },
       });
       break;
