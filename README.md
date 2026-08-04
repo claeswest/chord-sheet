@@ -93,6 +93,7 @@ you're using. Same idea for GitHub.
 | `STRIPE_WEBHOOK_SECRET` | subscription status | |
 | `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_YEARLY` / `STRIPE_PRICE_LIFETIME` | plans | price ids |
 | `NEXT_PUBLIC_GA_ID` | GA4 analytics | optional; analytics no-op without it |
+| `NEXT_PUBLIC_ADS_SIGNUP_LABEL` | Google Ads conversion tracking | the label after the slash in `send_to: 'AW-1064389018/<label>'`; **without it Ads records zero conversions and Search bids blind** |
 | `ERROR_WEBHOOK_URL` | error alerts | optional |
 
 ## ⚠️ Local dev talks to the production database

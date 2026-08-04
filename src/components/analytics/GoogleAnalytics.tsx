@@ -1,6 +1,7 @@
 import Script from "next/script";
+import { ADS_ID } from "@/lib/analytics";
 
-const AW_ID = "AW-1064389018"; // Google Ads conversion tracking
+const AW_ID = ADS_ID; // single source of truth — lib/analytics sends conversions to it
 
 /**
  * Google Analytics 4 + Google Ads tracking.
@@ -8,6 +9,10 @@ const AW_ID = "AW-1064389018"; // Google Ads conversion tracking
  * GA4 setup:
  *   1. Create a GA4 property at analytics.google.com
  *   2. Add NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX to your Vercel env vars
+ *
+ * Ads conversions: loading this tag only reports page views. Reporting an
+ * actual conversion is trackSignUp() in lib/analytics, which needs
+ * NEXT_PUBLIC_ADS_SIGNUP_LABEL — see .env.example.
  */
 export default function GoogleAnalytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;

@@ -90,10 +90,42 @@ export const trackStunningTip = (action: "shown" | "clicked" | "dismissed") =>
 export const trackCategoriesTip = (action: "shown" | "clicked" | "dismissed") =>
   track("categories_tip", { action });
 
+// ── Google Ads conversions ──────────────────────────────────────────────────
+//
+// The Ads tag is loaded in components/analytics/GoogleAnalytics.tsx, but
+// loading it only reports page views. A conversion is reported by *sending an
+// event*, which nothing did — so Search campaigns optimising for "Sign-ups"
+// were bidding against a goal the site never fired, and Ads showed 0.00
+// conversions against real signups.
+
+/** The Google Ads account tag. Shared with GoogleAnalytics.tsx. */
+export const ADS_ID = "AW-1064389018";
+
+/**
+ * Report a Google Ads conversion.
+ *
+ * `label` identifies *which* conversion action, and comes from the tag setup
+ * in Ads (Goals → Conversions → the action → "Use Google tag"). It is a build
+ * time env var rather than a constant because the action has to be created in
+ * the Ads account first. Without a label Ads discards the hit, so skip.
+ */
+function trackAdsConversion(label: string | undefined): void {
+  if (typeof window === "undefined" || !label) return;
+  try {
+    window.gtag?.("event", "conversion", { send_to: `${ADS_ID}/${label}` });
+  } catch {
+    /* never let analytics break the app */
+  }
+}
+
 /** A new account was created (fired once, client-side, on the first visit
  *  after registration). GA4-recommended event name — mark as key event so
- *  Traffic acquisition can attribute signups to channel/campaign. */
-export const trackSignUp = () => track("sign_up");
+ *  Traffic acquisition can attribute signups to channel/campaign.
+ *  Also reports the Ads conversion, which is what lets Search bid on it. */
+export const trackSignUp = () => {
+  track("sign_up");
+  trackAdsConversion(process.env.NEXT_PUBLIC_ADS_SIGNUP_LABEL);
+};
 
 // ── Server activity log beacon (admin /activity feed) ───────────────────────
 
