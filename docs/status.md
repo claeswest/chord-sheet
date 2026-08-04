@@ -1,6 +1,6 @@
 # Project status — pick-up notes
 
-*Last updated: 27 July 2026*
+*Last updated: 4 August 2026*
 
 Read this first when starting work on a new machine or in a fresh session. It
 covers what the code can't tell you: what was learned, what was decided and why,
@@ -40,6 +40,26 @@ Run against the activity log, which has recorded events since 5 July.
 4. **Photo import is underused** relative to how well it demos, because it's
    buried as a tab rather than offered as a headline path.
 
+## What the data said (analysis, 4 August 2026)
+
+A week later, against the same activity log. Numbers are in `/admin`; what
+matters is the shape.
+
+1. **The 5-song free limit has never once been reached.** Nearly every free
+   user sits at two songs or fewer. The free tier, the paywall copy and the
+   strongest upgrade email are all built around a moment that has not happened
+   to a single person. **This is the biggest misallocation in the product.**
+2. **PDF export is the only paywall that converts** — and it converts badly.
+   The one trial started in this period was opened ~2 minutes after signup, to
+   get through the PDF gate, and cancelled 7 minutes later after two exports.
+   People are buying their way past a wall before they have felt any value.
+3. **Retention is unchanged** since the July analysis, after a month of
+   shipping. Logins per week are a small fraction of accounts; almost all
+   activity is still first-session.
+4. **Marketing email is being sent by hand at scale** — the drip machinery
+   works correctly (cooldown respected, no double-sends), but the founder is
+   personally doing what a scheduler should.
+
 ## What was built in response (July 2026)
 
 - **Guest "keep your song" modal** — one-time, fires at the moment of pride
@@ -77,8 +97,13 @@ Run against the activity log, which has recorded events since 5 July.
    People don't buy what they've never felt.
 3. **Audit the paywall moments** (6th song, PDF, share): each should show the
    benefit, the price, "7 days free, no charge today" and a one-click path.
-4. **Feed conversions back to Google Ads.** If signup/trial events aren't
-   reported as conversions, Smart Bidding optimises for clicks, not customers.
+4. ~~**Feed conversions back to Google Ads.**~~ **Done 4 Aug 2026** — but read
+   the warning under Watchpoints before trusting any historic conversion
+   number. `trackSignUp()` now reports a real Ads conversion, gated on
+   `NEXT_PUBLIC_ADS_SIGNUP_LABEL`. Note this is for *measurement*: the budget
+   will not produce the ~15–30 conversions/month that conversion-based bidding
+   needs, so the goal is knowing which keywords produce users, not Smart
+   Bidding.
 5. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
    invented. There are real customers now — the 💬 *Feedback ask* email exists
    precisely to collect a usable quote.
@@ -88,6 +113,20 @@ Run against the activity log, which has recorded events since 5 July.
 
 ## Watchpoints
 
+- **Every Google Ads "conversion" before Aug 2026 is fictional.** The Primary
+  action is `Sign-up (Page load welcome=1)`, which fires on any page load whose
+  URL contains `welcome=1` — and the only place the app produces that URL is
+  the CTA buttons on the `[slug]` landing pages, shown to everyone, logged in
+  or not. It has been counting button clicks, not signups, since April. The
+  replacement (`Sign-up (account created)`, event-based) is deliberately
+  **Secondary** so it doesn't disturb bidding; promote it and demote the old
+  one once real conversions appear. Both sit in an **account-default goal
+  applied to all 32 campaigns**, including the unrelated shops in the same Ads
+  account — which is why the switch shouldn't be made casually.
+- **`NEXT_PUBLIC_*` vars are baked in at build time.** Adding one in Vercel
+  does nothing until a build runs *after* it exists; a redeploy triggered
+  before adding the value ships a silent no-op. Verify by checking the value
+  appears inlined in the served JS, not as a `process.env` lookup.
 - **The founder's own test subscription** converts like any other — check
   `/admin/users` so you aren't paying yourself.
 - **Trials convert 7 days after signup.** Worth a personal email during the
