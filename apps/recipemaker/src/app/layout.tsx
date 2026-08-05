@@ -5,13 +5,16 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["700", "800"] });
 
+const BASE_URL = "https://recipebookmaker.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
-    default: "RecipeMaker — your recipes, beautifully kept",
-    template: "%s | RecipeMaker",
+    default: "RecipeBookMaker — your recipes, beautifully kept",
+    template: "%s | RecipeBookMaker",
   },
   description:
-    "Write, import and style your recipes, then keep them in one place. Build a personal cookbook worth passing on.",
+    "Write, import and style your recipes, then keep them in one place. Build a personal recipe book worth passing on.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
