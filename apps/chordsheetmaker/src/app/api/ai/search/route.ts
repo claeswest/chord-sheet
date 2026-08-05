@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
-import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
+import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 
 const PROMPT = `You are an expert musician and chord transcriber with deep knowledge of popular songs across all genres and eras.
 

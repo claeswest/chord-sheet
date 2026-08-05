@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ALL_FONTS } from "@/lib/songStyle";
-import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
-import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
+import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 import { auth } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 

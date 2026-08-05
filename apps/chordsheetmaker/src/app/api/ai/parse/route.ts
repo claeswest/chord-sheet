@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
-import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
+import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 
 const SYSTEM_PROMPT = `You are an expert chord sheet formatter and musician. The user has pasted raw text from a chord website (Ultimate Guitar, Chordify, Chordu, etc.) that may contain ads, navigation, tabs, chord diagrams, and other junk.
 

@@ -8,7 +8,7 @@ import { extractInlineChords } from "@/lib/parseChordSheet";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
-import { downloadPdf } from "@/lib/pdfExport";
+import { downloadPdf } from "@clavos/core/pdf";
 import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
 import Kbd from "@/components/ui/Kbd";
 import CtaLink from "@/components/ui/CtaLink";

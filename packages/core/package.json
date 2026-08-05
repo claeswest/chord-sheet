@@ -1,0 +1,19 @@
+{
+  "name": "@clavos/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Infrastructure shared between apps. Nothing here may import a database client, auth, or any product's domain types.",
+  "exports": {
+    "./ai": "./src/gemini.ts",
+    "./pdf": "./src/pdf.ts",
+    "./rate-limit": "./src/rateLimit.ts",
+    "./image": "./src/imageUtils.ts",
+    "./errors": "./src/reportError.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
-import { compressImage } from "@/lib/imageUtils";
+import { compressImage } from "@clavos/core/image";
 
 interface Props {
   style: SongStyle;

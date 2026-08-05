@@ -3,7 +3,7 @@
 // See: node_modules/next/dist/docs/.../instrumentation.md
 
 import type { Instrumentation } from "next";
-import { reportError } from "@/lib/reportError";
+import { reportError } from "@clavos/core/errors";
 
 export const onRequestError: Instrumentation.onRequestError = async (
   err,
