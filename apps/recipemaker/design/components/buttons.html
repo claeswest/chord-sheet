@@ -1,0 +1,176 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buttons — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-3); }
+  .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+  .btn { font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 600;
+         padding: var(--space-3) var(--space-6); border-radius: var(--radius-pill);
+         border: 1px solid transparent; cursor: pointer; }
+  .btn-primary   { background: var(--ink); color: var(--paper-raised); }
+  .btn-primary:hover { background: #000; }
+  .btn-secondary { background: var(--paper-raised); color: var(--ink); border-color: var(--rule); }
+  .btn-secondary:hover { border-color: var(--ink-faint); }
+  .btn-quiet     { background: transparent; color: var(--ink-muted); padding-left: 0; padding-right: 0; }
+  .btn-quiet:hover { color: var(--ink); }
+  .btn-danger    { background: var(--danger-soft); color: var(--danger); border-color: #f5c6c6; }
+  .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm { font-size: var(--text-xs); padding: var(--space-2) var(--space-4); }
+
+  .icon { width: 28px; height: 28px; border-radius: var(--radius-sm); border: none;
+          background: transparent; color: var(--ink-faint); cursor: pointer; font-size: var(--text-sm); }
+  .icon:hover { background: var(--paper-sunken); color: var(--ink); }
+  .icon[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+  table { border-collapse: collapse; font-size: var(--text-sm); margin-top: var(--space-4); }
+  td, th { text-align: left; padding: var(--space-2) var(--space-6) var(--space-2) 0;
+           border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--ink-faint); font-weight: 600; font-size: var(--text-xs);
+       text-transform: uppercase; letter-spacing: 0.08em; }
+  td:last-child { color: var(--ink-muted); }
+</style>
+</head>
+<body>
+  <h1>Buttons</h1>
+  <p class="lede">One primary action per screen. Everything else steps back — a page of equally
+    loud buttons tells the user nothing about what to do next.</p>
+
+  <h2>Variants</h2>
+  <div class="row">
+    <button class="btn btn-primary">Save</button>
+    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-quiet">+ Add ingredient</button>
+    <button class="btn btn-danger">Delete recipe</button>
+    <button class="btn btn-primary" disabled>Saved</button>
+  </div>
+
+  <h2>Small</h2>
+  <div class="row">
+    <button class="btn btn-primary btn-sm">New recipe</button>
+    <button class="btn btn-secondary btn-sm">Export PDF</button>
+  </div>
+
+  <h2>Icon — row controls</h2>
+  <div class="row">
+    <button class="icon" aria-label="Move up">↑</button>
+    <button class="icon" aria-label="Move down">↓</button>
+    <button class="icon" aria-label="Remove">✕</button>
+    <button class="icon" aria-label="Move up" disabled>↑</button>
+  </div>
+
+  <h2>When to use which</h2>
+  <table>
+    <tr><th>Variant</th><th>Use for</th></tr>
+    <tr><td><strong>Primary</strong></td><td>The one action the screen exists for — Save, New recipe, Sign in</td></tr>
+    <tr><td><strong>Secondary</strong></td><td>A real alternative, not a lesser one — Cancel, Export</td></tr>
+    <tr><td><strong>Quiet</strong></td><td>Additive actions inside a form — Add ingredient, Add note. No border, so rows stay calm</td></tr>
+    <tr><td><strong>Danger</strong></td><td>Destructive and irreversible. Tinted, never solid red — solid red draws the eye to the thing you least want clicked</td></tr>
+    <tr><td><strong>Icon</strong></td><td>Repeated row controls. Always aria-labelled; the glyph alone is not a name</td></tr>
+  </table>
+
+  <h2>Disabled means saved</h2>
+  <p class="lede" style="margin-top:var(--space-3)">The primary button reads <em>Saved</em> and
+    disables when there is nothing to save. That is deliberate feedback, not a dead control —
+    it answers "did that go through?" without a toast.</p>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Library — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-3); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: var(--space-4); max-width: 760px; }
+  .card { background: var(--paper-raised); border: 1px solid var(--rule);
+          border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+  .thumb { height: 120px; background: var(--paper-sunken); position: relative; }
+  .thumb.tinted { background: linear-gradient(135deg, #f3e6d4, #e8d5bd); }
+  .body { padding: var(--space-4); }
+  .title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700;
+           margin: 0 0 var(--space-1); }
+  .desc { font-family: var(--font-body); font-size: var(--text-sm); color: var(--ink-muted);
+          margin: 0 0 var(--space-3); line-height: 1.5;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta { font-size: var(--text-xs); color: var(--ink-faint); display: flex; gap: var(--space-3); }
+  .tag { display: inline-block; font-size: var(--text-xs); background: var(--accent-soft);
+         color: var(--accent-ink); padding: 2px var(--space-2); border-radius: var(--radius-pill); }
+
+  .empty { border: 1px dashed var(--rule); border-radius: var(--radius-lg);
+           padding: var(--space-12); text-align: center; max-width: 760px; background: var(--paper-raised); }
+  .empty h3 { font-family: var(--font-display); font-size: var(--text-xl); margin: 0 0 var(--space-2); }
+  .empty p { font-family: var(--font-body); color: var(--ink-muted); margin: 0 auto var(--space-6);
+             max-width: 32ch; line-height: var(--leading-body); }
+  .btn { font-size: var(--text-sm); font-weight: 600; padding: var(--space-3) var(--space-6);
+         border-radius: var(--radius-pill); border: none; background: var(--ink);
+         color: var(--paper-raised); cursor: pointer; }
+  .callout { margin-top: var(--space-8); padding: var(--space-4); background: var(--accent-soft);
+             border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+             font-size: var(--text-sm); color: var(--accent-ink); max-width: var(--measure); }
+</style>
+</head>
+<body>
+  <h1>Library</h1>
+  <p class="lede">Recipes are things people collect. The library should feel like a shelf, not a
+    table of records.</p>
+
+  <h2>Cards</h2>
+  <div class="grid">
+    <article class="card">
+      <div class="thumb tinted"></div>
+      <div class="body">
+        <h3 class="title">Mormors pannkakor</h3>
+        <p class="desc">The thin Swedish kind. The batter wants to rest — that's the whole trick.</p>
+        <div class="meta"><span>Serves 4</span><span>30 min</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="thumb"></div>
+      <div class="body">
+        <h3 class="title">Köttbullar</h3>
+        <p class="desc">Family recipe, written on the back of an envelope.</p>
+        <div class="meta"><span>Serves 6</span><span>1 h 10 min</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="thumb tinted"></div>
+      <div class="body">
+        <h3 class="title">Saffransbullar</h3>
+        <p class="desc">Only at Christmas, and only with this much saffron.</p>
+        <div class="meta"><span>Makes 24</span><span class="tag">Jul</span></div>
+      </div>
+    </article>
+  </div>
+
+  <h2>Empty</h2>
+  <div class="empty">
+    <h3>Nothing here yet</h3>
+    <p>Paste a recipe, photograph a handwritten card, or start from scratch.</p>
+    <button class="btn">Add your first recipe</button>
+  </div>
+
+  <p class="callout"><strong>The empty state names the three ways in.</strong> Most people arrive
+    with a recipe already — on a card, in a screenshot, in a message from a relative. Saying
+    "photograph a handwritten card" tells them the product does something they didn't expect,
+    at the only moment they're definitely reading.</p>
+</body>
+</html>

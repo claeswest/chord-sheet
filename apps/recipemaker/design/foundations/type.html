@@ -1,0 +1,156 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Type — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); font-size: var(--text-base); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-4); }
+  .spec { display: grid; grid-template-columns: 132px 1fr; gap: var(--space-4);
+          align-items: baseline; padding: var(--space-3) 0; border-bottom: 1px solid var(--rule); }
+  .tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-faint); }
+  .display-3 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800;
+               line-height: var(--leading-tight); }
+  .display-2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 800;
+               line-height: var(--leading-tight); }
+  .heading   { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; }
+  .body-lg   { font-family: var(--font-body); font-size: var(--text-lg);
+               line-height: var(--leading-body); max-width: var(--measure); }
+  .body      { font-family: var(--font-body); font-size: var(--text-base);
+               line-height: var(--leading-body); max-width: var(--measure); }
+  .ui        { font-family: var(--font-ui); font-size: var(--text-sm); }
+  .meta      { font-family: var(--font-ui); font-size: var(--text-xs); color: var(--ink-faint);
+               text-transform: uppercase; letter-spacing: 0.08em; }
+  .qty       { font-family: var(--font-ui); font-size: var(--text-lg); color: var(--herb);
+               font-variant-numeric: tabular-nums; font-weight: 600; }
+  .note { margin-top: var(--space-8); padding: var(--space-4); background: var(--accent-soft);
+          border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+          font-size: var(--text-sm); color: var(--accent-ink); max-width: var(--measure); }
+</style>
+</head>
+<body>
+  <h1>Type</h1>
+  <p class="lede">Two families with one job each. Serif carries the recipe — it should look set,
+    not rendered. Sans carries the interface, so controls never pretend to be content.</p>
+
+  <h2>Display · Nunito</h2>
+  <div class="spec"><span class="tag">text-3xl / 800</span><span class="display-3">Your recipes</span></div>
+  <div class="spec"><span class="tag">text-2xl / 800</span><span class="display-2">Mormors pannkakor</span></div>
+  <div class="spec"><span class="tag">text-xl / 700</span><span class="heading">Ingredients</span></div>
+
+  <h2>Body · serif</h2>
+  <div class="spec"><span class="tag">text-lg / 1.65</span>
+    <span class="body-lg">Whisk the flour, salt and half the milk to a smooth batter. Let it rest
+      thirty minutes — this is what makes them thin.</span></div>
+  <div class="spec"><span class="tag">text-base / 1.65</span>
+    <span class="body">The thin Swedish kind. The batter wants to rest, and that's the whole trick.</span></div>
+
+  <h2>Interface · sans</h2>
+  <div class="spec"><span class="tag">text-sm</span><span class="ui">Save · New recipe · Add ingredient</span></div>
+  <div class="spec"><span class="tag">text-xs / caps</span><span class="meta">Serves 4 · 30 min</span></div>
+
+  <h2>Quantities</h2>
+  <div class="spec"><span class="tag">tabular-nums</span>
+    <span class="qty">3 dl &nbsp; ½ tsp &nbsp; 250 g</span></div>
+
+  <p class="note"><strong>Body is set at 18px, not 16.</strong> Instructions get read at arm's
+    length from a worktop, often with wet hands and no chance to lean in. Line height is 1.65 for
+    the same reason. This is the one place the interface should feel generous rather than tidy.</p>
+</body>
+</html>

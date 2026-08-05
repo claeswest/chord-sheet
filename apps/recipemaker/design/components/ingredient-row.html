@@ -1,0 +1,182 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ingredients — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-3); }
+  .panel { background: var(--paper-raised); border: 1px solid var(--rule);
+           border-radius: var(--radius-lg); padding: var(--space-6); max-width: 560px; }
+
+  /* Read view — the printed look */
+  .group-head { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700;
+                margin: 0 0 var(--space-3); }
+  .ing { display: grid; grid-template-columns: 5.5rem 1fr; gap: var(--space-4);
+         padding: var(--space-2) 0; border-bottom: 1px solid var(--rule);
+         font-family: var(--font-body); font-size: var(--text-lg); }
+  .ing:last-child { border-bottom: none; }
+  .qty { font-family: var(--font-ui); font-weight: 600; color: var(--herb);
+         font-variant-numeric: tabular-nums; }
+  .qty-none { color: var(--ink-faint); }
+  .note { color: var(--ink-faint); }
+
+  /* Edit view */
+  .edit-row { display: flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-2); }
+  input { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink);
+          background: var(--paper-raised); border: 1px solid var(--rule);
+          border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); }
+  input::placeholder { color: var(--ink-faint); }
+  input:focus { outline: none; border-color: var(--ink); }
+  .w-qty { width: 4rem; } .w-unit { width: 5rem; } .w-name { flex: 1; }
+  .icon { width: 28px; height: 28px; border: none; background: transparent;
+          color: var(--ink-faint); border-radius: var(--radius-sm); cursor: pointer; }
+  .icon:hover { background: var(--paper-sunken); color: var(--ink); }
+  .callout { margin-top: var(--space-8); padding: var(--space-4); background: var(--accent-soft);
+             border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+             font-size: var(--text-sm); color: var(--accent-ink); max-width: var(--measure); }
+</style>
+</head>
+<body>
+  <h1>Ingredients</h1>
+  <p class="lede">A fixed quantity column is what makes a list scannable mid-cook. Ragged
+    quantities force the eye to hunt for each number.</p>
+
+  <h2>Read</h2>
+  <div class="panel">
+    <p class="group-head">Ingredients</p>
+    <div class="ing"><span class="qty">3 dl</span><span>plain flour</span></div>
+    <div class="ing"><span class="qty">½ tsp</span><span>salt</span></div>
+    <div class="ing"><span class="qty">6 dl</span><span>milk</span></div>
+    <div class="ing"><span class="qty">3</span><span>eggs<span class="note">, lightly beaten</span></span></div>
+    <div class="ing"><span class="qty qty-none">—</span><span>black pepper<span class="note">, to taste</span></span></div>
+  </div>
+
+  <h2>Grouped</h2>
+  <div class="panel" style="margin-top:var(--space-3)">
+    <p class="group-head">For the sauce</p>
+    <div class="ing"><span class="qty">50 g</span><span>butter</span></div>
+    <div class="ing"><span class="qty">2 tbsp</span><span>plain flour</span></div>
+  </div>
+
+  <h2>Edit</h2>
+  <div class="panel">
+    <div class="edit-row">
+      <input class="w-qty" value="3" aria-label="Quantity">
+      <input class="w-unit" value="dl" aria-label="Unit">
+      <input class="w-name" value="plain flour" aria-label="Ingredient">
+      <button class="icon" aria-label="Move up">↑</button>
+      <button class="icon" aria-label="Move down">↓</button>
+      <button class="icon" aria-label="Remove">✕</button>
+    </div>
+    <div class="edit-row">
+      <input class="w-qty" placeholder="3" aria-label="Quantity">
+      <input class="w-unit" placeholder="dl" aria-label="Unit">
+      <input class="w-name" placeholder="plain flour" aria-label="Ingredient">
+      <button class="icon" aria-label="Move up">↑</button>
+      <button class="icon" aria-label="Move down">↓</button>
+      <button class="icon" aria-label="Remove">✕</button>
+    </div>
+  </div>
+
+  <p class="callout"><strong>Quantity may be empty.</strong> "To taste" and "a pinch" are real
+    ingredients. An em dash holds the column so the list stays aligned, and the qualifier goes in
+    the note. Never force a number where the cook wouldn't use one.</p>
+</body>
+</html>

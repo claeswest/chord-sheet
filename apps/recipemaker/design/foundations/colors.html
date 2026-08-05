@@ -1,0 +1,190 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Colour — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); font-size: var(--text-base); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-3); }
+  .row { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  .sw { border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden;
+        width: 168px; background: var(--paper-raised); }
+  .chip { height: 72px; }
+  .meta { padding: var(--space-3); }
+  .name { font-size: var(--text-sm); font-weight: 600; }
+  .hex { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-faint); }
+  .use { font-size: var(--text-xs); color: var(--ink-muted); margin-top: var(--space-1); }
+  .note { margin-top: var(--space-8); padding: var(--space-4); background: var(--accent-soft);
+          border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+          font-size: var(--text-sm); color: var(--accent-ink); max-width: var(--measure); }
+</style>
+</head>
+<body>
+  <h1>Colour</h1>
+  <p class="lede">Warm throughout. Pure white and neutral grey are deliberately absent —
+    they read as screen, and this product should read as page.</p>
+
+  <h2>Paper</h2>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--paper)"></div>
+      <div class="meta"><div class="name">paper</div><div class="hex">#fdfbf7</div>
+      <div class="use">Page background</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--paper-raised); border-bottom:1px solid var(--rule)"></div>
+      <div class="meta"><div class="name">paper-raised</div><div class="hex">#ffffff</div>
+      <div class="use">Cards on the page</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--paper-sunken)"></div>
+      <div class="meta"><div class="name">paper-sunken</div><div class="hex">#f5f1e8</div>
+      <div class="use">Wells, quiet blocks</div></div></div>
+  </div>
+
+  <h2>Ink</h2>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--ink)"></div>
+      <div class="meta"><div class="name">ink</div><div class="hex">#1c1917</div>
+      <div class="use">Headings, primary text</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-muted)"></div>
+      <div class="meta"><div class="name">ink-muted</div><div class="hex">#57534e</div>
+      <div class="use">Body, descriptions</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-faint)"></div>
+      <div class="meta"><div class="name">ink-faint</div><div class="hex">#a8a29e</div>
+      <div class="use">Metadata, placeholders</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--rule)"></div>
+      <div class="meta"><div class="name">rule</div><div class="hex">#e7e1d6</div>
+      <div class="use">Hairlines, dividers</div></div></div>
+  </div>
+
+  <h2>Accent — terracotta</h2>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--accent)"></div>
+      <div class="meta"><div class="name">accent</div><div class="hex">#b45309</div>
+      <div class="use">Section marks, links</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent-soft)"></div>
+      <div class="meta"><div class="name">accent-soft</div><div class="hex">#fef3e2</div>
+      <div class="use">Tinted backgrounds</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent-ink)"></div>
+      <div class="meta"><div class="name">accent-ink</div><div class="hex">#7c3a06</div>
+      <div class="use">Text on accent-soft</div></div></div>
+  </div>
+
+  <h2>Herb — quantities</h2>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--herb)"></div>
+      <div class="meta"><div class="name">herb</div><div class="hex">#4d7c4f</div>
+      <div class="use">Quantities and units</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--herb-soft)"></div>
+      <div class="meta"><div class="name">herb-soft</div><div class="hex">#eef3ec</div>
+      <div class="use">Quantity pills</div></div></div>
+  </div>
+
+  <h2>Danger</h2>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--danger)"></div>
+      <div class="meta"><div class="name">danger</div><div class="hex">#b91c1c</div>
+      <div class="use">Delete, destructive</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--danger-soft)"></div>
+      <div class="meta"><div class="name">danger-soft</div><div class="hex">#fef2f2</div>
+      <div class="use">Error backgrounds</div></div></div>
+  </div>
+
+  <p class="note"><strong>Why two accents.</strong> Quantities are set in herb green so numbers
+    separate from ingredient names when scanning mid-cook. Terracotta stays for navigation and
+    section marks. Keeping them apart means a page full of measurements never looks like a page
+    full of links.</p>
+</body>
+</html>
