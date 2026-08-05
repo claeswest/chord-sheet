@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma, isRecordNotFound } from "@/lib/prisma";
 
 // PUT /api/songs/[id]/background — save background image separately (avoids large POST body)
 export async function PUT(
@@ -36,10 +36,19 @@ export async function PUT(
     },
   };
 
-  await prisma.song.updateMany({
-    where: { id, userId: session.user.id },
-    data: { content: updatedContent, updatedAt: new Date() },
-  });
+  // update(), not updateMany() — see isRecordNotFound in lib/prisma. The userId
+  // stays in the filter, so this is still scoped to the owner.
+  try {
+    await prisma.song.update({
+      where: { id, userId: session.user.id },
+      data: { content: updatedContent, updatedAt: new Date() },
+    });
+  } catch (e) {
+    if (isRecordNotFound(e)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    throw e;
+  }
 
   return NextResponse.json({ ok: true });
 }

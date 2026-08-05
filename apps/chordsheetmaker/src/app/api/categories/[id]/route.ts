@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma, isRecordNotFound } from "@/lib/prisma";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -10,12 +10,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { name } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
-  const category = await prisma.category.updateMany({
-    where: { id, userId: session.user.id },
-    data: { name: name.trim() },
-  });
+  // update(), not updateMany() — see isRecordNotFound in lib/prisma. The userId
+  // stays in the filter, so this is still scoped to the owner.
+  try {
+    await prisma.category.update({
+      where: { id, userId: session.user.id },
+      data: { name: name.trim() },
+    });
+  } catch (e) {
+    if (isRecordNotFound(e)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    throw e;
+  }
 
-  if (category.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
 
