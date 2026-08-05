@@ -23,6 +23,9 @@ insight.
 
 ## Setting up on a new machine
 
+This is an npm-workspaces monorepo. Install from the **root** — that installs
+every app and package at once.
+
 ```bash
 git clone https://github.com/claeswest/chord-sheet.git
 cd chord-sheet
@@ -30,14 +33,15 @@ npm install          # also runs `prisma generate` via postinstall
 ```
 
 Then create the environment file — **this is the only part git can't give you**
-(secrets are gitignored, and they must never be committed).
+(secrets are gitignored, and they must never be committed). It belongs in the
+**app** directory, not the repo root, because that's the directory `next` runs in.
 
 **Recommended — pull them from Vercel:**
 
 ```bash
 npx vercel login
 npx vercel link
-npx vercel env pull .env
+npx vercel env pull apps/chordsheetmaker/.env
 ```
 
 **Or** copy `.env` from the old machine through something secure (password manager,
@@ -45,7 +49,7 @@ USB stick). Not email or chat.
 
 ⚠️ **After pulling, fix one value.** `vercel env pull` fetches the *production*
 values, so `AUTH_URL` arrives as the live domain and sign-in will bounce you
-there instead of localhost. Edit `.env`:
+there instead of localhost. Edit `apps/chordsheetmaker/.env`:
 
 ```
 AUTH_URL=http://localhost:3000
@@ -136,13 +140,22 @@ Deploy = `git push` to `master`. Vercel builds and promotes automatically.
 ## Layout
 
 ```
-src/app/            routes: landing, editor, /songs, /share/[token], /admin, /api/*
-src/components/     editor (SongEditor, SongViewer, StylePanel), library, ui
-src/lib/            prisma, auth, plans/entitlements, activity log, marketing email,
-                    song parsing & styling, pdf export, analytics
-prisma/schema.prisma
-public/examples/    landing-page screenshots of the three public example sheets
+apps/chordsheetmaker/         the app — everything below is relative to it
+  src/app/                    routes: landing, editor, /songs, /share/[token], /admin, /api/*
+  src/components/             editor (SongEditor, SongViewer, StylePanel), library, ui
+  src/lib/                    prisma, auth, plans/entitlements, activity log, marketing email,
+                              song parsing & styling, pdf export, analytics
+  prisma/schema.prisma
+  public/examples/            landing-page screenshots of the three public example sheets
+  .env                        secrets live here, not at the repo root
+
+packages/                     code shared between apps (see docs/platform.md)
+docs/                         status, platform analysis, posters
 ```
+
+The repo is an npm-workspaces monorepo so a second product can be added without
+copying infrastructure. Run npm commands from the **root**; they delegate to the
+app. `npm run dev`, `npm run build`, `npm run typecheck` all work from there.
 
 Admin lives at `/admin` (dashboard, users, activity) and is gated by `ADMIN_EMAILS`.
 
