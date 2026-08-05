@@ -7,11 +7,11 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=chordsheetmaker",
-    "build": "npm run build --workspace=chordsheetmaker",
+    "build": "cross-env NEXT_DIST_DIR=.next-build npm run build --workspace=chordsheetmaker",
     "start": "npm run start --workspace=chordsheetmaker",
     "lint": "npm run lint --workspace=chordsheetmaker",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:recipes": "npm run dev --workspace=recipemaker",
-    "build:recipes": "npm run build --workspace=recipemaker"
+    "build:recipes": "cross-env NEXT_DIST_DIR=.next-build npm run build --workspace=recipemaker"
   }
 }
