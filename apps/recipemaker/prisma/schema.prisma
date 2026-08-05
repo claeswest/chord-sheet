@@ -1,0 +1,165 @@
+// RecipeMaker's database. Separate from ChordSheetMaker's by decision — see
+// packages/core/README.md. Each product is its own Neon project so any one of
+// them can be sold, handed over or deleted independently.
+//
+// ── SHARED BASE ──────────────────────────────────────────────────────────────
+// User, Account, Session and VerificationToken below are intended to stay
+// byte-identical to apps/chordsheetmaker/prisma/schema.prisma. They are copied
+// today; the plan is packages/db-base plus a CI check that fails on drift.
+// Until that exists: if you change one of these models, change it in both apps.
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  marketingOptOut      Boolean   @default(false)
+  lastMarketingEmailAt DateTime?
+
+  // Plan tier: free | monthly | yearly | lifetime
+  plan String @default("free")
+
+  // Stripe subscription
+  stripeCustomerId         String?   @unique
+  stripeSubscriptionId     String?   @unique
+  stripePriceId            String?
+  stripeCurrentPeriodEnd   DateTime?
+  stripeSubscriptionStatus String? // trialing | active | past_due | canceled
+  stripeCancelAt           DateTime? // set when a cancellation is scheduled
+
+  accounts   Account[]
+  sessions   Session[]
+  recipes    Recipe[]
+  categories Category[]
+  activities ActivityLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  type      String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+// ── PRODUCT-SPECIFIC ─────────────────────────────────────────────────────────
+
+model Recipe {
+  id          String  @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  imageUrl    String? @db.Text
+  // Columns rather than JSON because they are filtered and sorted on.
+  servings    Int?
+  prepMinutes Int?
+  cookMinutes Int?
+  source      String?
+
+  /// { ingredientGroups, stepGroups, notes, nutrition } — see src/types/recipe.ts
+  content Json
+  /// Fonts, colours, background — the styling the user chose.
+  style   Json?
+
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories RecipeCategory[]
+
+  @@index([userId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  order     Int      @default(0)
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipes  RecipeCategory[]
+  parent   Category?        @relation("Subcategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[]       @relation("Subcategories")
+
+  @@index([userId])
+}
+
+model RecipeCategory {
+  recipeId   String
+  categoryId String
+  order      Int    @default(0)
+
+  recipe   Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, categoryId])
+}
+
+/// Detached snapshot for public sharing — keeps working after the recipe
+/// changes. No userId, matching ChordSheetMaker; shares can't be listed or
+/// revoked, which is a known limitation there too.
+model Share {
+  id        String   @id @default(cuid())
+  title     String
+  content   Json
+  createdAt DateTime @default(now())
+}
