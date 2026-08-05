@@ -4,6 +4,7 @@ import { listRecipes } from "@/lib/recipeDb";
 import { PLANS, planFromUser, getRecipeLimit, type Plan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { totalMinutes } from "@/types/recipe";
+import NewRecipeButton from "@/components/library/NewRecipeButton";
 
 export const metadata = { title: "Your recipes" };
 
@@ -36,14 +37,17 @@ export default async function RecipesPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <div className="flex items-end justify-between gap-4">
-        <h1 className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-nunito)" }}>
-          Your recipes
-        </h1>
-        {limit !== null && (
-          <p className="text-sm text-stone-500">
-            {recipes.length} of {limit} · {PLANS[plan].name}
-          </p>
-        )}
+        <div>
+          <h1 className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-nunito)" }}>
+            Your recipes
+          </h1>
+          {limit !== null && (
+            <p className="mt-1 text-sm text-stone-500">
+              {recipes.length} of {limit} · {PLANS[plan].name}
+            </p>
+          )}
+        </div>
+        <NewRecipeButton disabled={atLimit} />
       </div>
 
       {recipes.length === 0 ? (

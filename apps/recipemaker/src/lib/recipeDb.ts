@@ -51,6 +51,20 @@ export async function createRecipe(
   });
 }
 
+// Ownership stays in the WHERE clause, but via update()/delete() with an extra
+// non-unique filter rather than updateMany()/deleteMany().
+//
+// This is not a style preference. The Neon HTTP driver cannot run transactions,
+// and Prisma compiles updateMany into a transaction — so updateMany throws
+// "Transactions are not supported in HTTP mode" at runtime. update() with
+// `where: { id, userId }` is a single statement, keeps the ownership check
+// atomic, and throws P2025 when nothing matches.
+const NOT_FOUND = "P2025";
+
+function isNotFound(e: unknown): boolean {
+  return typeof e === "object" && e !== null && (e as { code?: string }).code === NOT_FOUND;
+}
+
 export async function updateRecipe(
   userId: string,
   id: string,
@@ -64,18 +78,27 @@ export async function updateRecipe(
     source: string | null;
     content: RecipeContent;
   }>,
-) {
-  // updateMany so the userId filter applies — update() would only match on id.
-  const res = await prisma.recipe.updateMany({
-    where: { id, userId },
-    data: { ...data, content: data.content as object | undefined },
-  });
-  return res.count > 0;
+): Promise<boolean> {
+  try {
+    await prisma.recipe.update({
+      where: { id, userId },
+      data: { ...data, content: data.content as object | undefined },
+    });
+    return true;
+  } catch (e) {
+    if (isNotFound(e)) return false;
+    throw e;
+  }
 }
 
 export async function deleteRecipe(userId: string, id: string): Promise<boolean> {
-  const res = await prisma.recipe.deleteMany({ where: { id, userId } });
-  return res.count > 0;
+  try {
+    await prisma.recipe.delete({ where: { id, userId } });
+    return true;
+  } catch (e) {
+    if (isNotFound(e)) return false;
+    throw e;
+  }
 }
 
 export async function countRecipes(userId: string): Promise<number> {
