@@ -14,6 +14,10 @@ function commitSha(): string {
 }
 
 const nextConfig: NextConfig = {
+  // @clavos/core exports TypeScript source rather than a build artefact, so
+  // Next compiles it as part of this app. No separate build step to keep in
+  // sync, and editing the package hot-reloads here.
+  transpilePackages: ["@clavos/core"],
   experimental: {
     // Background images are base64 blobs — increase body size limit to 10 MB
     serverActions: {

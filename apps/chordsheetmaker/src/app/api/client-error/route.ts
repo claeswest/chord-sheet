@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { reportError } from "@/lib/reportError";
+import { reportError } from "@clavos/core/errors";
 
 // Receives error reports from the client (React error boundaries, etc.) and
 // funnels them through the same reporter as server errors.

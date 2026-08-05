@@ -1,10 +1,15 @@
 /**
- * Generates and downloads a PDF of the chord sheet.
+ * Renders a DOM element to a paginated A4 PDF and downloads it.
  *
  * Page-break strategy: render content on a transparent background, then scan
  * the canvas pixel data for fully-transparent rows (gaps between lines).
  * Break at the last transparent row at or before the page boundary — this is
  * pixel-perfect and requires no DOM measurement.
+ *
+ * The output is a raster image, which suits visual, image-backed documents
+ * read on screen. It is the wrong tool for documents that are printed and
+ * need selectable text or deterministic page breaks — see this package's
+ * README before reusing it for those.
  */
 
 const A4_W_MM    = 210;
@@ -65,9 +70,13 @@ function findBreakRow(data: Uint8ClampedArray, width: number, maxY: number, minY
   return maxY; // no gap found — hard cut
 }
 
-export async function downloadPdf(filename = "chord-sheet.pdf"): Promise<void> {
-  const source = document.getElementById("print-view");
-  if (!source) throw new Error("print-view element not found");
+export async function downloadPdf(
+  filename = "document.pdf",
+  /** Id of the element to render. Each app owns its own print view. */
+  sourceId = "print-view",
+): Promise<void> {
+  const source = document.getElementById(sourceId);
+  if (!source) throw new Error(`${sourceId} element not found`);
 
   const rawBgImage = source.style.backgroundImage ?? "";
   const rawBgColor = source.style.background || source.style.backgroundColor || "#ffffff";

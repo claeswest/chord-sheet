@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@/lib/gemini";
-import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
+import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 
 const PROMPT = `You are looking at a photo or scan of a chord sheet (handwritten, printed, or photographed from a screen/book/paper).
 
