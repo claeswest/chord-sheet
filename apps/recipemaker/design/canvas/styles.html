@@ -1,0 +1,210 @@
+<!-- @dsCard group="Canvas" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canvas styles — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin:0; padding:var(--space-8); background:var(--paper); color:var(--ink);
+         font-family:var(--font-ui); }
+  h1 { font-family:var(--font-display); font-size:var(--text-2xl); margin:0 0 var(--space-2); }
+  .lede { color:var(--ink-muted); max-width:var(--measure); margin:0 0 var(--space-8);
+          font-family:var(--font-body); font-size:var(--text-lg); line-height:var(--leading-body); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+          gap:var(--space-6); max-width:1000px; }
+  .spec { font-size:var(--text-xs); color:var(--ink-faint); font-family:var(--font-mono);
+          margin:var(--space-2) 0 0; }
+  .name { font-size:var(--text-sm); font-weight:700; margin:var(--space-3) 0 0; }
+  .why  { font-size:var(--text-sm); color:var(--ink-muted); margin:2px 0 0; line-height:1.5; }
+
+  /* Every card below is the SAME markup — only the custom properties differ.
+     That is the whole point: the AI writes variables, never structure. */
+  .canvas { border-radius:var(--radius-md); padding:var(--space-6); border:1px solid rgba(0,0,0,.06);
+            background:var(--c-bg); color:var(--c-ink); }
+  .canvas h2 { font-family:var(--c-display); font-size:1.5rem; margin:0 0 4px; font-weight:var(--c-weight,700); }
+  .canvas .sub { font-family:var(--c-body); font-size:var(--text-sm); color:var(--c-muted);
+                 margin:0 0 var(--space-4); font-style:var(--c-sub-style, italic); }
+  .canvas .mark { font-family:var(--c-display); color:var(--c-accent); font-size:11px;
+                  text-transform:uppercase; letter-spacing:.14em; margin:var(--space-4) 0 var(--space-2); }
+  .canvas .ing { display:grid; grid-template-columns:4rem 1fr; gap:var(--space-3);
+                 font-family:var(--c-body); font-size:var(--text-sm); padding:4px 0;
+                 border-bottom:1px solid var(--c-rule); }
+  .canvas .q { color:var(--c-qty); font-weight:700; font-variant-numeric:tabular-nums; }
+  .canvas ol { list-style:none; counter-reset:s; padding:0; margin:0; }
+  .canvas ol li { counter-increment:s; display:flex; gap:var(--space-3); font-family:var(--c-body);
+                  font-size:var(--text-sm); line-height:1.6; margin-bottom:var(--space-2); }
+  .canvas ol li::before { content:counter(s); flex:0 0 1.25rem; height:1.25rem;
+                          background:var(--c-accent); color:var(--c-bg); border-radius:50%;
+                          display:grid; place-items:center; font-family:var(--font-ui);
+                          font-size:10px; font-weight:700; }
+
+  /* — 1 — Nordic: pale, spare, sans display */
+  .s-nordic { --c-bg:#f7f7f5; --c-ink:#22252a; --c-muted:#6b7280; --c-accent:#5b7a8c;
+              --c-qty:#3f6b4f; --c-rule:#e3e3e0;
+              --c-display:ui-sans-serif,system-ui,sans-serif; --c-body:ui-sans-serif,system-ui,sans-serif;
+              --c-weight:800; --c-sub-style:normal; }
+  /* — 2 — Heirloom: warm paper, serif, the default's cousin */
+  .s-heirloom { --c-bg:#f4ece0; --c-ink:#3b2f24; --c-muted:#7a6a58; --c-accent:#9c5b34;
+                --c-qty:#6c7f52; --c-rule:#ddd0bd;
+                --c-display:"Iowan Old Style",Georgia,serif; --c-body:Georgia,serif; }
+  /* — 3 — Botanical: cool green, high contrast, still print-safe */
+  .s-botanical { --c-bg:#eef2ea; --c-ink:#1f2a20; --c-muted:#5c6b58; --c-accent:#3f6b4f;
+                 --c-qty:#8a5a2b; --c-rule:#d6dfd2;
+                 --c-display:Georgia,serif; --c-body:Georgia,serif; }
+  .note { margin-top:var(--space-8); padding:var(--space-4); background:var(--accent-soft);
+          border-left:3px solid var(--accent); border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+          font-size:var(--text-sm); color:var(--accent-ink); max-width:var(--measure); }
+</style>
+</head>
+<body>
+  <h1>Canvas styles</h1>
+  <p class="lede">Three AI-generated looks for the same recipe. Identical markup in all three —
+    only the custom properties change. The range should be wide enough to feel personal and
+    narrow enough to stay readable.</p>
+
+  <div class="grid">
+    <div>
+      <div class="canvas s-nordic">
+        <h2>Mormors pannkakor</h2>
+        <p class="sub">Thin, Swedish, rested batter</p>
+        <p class="mark">Ingredients</p>
+        <div class="ing"><span class="q">3 dl</span><span>plain flour</span></div>
+        <div class="ing"><span class="q">½ tsp</span><span>salt</span></div>
+        <div class="ing"><span class="q">6 dl</span><span>milk</span></div>
+        <p class="mark">Method</p>
+        <ol><li>Whisk to a smooth batter.</li><li>Rest 30 minutes.</li></ol>
+      </div>
+      <p class="name">Nordic</p>
+      <p class="why">Sans throughout, cool grey-blue. Suits modern, spare recipes.</p>
+      <p class="spec">#f7f7f5 · #22252a · #5b7a8c</p>
+    </div>
+
+    <div>
+      <div class="canvas s-heirloom">
+        <h2>Mormors pannkakor</h2>
+        <p class="sub">The thin Swedish kind</p>
+        <p class="mark">Ingredients</p>
+        <div class="ing"><span class="q">3 dl</span><span>plain flour</span></div>
+        <div class="ing"><span class="q">½ tsp</span><span>salt</span></div>
+        <div class="ing"><span class="q">6 dl</span><span>milk</span></div>
+        <p class="mark">Method</p>
+        <ol><li>Whisk to a smooth batter.</li><li>Rest 30 minutes.</li></ol>
+      </div>
+      <p class="name">Heirloom</p>
+      <p class="why">Warm paper and old-style serif. For family recipes and keepsakes.</p>
+      <p class="spec">#f4ece0 · #3b2f24 · #9c5b34</p>
+    </div>
+
+    <div>
+      <div class="canvas s-botanical">
+        <h2>Mormors pannkakor</h2>
+        <p class="sub">Thin, rested, golden at the edges</p>
+        <p class="mark">Ingredients</p>
+        <div class="ing"><span class="q">3 dl</span><span>plain flour</span></div>
+        <div class="ing"><span class="q">½ tsp</span><span>salt</span></div>
+        <div class="ing"><span class="q">6 dl</span><span>milk</span></div>
+        <p class="mark">Method</p>
+        <ol><li>Whisk to a smooth batter.</li><li>Rest 30 minutes.</li></ol>
+      </div>
+      <p class="name">Botanical</p>
+      <p class="why">Green and terracotta. Vegetarian, garden, seasonal cooking.</p>
+      <p class="spec">#eef2ea · #1f2a20 · #3f6b4f</p>
+    </div>
+  </div>
+
+  <p class="note"><strong>All three are light.</strong> Not a coincidence — every one of these
+    prints without swallowing a cartridge, and quantities stay distinct from names in each. A
+    dark, moody canvas would look striking in the library and disappoint the first person who
+    exports a PDF.</p>
+</body>
+</html>

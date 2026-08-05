@@ -1,0 +1,190 @@
+<!-- @dsCard group="Canvas" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canvas spec — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin:0; padding:var(--space-8); background:var(--paper); color:var(--ink);
+         font-family:var(--font-ui); }
+  h1 { font-family:var(--font-display); font-size:var(--text-2xl); margin:0 0 var(--space-2); }
+  .lede { color:var(--ink-muted); max-width:var(--measure); margin:0 0 var(--space-8);
+          font-family:var(--font-body); font-size:var(--text-lg); line-height:var(--leading-body); }
+  h2 { font-size:var(--text-sm); text-transform:uppercase; letter-spacing:.08em;
+       color:var(--ink-faint); margin:var(--space-8) 0 var(--space-3); }
+  table { border-collapse:collapse; font-size:var(--text-sm); max-width:760px; width:100%; }
+  th, td { text-align:left; padding:var(--space-2) var(--space-4) var(--space-2) 0;
+           border-bottom:1px solid var(--rule); vertical-align:top; }
+  th { color:var(--ink-faint); font-size:var(--text-xs); text-transform:uppercase;
+       letter-spacing:.08em; }
+  code { font-family:var(--font-mono); font-size:var(--text-xs); background:var(--paper-sunken);
+         padding:1px 5px; border-radius:4px; }
+  .yes { color:var(--herb); font-weight:700; }
+  .no  { color:var(--danger); font-weight:700; }
+  .rule-card { border:1px solid var(--rule); border-radius:var(--radius-md); padding:var(--space-4);
+               background:var(--paper-raised); margin-bottom:var(--space-3); max-width:var(--measure); }
+  .rule-card h3 { margin:0 0 var(--space-1); font-size:var(--text-base); }
+  .rule-card p { margin:0; font-size:var(--text-sm); color:var(--ink-muted); line-height:1.6; }
+  .pair { display:flex; gap:var(--space-4); margin-top:var(--space-3); }
+  .ex { flex:1; border-radius:var(--radius-sm); padding:var(--space-3); font-size:var(--text-sm); }
+  .ex-good { background:#f4ece0; color:#3b2f24; border:1px solid #ddd0bd; }
+  .ex-bad  { background:#2a2a2a; color:#5a5a5a; border:1px solid #3a3a3a; }
+  .ex b { display:block; font-size:10px; text-transform:uppercase; letter-spacing:.1em;
+          margin-bottom:4px; opacity:.7; }
+</style>
+</head>
+<body>
+  <h1>Canvas spec</h1>
+  <p class="lede">What the AI may decide about a recipe's appearance, and what it may not. Total
+    visual freedom produces unreadable recipes; the constraints below are what keep a styled
+    recipe usable in a kitchen.</p>
+
+  <h2>Style contract</h2>
+  <p style="max-width:var(--measure); font-size:var(--text-sm); color:var(--ink-muted)">
+    Stored in <code>Recipe.style</code>. These are the only knobs — anything not listed is
+    structure and is not the AI's to change.</p>
+  <table>
+    <tr><th>Token</th><th>Controls</th></tr>
+    <tr><td><code>--c-bg</code></td><td>Page colour, or the base under a background image</td></tr>
+    <tr><td><code>--c-bg-image</code></td><td>Generated background, optional</td></tr>
+    <tr><td><code>--c-ink</code> / <code>--c-muted</code></td><td>Primary and secondary text</td></tr>
+    <tr><td><code>--c-accent</code></td><td>Section marks, rules, ornament</td></tr>
+    <tr><td><code>--c-qty</code></td><td>Quantities and units</td></tr>
+    <tr><td><code>--c-rule</code></td><td>Hairlines between ingredients</td></tr>
+    <tr><td><code>--c-display</code> / <code>--c-body</code></td><td>Title face and reading face</td></tr>
+  </table>
+
+  <h2>Fixed — not the AI's to change</h2>
+  <table>
+    <tr><th></th><th>Why</th></tr>
+    <tr><td class="no">Ingredient column alignment</td><td>A ragged quantity column can't be scanned mid-cook</td></tr>
+    <tr><td class="no">Step numbering</td><td>People track their place by number, not by paragraph</td></tr>
+    <tr><td class="no">Order of sections</td><td>Ingredients before method, always — you shop before you cook</td></tr>
+    <tr><td class="no">Body text below 16px</td><td>Read at arm's length from a worktop</td></tr>
+    <tr><td class="no">Line length beyond ~40rem</td><td>Long measures lose the reader between lines</td></tr>
+  </table>
+
+  <h2>Hard constraints</h2>
+
+  <div class="rule-card">
+    <h3>Contrast is enforced in code, not requested in the prompt</h3>
+    <p>Body text must clear 4.5:1 against its background, and quantities must clear it too.
+      A model asked nicely will still produce sage-on-cream that fails. Clamp the generated
+      values on the way in and reject the style if it can't be fixed.</p>
+    <div class="pair">
+      <div class="ex ex-good"><b>passes</b>3 dl plain flour — readable at a glance</div>
+      <div class="ex ex-bad"><b>fails</b>3 dl plain flour — moody, unusable</div>
+    </div>
+  </div>
+
+  <div class="rule-card">
+    <h3>Quantities stay visually distinct from names</h3>
+    <p>Different colour, weight, or both. This is the one distinction that makes a recipe usable
+      while your hands are busy. If a palette can't support it, the palette is wrong.</p>
+  </div>
+
+  <div class="rule-card">
+    <h3>Every style must survive print</h3>
+    <p>PDF export and, later, print-on-demand both mean a canvas can end up on paper. A dark
+      background costs ink and reads badly. Either generate a print variant alongside the screen
+      one, or keep backgrounds light enough to print — decide before the styling feature ships,
+      not after someone orders a book.</p>
+  </div>
+
+  <div class="rule-card">
+    <h3>A recipe with no style is not a broken recipe</h3>
+    <p>Styling is additive. The default canvas must be good on its own, because it is what every
+      recipe looks like before the AI runs, if generation fails, and if the user turns it off.</p>
+  </div>
+</body>
+</html>
