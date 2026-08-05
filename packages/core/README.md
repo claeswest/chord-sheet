@@ -4,25 +4,57 @@ Infrastructure shared between apps in this monorepo.
 
 ## The rule that keeps this package useful
 
-**Nothing here may import a database client, auth, or any product's domain
-types.** Every module must work unchanged in an app that has never heard of
-songs, recipes or worksheets.
+**Nothing here may import a database client, or any product's domain types.**
+Every module must work unchanged in an app that has never heard of songs,
+recipes or worksheets.
 
 That rule is why this package is small. It was extracted deliberately narrow:
 these five modules had zero coupling to ChordSheetMaker's domain and zero
-dependency on Prisma, so moving them proves the workspace wiring without
-committing to decisions that haven't been made yet.
+dependency on Prisma.
 
-## What is deliberately *not* here
+## Decided: each app gets its own database (5 Aug 2026)
 
-`prisma`, `auth`, `stripe`, `plans`, `activity` and `marketing` all look shared,
-and eventually may be — but each of them presupposes an open question:
+The apps do **not** share a database or a `User` table. Each product is its own
+Neon **project**, so any one of them can be sold, handed over or deleted without
+untangling it from the others. That optionality is the whole reason for the
+choice, and it was made knowing the price:
 
-> **Do the apps share one database and one `User` table, or does each app get
-> its own?**
+- no shared login — accounts are per product
+- Stripe, admin and lifecycle email exist once per app
+- a "Creator Bundle" across products would need a separate identity service
 
-Extracting them now would answer that question by accident. They stay in
-`apps/chordsheetmaker/src/lib` until it's answered on purpose.
+### What that means for this package
+
+The blocker was never the code, it was *whose* `User` table. With separate
+databases, `auth`, `billing`, `plans` and `activity` can still live here — they
+just have to **take the Prisma client as an argument** rather than importing
+one:
+
+```ts
+// right: works against whichever database the app owns
+export function syncSubscription(db: PrismaLike, subscriptionId: string) { … }
+
+// wrong: binds this package to one app's database
+import { prisma } from "…";
+```
+
+Move them here when the second app actually needs them, not before.
+
+### The part that will drift, and the plan for it
+
+`User`, `Account`, `Session`, `VerificationToken` and the Stripe columns will be
+identical in every app. Copied by hand, they will not stay identical — one app
+gains a column, another doesn't, and shared billing code breaks on whichever app
+was touched least recently.
+
+Intended fix, to build alongside the second app:
+
+1. `packages/db-base/` holds the common models as the single source of truth.
+2. A script concatenates base + product-specific models into each app's
+   `schema.prisma` before `prisma generate`.
+3. CI fails if any app's base section differs from `db-base`.
+
+Low-tech on purpose: drift becomes a failing check rather than a surprise.
 
 ## Modules
 

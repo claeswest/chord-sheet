@@ -82,6 +82,10 @@ matters is the shape.
 
 | Decision | Why |
 | --- | --- |
+| **This is a monorepo; the app lives in `apps/chordsheetmaker`** | Room for RecipeMaker and WorksheetMaker as separate products on shared infrastructure. Run npm commands from the root. Vercel's Root Directory must stay `apps/chordsheetmaker`. |
+| **Each product gets its own database** (5 Aug 2026) | So any one product can be sold, handed over or deleted without untangling a shared `User` table. Accepted cost: no shared login, and Stripe/admin/email exist once per app. See [`packages/core/README.md`](../packages/core/README.md). |
+| **Shared code takes the database client as an argument** | It's what lets `auth`, `billing` and `plans` be shared *code* despite separate databases. Nothing in `packages/core` may import a Prisma client. |
+| **Local dev has its own Neon branch** (5 Aug 2026) | Local development no longer writes to production. The dev branch is a snapshot, so it drifts — recreate it when it gets too stale, and keep its auto-delete set to Never. |
 | **Setlists & collections are free** | Organising is what makes someone come back and accumulate songs — it feeds the 5-song limit rather than competing with it. The API never gated it; the pricing table was the thing that was wrong. |
 | **Guests are first-class** | The whole editor works with no account. The demo path *is* the funnel; asking for signup before value is what loses people. |
 | **Emails stay manual for now** | Deliberate: the founder reads the replies. Automation is the obvious next step, and `suggestNextTemplate()` + the cooldown already encode the logic. |
@@ -141,6 +145,7 @@ matters is the shape.
 | For | Read |
 | --- | --- |
 | Setting up on a new machine | [`README.md`](../README.md) |
+| Platform / multi-product architecture | [`packages/core/README.md`](../packages/core/README.md) — what may be shared, what may not, and why |
 | How the whole system fits together | [`ChordSheetMaker-System-Overview.md`](../ChordSheetMaker-System-Overview.md) — incl. exact Mermaid diagrams |
 | A visual walkthrough / presentation | `/tour` on the site, or [`public/tour/index.html`](../public/tour/index.html) |
 | Product positioning and ideas | [`ChordSheetMaker-Brief.md`](../ChordSheetMaker-Brief.md) |
