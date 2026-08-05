@@ -1,20 +1,65 @@
 @import "tailwindcss";
 
+/* Chrome tokens — mirrors design/tokens.css, which is the source of truth.
+ * Change a value there, then change it here. These govern the APP only:
+ * landing, library, editor controls, login, admin.
+ *
+ * The recipe canvas does NOT use these. It is styled per recipe from
+ * Recipe.style — see design/canvas/spec.html. A recipe in sage and cream
+ * inside terracotta chrome is correct, not a bug. */
+
+@theme {
+  /* Paper — warm off-whites. Pure #fff reads as screen, not page. */
+  --color-paper: #fdfbf7;
+  --color-paper-raised: #ffffff;
+  --color-paper-sunken: #f5f1e8;
+
+  /* Ink — warm near-blacks rather than neutral grey. */
+  --color-ink: #1c1917;
+  --color-ink-muted: #57534e;
+  --color-ink-faint: #a8a29e;
+  --color-rule: #e7e1d6;
+
+  /* Terracotta — navigation, section marks, links. */
+  --color-accent: #b45309;
+  --color-accent-soft: #fef3e2;
+  --color-accent-ink: #7c3a06;
+
+  /* Herb — quantities, so numbers separate from ingredient names. */
+  --color-herb: #4d7c4f;
+  --color-herb-soft: #eef3ec;
+
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fef2f2;
+
+  /* Serif carries content so it looks set; sans carries the interface so
+   * controls never pretend to be content. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* 18px body: instructions are read at arm's length from a worktop. */
+  --text-recipe: 1.125rem;
+  --text-recipe--line-height: 1.65;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(28 25 23 / 0.04), 0 4px 16px rgb(28 25 23 / 0.06);
+  --shadow-raise: 0 2px 4px rgb(28 25 23 / 0.06), 0 12px 32px rgb(28 25 23 / 0.10);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #1c1917;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Max line length for anything read continuously. */
+.measure {
+  max-width: 34rem;
 }

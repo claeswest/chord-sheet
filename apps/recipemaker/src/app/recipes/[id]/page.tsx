@@ -41,7 +41,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   return (
     <>
       <div className="mx-auto max-w-3xl px-6 pt-6">
-        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-900">
+        <Link href="/recipes" className="text-sm text-ink-muted hover:text-ink">
           ← All recipes
         </Link>
       </div>

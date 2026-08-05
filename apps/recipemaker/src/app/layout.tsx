@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Nunito } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["700", "800"] });
+// Nunito is the only webfont. Body copy is Georgia and the interface is the
+// system sans — both already on every device, so nothing blocks first paint.
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
 
 const BASE_URL = "https://recipebookmaker.com";
 
@@ -20,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${nunito.variable} antialiased`}>{children}</body>
+      <body className={nunito.variable}>{children}</body>
     </html>
   );
 }

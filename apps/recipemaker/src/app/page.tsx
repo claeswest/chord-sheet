@@ -1,8 +1,13 @@
+import Link from "next/link";
 import { emptyContent, totalMinutes, type Recipe } from "@/types/recipe";
 
-// Scaffold page. Not the landing page — it renders one hard-coded recipe
-// through the real domain types, so the model gets exercised before any
-// database exists. The markup here is the seed of the recipe viewer.
+// Scaffold page — not the landing page yet.
+//
+// It renders one hard-coded recipe in the DEFAULT CANVAS STYLE. Note the
+// canvas uses its own --c-* variables rather than the chrome tokens: a recipe
+// is styled per recipe from Recipe.style, and this is what it looks like
+// before the AI runs, if generation fails, or if the user turns styling off.
+// See design/canvas/spec.html.
 
 const SAMPLE: Recipe = {
   id: "sample",
@@ -45,11 +50,16 @@ const SAMPLE: Recipe = {
   },
 };
 
+/** ½ and ¼ read better than 0.5 and 0.25 in a recipe. */
 function Quantity({ q, unit }: { q: number | null; unit: string }) {
-  if (q == null) return <span className="text-stone-400">—</span>;
-  // 0.5 reads better than "0.5" in a recipe.
-  const pretty = q === 0.5 ? "½" : q === 0.25 ? "¼" : String(q);
-  return <span className="tabular-nums">{pretty}{unit && ` ${unit}`}</span>;
+  if (q == null) return <span style={{ color: "var(--c-muted)" }}>—</span>;
+  const pretty = q === 0.5 ? "½" : q === 0.25 ? "¼" : q === 0.75 ? "¾" : String(q);
+  return (
+    <span style={{ color: "var(--c-qty)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+      {pretty}
+      {unit && ` ${unit}`}
+    </span>
+  );
 }
 
 export default function Page() {
@@ -57,75 +67,155 @@ export default function Page() {
   const total = totalMinutes(r);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-xs uppercase tracking-widest text-stone-400">RecipeBookMaker · scaffold</p>
+    <main className="mx-auto max-w-3xl px-6 py-12">
+      {/* Chrome */}
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-xs uppercase tracking-widest text-ink-faint">
+          RecipeBookMaker · scaffold
+        </p>
+        <Link href="/recipes" className="text-sm text-ink-muted hover:text-ink">
+          Your recipes →
+        </Link>
+      </div>
 
-      <h1 className="mt-4 text-4xl font-extrabold" style={{ fontFamily: "var(--font-nunito)" }}>
-        {r.title}
-      </h1>
-      {r.description && <p className="mt-3 text-stone-600">{r.description}</p>}
-
-      <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-stone-600">
-        {r.servings != null && (
-          <div><dt className="inline text-stone-400">Serves </dt><dd className="inline font-medium">{r.servings}</dd></div>
+      {/* Canvas — its own variables, deliberately not the chrome tokens. */}
+      <article
+        className="rounded-card border border-rule p-10 shadow-card"
+        style={
+          {
+            "--c-bg": "#f4ece0",
+            "--c-ink": "#3b2f24",
+            "--c-muted": "#7a6a58",
+            "--c-accent": "#9c5b34",
+            "--c-qty": "#6c7f52",
+            "--c-rule": "#ddd0bd",
+            "--c-display": '"Iowan Old Style", Georgia, serif',
+            "--c-body": "Georgia, serif",
+            background: "var(--c-bg)",
+            color: "var(--c-ink)",
+          } as React.CSSProperties
+        }
+      >
+        <h1
+          className="text-4xl font-bold"
+          style={{ fontFamily: "var(--c-display)", lineHeight: 1.2 }}
+        >
+          {r.title}
+        </h1>
+        {r.description && (
+          <p
+            className="measure mt-3 text-lg italic"
+            style={{ fontFamily: "var(--c-body)", color: "var(--c-muted)", lineHeight: 1.65 }}
+          >
+            {r.description}
+          </p>
         )}
-        {r.prepMinutes != null && (
-          <div><dt className="inline text-stone-400">Prep </dt><dd className="inline font-medium">{r.prepMinutes} min</dd></div>
+
+        <dl
+          className="mt-6 flex flex-wrap gap-x-8 gap-y-2 border-y py-4 text-sm"
+          style={{ borderColor: "var(--c-rule)" }}
+        >
+          {[
+            ["Serves", r.servings],
+            ["Prep", r.prepMinutes && `${r.prepMinutes} min`],
+            ["Cook", r.cookMinutes && `${r.cookMinutes} min`],
+            ["Total", total && `${total} min`],
+          ].map(([label, value]) =>
+            value ? (
+              <div key={String(label)}>
+                <dt
+                  className="text-xs uppercase tracking-widest"
+                  style={{ color: "var(--c-muted)" }}
+                >
+                  {label}
+                </dt>
+                <dd className="mt-0.5 font-semibold tabular-nums">{value}</dd>
+              </div>
+            ) : null,
+          )}
+        </dl>
+
+        {r.content.ingredientGroups.map((g) => (
+          <section key={g.id} className="mt-8">
+            <h2
+              className="text-xs uppercase tracking-[0.14em]"
+              style={{ fontFamily: "var(--c-display)", color: "var(--c-accent)" }}
+            >
+              {g.heading || "Ingredients"}
+            </h2>
+            <ul className="mt-3">
+              {g.items.map((i) => (
+                <li
+                  key={i.id}
+                  className="grid grid-cols-[5.5rem_1fr] gap-4 border-b py-2 text-lg"
+                  style={{ fontFamily: "var(--c-body)", borderColor: "var(--c-rule)" }}
+                >
+                  <Quantity q={i.quantity} unit={i.unit} />
+                  <span>
+                    {i.name}
+                    {i.note && <span style={{ color: "var(--c-muted)" }}>, {i.note}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+
+        {r.content.stepGroups.map((g) => (
+          <section key={g.id} className="mt-8">
+            <h2
+              className="text-xs uppercase tracking-[0.14em]"
+              style={{ fontFamily: "var(--c-display)", color: "var(--c-accent)" }}
+            >
+              {g.heading || "Method"}
+            </h2>
+            <ol className="mt-3 space-y-4">
+              {g.items.map((s, n) => (
+                <li
+                  key={s.id}
+                  className="measure flex gap-4 text-lg"
+                  style={{ fontFamily: "var(--c-body)", lineHeight: 1.65 }}
+                >
+                  <span
+                    className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                    style={{ background: "var(--c-accent)", color: "var(--c-bg)" }}
+                  >
+                    {n + 1}
+                  </span>
+                  <p>{s.text}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
+
+        {r.content.notes.length > 0 && (
+          <section
+            className="mt-8 rounded-xl p-5"
+            style={{ background: "rgb(0 0 0 / 0.03)", fontFamily: "var(--c-body)" }}
+          >
+            <h2
+              className="text-xs uppercase tracking-widest"
+              style={{ color: "var(--c-muted)" }}
+            >
+              Notes
+            </h2>
+            <ul className="mt-2 space-y-1">
+              {r.content.notes.map((n, i) => (
+                <li key={i} style={{ color: "var(--c-muted)" }}>
+                  {n}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
-        {r.cookMinutes != null && (
-          <div><dt className="inline text-stone-400">Cook </dt><dd className="inline font-medium">{r.cookMinutes} min</dd></div>
+
+        {r.source && (
+          <p className="mt-8 italic" style={{ fontFamily: "var(--c-body)", color: "var(--c-muted)" }}>
+            From {r.source}
+          </p>
         )}
-        {total != null && (
-          <div><dt className="inline text-stone-400">Total </dt><dd className="inline font-medium">{total} min</dd></div>
-        )}
-      </dl>
-
-      {r.content.ingredientGroups.map((g) => (
-        <section key={g.id} className="mt-10">
-          <h2 className="text-lg font-bold">{g.heading || "Ingredients"}</h2>
-          <ul className="mt-3 divide-y divide-stone-100">
-            {g.items.map((i) => (
-              <li key={i.id} className="flex gap-4 py-2">
-                <span className="w-24 shrink-0 text-stone-500"><Quantity q={i.quantity} unit={i.unit} /></span>
-                <span>
-                  {i.name}
-                  {i.note && <span className="text-stone-400">, {i.note}</span>}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-
-      {r.content.stepGroups.map((g) => (
-        <section key={g.id} className="mt-10">
-          <h2 className="text-lg font-bold">{g.heading || "Method"}</h2>
-          <ol className="mt-3 space-y-4">
-            {g.items.map((s, n) => (
-              <li key={s.id} className="flex gap-4">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-900 text-xs font-bold text-white">
-                  {n + 1}
-                </span>
-                <p>
-                  {s.text}
-                  {s.temperatureC != null && <span className="text-stone-500"> ({s.temperatureC} °C)</span>}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))}
-
-      {r.content.notes.length > 0 && (
-        <section className="mt-10 rounded-xl bg-stone-50 p-5">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-stone-500">Notes</h2>
-          <ul className="mt-2 space-y-1 text-sm text-stone-600">
-            {r.content.notes.map((n, i) => <li key={i}>{n}</li>)}
-          </ul>
-        </section>
-      )}
-
-      {r.source && <p className="mt-10 text-sm text-stone-400">From {r.source}</p>}
+      </article>
     </main>
   );
 }

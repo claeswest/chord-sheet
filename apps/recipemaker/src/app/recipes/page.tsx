@@ -14,13 +14,13 @@ export default async function RecipesPage() {
   if (!session?.user?.id) {
     return (
       <main className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-nunito)" }}>
-          Your recipe book
-        </h1>
-        <p className="mt-3 text-stone-600">Sign in to see the recipes you&apos;ve saved.</p>
+        <h1 className="font-display text-4xl font-extrabold">Your recipe book</h1>
+        <p className="font-body text-recipe mt-3 text-ink-muted">
+          Sign in to see the recipes you&apos;ve saved.
+        </p>
         <Link
           href="/login"
-          className="mt-8 inline-block rounded-full bg-stone-900 px-6 py-3 text-sm font-semibold text-white"
+          className="mt-8 inline-block rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper-raised"
         >
           Sign in
         </Link>
@@ -35,14 +35,12 @@ export default async function RecipesPage() {
   const atLimit = limit !== null && recipes.length >= limit;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <main className="mx-auto max-w-4xl px-6 py-16">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-nunito)" }}>
-            Your recipes
-          </h1>
+          <h1 className="font-display text-4xl font-extrabold">Your recipes</h1>
           {limit !== null && (
-            <p className="mt-1 text-sm text-stone-500">
+            <p className="mt-1 text-sm text-ink-faint">
               {recipes.length} of {limit} · {PLANS[plan].name}
             </p>
           )}
@@ -51,28 +49,38 @@ export default async function RecipesPage() {
       </div>
 
       {recipes.length === 0 ? (
-        <div className="mt-12 rounded-2xl border border-dashed border-stone-300 p-12 text-center">
-          <p className="text-lg font-semibold">Nothing here yet</p>
-          <p className="mt-2 text-stone-600">
+        <div className="mt-12 rounded-card border border-dashed border-rule bg-paper-raised p-16 text-center">
+          <p className="font-display text-2xl font-bold">Nothing here yet</p>
+          {/* Naming all three ways in — most people arrive with a recipe already,
+              and "photograph a handwritten card" is the one they don't expect. */}
+          <p className="font-body text-recipe mx-auto mt-2 max-w-[32ch] text-ink-muted">
             Paste a recipe, photograph a handwritten card, or start from scratch.
           </p>
         </div>
       ) : (
-        <ul className="mt-8 divide-y divide-stone-100">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recipes.map((r) => {
             const total = totalMinutes(r);
             return (
-              <li key={r.id} className="py-4">
-                <Link href={`/recipes/${r.id}`} className="group flex items-baseline gap-3">
-                  <span className="font-semibold group-hover:underline">{r.title}</span>
-                  {total != null && <span className="text-sm text-stone-400">{total} min</span>}
-                  {r.servings != null && (
-                    <span className="text-sm text-stone-400">serves {r.servings}</span>
-                  )}
+              <li key={r.id}>
+                <Link
+                  href={`/recipes/${r.id}`}
+                  className="group block h-full overflow-hidden rounded-card border border-rule bg-paper-raised shadow-card transition hover:shadow-raise"
+                >
+                  <div className="h-28 bg-paper-sunken" />
+                  <div className="p-4">
+                    <h2 className="font-display font-bold group-hover:underline">{r.title}</h2>
+                    {r.description && (
+                      <p className="font-body mt-1 line-clamp-2 text-sm text-ink-muted">
+                        {r.description}
+                      </p>
+                    )}
+                    <p className="mt-3 flex gap-3 text-xs text-ink-faint">
+                      {r.servings != null && <span>Serves {r.servings}</span>}
+                      {total != null && <span>{total} min</span>}
+                    </p>
+                  </div>
                 </Link>
-                {r.description && (
-                  <p className="mt-1 line-clamp-1 text-sm text-stone-500">{r.description}</p>
-                )}
               </li>
             );
           })}
@@ -80,7 +88,7 @@ export default async function RecipesPage() {
       )}
 
       {atLimit && (
-        <p className="mt-8 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+        <p className="mt-8 rounded-xl bg-accent-soft p-4 text-sm text-accent-ink">
           You&apos;ve filled all {limit} free slots. Upgrading lifts the limit and unlocks PDF
           export and sharing.
         </p>

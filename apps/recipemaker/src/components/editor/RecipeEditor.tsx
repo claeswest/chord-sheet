@@ -152,23 +152,23 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
   }
 
   const input =
-    "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-900 focus:outline-none";
+    "w-full rounded-lg border border-rule px-3 py-2 text-sm focus:border-ink focus:outline-none";
   const iconBtn =
-    "rounded px-2 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-30";
+    "rounded px-2 py-1 text-xs text-ink-faint hover:bg-paper-sunken hover:text-ink disabled:opacity-30";
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       {/* Save bar — sticky so it's reachable from anywhere in a long recipe */}
-      <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center gap-3 border-b border-stone-200 bg-white/90 px-6 py-3 backdrop-blur">
+      <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center gap-3 border-b border-rule bg-paper/90 px-6 py-3 backdrop-blur">
         <button
           onClick={save}
           disabled={!dirty || saving}
-          className="rounded-full bg-stone-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
         >
           {saving ? "Saving…" : dirty ? "Save" : "Saved"}
         </button>
-        {error && <span className="text-sm text-red-600">{error}</span>}
-        <span className="ml-auto text-sm text-stone-400">
+        {error && <span className="text-sm text-danger">{error}</span>}
+        <span className="ml-auto text-sm text-ink-faint">
           {draft.content.ingredientGroups.reduce((n, g) => n + g.items.length, 0)} ingredients ·{" "}
           {draft.content.stepGroups.reduce((n, g) => n + g.items.length, 0)} steps
         </span>
@@ -178,8 +178,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
         value={draft.title}
         onChange={(e) => patch({ title: e.target.value })}
         placeholder="Recipe title"
-        className="w-full text-3xl font-extrabold outline-none placeholder:text-stone-300"
-        style={{ fontFamily: "var(--font-nunito)" }}
+        className="font-display w-full text-3xl font-extrabold outline-none placeholder:text-ink-faint"
       />
 
       <textarea
@@ -187,12 +186,12 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
         onChange={(e) => patch({ description: e.target.value || null })}
         placeholder="A line about this recipe — where it came from, why it matters"
         rows={2}
-        className="mt-3 w-full resize-none text-stone-600 outline-none placeholder:text-stone-300"
+        className="mt-3 w-full resize-none text-ink-muted outline-none placeholder:text-ink-faint"
       />
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <label className="text-sm">
-          <span className="text-stone-500">Serves</span>
+          <span className="text-ink-muted">Serves</span>
           <input
             value={draft.servings ?? ""}
             onChange={(e) => patch({ servings: numberOrNull(e.target.value) })}
@@ -201,7 +200,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
           />
         </label>
         <label className="text-sm">
-          <span className="text-stone-500">Prep (min)</span>
+          <span className="text-ink-muted">Prep (min)</span>
           <input
             value={draft.prepMinutes ?? ""}
             onChange={(e) => patch({ prepMinutes: numberOrNull(e.target.value) })}
@@ -210,7 +209,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
           />
         </label>
         <label className="text-sm">
-          <span className="text-stone-500">Cook (min)</span>
+          <span className="text-ink-muted">Cook (min)</span>
           <input
             value={draft.cookMinutes ?? ""}
             onChange={(e) => patch({ cookMinutes: numberOrNull(e.target.value) })}
@@ -219,7 +218,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
           />
         </label>
         <label className="text-sm">
-          <span className="text-stone-500">Source</span>
+          <span className="text-ink-muted">Source</span>
           <input
             value={draft.source ?? ""}
             onChange={(e) => patch({ source: e.target.value || null })}
@@ -240,7 +239,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
               setGroups(groups);
             }}
             placeholder="Ingredients"
-            className="text-lg font-bold outline-none placeholder:text-stone-400"
+            className="text-lg font-bold outline-none placeholder:text-ink-faint"
           />
 
           <ul className="mt-3 space-y-2">
@@ -251,7 +250,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                   onChange={(e) => updateIngredient(gi, ii, { quantity: numberOrNull(e.target.value) })}
                   placeholder="3"
                   inputMode="decimal"
-                  className={`${input} w-16 shrink-0`}
+                  className={`${input} w-16 shrink-0 font-semibold text-herb tabular-nums`}
                   aria-label="Quantity"
                 />
                 <input
@@ -301,7 +300,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
 
           <button
             onClick={() => addIngredient(gi)}
-            className="mt-3 text-sm font-medium text-stone-500 hover:text-stone-900"
+            className="mt-3 text-sm font-medium text-ink-muted hover:text-ink"
           >
             + Add ingredient
           </button>
@@ -315,7 +314,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
             { id: uid(), heading: "For the sauce", items: [] },
           ])
         }
-        className="mt-3 text-sm text-stone-400 hover:text-stone-700"
+        className="mt-3 text-sm text-ink-faint hover:text-ink"
       >
         + Add ingredient group
       </button>
@@ -331,13 +330,13 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
               setStepGroups(groups);
             }}
             placeholder="Method"
-            className="text-lg font-bold outline-none placeholder:text-stone-400"
+            className="text-lg font-bold outline-none placeholder:text-ink-faint"
           />
 
           <ol className="mt-3 space-y-2">
             {g.items.map((s, si) => (
               <li key={s.id} className="flex items-start gap-2">
-                <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-900 text-xs font-bold text-white">
+                <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper-raised">
                   {si + 1}
                 </span>
                 <textarea
@@ -383,7 +382,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
 
           <button
             onClick={() => addStep(gi)}
-            className="mt-3 text-sm font-medium text-stone-500 hover:text-stone-900"
+            className="mt-3 text-sm font-medium text-ink-muted hover:text-ink"
           >
             + Add step
           </button>
@@ -418,7 +417,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
         </ul>
         <button
           onClick={() => patchContent({ notes: [...draft.content.notes, ""] })}
-          className="mt-3 text-sm font-medium text-stone-500 hover:text-stone-900"
+          className="mt-3 text-sm font-medium text-ink-muted hover:text-ink"
         >
           + Add note
         </button>

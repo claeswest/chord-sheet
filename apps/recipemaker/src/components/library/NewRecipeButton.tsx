@@ -37,11 +37,11 @@ export default function NewRecipeButton({ disabled }: { disabled?: boolean }) {
       <button
         onClick={create}
         disabled={busy || disabled}
-        className="rounded-full bg-stone-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-40"
+        className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
       >
         {busy ? "Creating…" : "New recipe"}
       </button>
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && <span className="text-xs text-danger">{error}</span>}
     </div>
   );
 }
