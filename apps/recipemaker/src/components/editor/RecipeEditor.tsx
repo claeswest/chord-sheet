@@ -16,6 +16,7 @@ import DeleteRecipeButton from "@/components/recipe/DeleteRecipeButton";
 import GenerateImage from "@/components/recipe/GenerateImage";
 import StylePicker from "@/components/recipe/StylePicker";
 import StylePreview from "@/components/recipe/StylePreview";
+import StyleControls from "@/components/recipe/StyleControls";
 import type { CanvasStyle } from "@/lib/canvasStyle";
 import type {
   Ingredient,
@@ -113,6 +114,12 @@ export default function RecipeEditor({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // A working copy so the preview follows the sliders live. The picker and the
+  // generator write to the server and refresh, which brings a new `style` prop
+  // down — this effect adopts it so the two ways of choosing stay in step.
+  const [workingStyle, setWorkingStyle] = useState(style);
+  useEffect(() => setWorkingStyle(style), [style]);
 
   const patch = useCallback((p: Partial<EditorRecipe>) => {
     setDraft((d) => ({ ...d, ...p }));
@@ -309,7 +316,16 @@ export default function RecipeEditor({
             <StylePicker recipeId={draft.id} />
           </div>
         </div>
-        <StylePreview style={style} title={draft.title} />
+        <StylePreview style={workingStyle} title={draft.title} />
+      </section>
+
+      <section className="mt-3 rounded-card border border-rule bg-paper-raised p-4">
+        <h2 className="text-sm font-semibold">Or set it yourself</h2>
+        <StyleControls
+          recipeId={draft.id}
+          style={workingStyle}
+          onChange={setWorkingStyle}
+        />
       </section>
 
       {/* ── Picture of the finished dish ────────────────────────────────── */}

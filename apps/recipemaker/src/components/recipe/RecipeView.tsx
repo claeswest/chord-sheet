@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import type { Recipe } from "@/types/recipe";
 import { totalMinutes } from "@/types/recipe";
-import { type CanvasStyle, styleVars, amount } from "@/lib/canvasStyle";
+import {
+  type CanvasStyle,
+  styleVars,
+  amount,
+  TITLE_SIZE_DEFAULT,
+  BODY_SIZE_DEFAULT,
+} from "@/lib/canvasStyle";
 
 // The recipe as a document: what you read while cooking, and what comes out of
 // the printer. Unlike RecipeSample this shows everything — every group, every
@@ -43,11 +49,19 @@ export default function RecipeView({
   }
 
   return (
-    <article id="print-view" className="recipe-canvas px-8 py-10" style={styleVars(style)}>
+    <article
+      id="print-view"
+      className="recipe-canvas px-8 py-10"
+      style={{ ...styleVars(style), fontSize: `${style.bodySize ?? BODY_SIZE_DEFAULT}px` }}
+    >
       <header>
         <h1
-          className="text-4xl font-bold"
-          style={{ fontFamily: "var(--c-display)", lineHeight: 1.15 }}
+          className="font-bold"
+          style={{
+            fontFamily: "var(--c-display)",
+            fontSize: `${style.titleSize ?? TITLE_SIZE_DEFAULT}px`,
+            lineHeight: 1.15,
+          }}
         >
           {recipe.title}
         </h1>
@@ -102,7 +116,7 @@ export default function RecipeView({
             {g.items.map((i) => (
               <li
                 key={i.id}
-                className="print-row grid grid-cols-[6rem_1fr] gap-3 border-b py-1.5 text-recipe"
+                className="print-row grid grid-cols-[6rem_1fr] gap-3 border-b py-1.5"
                 style={{ fontFamily: "var(--c-body)", borderColor: "var(--c-rule)" }}
               >
                 <span className="font-bold tabular-nums" style={{ color: "var(--c-qty)" }}>
@@ -130,7 +144,7 @@ export default function RecipeView({
             {g.items.map((s, n) => (
               <li
                 key={s.id}
-                className="print-row measure flex gap-3 text-recipe"
+                className="print-row measure flex gap-3"
                 style={{ fontFamily: "var(--c-body)" }}
               >
                 <span
@@ -170,7 +184,7 @@ export default function RecipeView({
             {recipe.content.notes.map((n, i) => (
               <li
                 key={i}
-                className="print-row text-recipe"
+                className="print-row"
                 style={{ fontFamily: "var(--c-body)", color: "var(--c-muted)" }}
               >
                 {n}

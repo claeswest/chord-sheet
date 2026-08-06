@@ -17,7 +17,28 @@ export type CanvasStyle = {
   rule: string;
   display: string;
   body: string;
+  /**
+   * Sizes in px, both optional. The generator doesn't set them — it picks
+   * faces and colours, and typography sizing is where a model adds nothing a
+   * sensible default doesn't already give. These exist so a person can
+   * override, which is the whole point of the manual controls.
+   */
+  titleSize?: number;
+  bodySize?: number;
 };
+
+export const TITLE_SIZE_DEFAULT = 36;
+export const BODY_SIZE_DEFAULT = 18;
+
+/** Clamped hard: these go straight into a style attribute and onto paper. */
+export const TITLE_SIZE_RANGE = [20, 64] as const;
+export const BODY_SIZE_RANGE = [13, 26] as const;
+
+function clamp(v: unknown, [lo, hi]: readonly [number, number]): number | undefined {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.min(hi, Math.max(lo, Math.round(n)));
+}
 
 // Colours below clear the same contrast bar the generator is held to (see
 // styleGen.ts). Three of them originally didn't — HEIRLOOM's quantities sat at
@@ -139,6 +160,12 @@ export function parseStyle(raw: unknown): CanvasStyle {
     if (!s || s.length > 120 || /[;{}]|url\(|expression\(/i.test(s)) continue;
     out[k] = s;
   }
+
+  const title = clamp(r.titleSize, TITLE_SIZE_RANGE);
+  const body = clamp(r.bodySize, BODY_SIZE_RANGE);
+  if (title !== undefined) out.titleSize = title;
+  if (body !== undefined) out.bodySize = body;
+
   return out;
 }
 
