@@ -10,7 +10,7 @@
 // Reordering is move-up/move-down rather than drag-and-drop: no extra
 // dependency, works with a keyboard, and works on touch without a long-press.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   Ingredient,
@@ -46,6 +46,34 @@ function numberOrNull(v: string): number | null {
   if (v.trim() === "") return null;
   const n = Number(v.replace(",", "."));
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * A textarea that grows to fit its content.
+ *
+ * Fixed-row textareas silently hide text: an imported description or a long
+ * step is stored in full but only its first two lines are visible, which reads
+ * as data loss. Height is measured in a layout effect so it is correct on the
+ * first paint — imported recipes arrive with their text already in place, so
+ * adjusting only on typing would be too late.
+ *
+ * Not `field-sizing: content`, which would do this in one CSS line: Safari
+ * doesn't support it, and recipes get read on phones.
+ */
+function GrowTextarea({
+  value,
+  ...rest
+}: React.ComponentProps<"textarea"> & { value: string }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto"; // shrink first, or it can only ever grow
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return <textarea ref={ref} value={value} rows={1} {...rest} />;
 }
 
 export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
@@ -186,12 +214,11 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
         className="font-display w-full text-3xl font-extrabold outline-none placeholder:text-ink-faint"
       />
 
-      <textarea
+      <GrowTextarea
         value={draft.description ?? ""}
         onChange={(e) => patch({ description: e.target.value || null })}
         placeholder="A line about this recipe — where it came from, why it matters"
-        rows={2}
-        className="mt-3 w-full resize-none text-ink-muted outline-none placeholder:text-ink-faint"
+        className="mt-3 w-full resize-none overflow-hidden text-ink-muted outline-none placeholder:text-ink-faint"
       />
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -262,7 +289,9 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                   value={it.unit}
                   onChange={(e) => updateIngredient(gi, ii, { unit: e.target.value })}
                   placeholder="dl"
-                  className={`${input} w-20 shrink-0`}
+                  // w-24, not w-20: "portioner", "matskedar" and "förpackning"
+                  // all overflowed 80px and got visually truncated mid-word.
+                  className={`${input} w-24 shrink-0`}
                   aria-label="Unit"
                 />
                 <input
@@ -344,12 +373,11 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                 <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper-raised">
                   {si + 1}
                 </span>
-                <textarea
+                <GrowTextarea
                   value={s.text}
                   onChange={(e) => updateStep(gi, si, { text: e.target.value })}
                   placeholder="Whisk the flour, salt and half the milk to a smooth batter."
-                  rows={2}
-                  className={`${input} min-w-0 flex-1 resize-y`}
+                  className={`${input} min-w-0 flex-1 resize-none overflow-hidden`}
                   aria-label={`Step ${si + 1}`}
                 />
                 <div className="flex flex-col">
