@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import DeleteRecipeButton from "@/components/recipe/DeleteRecipeButton";
+import GenerateImage from "@/components/recipe/GenerateImage";
 import type {
   Ingredient,
   IngredientGroup,
@@ -41,6 +42,22 @@ function move<T>(arr: T[], i: number, delta: number): T[] {
   const next = [...arr];
   [next[i], next[j]] = [next[j], next[i]];
   return next;
+}
+
+/** The content minus every picture. See the note in save(). */
+function withoutImages(content: RecipeContent): RecipeContent {
+  const { heroImage, ...rest } = content;
+  void heroImage;
+  return {
+    ...rest,
+    stepGroups: content.stepGroups.map((g) => ({
+      ...g,
+      items: g.items.map(({ imageUrl, ...s }) => {
+        void imageUrl;
+        return s;
+      }),
+    })),
+  };
 }
 
 function numberOrNull(v: string): number | null {
@@ -77,7 +94,14 @@ function GrowTextarea({
   return <textarea ref={ref} value={value} rows={1} {...rest} />;
 }
 
-export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
+export default function RecipeEditor({
+  recipe,
+  canDraw = false,
+}: {
+  recipe: EditorRecipe;
+  /** Whether the plan includes generated pictures. */
+  canDraw?: boolean;
+}) {
   const router = useRouter();
   const [draft, setDraft] = useState<EditorRecipe>(recipe);
   const [dirty, setDirty] = useState(false);
@@ -116,7 +140,11 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
           prepMinutes: draft.prepMinutes,
           cookMinutes: draft.cookMinutes,
           source: draft.source,
-          content: draft.content,
+          // Pictures are stripped out. A recipe with a hero and six step
+          // illustrations carries well over a megabyte, and Vercel rejects a
+          // request body above 4.5 MB — so a fully illustrated recipe would
+          // simply stop saving. The server merges the stored images back in.
+          content: withoutImages(draft.content),
         }),
       });
       if (!res.ok) throw new Error(`Save failed (${res.status})`);
@@ -262,6 +290,25 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
         </label>
       </div>
 
+      {/* ── Picture of the finished dish ────────────────────────────────── */}
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        {draft.content.heroImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={draft.content.heroImage}
+            alt=""
+            className="h-24 w-24 rounded-lg border border-rule object-cover"
+          />
+        )}
+        <GenerateImage
+          recipeId={draft.id}
+          hasImage={Boolean(draft.content.heroImage)}
+          canGenerate={canDraw}
+          label="Draw the finished dish"
+          onSaved={(url) => patchContent({ heroImage: url ?? undefined })}
+        />
+      </div>
+
       {/* ── Ingredients ─────────────────────────────────────────────────── */}
       {draft.content.ingredientGroups.map((g, gi) => (
         <section key={g.id} className="mt-10">
@@ -375,13 +422,33 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                 <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper-raised">
                   {si + 1}
                 </span>
-                <GrowTextarea
-                  value={s.text}
-                  onChange={(e) => updateStep(gi, si, { text: e.target.value })}
-                  placeholder="Whisk the flour, salt and half the milk to a smooth batter."
-                  className={`${input} min-w-0 flex-1 resize-none overflow-hidden`}
-                  aria-label={`Step ${si + 1}`}
-                />
+                <div className="min-w-0 flex-1">
+                  <GrowTextarea
+                    value={s.text}
+                    onChange={(e) => updateStep(gi, si, { text: e.target.value })}
+                    placeholder="Whisk the flour, salt and half the milk to a smooth batter."
+                    className={`${input} w-full resize-none overflow-hidden`}
+                    aria-label={`Step ${si + 1}`}
+                  />
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    {s.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={s.imageUrl}
+                        alt=""
+                        className="h-16 w-16 rounded-lg border border-rule object-cover"
+                      />
+                    )}
+                    <GenerateImage
+                      recipeId={draft.id}
+                      stepId={s.id}
+                      hasImage={Boolean(s.imageUrl)}
+                      canGenerate={canDraw}
+                      label="Illustrate this step"
+                      onSaved={(url) => updateStep(gi, si, { imageUrl: url ?? undefined })}
+                    />
+                  </div>
+                </div>
                 <div className="flex flex-col">
                   <button
                     onClick={() => {

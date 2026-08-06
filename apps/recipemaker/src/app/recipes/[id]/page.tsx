@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { getRecipe } from "@/lib/recipeDb";
+import { prisma } from "@/lib/prisma";
+import { PLANS, planFromUser, type Plan } from "@/lib/plans";
 import { emptyContent, type RecipeContent } from "@/types/recipe";
 import RecipeEditor, { type EditorRecipe } from "@/components/editor/RecipeEditor";
 
@@ -27,6 +29,9 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     notes: raw?.notes ?? [],
   };
 
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const canDraw = PLANS[planFromUser(user ?? { plan: "free" }) as Plan].features.aiImages === true;
+
   const editable: EditorRecipe = {
     id: recipe.id,
     title: recipe.title,
@@ -51,7 +56,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           Cook view →
         </Link>
       </div>
-      <RecipeEditor recipe={editable} />
+      <RecipeEditor recipe={editable} canDraw={canDraw} />
     </>
   );
 }

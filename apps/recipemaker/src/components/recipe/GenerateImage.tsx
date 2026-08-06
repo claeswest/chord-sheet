@@ -22,6 +22,7 @@ export default function GenerateImage({
   hasImage,
   canGenerate,
   label = "Add a picture",
+  onSaved,
 }: {
   recipeId: string;
   /** Omit for the finished-dish picture. */
@@ -29,6 +30,15 @@ export default function GenerateImage({
   hasImage: boolean;
   canGenerate: boolean;
   label?: string;
+  /**
+   * Called with the stored picture, or null when it's removed.
+   *
+   * The editor keeps the whole recipe in local state, and router.refresh()
+   * re-runs the server component without resetting that state — so without
+   * this the editor would go on believing there is no picture, and show the
+   * "Draw" button next to an image that already exists.
+   */
+  onSaved?: (dataUrl: string | null) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -67,6 +77,7 @@ export default function GenerateImage({
         setError(d.error ?? "Couldn't save the picture.");
         return;
       }
+      onSaved?.(full);
       router.refresh();
     } catch {
       setError("Something went wrong drawing that.");
@@ -84,6 +95,7 @@ export default function GenerateImage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stepId }),
       });
+      onSaved?.(null);
       router.refresh();
     } finally {
       setBusy(null);

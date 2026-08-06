@@ -81,15 +81,54 @@ export async function updateRecipe(
   }>,
 ): Promise<boolean> {
   try {
+    // Pictures are written by their own route and are large, so the editor
+    // leaves them out of what it sends. Put them back before writing, or every
+    // save would silently delete them — and a save is the one action a user is
+    // certain cannot lose anything.
+    let content = data.content;
+    if (content) content = await keepImages(id, userId, content);
+
     await prisma.recipe.update({
       where: { id, userId },
-      data: { ...data, content: data.content as object | undefined },
+      data: { ...data, content: content as object | undefined },
     });
     return true;
   } catch (e) {
     if (isNotFound(e)) return false;
     throw e;
   }
+}
+
+/** Carries existing images across a content write that doesn't mention them. */
+async function keepImages(
+  id: string,
+  userId: string,
+  incoming: RecipeContent,
+): Promise<RecipeContent> {
+  const row = await prisma.recipe.findFirst({
+    where: { id, userId },
+    select: { content: true },
+  });
+  const old = (row?.content as Partial<RecipeContent> | null) ?? null;
+  if (!old) return incoming;
+
+  const oldStepImages = new Map<string, string>();
+  for (const g of old.stepGroups ?? []) {
+    for (const s of g.items ?? []) {
+      if (s.imageUrl) oldStepImages.set(s.id, s.imageUrl);
+    }
+  }
+
+  return {
+    ...incoming,
+    heroImage: incoming.heroImage ?? old.heroImage,
+    stepGroups: incoming.stepGroups.map((g) => ({
+      ...g,
+      items: g.items.map((s) =>
+        s.imageUrl ? s : oldStepImages.has(s.id) ? { ...s, imageUrl: oldStepImages.get(s.id) } : s,
+      ),
+    })),
+  };
 }
 
 /**
