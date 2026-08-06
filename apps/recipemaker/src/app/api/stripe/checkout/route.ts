@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
     // Without this, Checkout won't write the address back to an existing
     // customer and the tax calculation has nothing to go on.
     customer_update: { address: "auto" },
-    // The prices are tax-inclusive (see plans.ts), so 59 kr is what the
-    // customer pays; the VAT is broken out of it rather than added on top.
+    // The prices are tax-inclusive (see plans.ts), so $5 is what the customer
+    // pays; the VAT is broken out of it rather than added on top.
     billing_address_collection: "auto",
     success_url: `${baseUrl}/pricing?success=true`,
     cancel_url: `${baseUrl}/pricing`,

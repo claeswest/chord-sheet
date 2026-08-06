@@ -5,20 +5,28 @@
 // into packages/core the only difference should be the feature keys.
 
 /**
- * Prices are in SEK, and the Stripe prices MUST be created in SEK too — a
- * price's currency is fixed once created, so a mismatch means making new ones
- * and swapping the ids.
+ * Prices are in USD, matching ChordSheetMaker. The Stripe prices MUST be
+ * created in USD too — a price's currency is fixed once created, so a mismatch
+ * means making new ones and swapping the ids.
  *
- * SEK rather than USD because the Stripe account settles in SEK: every USD
- * charge would be converted on the way in, and Stripe's FX margin is material
- * on a 59 kr subscription. ChordSheetMaker bills in USD; this is the one place
- * the two products deliberately differ.
+ * SEK was considered and rejected. The Stripe account settles in SEK, so USD
+ * charges are converted on the way in at roughly a 2% margin — but the same is
+ * true of ChordSheetMaker, which has billed in USD since April, so that cost
+ * doesn't distinguish the two products. What's left argues for USD: both sites
+ * are in English and sell internationally, USD is the convention for
+ * subscriptions like these, and keeping the two products alike is what makes
+ * it possible to sell or retire one on its own.
  *
  * Amounts are what the customer pays INCLUDING VAT. The Stripe prices are set
  * to tax-inclusive to match, since these are consumer prices and EU consumer
  * pricing is quoted with VAT included.
  */
-export const CURRENCY = "kr";
+export const CURRENCY = "USD";
+
+/** Prices are written where people read them, so formatting lives here too. */
+export function formatPrice(amount: number): string {
+  return `$${amount}`;
+}
 
 export type Plan = "free" | "monthly" | "yearly";
 
@@ -59,7 +67,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
   },
   monthly: {
     name: "Monthly",
-    price: 59,
+    price: 5,
     description: "Billed monthly",
     stripePriceId: process.env.STRIPE_PRICE_MONTHLY,
     isRecurring: true,
@@ -73,8 +81,10 @@ export const PLANS: Record<Plan, PlanConfig> = {
   },
   yearly: {
     name: "Yearly",
-    price: 449,
-    description: "Billed annually — two months free",
+    price: 39,
+    // 12 × $5 = $60, so $39 is 35% off — not "two months free", which is what
+    // this said a moment ago and was simply wrong arithmetic.
+    description: "Billed annually — save 35%",
     stripePriceId: process.env.STRIPE_PRICE_YEARLY,
     isRecurring: true,
     features: {

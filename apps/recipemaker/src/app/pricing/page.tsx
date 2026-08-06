@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CURRENCY, PLANS, planFromUser, type Plan } from "@/lib/plans";
+import { PLANS, formatPrice, planFromUser, type Plan } from "@/lib/plans";
 import { stripeEnabled } from "@/lib/stripe";
 import PlanButton from "@/components/billing/PlanButton";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Start free with 10 recipes. Upgrade for unlimited recipes, clean printing and sharing. From 59 kr a month, 7-day free trial.",
+    "Start free with 10 recipes. Upgrade for unlimited recipes, clean printing and sharing. From $5 a month, 7-day free trial.",
 };
 
 // The feature rows are written here, but what each tier ACTUALLY allows comes
@@ -82,7 +82,7 @@ export default async function PricingPage({
               <h2 className="font-display text-xl font-bold">{p.name}</h2>
               <p className="mt-2">
                 <span className="font-display text-3xl font-extrabold">
-                  {p.price} {CURRENCY}
+                  {formatPrice(p.price)}
                 </span>
                 {p.isRecurring && (
                   <span className="text-sm text-ink-muted">
