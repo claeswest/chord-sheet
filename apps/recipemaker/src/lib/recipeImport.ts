@@ -17,12 +17,19 @@ export type ImportedRecipe = {
   content: RecipeContent;
 };
 
+// The total-time rule below is a workaround for a gap in the schema: there is
+// no totalMinutes column — the card derives it as prep + cook. Recipe sites
+// very often publish only a total, so without a rule the model has to invent a
+// split, and it invented a different one on each run of the same recipe.
+// Parking the total in cookMinutes keeps the card's number right. If totals
+// turn out to be the common case, the honest fix is a real column.
 export const IMPORT_PROMPT = `You are given the raw text of a recipe, copied from anywhere — a website, a message, an email, a photo transcription. Extract it into JSON.
 
 Rules:
 - Output ONLY a JSON object. No markdown fence, no commentary.
 - Use the SAME LANGUAGE as the input. Do not translate.
 - Do not invent ingredients, steps, quantities or times. If something is absent, use null.
+- Times: prepMinutes and cookMinutes only when the source separates them. If it gives ONE total ("Under 45 min", "Klart på 1 timme", "Ready in 30 minutes"), put that total in cookMinutes and leave prepMinutes null. Never split a total by guessing.
 - quantity is a NUMBER or null. "a pinch", "to taste", "some" → quantity null, and put that wording in note.
 - Convert fractions to decimals: ½ → 0.5, ¼ → 0.25, 1½ → 1.5.
 - unit is a short string ("dl", "g", "tbsp", "cloves") or "" when the ingredient is counted ("3 eggs" → quantity 3, unit "").
