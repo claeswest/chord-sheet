@@ -4,6 +4,22 @@
 // Same shape as ChordSheetMaker's, deliberately: when the two are extracted
 // into packages/core the only difference should be the feature keys.
 
+/**
+ * Prices are in SEK, and the Stripe prices MUST be created in SEK too — a
+ * price's currency is fixed once created, so a mismatch means making new ones
+ * and swapping the ids.
+ *
+ * SEK rather than USD because the Stripe account settles in SEK: every USD
+ * charge would be converted on the way in, and Stripe's FX margin is material
+ * on a 59 kr subscription. ChordSheetMaker bills in USD; this is the one place
+ * the two products deliberately differ.
+ *
+ * Amounts are what the customer pays INCLUDING VAT. The Stripe prices are set
+ * to tax-inclusive to match, since these are consumer prices and EU consumer
+ * pricing is quoted with VAT included.
+ */
+export const CURRENCY = "kr";
+
 export type Plan = "free" | "monthly" | "yearly";
 
 export type Feature =
@@ -43,7 +59,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
   },
   monthly: {
     name: "Monthly",
-    price: 5,
+    price: 59,
     description: "Billed monthly",
     stripePriceId: process.env.STRIPE_PRICE_MONTHLY,
     isRecurring: true,
@@ -57,8 +73,8 @@ export const PLANS: Record<Plan, PlanConfig> = {
   },
   yearly: {
     name: "Yearly",
-    price: 39,
-    description: "Billed annually",
+    price: 449,
+    description: "Billed annually — two months free",
     stripePriceId: process.env.STRIPE_PRICE_YEARLY,
     isRecurring: true,
     features: {

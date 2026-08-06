@@ -48,6 +48,17 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     line_items: [{ price: config.stripePriceId, quantity: 1 }],
     subscription_data: { trial_period_days: 7 },
+    // VAT on digital services follows the customer's country, so Stripe has to
+    // work out the rate. Enabling Stripe Tax in the dashboard alone does
+    // nothing — the session must ask for it.
+    automatic_tax: { enabled: true },
+    // ...and it can only work out a rate once it knows where the customer is.
+    // Without this, Checkout won't write the address back to an existing
+    // customer and the tax calculation has nothing to go on.
+    customer_update: { address: "auto" },
+    // The prices are tax-inclusive (see plans.ts), so 59 kr is what the
+    // customer pays; the VAT is broken out of it rather than added on top.
+    billing_address_collection: "auto",
     success_url: `${baseUrl}/pricing?success=true`,
     cancel_url: `${baseUrl}/pricing`,
     // The webhook reads these — without them a completed payment cannot be
