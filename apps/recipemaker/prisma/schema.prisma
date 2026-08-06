@@ -46,6 +46,7 @@ model User {
   recipes    Recipe[]
   categories Category[]
   activities ActivityLog[]
+  shares     Share[]
 }
 
 model Account {
@@ -157,9 +158,27 @@ model RecipeCategory {
 /// Detached snapshot for public sharing — keeps working after the recipe
 /// changes. No userId, matching ChordSheetMaker; shares can't be listed or
 /// revoked, which is a known limitation there too.
+/// A shared recipe. The id IS the public token, so the URL is /share/<id>.
+///
+/// Deliberately a snapshot rather than a live view of the recipe, matching
+/// ChordSheetMaker: what you sent someone is what they keep seeing, and a
+/// later edit — or a half-finished one — never changes a page you have already
+/// handed out.
+///
+/// userId is the one thing ChordSheetMaker's version lacks. Without it a share
+/// cannot be listed or withdrawn, and a public link to a family recipe that
+/// can never be taken back is not something to ship. Worth backporting.
 model Share {
   id        String   @id @default(cuid())
+  userId    String
+  /// Which recipe it came from. Not a foreign key: the snapshot outlives the
+  /// recipe on purpose, so deleting a recipe doesn't break a link a friend has.
+  recipeId  String?
   title     String
   content   Json
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

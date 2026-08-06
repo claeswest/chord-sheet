@@ -9,6 +9,8 @@ import { emptyContent, type Recipe, type RecipeContent } from "@/types/recipe";
 import RecipeView from "@/components/recipe/RecipeView";
 import PrintButton from "@/components/recipe/PrintButton";
 import StylePicker from "@/components/recipe/StylePicker";
+import ShareButton from "@/components/recipe/ShareButton";
+import { findShareForRecipe } from "@/lib/shareDb";
 
 // The cook view: the recipe with nothing else on the page. Also the print
 // target — @media print in globals.css hides everything but the article.
@@ -48,6 +50,7 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const plan = planFromUser(user ?? { plan: "free" }) as Plan;
   const clean = PLANS[plan].features.pdfExport === true;
+  const existingShare = await findShareForRecipe(session.user.id, recipe.id);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-8">
@@ -64,8 +67,13 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
         <PrintButton className="ml-auto rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised" />
       </div>
 
-      <div className="no-print mb-4">
+      <div className="no-print mb-4 flex flex-wrap items-center gap-4">
         <StylePicker recipeId={recipe.id} />
+        <ShareButton
+          recipeId={recipe.id}
+          existingToken={existingShare?.id ?? null}
+          canShare={PLANS[plan].features.sharing === true}
+        />
       </div>
 
       <div className="overflow-hidden rounded-card shadow-card">
