@@ -5,6 +5,7 @@ import { PLANS, planFromUser, getRecipeLimit, type Plan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { totalMinutes } from "@/types/recipe";
 import NewRecipeButton from "@/components/library/NewRecipeButton";
+import ImportRecipe from "@/components/library/ImportRecipe";
 
 export const metadata = { title: "Your recipes" };
 
@@ -48,15 +49,16 @@ export default async function RecipesPage() {
         <NewRecipeButton disabled={atLimit} />
       </div>
 
+      {/* Import sits above the list: it's the main way recipes get in, and on an
+          empty library it's the only thing worth showing. */}
+      <div className="mt-8">
+        <ImportRecipe disabled={atLimit} />
+      </div>
+
       {recipes.length === 0 ? (
-        <div className="mt-12 rounded-card border border-dashed border-rule bg-paper-raised p-16 text-center">
-          <p className="font-display text-2xl font-bold">Nothing here yet</p>
-          {/* Naming all three ways in — most people arrive with a recipe already,
-              and "photograph a handwritten card" is the one they don't expect. */}
-          <p className="font-body text-recipe mx-auto mt-2 max-w-[32ch] text-ink-muted">
-            Paste a recipe, photograph a handwritten card, or start from scratch.
-          </p>
-        </div>
+        <p className="font-body mt-8 text-center text-ink-faint">
+          Nothing saved yet — paste a recipe above, or start from scratch.
+        </p>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recipes.map((r) => {
