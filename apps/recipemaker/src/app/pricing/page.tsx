@@ -24,6 +24,34 @@ const ROWS: { label: string; key: keyof (typeof PLANS)["free"]["features"] }[] =
   { label: "Share a recipe by link", key: "sharing" },
 ];
 
+/**
+ * "Trial ends 13 August", "Renews on 13 September", "Access until 13 September".
+ *
+ * Useful to a subscriber in its own right, and it doubles as an assertion:
+ * stripeCurrentPeriodEnd is written by the webhook, and planFromUser() only
+ * downgrades when that date exists AND has passed — so a null reads exactly
+ * like a healthy subscription everywhere else. Here it doesn't: no date, no
+ * line, and something is wrong with what the webhook stored.
+ */
+function describeBilling(user: {
+  plan: string | null;
+  stripeSubscriptionStatus: string | null;
+  stripeCurrentPeriodEnd: Date | null;
+  stripeCancelAt: Date | null;
+}): string | null {
+  if (!user.plan || user.plan === "free") return null;
+
+  const when = (d: Date) =>
+    d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  if (user.stripeCancelAt) return `Cancelled — access until ${when(user.stripeCancelAt)}`;
+  if (!user.stripeCurrentPeriodEnd) return "No renewal date recorded.";
+  if (user.stripeSubscriptionStatus === "trialing") {
+    return `Free trial — first payment ${when(user.stripeCurrentPeriodEnd)}`;
+  }
+  return `Renews on ${when(user.stripeCurrentPeriodEnd)}`;
+}
+
 function cell(key: string, value: boolean | number): string {
   // recipeLimit is the one row where `true` means "no limit" rather than
   // "included" — rendering it as "Yes" reads as a missing number.
@@ -41,11 +69,13 @@ export default async function PricingPage({
 
   let current: Plan = "free";
   let hasCustomer = false;
+  let billingNote: string | null = null;
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (user) {
       current = planFromUser(user);
       hasCustomer = Boolean(user.stripeCustomerId);
+      billingNote = describeBilling(user);
     }
   }
 
@@ -131,8 +161,12 @@ export default async function PricingPage({
         })}
       </div>
 
+      {billingNote && (
+        <p className="font-body mt-10 text-center text-sm text-ink-muted">{billingNote}</p>
+      )}
+
       {hasCustomer && (
-        <div className="mx-auto mt-10 max-w-xs">
+        <div className={`mx-auto max-w-xs ${billingNote ? "mt-4" : "mt-10"}`}>
           <PlanButton mode="portal" label="Manage subscription" />
           <p className="mt-2 text-center text-xs text-ink-faint">
             Change plan, update your card, or cancel.
