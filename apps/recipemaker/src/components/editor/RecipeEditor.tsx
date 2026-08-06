@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import DeleteRecipeButton from "@/components/recipe/DeleteRecipeButton";
 import type {
   Ingredient,
   IngredientGroup,
@@ -205,6 +206,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
           {draft.content.ingredientGroups.reduce((n, g) => n + g.items.length, 0)} ingredients ·{" "}
           {draft.content.stepGroups.reduce((n, g) => n + g.items.length, 0)} steps
         </span>
+        <DeleteRecipeButton recipeId={recipe.id} title={draft.title} />
       </div>
 
       <input
