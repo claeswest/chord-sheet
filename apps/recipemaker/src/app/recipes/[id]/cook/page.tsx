@@ -8,6 +8,7 @@ import { parseStyle } from "@/lib/canvasStyle";
 import { emptyContent, type Recipe, type RecipeContent } from "@/types/recipe";
 import RecipeView from "@/components/recipe/RecipeView";
 import PrintButton from "@/components/recipe/PrintButton";
+import StylePicker from "@/components/recipe/StylePicker";
 
 // The cook view: the recipe with nothing else on the page. Also the print
 // target — @media print in globals.css hides everything but the article.
@@ -61,6 +62,10 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
           Edit
         </Link>
         <PrintButton className="ml-auto rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised" />
+      </div>
+
+      <div className="no-print mb-4">
+        <StylePicker recipeId={recipe.id} />
       </div>
 
       <div className="overflow-hidden rounded-card shadow-card">

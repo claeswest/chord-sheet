@@ -19,14 +19,19 @@ export type CanvasStyle = {
   body: string;
 };
 
+// Colours below clear the same contrast bar the generator is held to (see
+// styleGen.ts). Three of them originally didn't — HEIRLOOM's quantities sat at
+// 3.74:1 against the paper, which matters because quantities are the most
+// scanned thing on a recipe and HEIRLOOM is the default. Checking the presets
+// against the validator written for the AI is what surfaced it.
 export const HEIRLOOM: CanvasStyle = {
-  bg: "#f4ece0", ink: "#3b2f24", muted: "#7a6a58", accent: "#9c5b34",
-  qty: "#6c7f52", rule: "#ddd0bd",
+  bg: "#f4ece0", ink: "#3b2f24", muted: "#746554", accent: "#965732",
+  qty: "#5c6d46", rule: "#ddd0bd",
   display: '"Iowan Old Style", Georgia, serif', body: "Georgia, serif",
 };
 
 export const NORDIC: CanvasStyle = {
-  bg: "#f7f7f5", ink: "#22252a", muted: "#6b7280", accent: "#5b7a8c",
+  bg: "#f7f7f5", ink: "#22252a", muted: "#676d7b", accent: "#557182",
   qty: "#3f6b4f", rule: "#e3e3e0",
   display: "ui-sans-serif, system-ui, sans-serif", body: "ui-sans-serif, system-ui, sans-serif",
 };
@@ -38,6 +43,58 @@ export const BOTANICAL: CanvasStyle = {
 };
 
 export const DEFAULT_STYLE = HEIRLOOM;
+
+export const PRESETS: Record<string, CanvasStyle> = { HEIRLOOM, NORDIC, BOTANICAL };
+
+/**
+ * The fonts a generated style may use.
+ *
+ * Nunito is the only webfont this app loads (see layout.tsx); everything else
+ * here ships with the OS. A generator left to name fonts freely will happily
+ * pick Playfair Display, which would silently fall back to a default serif and
+ * make the whole feature look broken in a way nobody can debug from the
+ * output. So it chooses a KEY from this map and the value is what reaches CSS.
+ */
+export const FONT_STACKS: Record<string, string> = {
+  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+  sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+  rounded: 'var(--font-nunito), ui-sans-serif, system-ui, sans-serif',
+  mono: 'ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace',
+};
+
+export const FONT_KEYS = Object.keys(FONT_STACKS);
+
+/** Maps a font key to a real stack; falls back to serif for anything unknown. */
+export function resolveFont(key: unknown): string {
+  return typeof key === "string" && FONT_STACKS[key] ? FONT_STACKS[key] : FONT_STACKS.serif;
+}
+
+/** #abc / #aabbcc / #aabbccdd — the only colour form a generated style may use. */
+export function isHexColor(v: unknown): v is string {
+  return typeof v === "string" && /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v.trim());
+}
+
+function channel(hex: string): [number, number, number] {
+  let h = hex.trim().slice(1);
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+/** WCAG relative luminance. */
+function luminance(hex: string): number {
+  const [r, g, b] = channel(hex).map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** WCAG contrast ratio, 1 (identical) to 21 (black on white). */
+export function contrast(a: string, b: string): number {
+  const [la, lb] = [luminance(a), luminance(b)];
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
 
 const KEYS = ["bg", "ink", "muted", "accent", "qty", "rule", "display", "body"] as const;
 

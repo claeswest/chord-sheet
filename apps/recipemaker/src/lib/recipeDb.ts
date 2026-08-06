@@ -4,6 +4,7 @@
 
 import { prisma } from "./prisma";
 import { emptyContent, type RecipeContent } from "@/types/recipe";
+import type { CanvasStyle } from "@/lib/canvasStyle";
 
 export type RecipeListItem = {
   id: string;
@@ -84,6 +85,25 @@ export async function updateRecipe(
       where: { id, userId },
       data: { ...data, content: data.content as object | undefined },
     });
+    return true;
+  } catch (e) {
+    if (isNotFound(e)) return false;
+    throw e;
+  }
+}
+
+/**
+ * The canvas style is its own write: it is set by the style generator rather
+ * than the editor, and it must not ride along with a content save that could
+ * overwrite it.
+ */
+export async function setRecipeStyle(
+  userId: string,
+  id: string,
+  style: CanvasStyle,
+): Promise<boolean> {
+  try {
+    await prisma.recipe.update({ where: { id, userId }, data: { style: style as object } });
     return true;
   } catch (e) {
     if (isNotFound(e)) return false;
