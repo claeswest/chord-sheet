@@ -18,10 +18,15 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-/** Whether billing is wired up at all. Pricing shows, but buying is hidden. */
-export function stripeEnabled(): boolean {
-  return Boolean(
-    process.env.STRIPE_SECRET_KEY &&
-      (process.env.STRIPE_PRICE_MONTHLY || process.env.STRIPE_PRICE_YEARLY),
-  );
+/**
+ * Whether a specific plan can actually be bought right now.
+ *
+ * Per-plan, not per-account, because a half-configured deployment is a real
+ * state: this returned true for the whole account as soon as EITHER price id
+ * existed, so with only the yearly id set the monthly card still showed "Start
+ * 7-day trial" and answered a click with "That plan isn't available". A button
+ * that cannot work should not be offered.
+ */
+export function canBuyPlan(stripePriceId: string | undefined): boolean {
+  return Boolean(process.env.STRIPE_SECRET_KEY && stripePriceId);
 }

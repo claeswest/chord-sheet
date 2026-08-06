@@ -3,7 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PLANS, formatPrice, planFromUser, type Plan } from "@/lib/plans";
-import { stripeEnabled } from "@/lib/stripe";
+import { canBuyPlan } from "@/lib/stripe";
 import PlanButton from "@/components/billing/PlanButton";
 
 export const metadata: Metadata = {
@@ -49,7 +49,6 @@ export default async function PricingPage({
     }
   }
 
-  const canBuy = stripeEnabled();
   const paid: Plan[] = ["monthly", "yearly"];
 
   return (
@@ -121,7 +120,7 @@ export default async function PricingPage({
                   >
                     Sign in to upgrade
                   </Link>
-                ) : canBuy ? (
+                ) : canBuyPlan(p.stripePriceId) ? (
                   <PlanButton plan={key} mode="checkout" label="Start 7-day trial" />
                 ) : (
                   <p className="text-center text-sm text-ink-faint">Not available yet</p>
