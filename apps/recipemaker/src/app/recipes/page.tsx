@@ -91,8 +91,11 @@ export default async function RecipesPage() {
 
       {atLimit && (
         <p className="mt-8 rounded-xl bg-accent-soft p-4 text-sm text-accent-ink">
-          You&apos;ve filled all {limit} free slots. Upgrading lifts the limit and unlocks PDF
-          export and sharing.
+          You&apos;ve filled all {limit} free slots.{" "}
+          <Link href="/pricing" className="font-semibold underline">
+            Upgrading
+          </Link>{" "}
+          lifts the limit, removes the printed footer credit, and unlocks sharing.
         </p>
       )}
     </main>

@@ -72,11 +72,13 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
         <RecipeView recipe={recipe} style={parseStyle(row.style)} watermark={!clean} />
       </div>
 
-      {/* No upgrade link yet — there is no pricing page until Stripe exists,
-          and a dead link is worse than no link. */}
       {!clean && (
         <p className="no-print mt-4 text-center text-sm text-ink-faint">
-          Printed copies carry a small recipebookmaker.com credit at the foot.
+          Printed copies carry a small recipebookmaker.com credit at the foot.{" "}
+          <Link href="/pricing" className="text-accent underline">
+            Upgrade
+          </Link>{" "}
+          to print clean.
         </p>
       )}
     </main>
