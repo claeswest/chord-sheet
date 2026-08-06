@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Recipe } from "@/types/recipe";
 import { totalMinutes } from "@/types/recipe";
 import { type CanvasStyle, styleVars, amount } from "@/lib/canvasStyle";
@@ -17,11 +18,20 @@ export default function RecipeView({
   recipe,
   style,
   watermark = false,
+  stepControls,
+  heroControls,
 }: {
   recipe: Recipe;
   style: CanvasStyle;
   /** Free tier prints with a footer credit; Pro prints clean. */
   watermark?: boolean;
+  /**
+   * Optional per-step and hero controls. Passed in rather than built in, so
+   * the public /share page renders the identical document with no buttons on
+   * it — a recipient has nothing to edit.
+   */
+  stepControls?: (stepId: string) => ReactNode;
+  heroControls?: ReactNode;
 }) {
   const total = totalMinutes(recipe);
   const meta: string[] = [];
@@ -63,6 +73,22 @@ export default function RecipeView({
           </p>
         )}
       </header>
+
+      {/* Data URLs, so next/image has nothing to optimise — a plain img is the
+          honest choice here. */}
+      {recipe.content.heroImage && (
+        <figure className="print-row mt-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={recipe.content.heroImage}
+            alt={recipe.title}
+            className="w-full rounded-lg"
+            style={{ border: `1px solid var(--c-rule)` }}
+          />
+        </figure>
+      )}
+
+      {heroControls && <div className="no-print mt-3">{heroControls}</div>}
 
       {recipe.content.ingredientGroups.map((g) => (
         <section key={g.id} className="print-section mt-8">
@@ -113,7 +139,19 @@ export default function RecipeView({
                 >
                   {n + 1}
                 </span>
-                <span>{s.text}</span>
+                <span>
+                  {s.text}
+                  {s.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.imageUrl}
+                      alt=""
+                      className="mt-2 w-full max-w-sm rounded-lg"
+                      style={{ border: `1px solid var(--c-rule)` }}
+                    />
+                  )}
+                  {stepControls && <span className="no-print mt-2 block">{stepControls(s.id)}</span>}
+                </span>
               </li>
             ))}
           </ol>

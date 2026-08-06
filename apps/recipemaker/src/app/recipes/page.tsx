@@ -69,7 +69,13 @@ export default async function RecipesPage() {
                   href={`/recipes/${r.id}`}
                   className="group block h-full overflow-hidden rounded-card border border-rule bg-paper-raised shadow-card transition hover:shadow-raise"
                 >
-                  <div className="h-28 bg-paper-sunken" />
+                  {r.imageUrl ? (
+                    // A data URL — nothing for next/image to optimise.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.imageUrl} alt="" className="h-28 w-full object-cover" />
+                  ) : (
+                    <div className="h-28 bg-paper-sunken" />
+                  )}
                   <div className="p-4">
                     <h2 className="font-display font-bold group-hover:underline">{r.title}</h2>
                     {r.description && (

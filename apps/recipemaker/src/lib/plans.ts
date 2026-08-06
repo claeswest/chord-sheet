@@ -35,7 +35,8 @@ export type Feature =
   | "pdfExport"
   | "sharing"
   | "collections" // folders/categories — free, see below
-  | "aiImport";
+  | "aiImport"
+  | "aiImages"; // generated pictures — paid, see below
 
 export interface PlanConfig {
   name: string;
@@ -63,6 +64,10 @@ export const PLANS: Record<Plan, PlanConfig> = {
       // AI import is the thing worth trying before paying — gating it would hide
       // the differentiator behind the paywall.
       aiImport: true,
+      // Images are the opposite case: the most expensive call in the app by a
+      // wide margin, and a decoration rather than the promise. Import stays
+      // free so the product can be judged; pictures are what you pay for.
+      aiImages: false,
     },
   },
   monthly: {
@@ -77,6 +82,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       sharing: true,
       collections: true,
       aiImport: true,
+      aiImages: true,
     },
   },
   yearly: {
@@ -93,6 +99,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       sharing: true,
       collections: true,
       aiImport: true,
+      aiImages: true,
     },
   },
 };

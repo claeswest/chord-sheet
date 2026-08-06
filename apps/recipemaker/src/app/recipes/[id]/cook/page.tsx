@@ -10,6 +10,7 @@ import RecipeView from "@/components/recipe/RecipeView";
 import PrintButton from "@/components/recipe/PrintButton";
 import StylePicker from "@/components/recipe/StylePicker";
 import ShareButton from "@/components/recipe/ShareButton";
+import GenerateImage from "@/components/recipe/GenerateImage";
 import { findShareForRecipe } from "@/lib/shareDb";
 
 // The cook view: the recipe with nothing else on the page. Also the print
@@ -50,6 +51,7 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const plan = planFromUser(user ?? { plan: "free" }) as Plan;
   const clean = PLANS[plan].features.pdfExport === true;
+  const canDraw = PLANS[plan].features.aiImages === true;
   const existingShare = await findShareForRecipe(session.user.id, recipe.id);
 
   return (
@@ -77,7 +79,32 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="overflow-hidden rounded-card shadow-card">
-        <RecipeView recipe={recipe} style={parseStyle(row.style)} watermark={!clean} />
+        <RecipeView
+          recipe={recipe}
+          style={parseStyle(row.style)}
+          watermark={!clean}
+          heroControls={
+            <GenerateImage
+              recipeId={recipe.id}
+              hasImage={Boolean(content.heroImage)}
+              canGenerate={canDraw}
+              label="Draw the finished dish"
+            />
+          }
+          stepControls={(stepId) => (
+            <GenerateImage
+              recipeId={recipe.id}
+              stepId={stepId}
+              hasImage={Boolean(
+                content.stepGroups
+                  .flatMap((g) => g.items)
+                  .find((s) => s.id === stepId)?.imageUrl,
+              )}
+              canGenerate={canDraw}
+              label="Illustrate this step"
+            />
+          )}
+        />
       </div>
 
       {!clean && (
