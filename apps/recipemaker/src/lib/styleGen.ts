@@ -12,6 +12,7 @@
 import {
   type CanvasStyle,
   DEFAULT_STYLE,
+  BODY_FONT_KEYS,
   FONT_KEYS,
   contrast,
   isHexColor,
@@ -33,16 +34,29 @@ Return ONLY a JSON object, no markdown fence, no commentary:
   "accent": "#rrggbb",  // section headings and the step-number circles
   "qty": "#rrggbb",     // ingredient quantities
   "rule": "#rrggbb",    // hairline between ingredient lines
-  "display": "serif" | "sans" | "rounded" | "mono",   // headings
-  "body": "serif" | "sans" | "rounded" | "mono"       // everything else
+  "display": one of the heading faces below,
+  "body": one of the body faces below
 }
+
+Heading faces:
+- "fraunces"  — warm, characterful serif; good for home cooking and baking
+- "playfair"  — high contrast and formal; good for something special or classic
+- "lora"      — quiet serif, understated
+- "worksans"  — clean sans; modern, everyday
+- "caveat"    — handwriting; good for a family or handed-down recipe
+- "serif", "sans", "rounded", "mono" — plain system faces
+
+Body faces (a method gets read from a worktop, so no handwriting and no mono):
+- "lora", "fraunces", "playfair", "worksans", "serif", "sans", "rounded"
 
 Requirements — a style that fails these is rejected:
 - All six colours MUST be 6-digit hex.
 - ink on bg must reach a WCAG contrast ratio of at least ${INK_MIN}:1.
 - muted, accent and qty on bg must each reach at least ${SUPPORT_MIN}:1.
 - rule is a hairline: keep it close to bg, no contrast requirement.
-- display and body must be exactly one of the four keys above. No font names.
+- display and body must be exactly one of the keys listed above, written the
+  same way. Never a font name of your own — a face that isn't on the list is
+  not installed, and the recipe would silently fall back to something plain.
 
 Take the mood from the recipe itself — what it is, where it comes from, when you would cook it. A summer salad and a winter stew should not look alike. Prefer restrained, printable palettes over bright screen colours.`;
 
@@ -61,10 +75,15 @@ export function validateStyle(raw: unknown): { style: CanvasStyle } | { issues: 
   for (const k of colors) {
     if (!isHexColor(r[k])) issues.push(`${k} must be a hex colour like #f4ece0 (got ${JSON.stringify(r[k])}).`);
   }
-  for (const k of ["display", "body"] as const) {
-    if (typeof r[k] !== "string" || !FONT_KEYS.includes(r[k] as string)) {
-      issues.push(`${k} must be one of ${FONT_KEYS.join(", ")} (got ${JSON.stringify(r[k])}).`);
-    }
+  if (typeof r.display !== "string" || !FONT_KEYS.includes(r.display)) {
+    issues.push(`display must be one of ${FONT_KEYS.join(", ")} (got ${JSON.stringify(r.display)}).`);
+  }
+  // Body is the narrower list: a method set in handwriting is unreadable at
+  // arm's length, and the model reaches for it when a recipe sounds nostalgic.
+  if (typeof r.body !== "string" || !BODY_FONT_KEYS.includes(r.body)) {
+    issues.push(
+      `body must be one of ${BODY_FONT_KEYS.join(", ")} (got ${JSON.stringify(r.body)}).`,
+    );
   }
   if (issues.length) return { issues };
 

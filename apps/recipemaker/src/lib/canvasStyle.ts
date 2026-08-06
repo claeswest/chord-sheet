@@ -56,13 +56,32 @@ export const PRESETS: Record<string, CanvasStyle> = { HEIRLOOM, NORDIC, BOTANICA
  * output. So it chooses a KEY from this map and the value is what reaches CSS.
  */
 export const FONT_STACKS: Record<string, string> = {
+  // Always available, no download.
   serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
   sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
-  rounded: 'var(--font-nunito), ui-sans-serif, system-ui, sans-serif',
   mono: 'ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace',
+  rounded: 'var(--font-nunito), ui-sans-serif, system-ui, sans-serif',
+
+  // Loaded lazily from the layout. Each keeps a real fallback so a recipe
+  // still reads properly in the moment before the file arrives — and on the
+  // printed page if it never does.
+  fraunces: 'var(--font-fraunces), Georgia, serif', // warm, characterful serif
+  playfair: 'var(--font-playfair), Georgia, serif', // high contrast, formal
+  lora: 'var(--font-lora), Georgia, serif', // quiet, easy over long method text
+  worksans: 'var(--font-work-sans), ui-sans-serif, system-ui, sans-serif',
+  caveat: "var(--font-caveat), 'Segoe Script', cursive", // handwriting
 };
 
 export const FONT_KEYS = Object.keys(FONT_STACKS);
+
+/**
+ * Faces allowed for body text.
+ *
+ * Handwriting is charming in a title and punishing in a method — a whole page
+ * of Caveat read from a worktop is a chore. Mono is out for the same reason:
+ * it belongs to code, not cooking. Both stay available for headings.
+ */
+export const BODY_FONT_KEYS = FONT_KEYS.filter((k) => k !== "caveat" && k !== "mono");
 
 /** Maps a font key to a real stack; falls back to serif for anything unknown. */
 export function resolveFont(key: unknown): string {
