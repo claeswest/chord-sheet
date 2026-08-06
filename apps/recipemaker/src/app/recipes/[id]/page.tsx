@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { getRecipe } from "@/lib/recipeDb";
 import { prisma } from "@/lib/prisma";
 import { PLANS, planFromUser, type Plan } from "@/lib/plans";
+import { parseStyle } from "@/lib/canvasStyle";
 import { emptyContent, type RecipeContent } from "@/types/recipe";
 import RecipeEditor, { type EditorRecipe } from "@/components/editor/RecipeEditor";
 
@@ -56,7 +57,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           Cook view →
         </Link>
       </div>
-      <RecipeEditor recipe={editable} canDraw={canDraw} />
+      <RecipeEditor recipe={editable} canDraw={canDraw} style={parseStyle(recipe.style)} />
     </>
   );
 }

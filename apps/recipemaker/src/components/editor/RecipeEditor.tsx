@@ -14,6 +14,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useRouter } from "next/navigation";
 import DeleteRecipeButton from "@/components/recipe/DeleteRecipeButton";
 import GenerateImage from "@/components/recipe/GenerateImage";
+import StylePicker from "@/components/recipe/StylePicker";
+import StylePreview from "@/components/recipe/StylePreview";
+import type { CanvasStyle } from "@/lib/canvasStyle";
 import type {
   Ingredient,
   IngredientGroup,
@@ -97,10 +100,13 @@ function GrowTextarea({
 export default function RecipeEditor({
   recipe,
   canDraw = false,
+  style,
 }: {
   recipe: EditorRecipe;
   /** Whether the plan includes generated pictures. */
   canDraw?: boolean;
+  /** The recipe's canvas style, for the picker's preview. */
+  style: CanvasStyle;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<EditorRecipe>(recipe);
@@ -289,6 +295,22 @@ export default function RecipeEditor({
           />
         </label>
       </div>
+
+      {/* ── How the recipe looks ────────────────────────────────────────── */}
+      <section className="mt-8 flex flex-wrap items-start gap-4 rounded-card border border-rule bg-paper-raised p-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold">Look</h2>
+          <p className="mt-1 max-w-md text-sm text-ink-muted">
+            Fonts and colours for this recipe alone. &ldquo;Style this recipe&rdquo; reads what
+            it is — the title, what&apos;s in it, where it came from — and picks a palette to
+            suit.
+          </p>
+          <div className="mt-3">
+            <StylePicker recipeId={draft.id} />
+          </div>
+        </div>
+        <StylePreview style={style} title={draft.title} />
+      </section>
 
       {/* ── Picture of the finished dish ────────────────────────────────── */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
