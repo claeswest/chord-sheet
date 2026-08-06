@@ -74,6 +74,14 @@ export async function POST(req: NextRequest) {
       generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
     });
     if (!res.ok) {
+      // Log the upstream reason. Without this a retired model reads as a
+      // generic "having trouble" and there is nothing to search for — which
+      // cost real time the first time it happened.
+      const detail = await res.text().catch(() => "");
+      console.error(
+        `[ai/import] Gemini ${res.status} using model ${GEMINI_TEXT_MODEL}:`,
+        detail.slice(0, 400),
+      );
       return NextResponse.json(
         { error: "The importer is having trouble right now. Try again in a moment." },
         { status: 502 },

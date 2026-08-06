@@ -7,8 +7,17 @@
 //     Gemini blip failed a user action at a critical moment (search/import).
 //     geminiFetch() adds a timeout and one automatic retry on transient errors.
 
-/** Default text model for search, parse, OCR and style. */
-export const GEMINI_TEXT_MODEL = "gemini-2.5-flash";
+/**
+ * Default text model for search, parse, OCR, style and recipe import.
+ *
+ * Deliberately an alias, not a pinned version. Pinning is how this broke
+ * before: `gemini-2.0-flash` was retired, then `gemini-2.5-flash` became
+ * unavailable *to new API keys only* — so ChordSheetMaker's older key kept
+ * working while RecipeBookMaker's new one got a 404, which looks like a bug in
+ * the new app rather than a retired model. Verified 2026-08-06 that
+ * `gemini-flash-latest` works for both keys.
+ */
+export const GEMINI_TEXT_MODEL = "gemini-flash-latest";
 
 /** Image-generation model for song backgrounds. */
 export const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
