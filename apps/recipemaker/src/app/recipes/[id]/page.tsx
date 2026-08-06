@@ -40,9 +40,15 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   return (
     <>
-      <div className="mx-auto max-w-3xl px-6 pt-6">
+      <div className="mx-auto flex max-w-3xl items-center gap-4 px-6 pt-6">
         <Link href="/recipes" className="text-sm text-ink-muted hover:text-ink">
           ← All recipes
+        </Link>
+        <Link
+          href={`/recipes/${recipe.id}/cook`}
+          className="ml-auto text-sm font-semibold text-accent hover:underline"
+        >
+          Cook view →
         </Link>
       </div>
       <RecipeEditor recipe={editable} />

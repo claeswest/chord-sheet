@@ -63,3 +63,78 @@ body {
 .measure {
   max-width: 34rem;
 }
+
+/* Shown only on paper — the free-tier footer credit. */
+.print-only {
+  display: none;
+}
+
+/* ── Printing a recipe ──────────────────────────────────────────────────────
+ *
+ * The PDF export is the browser's own "Save as PDF". That keeps the text
+ * selectable and lets the browser choose page breaks, which a rasterised
+ * export cannot do — see PrintButton.tsx for why this app doesn't reuse
+ * packages/core's downloadPdf().
+ *
+ * Everything here is keyed off classes set in RecipeView.tsx. Keep in step. */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  /* Chrome is for the screen. On paper only the recipe survives. */
+  header nav,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  body {
+    /* Printers default to shrinking to fit; 12pt keeps the worktop-readable
+     * body size from globals rather than dropping to browser default. */
+    font-size: 12pt;
+  }
+
+  .recipe-canvas {
+    /* The canvas background and accent colours are the product. Browsers strip
+     * backgrounds when printing unless told not to. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  /* Never split an ingredient line or a step across two pages, and never
+   * strand a section heading at the foot of one. */
+  .print-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-section h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .print-section {
+    break-inside: auto;
+  }
+
+  /* A URL printed after every link is noise on a recipe. */
+  a[href]::after {
+    content: none !important;
+  }
+}

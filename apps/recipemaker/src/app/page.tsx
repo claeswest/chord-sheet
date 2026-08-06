@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import RecipeSample, { HEIRLOOM, NORDIC, BOTANICAL } from "@/components/marketing/RecipeSample";
+import RecipeSample from "@/components/marketing/RecipeSample";
+import { HEIRLOOM, NORDIC, BOTANICAL } from "@/lib/canvasStyle";
 import { PANCAKES, SOUP, BUNS } from "@/data/sampleRecipes";
 
 // Landing page.

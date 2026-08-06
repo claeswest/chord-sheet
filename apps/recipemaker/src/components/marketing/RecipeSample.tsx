@@ -1,50 +1,13 @@
 import type { Recipe } from "@/types/recipe";
+import { type CanvasStyle, styleVars, pretty } from "@/lib/canvasStyle";
 
 // A recipe rendered in a canvas style — used on the landing page to show the
-// product rather than describe it. Styling comes in as --c-* variables, exactly
-// as it will when the AI generates them per recipe (design/canvas/spec.html).
+// product rather than describe it. Deliberately a cut-down preview: it reads
+// only the first group and can truncate. The real thing is RecipeView.
+//
+// The style presets and the --c-* contract live in lib/canvasStyle.ts, since
+// the cook view and the style generator need them too.
 
-export type CanvasStyle = {
-  bg: string;
-  ink: string;
-  muted: string;
-  accent: string;
-  qty: string;
-  rule: string;
-  display: string;
-  body: string;
-};
-
-export const HEIRLOOM: CanvasStyle = {
-  bg: "#f4ece0", ink: "#3b2f24", muted: "#7a6a58", accent: "#9c5b34",
-  qty: "#6c7f52", rule: "#ddd0bd",
-  display: '"Iowan Old Style", Georgia, serif', body: "Georgia, serif",
-};
-
-export const NORDIC: CanvasStyle = {
-  bg: "#f7f7f5", ink: "#22252a", muted: "#6b7280", accent: "#5b7a8c",
-  qty: "#3f6b4f", rule: "#e3e3e0",
-  display: "ui-sans-serif, system-ui, sans-serif", body: "ui-sans-serif, system-ui, sans-serif",
-};
-
-export const BOTANICAL: CanvasStyle = {
-  bg: "#eef2ea", ink: "#1f2a20", muted: "#5c6b58", accent: "#3f6b4f",
-  qty: "#8a5a2b", rule: "#d6dfd2",
-  display: "Georgia, serif", body: "Georgia, serif",
-};
-
-function styleVars(s: CanvasStyle): React.CSSProperties {
-  return {
-    "--c-bg": s.bg, "--c-ink": s.ink, "--c-muted": s.muted, "--c-accent": s.accent,
-    "--c-qty": s.qty, "--c-rule": s.rule, "--c-display": s.display, "--c-body": s.body,
-    background: "var(--c-bg)", color: "var(--c-ink)",
-  } as React.CSSProperties;
-}
-
-/** ½ reads better than 0.5 on a recipe. */
-function pretty(q: number): string {
-  return q === 0.5 ? "½" : q === 0.25 ? "¼" : q === 0.75 ? "¾" : String(q);
-}
 
 export default function RecipeSample({
   recipe,
