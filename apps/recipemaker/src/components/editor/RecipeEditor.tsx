@@ -151,8 +151,13 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
     setStepGroups(groups);
   }
 
+  // Deliberately carries NO width. It used to start with `w-full`, and the
+  // narrow fields below appended `w-16`/`w-20` on top — but Tailwind resolves
+  // conflicting utilities by stylesheet order, not by the order they appear in
+  // the class attribute, so `w-full` won and the ingredient name got squeezed
+  // to nothing. Every caller states its own width.
   const input =
-    "w-full rounded-lg border border-rule px-3 py-2 text-sm focus:border-ink focus:outline-none";
+    "rounded-lg border border-rule px-3 py-2 text-sm focus:border-ink focus:outline-none";
   const iconBtn =
     "rounded px-2 py-1 text-xs text-ink-faint hover:bg-paper-sunken hover:text-ink disabled:opacity-30";
 
@@ -196,7 +201,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
             value={draft.servings ?? ""}
             onChange={(e) => patch({ servings: numberOrNull(e.target.value) })}
             inputMode="numeric"
-            className={`mt-1 ${input}`}
+            className={`mt-1 w-full ${input}`}
           />
         </label>
         <label className="text-sm">
@@ -205,7 +210,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
             value={draft.prepMinutes ?? ""}
             onChange={(e) => patch({ prepMinutes: numberOrNull(e.target.value) })}
             inputMode="numeric"
-            className={`mt-1 ${input}`}
+            className={`mt-1 w-full ${input}`}
           />
         </label>
         <label className="text-sm">
@@ -214,7 +219,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
             value={draft.cookMinutes ?? ""}
             onChange={(e) => patch({ cookMinutes: numberOrNull(e.target.value) })}
             inputMode="numeric"
-            className={`mt-1 ${input}`}
+            className={`mt-1 w-full ${input}`}
           />
         </label>
         <label className="text-sm">
@@ -223,7 +228,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
             value={draft.source ?? ""}
             onChange={(e) => patch({ source: e.target.value || null })}
             placeholder="Mormor Karin"
-            className={`mt-1 ${input}`}
+            className={`mt-1 w-full ${input}`}
           />
         </label>
       </div>
@@ -264,7 +269,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                   value={it.name}
                   onChange={(e) => updateIngredient(gi, ii, { name: e.target.value })}
                   placeholder="plain flour"
-                  className={input}
+                  className={`${input} min-w-0 flex-1`}
                   aria-label="Ingredient"
                 />
                 <button
@@ -344,7 +349,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                   onChange={(e) => updateStep(gi, si, { text: e.target.value })}
                   placeholder="Whisk the flour, salt and half the milk to a smooth batter."
                   rows={2}
-                  className={`${input} resize-y`}
+                  className={`${input} min-w-0 flex-1 resize-y`}
                   aria-label={`Step ${si + 1}`}
                 />
                 <div className="flex flex-col">
@@ -403,7 +408,7 @@ export default function RecipeEditor({ recipe }: { recipe: EditorRecipe }) {
                   patchContent({ notes });
                 }}
                 placeholder="Serve with lingonberry jam."
-                className={input}
+                className={`${input} min-w-0 flex-1`}
               />
               <button
                 onClick={() => patchContent({ notes: draft.content.notes.filter((_, n2) => n2 !== i) })}
