@@ -18,6 +18,7 @@ import StylePicker from "@/components/recipe/StylePicker";
 import StylePreview from "@/components/recipe/StylePreview";
 import StyleControls from "@/components/recipe/StyleControls";
 import ReviewRecipe from "@/components/recipe/ReviewRecipe";
+import ImportRecipe from "@/components/library/ImportRecipe";
 import type { CanvasStyle } from "@/lib/canvasStyle";
 import type {
   Ingredient,
@@ -121,6 +122,12 @@ export default function RecipeEditor({
   // down — this effect adopts it so the two ways of choosing stay in step.
   const [workingStyle, setWorkingStyle] = useState(style);
   useEffect(() => setWorkingStyle(style), [style]);
+
+  // Nothing typed and nothing imported yet — measured on the draft, so it
+  // vanishes the moment you start rather than waiting for a save.
+  const isEmpty =
+    !draft.content.ingredientGroups.some((g) => g.items.length > 0) &&
+    !draft.content.stepGroups.some((g) => g.items.length > 0);
 
   const patch = useCallback((p: Partial<EditorRecipe>) => {
     setDraft((d) => ({ ...d, ...p }));
@@ -353,6 +360,17 @@ export default function RecipeEditor({
           />
         </label>
       </div>
+
+      {/* An empty recipe offers the way in that the library offers. "New
+          recipe" is the prominent button, but pasting or photographing is the
+          commoner intent — landing in a blank form with no way to import was a
+          dead end you had to back out of. It disappears once there's content,
+          and the API refuses to fill a recipe that isn't empty. */}
+      {isEmpty && (
+        <div className="mt-8">
+          <ImportRecipe intoRecipeId={draft.id} onImported={() => setDirty(false)} />
+        </div>
+      )}
 
       {/* ── Picture of the finished recipe ────────────────────────────────
           Labelled, because two unexplained buttons floating between the time

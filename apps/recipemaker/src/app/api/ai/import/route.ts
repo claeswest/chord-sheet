@@ -3,10 +3,11 @@ import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 import { auth } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
-import { createRecipe, countRecipes } from "@/lib/recipeDb";
+import { createRecipe, countRecipes, getRecipe } from "@/lib/recipeDb";
 import { prisma } from "@/lib/prisma";
 import { PLANS, planFromUser, type Plan } from "@/lib/plans";
 import { IMPORT_PROMPT, ImportError, parseImported } from "@/lib/recipeImport";
+import type { RecipeContent } from "@/types/recipe";
 
 // POST /api/ai/import — paste recipe text, get a saved, structured recipe.
 //
@@ -80,10 +81,34 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // Importing INTO a recipe that already exists — someone who pressed "New
+  // recipe" first and then wanted to paste or photograph one. It fills that
+  // recipe rather than creating a second, and doesn't count against the limit,
+  // because the slot has already been taken.
+  const intoId = typeof body.recipeId === "string" ? body.recipeId : null;
+  let into: Awaited<ReturnType<typeof getRecipe>> = null;
+  if (intoId) {
+    into = await getRecipe(user.id, intoId);
+    if (!into) return NextResponse.json({ error: "Recipe not found." }, { status: 404 });
+
+    // Only into an empty one. Overwriting a recipe someone has written would
+    // be destroying work, and there is no undo here.
+    const existing = into.content as Partial<RecipeContent> | null;
+    const hasContent =
+      (existing?.ingredientGroups ?? []).some((g) => (g.items ?? []).length > 0) ||
+      (existing?.stepGroups ?? []).some((g) => (g.items ?? []).length > 0);
+    if (hasContent) {
+      return NextResponse.json(
+        { error: "That recipe already has something in it." },
+        { status: 409 },
+      );
+    }
+  }
+
   // Check the limit BEFORE calling the model — no point paying for a recipe
   // we're about to refuse to save.
   const limit = PLANS[planFromUser(user) as Plan].features.recipeLimit;
-  if (typeof limit === "number" && (await countRecipes(user.id)) >= limit) {
+  if (!into && typeof limit === "number" && (await countRecipes(user.id)) >= limit) {
     return NextResponse.json({ error: "limit_reached", limit }, { status: 403 });
   }
 
@@ -141,16 +166,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const recipe = await createRecipe(user.id, {
-    title: imported.title,
-    content: imported.content,
-  });
+  const recipe = into
+    ? into
+    : await createRecipe(user.id, { title: imported.title, content: imported.content });
 
   // createRecipe only takes title and content; the rest is a follow-up update
-  // rather than widening its signature for one caller.
+  // rather than widening its signature for one caller. When filling an
+  // existing recipe, the same update carries the title and content too.
   await prisma.recipe.update({
     where: { id: recipe.id, userId: user.id },
     data: {
+      ...(into ? { title: imported.title, content: imported.content as object } : {}),
       description: imported.description,
       servings: imported.servings,
       prepMinutes: imported.prepMinutes,

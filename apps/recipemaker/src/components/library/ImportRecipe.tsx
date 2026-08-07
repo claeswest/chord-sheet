@@ -8,7 +8,23 @@ import { compressImage } from "@clavos/core/image";
 // than behind a modal — an extra click before the thing that makes the product
 // worth using is a click too many.
 
-export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
+export default function ImportRecipe({
+  disabled,
+  intoRecipeId,
+  onImported,
+}: {
+  disabled?: boolean;
+  /**
+   * Fill this recipe instead of creating one.
+   *
+   * For the editor, when someone pressed "New recipe" and then wanted to paste
+   * or photograph after all — which is easy to do, since "New recipe" is the
+   * prominent button and importing is the commoner intent.
+   */
+  intoRecipeId?: string;
+  /** Told just before the page reloads, so the editor can clear its state. */
+  onImported?: () => void;
+}) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -40,7 +56,7 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
       const res = await fetch("/api/ai/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, image: photo }),
+        body: JSON.stringify({ text, image: photo, recipeId: intoRecipeId }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -49,6 +65,20 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
             ? `You've filled all ${data.limit} free recipe slots.`
             : (data.error ?? "Something went wrong. Try again."),
         );
+        return;
+      }
+      if (intoRecipeId) {
+        // Already in the editor. A full reload rather than router.refresh():
+        // the editor holds the recipe in local state seeded on mount, and a
+        // refresh re-runs the server component without replacing that state —
+        // so the imported recipe would arrive behind an empty form.
+        //
+        // The editor is told first so it can drop its unsaved flag. Otherwise
+        // a title typed before importing leaves the page "dirty", and the
+        // reload raises the browser's leave-without-saving prompt about work
+        // the import has just replaced anyway.
+        onImported?.();
+        window.location.reload();
         return;
       }
       // Straight into the editor — the import is a starting point, not a
