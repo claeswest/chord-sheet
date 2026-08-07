@@ -31,6 +31,7 @@ Rules:
 - Do not invent ingredients, steps, quantities or times. If something is absent, use null.
 - IF THE INPUT IS A PICTURE: transcribe only words that are actually written in it — a cookbook page, a screenshot, a handwritten card. Judge nothing from how the food looks. A photograph of a finished dish with no writing in it is NOT a recipe: in that case return exactly {"error":"no_text"} and nothing else. Reconstructing a plausible recipe from a picture of food is the worst thing you can do here, because it looks right and is fiction.
 - Times: prepMinutes and cookMinutes only when the source separates them. If it gives ONE total ("Under 45 min", "Klart på 1 timme", "Ready in 30 minutes"), put that total in cookMinutes and leave prepMinutes null. Never split a total by guessing.
+- Copy quantities and units EXACTLY as written, even when they look wrong. "2 c. baking soda" stays 2 cups; "5 sticks margarine" stays 5 sticks. Do not correct, scale, convert or improve them. If a quantity looks like a mistake in the source, keep it and add note "as written" — the reader can decide. Silently fixing it rewrites someone's own recipe, and they will never know it happened.
 - quantity is a NUMBER or null. "a pinch", "to taste", "some" → quantity null, and put that wording in note.
 - Convert fractions to decimals: ½ → 0.5, ¼ → 0.25, 1½ → 1.5.
 - unit is a short string ("dl", "g", "tbsp", "cloves") or "" when the ingredient is counted ("3 eggs" → quantity 3, unit "").

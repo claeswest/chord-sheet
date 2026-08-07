@@ -185,9 +185,18 @@ export function styleVars(s: CanvasStyle): CSSProperties {
   } as CSSProperties;
 }
 
-/** ½ reads better than 0.5 on a recipe. */
+/**
+ * ½ reads better than 0.5 on a recipe — and so does 1½ rather than 1.5, which
+ * is how a card actually written by hand says it.
+ */
+const VULGAR: Record<string, string> = { "0.5": "½", "0.25": "¼", "0.75": "¾", "0.33": "⅓", "0.67": "⅔" };
+
 export function pretty(q: number): string {
-  return q === 0.5 ? "½" : q === 0.25 ? "¼" : q === 0.75 ? "¾" : String(q);
+  if (!Number.isFinite(q) || q < 0) return String(q);
+  const whole = Math.floor(q);
+  const frac = VULGAR[(Math.round((q - whole) * 100) / 100).toFixed(2).replace(/0$/, "")];
+  if (!frac) return String(q);
+  return whole === 0 ? frac : `${whole}${frac}`;
 }
 
 /** "1 dl", "3", "—" — the left column of an ingredient line. */
