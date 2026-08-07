@@ -15,6 +15,8 @@ import { IMPORT_PROMPT, ImportError, parseImported } from "@/lib/recipeImport";
 // a bare 500.
 
 const MAX_CHARS = 20_000;
+/** ~3 MB of image once base64 is decoded. The browser shrinks before sending. */
+const MAX_IMAGE_CHARS = 4_000_000;
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -35,17 +37,35 @@ export async function POST(req: NextRequest) {
   // configured" sends them looking in the wrong place.
   const body = await req.json().catch(() => ({}));
   const text = typeof body.text === "string" ? body.text.trim() : "";
-  if (text.length < 20) {
+
+  // A photo of a cookbook page or a screenshot works as well as pasted text —
+  // it's how most people actually have their recipes.
+  const image = typeof body.image === "string" ? body.image : "";
+  const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+
+  if (image && !match) {
+    return NextResponse.json({ error: "That file isn't an image." }, { status: 400 });
+  }
+  if (match && match[2].length > MAX_IMAGE_CHARS) {
     return NextResponse.json(
-      { error: "Paste a bit more — that's too short to read as a recipe." },
+      { error: "That picture is very large. Try a smaller one." },
       { status: 400 },
     );
   }
-  if (text.length > MAX_CHARS) {
-    return NextResponse.json(
-      { error: "That's very long. Paste one recipe at a time." },
-      { status: 400 },
-    );
+
+  if (!match) {
+    if (text.length < 20) {
+      return NextResponse.json(
+        { error: "Paste a bit more — that's too short to read as a recipe." },
+        { status: 400 },
+      );
+    }
+    if (text.length > MAX_CHARS) {
+      return NextResponse.json(
+        { error: "That's very long. Paste one recipe at a time." },
+        { status: 400 },
+      );
+    }
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -69,10 +89,25 @@ export async function POST(req: NextRequest) {
 
   let raw: string;
   try {
-    const res = await geminiFetch(geminiUrl(GEMINI_TEXT_MODEL, apiKey), {
-      contents: [{ parts: [{ text: IMPORT_PROMPT + text }] }],
-      generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
-    });
+    // Same prompt either way — the extraction rules don't change because the
+    // source is a photograph. Any text typed alongside a picture is kept: it's
+    // usually the bit the photo cut off.
+    const parts = match
+      ? [
+          { text: IMPORT_PROMPT + (text ? `\n${text}\n` : "") },
+          { inlineData: { mimeType: match[1], data: match[2] } },
+        ]
+      : [{ text: IMPORT_PROMPT + text }];
+
+    const res = await geminiFetch(
+      geminiUrl(GEMINI_TEXT_MODEL, apiKey),
+      {
+        contents: [{ parts }],
+        generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
+      },
+      // Reading a photograph takes longer than reading pasted text.
+      match ? { timeoutMs: 45_000 } : {},
+    );
     if (!res.ok) {
       // Log the upstream reason. Without this a retired model reads as a
       // generic "having trouble" and there is nothing to search for — which
@@ -128,6 +163,7 @@ export async function POST(req: NextRequest) {
     recipeId: recipe.id,
     title: imported.title,
     chars: text.length,
+    from: match ? "photo" : "text",
   });
 
   return NextResponse.json({ id: recipe.id, title: imported.title }, { status: 201 });

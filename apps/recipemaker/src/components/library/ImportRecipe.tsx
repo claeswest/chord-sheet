@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { compressImage } from "@clavos/core/image";
 
 // Paste-a-recipe. The primary way in, so it sits open on the library rather
 // than behind a modal — an extra click before the thing that makes the product
@@ -12,6 +13,25 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  async function pickPhoto(file: File) {
+    setError(null);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result));
+        r.onerror = () => reject(new Error("read failed"));
+        r.readAsDataURL(file);
+      });
+      // A phone photo is 3-8 MB and mostly detail the model doesn't need.
+      // 1600px keeps small print legible while staying well inside the limit.
+      setPhoto(await compressImage(dataUrl, 1600, 0.85));
+    } catch {
+      setError("Couldn't read that file.");
+    }
+  }
 
   async function importRecipe() {
     setBusy(true);
@@ -20,7 +40,7 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
       const res = await fetch("/api/ai/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, image: photo }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -41,7 +61,8 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
     }
   }
 
-  const tooShort = text.trim().length < 20;
+  // With a photo there is nothing to type — the picture IS the input.
+  const tooShort = !photo && text.trim().length < 20;
 
   return (
     <div className="rounded-card border border-rule bg-paper-raised p-6 shadow-card">
@@ -61,12 +82,49 @@ export default function ImportRecipe({ disabled }: { disabled?: boolean }) {
       />
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
+        {/* capture is honoured on phones — point it at the page and shoot. */}
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) pickPhoto(f);
+            e.target.value = ""; // so picking the same file twice still fires
+          }}
+        />
+        {photo ? (
+          <span className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photo}
+              alt=""
+              className="h-10 w-10 rounded border border-rule object-cover"
+            />
+            <button
+              onClick={() => setPhoto(null)}
+              className="text-sm text-ink-faint hover:text-danger"
+            >
+              Remove photo
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => fileInput.current?.click()}
+            disabled={disabled || busy}
+            className="rounded-full border border-rule px-4 py-2 text-sm font-semibold hover:bg-paper-sunken disabled:opacity-40"
+          >
+            Use a photo
+          </button>
+        )}
+
         <button
           onClick={importRecipe}
           disabled={busy || disabled || tooShort}
           className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
         >
-          {busy ? "Reading it…" : "Import recipe"}
+          {busy ? "Reading it…" : photo ? "Read the photo" : "Import recipe"}
         </button>
         {busy && <span className="text-sm text-ink-faint">This takes a few seconds.</span>}
         {error && <span className="text-sm text-danger">{error}</span>}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { compressImage } from "@clavos/core/image";
 
@@ -43,6 +43,7 @@ export default function GenerateImage({
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   async function generate() {
     setError(null);
@@ -63,27 +64,58 @@ export default function GenerateImage({
         return;
       }
 
-      setBusy("Saving…");
-      const full = await compressImage(data.dataUrl, FULL_PX, 0.82);
-      const thumb = stepId ? undefined : await compressImage(data.dataUrl, THUMB_PX, 0.7);
-
-      const save = await fetch(`/api/recipes/${recipeId}/image`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full, thumb, stepId }),
-      });
-      if (!save.ok) {
-        const d = await save.json().catch(() => ({}));
-        setError(d.error ?? "Couldn't save the picture.");
-        return;
-      }
-      onSaved?.(full);
-      router.refresh();
+      await store(data.dataUrl);
     } catch {
       setError("Something went wrong drawing that.");
     } finally {
       setBusy(null);
     }
+  }
+
+  /**
+   * Your own photograph, instead of a drawing.
+   *
+   * Not gated on the plan, unlike generating one. Uploading costs nothing but
+   * the storage, and a picture of a dish you actually cooked is the better
+   * picture anyway — charging for that would be charging for the honest option.
+   */
+  async function upload(file: File) {
+    setBusy("Reading…");
+    setError(null);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result));
+        r.onerror = () => reject(new Error("read failed"));
+        r.readAsDataURL(file);
+      });
+      await store(dataUrl);
+    } catch {
+      setError("Couldn't read that file.");
+      setBusy(null);
+    }
+  }
+
+  /** Shrink and save — shared by the generated and the uploaded path. */
+  async function store(dataUrl: string) {
+    setBusy("Saving…");
+    const full = await compressImage(dataUrl, FULL_PX, 0.82);
+    const thumb = stepId ? undefined : await compressImage(dataUrl, THUMB_PX, 0.7);
+
+    const save = await fetch(`/api/recipes/${recipeId}/image`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full, thumb, stepId }),
+    });
+    if (!save.ok) {
+      const d = await save.json().catch(() => ({}));
+      setError(d.error ?? "Couldn't save the picture.");
+      setBusy(null);
+      return;
+    }
+    onSaved?.(full);
+    router.refresh();
+    setBusy(null);
   }
 
   async function remove() {
@@ -104,6 +136,17 @@ export default function GenerateImage({
 
   return (
     <span className="no-print inline-flex flex-wrap items-center gap-2">
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) upload(f);
+          e.target.value = "";
+        }}
+      />
       <button
         onClick={generate}
         disabled={busy !== null || !canGenerate}
@@ -111,6 +154,13 @@ export default function GenerateImage({
         className="rounded-full border border-rule px-3 py-1 text-xs font-semibold hover:bg-paper-sunken disabled:opacity-40"
       >
         {busy ?? (hasImage ? "Draw again" : label)}
+      </button>
+      <button
+        onClick={() => fileInput.current?.click()}
+        disabled={busy !== null}
+        className="rounded-full border border-rule px-3 py-1 text-xs hover:bg-paper-sunken disabled:opacity-40"
+      >
+        Upload
       </button>
       {hasImage && (
         <button

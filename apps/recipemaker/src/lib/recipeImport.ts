@@ -29,6 +29,7 @@ Rules:
 - Output ONLY a JSON object. No markdown fence, no commentary.
 - Use the SAME LANGUAGE as the input. Do not translate.
 - Do not invent ingredients, steps, quantities or times. If something is absent, use null.
+- IF THE INPUT IS A PICTURE: transcribe only words that are actually written in it — a cookbook page, a screenshot, a handwritten card. Judge nothing from how the food looks. A photograph of a finished dish with no writing in it is NOT a recipe: in that case return exactly {"error":"no_text"} and nothing else. Reconstructing a plausible recipe from a picture of food is the worst thing you can do here, because it looks right and is fiction.
 - Times: prepMinutes and cookMinutes only when the source separates them. If it gives ONE total ("Under 45 min", "Klart på 1 timme", "Ready in 30 minutes"), put that total in cookMinutes and leave prepMinutes null. Never split a total by guessing.
 - quantity is a NUMBER or null. "a pinch", "to taste", "some" → quantity null, and put that wording in note.
 - Convert fractions to decimals: ½ → 0.5, ¼ → 0.25, 1½ → 1.5.
@@ -99,6 +100,16 @@ export function parseImported(raw: string): ImportedRecipe {
   }
   if (!data || typeof data !== "object") throw new ImportError("That didn't look like a recipe.");
   const d = data as Record<string, unknown>;
+
+  // The model's signal that a picture held no readable recipe. Worth an
+  // explicit channel: asked to extract a recipe from a photo of a finished
+  // dish, it will otherwise write a confident, plausible, entirely invented
+  // one — verified, before this rule existed, on a picture of pasta.
+  if (d.error === "no_text") {
+    throw new ImportError(
+      "There's no recipe text in that picture. Photograph the page or the card, not the food.",
+    );
+  }
 
   const ingredientGroups = asArray(d.ingredientGroups)
     .map((g) => {
