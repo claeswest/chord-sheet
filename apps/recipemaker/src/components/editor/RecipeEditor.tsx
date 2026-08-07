@@ -17,6 +17,7 @@ import GenerateImage from "@/components/recipe/GenerateImage";
 import StylePicker from "@/components/recipe/StylePicker";
 import StylePreview from "@/components/recipe/StylePreview";
 import StyleControls from "@/components/recipe/StyleControls";
+import ReviewRecipe from "@/components/recipe/ReviewRecipe";
 import type { CanvasStyle } from "@/lib/canvasStyle";
 import type {
   Ingredient,
@@ -302,6 +303,21 @@ export default function RecipeEditor({
           />
         </label>
       </div>
+
+      <ReviewRecipe
+        recipeId={draft.id}
+        onApply={(fix) => {
+          // Applied to the draft, not the database. The recipe changes when
+          // you save, so an accepted suggestion is still reversible by leaving.
+          const groups = draft.content.ingredientGroups.map((g) => ({
+            ...g,
+            items: g.items.map((i) =>
+              i.id === fix.ingredientId ? { ...i, quantity: fix.quantity, unit: fix.unit } : i,
+            ),
+          }));
+          setGroups(groups);
+        }}
+      />
 
       {/* ── How the recipe looks ────────────────────────────────────────── */}
       <section className="mt-8 flex flex-wrap items-start gap-4 rounded-card border border-rule bg-paper-raised p-4">
