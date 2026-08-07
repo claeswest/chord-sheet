@@ -354,8 +354,11 @@ export default function RecipeEditor({
         </label>
       </div>
 
-      {/* ── Picture of the finished recipe ──────────────────────────────── */}
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      {/* ── Picture of the finished recipe ────────────────────────────────
+          Labelled, because two unexplained buttons floating between the time
+          fields and the ingredients don't say what they'd be a picture OF. */}
+      <p className="mt-8 text-xs uppercase tracking-[0.14em] text-ink-faint">Picture</p>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         {draft.content.heroImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -376,6 +379,13 @@ export default function RecipeEditor({
       {/* ── Ingredients ─────────────────────────────────────────────────── */}
       {draft.content.ingredientGroups.map((g, gi) => (
         <section key={g.id} className="mt-10">
+          {/* Which section a named group belongs to. Without this, a recipe with a
+              "Cream Cheese Frosting" group of ingredients AND of steps shows the
+              same bold heading twice and reads as a duplicate. Above the name,
+              not below: a kicker is read on the way in. */}
+          {g.heading && (
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Ingredients</p>
+          )}
           <input
             value={g.heading}
             onChange={(e) => {
@@ -384,14 +394,8 @@ export default function RecipeEditor({
               setGroups(groups);
             }}
             placeholder="Ingredients"
-            className="text-lg font-bold outline-none placeholder:text-ink-faint"
+            className="block text-lg font-bold outline-none placeholder:text-ink-faint"
           />
-          {/* Which section a named group belongs to. Without this, a recipe
-              with a "Cream Cheese Frosting" group of ingredients AND of steps
-              shows the same bold heading twice and reads as a duplicate. */}
-          {g.heading && (
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Ingredients</p>
-          )}
 
           <ul className="mt-3 space-y-2">
             {g.items.map((it, ii) => (
@@ -479,6 +483,9 @@ export default function RecipeEditor({
       {/* ── Method ──────────────────────────────────────────────────────── */}
       {draft.content.stepGroups.map((g, gi) => (
         <section key={g.id} className="mt-10">
+          {g.heading && (
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Method</p>
+          )}
           <input
             value={g.heading}
             onChange={(e) => {
@@ -487,11 +494,9 @@ export default function RecipeEditor({
               setStepGroups(groups);
             }}
             placeholder="Method"
-            className="text-lg font-bold outline-none placeholder:text-ink-faint"
+            className="block text-lg font-bold outline-none placeholder:text-ink-faint"
           />
-          {g.heading && (
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Method</p>
-          )}
+
 
           <ol className="mt-3 space-y-2">
             {g.items.map((s, si) => (
@@ -535,7 +540,11 @@ export default function RecipeEditor({
                     />
                   </div>
                 </div>
-                <div className="flex flex-col">
+                {/* Horizontal, not stacked. Three buttons on top of each other
+                    are taller than the textarea beside them, so they, not the
+                    text, set the height of every step — a one-line step took
+                    three lines of page. */}
+                <div className="flex shrink-0 items-start">
                   <button
                     onClick={() => {
                       const groups = [...draft.content.stepGroups];
@@ -616,7 +625,10 @@ export default function RecipeEditor({
           used to sit between the title and the ingredients, where three panels
           separated a cook from the thing they came to edit. Both are things
           you do once the recipe is right. */}
-      <hr className="mt-14 border-rule" />
+      <div className="mt-14 flex items-center gap-4">
+        <span className="text-xs uppercase tracking-[0.14em] text-ink-faint">Finishing</span>
+        <hr className="flex-1 border-rule" />
+      </div>
 
       <ReviewRecipe
         recipeId={draft.id}
