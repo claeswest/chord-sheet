@@ -132,7 +132,7 @@ export default function RecipeEditor({
     setDirty(true);
   }, []);
 
-  // Don't let a half-typed recipe disappear on a stray navigation.
+  // Closing the tab or reloading still gets the browser's own warning.
   useEffect(() => {
     if (!dirty) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -140,32 +140,77 @@ export default function RecipeEditor({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  async function save() {
+  /**
+   * Leaving by a link inside the app saves first.
+   *
+   * beforeunload does not fire on client-side navigation, so "Cook view →" and
+   * "← All recipes" — both directly above the editor, and the obvious next
+   * click after an edit — discarded unsaved work in silence.
+   *
+   * Saving beats asking. A confirm dialog puts the burden back on someone who
+   * has just told us what they want by editing, and can be suppressed by the
+   * browser, which would either trap them on the page or lose the work anyway.
+   */
+  useEffect(() => {
+    if (!dirty) return;
+
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // opening in a new tab
+
+      const link = (e.target as HTMLElement | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      const href = link?.getAttribute("href") ?? "";
+      if (!link || link.target === "_blank" || !href.startsWith("/")) return;
+
+      e.preventDefault();
+      void (async () => {
+        const ok = await save();
+        // On failure stay put, with the error already on screen — navigating
+        // away from a failed save is exactly how the work would be lost.
+        if (ok) router.push(href);
+      })();
+    };
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [dirty, draft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Saves the working copy, or a specific one.
+   *
+   * The argument matters: accepting a suggestion sets state and saves in the
+   * same tick, and state updates aren't visible until the next render — so
+   * saving `draft` there would write the version from before the correction.
+   */
+  async function save(next?: EditorRecipe): Promise<boolean> {
+    const d = next ?? draft;
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`/api/recipes/${draft.id}`, {
+      const res = await fetch(`/api/recipes/${d.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: draft.title,
-          description: draft.description,
-          servings: draft.servings,
-          prepMinutes: draft.prepMinutes,
-          cookMinutes: draft.cookMinutes,
-          source: draft.source,
+          title: d.title,
+          description: d.description,
+          servings: d.servings,
+          prepMinutes: d.prepMinutes,
+          cookMinutes: d.cookMinutes,
+          source: d.source,
           // Pictures are stripped out. A recipe with a hero and six step
           // illustrations carries well over a megabyte, and Vercel rejects a
           // request body above 4.5 MB — so a fully illustrated recipe would
           // simply stop saving. The server merges the stored images back in.
-          content: withoutImages(draft.content),
+          content: withoutImages(d.content),
         }),
       });
       if (!res.ok) throw new Error(`Save failed (${res.status})`);
       setDirty(false);
       router.refresh();
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -237,7 +282,7 @@ export default function RecipeEditor({
       {/* Save bar — sticky so it's reachable from anywhere in a long recipe */}
       <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center gap-3 border-b border-rule bg-paper/90 px-6 py-3 backdrop-blur">
         <button
-          onClick={save}
+          onClick={() => void save()}
           disabled={!dirty || saving}
           className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
         >
@@ -307,15 +352,19 @@ export default function RecipeEditor({
       <ReviewRecipe
         recipeId={draft.id}
         onApply={(fix) => {
-          // Applied to the draft, not the database. The recipe changes when
-          // you save, so an accepted suggestion is still reversible by leaving.
+          // Saved immediately, not left in the draft. Clicking "Use this" is a
+          // decision already made, and leaving it unsaved meant it vanished on
+          // the next click — the Cook view link sits directly above this. It's
+          // still reversible: the value is an ordinary field you can edit back.
           const groups = draft.content.ingredientGroups.map((g) => ({
             ...g,
             items: g.items.map((i) =>
               i.id === fix.ingredientId ? { ...i, quantity: fix.quantity, unit: fix.unit } : i,
             ),
           }));
-          setGroups(groups);
+          const next = { ...draft, content: { ...draft.content, ingredientGroups: groups } };
+          setDraft(next);
+          void save(next);
         }}
       />
 

@@ -72,8 +72,8 @@ export default function ReviewRecipe({
       {fixes !== null && pending.length === 0 && !busy && (
         <p className="mt-3 text-sm text-ink-muted">
           {fixes.length === 0
-            ? "Nothing looks wrong."
-            : "All suggestions dealt with. Remember to save."}
+            ? "This all reads correctly."
+            : "Done — your changes are saved."}
         </p>
       )}
 
