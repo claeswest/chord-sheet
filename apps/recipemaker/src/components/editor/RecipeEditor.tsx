@@ -281,19 +281,24 @@ export default function RecipeEditor({
     <div className="mx-auto max-w-3xl px-6 py-10">
       {/* Save bar — sticky so it's reachable from anywhere in a long recipe */}
       <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center gap-3 border-b border-rule bg-paper/90 px-6 py-3 backdrop-blur">
+        {/* The button always says what it does. It used to read "Saved" when
+            there was nothing to save, which is a state pretending to be an
+            action — it invites a click that does nothing. State is text. */}
         <button
           onClick={() => void save()}
           disabled={!dirty || saving}
           className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
         >
-          {saving ? "Saving…" : dirty ? "Save" : "Saved"}
+          Save
         </button>
+        <span className={`text-sm ${dirty ? "text-accent" : "text-ink-faint"}`}>
+          {saving ? "Saving…" : dirty ? "Unsaved changes" : "Saved"}
+        </span>
         {error && <span className="text-sm text-danger">{error}</span>}
         <span className="ml-auto text-sm text-ink-faint">
           {draft.content.ingredientGroups.reduce((n, g) => n + g.items.length, 0)} ingredients ·{" "}
           {draft.content.stepGroups.reduce((n, g) => n + g.items.length, 0)} steps
         </span>
-        <DeleteRecipeButton recipeId={recipe.id} title={draft.title} />
       </div>
 
       <input
@@ -349,50 +354,6 @@ export default function RecipeEditor({
         </label>
       </div>
 
-      <ReviewRecipe
-        recipeId={draft.id}
-        onApply={(fix) => {
-          // Saved immediately, not left in the draft. Clicking "Use this" is a
-          // decision already made, and leaving it unsaved meant it vanished on
-          // the next click — the Cook view link sits directly above this. It's
-          // still reversible: the value is an ordinary field you can edit back.
-          const groups = draft.content.ingredientGroups.map((g) => ({
-            ...g,
-            items: g.items.map((i) =>
-              i.id === fix.ingredientId ? { ...i, quantity: fix.quantity, unit: fix.unit } : i,
-            ),
-          }));
-          const next = { ...draft, content: { ...draft.content, ingredientGroups: groups } };
-          setDraft(next);
-          void save(next);
-        }}
-      />
-
-      {/* ── How the recipe looks ────────────────────────────────────────── */}
-      <section className="mt-8 flex flex-wrap items-start gap-4 rounded-card border border-rule bg-paper-raised p-4">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold">Look</h2>
-          <p className="mt-1 max-w-md text-sm text-ink-muted">
-            Fonts and colours for this recipe alone. &ldquo;Style this recipe&rdquo; reads what
-            it is — the title, what&apos;s in it, where it came from — and picks a palette to
-            suit.
-          </p>
-          <div className="mt-3">
-            <StylePicker recipeId={draft.id} />
-          </div>
-        </div>
-        <StylePreview style={workingStyle} title={draft.title} />
-      </section>
-
-      <section className="mt-3 rounded-card border border-rule bg-paper-raised p-4">
-        <h2 className="text-sm font-semibold">Or set it yourself</h2>
-        <StyleControls
-          recipeId={draft.id}
-          style={workingStyle}
-          onChange={setWorkingStyle}
-        />
-      </section>
-
       {/* ── Picture of the finished recipe ──────────────────────────────── */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
         {draft.content.heroImage && (
@@ -425,6 +386,12 @@ export default function RecipeEditor({
             placeholder="Ingredients"
             className="text-lg font-bold outline-none placeholder:text-ink-faint"
           />
+          {/* Which section a named group belongs to. Without this, a recipe
+              with a "Cream Cheese Frosting" group of ingredients AND of steps
+              shows the same bold heading twice and reads as a duplicate. */}
+          {g.heading && (
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Ingredients</p>
+          )}
 
           <ul className="mt-3 space-y-2">
             {g.items.map((it, ii) => (
@@ -432,7 +399,11 @@ export default function RecipeEditor({
                 <input
                   value={it.quantity ?? ""}
                   onChange={(e) => updateIngredient(gi, ii, { quantity: numberOrNull(e.target.value) })}
-                  placeholder="3"
+                  // Hints only while the row is still blank. On a filled row —
+                  // "4 eggs", "salt" — a grey "3" or "dl" sitting in an empty
+                  // box is indistinguishable at a glance from a real value, and
+                  // eggs genuinely have no unit.
+                  placeholder={it.name ? "" : "3"}
                   inputMode="decimal"
                   className={`${input} w-16 shrink-0 font-semibold text-herb tabular-nums`}
                   aria-label="Quantity"
@@ -440,7 +411,7 @@ export default function RecipeEditor({
                 <input
                   value={it.unit}
                   onChange={(e) => updateIngredient(gi, ii, { unit: e.target.value })}
-                  placeholder="dl"
+                  placeholder={it.name ? "" : "dl"}
                   // w-24, not w-20: "portioner", "matskedar" and "förpackning"
                   // all overflowed 80px and got visually truncated mid-word.
                   className={`${input} w-24 shrink-0`}
@@ -518,10 +489,13 @@ export default function RecipeEditor({
             placeholder="Method"
             className="text-lg font-bold outline-none placeholder:text-ink-faint"
           />
+          {g.heading && (
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Method</p>
+          )}
 
           <ol className="mt-3 space-y-2">
             {g.items.map((s, si) => (
-              <li key={s.id} className="flex items-start gap-2">
+              <li key={s.id} className="group flex items-start gap-2">
                 <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper-raised">
                   {si + 1}
                 </span>
@@ -533,7 +507,16 @@ export default function RecipeEditor({
                     className={`${input} w-full resize-none overflow-hidden`}
                     aria-label={`Step ${si + 1}`}
                   />
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                  {/* Only present once you're working on this step, or once it
+                      has a picture. Two buttons under every step doubled the
+                      height of the method and competed with the text itself.
+                      Focus rather than hover, so it works on a phone: tapping
+                      into the step is what reveals them. */}
+                  <div
+                    className={`mt-2 flex-wrap items-center gap-3 ${
+                      s.imageUrl ? "flex" : "hidden group-focus-within:flex"
+                    }`}
+                  >
                     {s.imageUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -627,6 +610,61 @@ export default function RecipeEditor({
           + Add note
         </button>
       </section>
+
+      {/* ── Finishing ───────────────────────────────────────────────────────
+          Checking and appearance live below the recipe, not inside it. They
+          used to sit between the title and the ingredients, where three panels
+          separated a cook from the thing they came to edit. Both are things
+          you do once the recipe is right. */}
+      <hr className="mt-14 border-rule" />
+
+      <ReviewRecipe
+        recipeId={draft.id}
+        onApply={(fix) => {
+          // Saved immediately, not left in the draft. Clicking "Use this" is a
+          // decision already made, and leaving it unsaved meant it vanished on
+          // the next click. Still reversible: it's an ordinary field.
+          const groups = draft.content.ingredientGroups.map((g) => ({
+            ...g,
+            items: g.items.map((i) =>
+              i.id === fix.ingredientId ? { ...i, quantity: fix.quantity, unit: fix.unit } : i,
+            ),
+          }));
+          const next = { ...draft, content: { ...draft.content, ingredientGroups: groups } };
+          setDraft(next);
+          void save(next);
+        }}
+      />
+
+      <section className="mt-3 flex flex-wrap items-start gap-4 rounded-card border border-rule bg-paper-raised p-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold">How it looks</h2>
+          <p className="mt-1 max-w-md text-sm text-ink-muted">
+            Fonts and colours for this recipe alone. &ldquo;Style this recipe&rdquo; reads what
+            it is — the title, what&apos;s in it, where it came from — and picks a palette to
+            suit.
+          </p>
+          <div className="mt-3">
+            <StylePicker recipeId={draft.id} />
+          </div>
+        </div>
+        <StylePreview style={workingStyle} title={draft.title} />
+      </section>
+
+      {/* Closed by default: two menus, two sliders and six colour wells is a
+          lot of permanently open controls for something most people set once,
+          if at all. The presets above are the answer for nearly everyone. */}
+      <details className="mt-3 rounded-card border border-rule bg-paper-raised p-4">
+        <summary className="cursor-pointer text-sm font-semibold">Set it yourself</summary>
+        <StyleControls recipeId={draft.id} style={workingStyle} onChange={setWorkingStyle} />
+      </details>
+
+      {/* Deleting belongs at the end of the page, not beside a count of
+          ingredients at the top under the "Cook view" link. */}
+      <div className="mt-10 flex items-center gap-3 border-t border-rule pt-6">
+        <span className="text-sm text-ink-faint">Finished with this recipe?</span>
+        <DeleteRecipeButton recipeId={recipe.id} title={draft.title} />
+      </div>
     </div>
   );
 }
