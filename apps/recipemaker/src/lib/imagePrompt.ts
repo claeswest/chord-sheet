@@ -1,8 +1,8 @@
 // Prompts for generated recipe pictures.
 //
 // Illustration, never photorealism — and that is a deliberate choice, not a
-// stylistic whim. A photographic image of a finished dish is a picture of a
-// meal that was never cooked. These pictures end up on a printed page and on
+// stylistic whim. A photographic image of a finished bake or dish is a picture of
+// something that was never made. These pictures end up on a printed page and on
 // a public /share link, where a photo reads as a record of the real thing. An
 // illustration is honest about being drawn, and it stays useful: for a step
 // like "fold in the parsley", a drawing shows the action far better than a
@@ -23,10 +23,16 @@ export function heroPrompt(title: string, description: string | null, ingredient
   const what = [title, description ?? ""].filter(Boolean).join(". ");
   const key = ingredients.slice(0, 6).join(", ");
   return [
-    `Illustrate the finished dish for a recipe called "${what}".`,
+    `Illustrate the finished result of a recipe called "${what}".`,
     key ? `The main ingredients are: ${key}.` : "",
-    "Show the dish plated and ready to eat, from a three-quarter angle.",
-    "Draw only what the ingredients suggest — do not invent garnishes or side dishes.",
+    // Not "plated": that framing put a tray of toffees on a dinner plate.
+    // Most recipes in a personal book are baking, sweets, bread, preserves or
+    // drinks, and each is presented its own way.
+    "Work out from the recipe what kind of thing this is, and show it the way that thing is actually presented:",
+    "a cake whole on a stand or cut to show the crumb; biscuits on a cooling rack;",
+    "sweets or toffees in their paper cases; bread as a loaf, sliced if the crumb matters;",
+    "a preserve in a jar; a drink in a suitable glass; a savoury dish plated.",
+    "Draw only what the ingredients suggest — do not invent garnishes, sides or decorations.",
     HOUSE_STYLE,
   ]
     .filter(Boolean)
@@ -37,7 +43,7 @@ export function stepPrompt(recipeTitle: string, stepText: string, n: number): st
   return [
     `Illustrate step ${n} of a recipe for "${recipeTitle}".`,
     `The step is: "${stepText}"`,
-    "Show the action or the state of the food at this moment, not the finished dish.",
+    "Show the action or the state of the food at this moment, not the finished result.",
     "Keep it simple and instructional — one clear subject, close in.",
     HOUSE_STYLE,
   ].join(" ");

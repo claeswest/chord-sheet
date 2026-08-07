@@ -37,13 +37,13 @@ export default function StylePreview({ style, title }: { style: CanvasStyle; tit
         <span className="font-bold tabular-nums" style={{ color: "var(--c-qty)" }}>
           2 dl
         </span>
-        <span>double cream</span>
+        <span>caster sugar</span>
       </p>
       <p
         className="mt-2 text-sm"
         style={{ fontFamily: "var(--c-body)", color: "var(--c-muted)", lineHeight: 1.5 }}
       >
-        Simmer gently until it coats the back of a spoon.
+        Stir until smooth, then leave to cool.
       </p>
     </div>
   );

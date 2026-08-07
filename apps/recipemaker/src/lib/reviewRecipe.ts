@@ -26,7 +26,7 @@ export const REVIEW_PROMPT = `You are checking a recipe that was transcribed fro
 
 Find ingredient quantities that are almost certainly wrong, and say what they should be.
 
-Only flag something when the amount would clearly ruin the dish or is obviously a slip of the pen — a leavening agent measured in cups, an extract measured in cups, a quantity that contradicts the method, a unit that cannot apply to that ingredient. Baking is the usual place this matters.
+Only flag something when the amount would clearly ruin the result or is obviously a slip of the pen — a leavening agent measured in cups, an extract measured in cups, a quantity that contradicts the method, a unit that cannot apply to that ingredient. Baking is the usual place this matters.
 
 Do NOT flag:
 - amounts that are merely unusual, generous or old-fashioned

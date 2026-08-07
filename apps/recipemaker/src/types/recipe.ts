@@ -70,7 +70,7 @@ export type RecipeContent = {
   notes: string[];
   nutrition?: Nutrition;
   /**
-   * The full-size picture of the finished dish, as a data URL.
+   * The full-size picture of the finished recipe, as a data URL.
    *
    * In here rather than in a column because the library list selects columns
    * and would then drag a few hundred KB per card across the wire. The small

@@ -59,7 +59,7 @@ export default function LandingPage() {
           </h1>
           <p className="font-body measure mt-5 text-lg leading-relaxed text-ink-muted">
             Write a recipe or paste one in, and get a clean page you&apos;d actually want to
-            cook from — and keep. Build it into your own recipe book, one dish at a time.
+            cook from — and keep. Build it into your own recipe book, one recipe at a time.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
@@ -117,7 +117,7 @@ export default function LandingPage() {
         <div className="grid gap-8 sm:grid-cols-2">
           {[
             ["Family recipes", "The ones on index cards, in handwriting you recognise. Get them somewhere they won't fade or go missing."],
-            ["The weeknight ten", "The dishes you actually cook. Findable in seconds, not buried in a screenshot folder."],
+            ["The weeknight ten", "The recipes you actually cook. Findable in seconds, not buried in a screenshot folder."],
             ["A book worth giving", "Collect them together and you've made something — a recipe book with your name on it."],
             ["Holidays and occasions", "Christmas, midsummer, birthdays. Grouped so next year you're not starting from memory."],
           ].map(([title, body]) => (

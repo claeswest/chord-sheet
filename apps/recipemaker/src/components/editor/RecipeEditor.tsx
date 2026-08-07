@@ -344,7 +344,7 @@ export default function RecipeEditor({
         />
       </section>
 
-      {/* ── Picture of the finished dish ────────────────────────────────── */}
+      {/* ── Picture of the finished recipe ──────────────────────────────── */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
         {draft.content.heroImage && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -358,7 +358,7 @@ export default function RecipeEditor({
           recipeId={draft.id}
           hasImage={Boolean(draft.content.heroImage)}
           canGenerate={canDraw}
-          label="Draw the finished dish"
+          label="Draw a picture of it"
           onSaved={(url) => patchContent({ heroImage: url ?? undefined })}
         />
       </div>

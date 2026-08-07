@@ -25,7 +25,7 @@ export default function GenerateImage({
   onSaved,
 }: {
   recipeId: string;
-  /** Omit for the finished-dish picture. */
+  /** Omit for the picture of the finished recipe. */
   stepId?: string;
   hasImage: boolean;
   canGenerate: boolean;
@@ -76,7 +76,7 @@ export default function GenerateImage({
    * Your own photograph, instead of a drawing.
    *
    * Not gated on the plan, unlike generating one. Uploading costs nothing but
-   * the storage, and a picture of a dish you actually cooked is the better
+   * the storage, and a picture of something you actually made is the better
    * picture anyway — charging for that would be charging for the honest option.
    */
   async function upload(file: File) {
