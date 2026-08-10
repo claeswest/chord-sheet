@@ -13,40 +13,63 @@
 :root {
   /* ── Paper ────────────────────────────────────────────────────────────────
    * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
-  --paper:        #fdfbf7;  /* page background */
+  --paper:        #fffcf6;  /* page background */
   --paper-raised: #ffffff;  /* cards sitting on the page */
-  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+  --paper-sunken: #fdf2e3;  /* wells, quiet blocks, table stripes */
 
   /* ── Ink ──────────────────────────────────────────────────────────────────
    * Warm near-blacks rather than pure grey — softer against warm paper. */
-  --ink:          #1c1917;  /* headings, primary text */
-  --ink-muted:    #57534e;  /* body text, descriptions */
-  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
-  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+  --ink:          #191410;  /* headings, primary text */
+  --ink-muted:    #5d5147;  /* body text, descriptions */
+  --ink-faint:    #9b8d80;  /* metadata, placeholders, timestamps */
+  --rule:         #eadfcd;  /* hairlines, borders, dividers */
 
   /* ── Accent ───────────────────────────────────────────────────────────────
-   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
-   * destructive actions. Used sparingly: section marks, links, active states. */
-  --accent:       #b45309;
-  --accent-soft:  #fef3e2;  /* tinted backgrounds */
-  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+   * Paprika. Deep red-orange with brown in it — warm and kitchen-adjacent
+   * without being the stock tomato red every recipe site uses. Chosen over a
+   * brighter persimmon, which couldn't clear 4.5:1, and over a deeper clay,
+   * which read closer to a wine label than a kitchen.
+   *
+   * Still distinct from --danger: destructive actions must never look like
+   * ordinary accented ones. */
+  --accent:       #b4432a;  /* 5.43:1 on paper, 5.56:1 with white text */
+  --accent-soft:  #f8ecea;  /* tinted backgrounds */
+  --accent-ink:   #8f351f;  /* text on accent-soft, hover states */
 
   /* ── Herb ─────────────────────────────────────────────────────────────────
    * The secondary. Used for quantities and measurements so numbers separate
-   * from ingredient names at a glance. */
-  --herb:         #4d7c4f;
-  --herb-soft:    #eef3ec;
+   * from ingredient names at a glance. Deepened alongside the accent so the
+   * two carry equal weight; the old green went pale beside paprika. */
+  --herb:         #2f6b4f;
+  --herb-soft:    #e8f0e9;
 
   /* ── State ────────────────────────────────────────────────────────────────*/
-  --danger:       #b91c1c;
-  --danger-soft:  #fef2f2;
+  /* Crimson, not red. The accent is a red-orange at 11deg hue; a pure red
+   * danger sat 11deg away and the two were confusable at a glance — which
+   * matters most on the one control where being sure is the point. This sits
+   * 27deg off and still reads unmistakably as stop. */
+  --danger:       #9f1239;  /* 7.83:1 on paper */
+  --danger-soft:  #fdf0f3;
 
   /* ── Type ─────────────────────────────────────────────────────────────────
    * Serif for content, sans for interface. A recipe should look set, not
-   * rendered; controls should look like controls. */
-  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
-  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+   * rendered; controls should look like controls.
+   *
+   * Fraunces replaced Nunito on headings. Nunito is friendly and entirely
+   * ordinary; Fraunces has personality without being a novelty face, and it is
+   * what stops a warm palette from reading as every other recipe site. The
+   * distinctiveness of this direction is meant to come from the type, because
+   * the palette on its own is a familiar one.
+   *
+   * Lora replaced Georgia for body: Georgia is a good fallback and a dull
+   * choice when a real face is already being loaded. Work Sans replaced the
+   * system sans so controls are consistent across platforms.
+   *
+   * All three were already loaded for canvas use, so switching cost no new
+   * downloads — only a change of which faces preload. */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body:    "Lora", Georgia, "Iowan Old Style", serif;
+  --font-ui:      "Work Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Type scale — 1.25 ratio, rounded to whole pixels. */

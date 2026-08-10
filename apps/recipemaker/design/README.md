@@ -12,7 +12,7 @@ out of the way.
 restyles it per recipe — different faces, colours and sizes every time — and it
 **ignores the design tokens entirely**.
 
-A recipe styled in sage and cream sitting inside terracotta chrome is correct,
+A recipe styled in sage and cream sitting inside paprika chrome is correct,
 not a bug. The chrome is furniture; the recipe is the thing on the wall.
 ChordSheetMaker already works this way: the app is dark purple while every
 chord sheet looks like whatever suits that song.
@@ -25,18 +25,20 @@ contract, defined in `canvas/spec.html`.
 **No pure white, no neutral grey.** `#fff` reads as screen. Warm paper tones
 and warm near-blacks read as page.
 
-**Two type families, one job each.** Serif carries content so it looks set
-rather than rendered. Sans carries the interface so controls never pretend to
-be content.
+**Three faces, one job each.** Fraunces sets headings, Lora carries body copy,
+Work Sans carries the interface. Content looks set rather than rendered;
+controls never pretend to be content. Fraunces replaced Nunito because the
+palette is a familiar one and the type is what has to carry the character.
 
 **Body copy is 18px with 1.65 line height.** Instructions get read at arm's
 length from a worktop, often with wet hands.
 
-**Quantities are herb green, links are terracotta.** Keeping them apart means a
+**Quantities are herb green, links are paprika.** Keeping them apart means a
 page full of measurements never looks like a page full of links.
 
-**Danger is tinted, never solid.** Solid red draws the eye to the thing you
-least want clicked.
+**Danger is crimson, not red, and tinted wherever it can be.** The accent is a
+red-orange; a pure red danger sat only 11 degrees of hue away and the two were
+confusable at a glance — worst on the one control where being sure is the point.
 
 **State is text; buttons are verbs.** The Save button always reads "Save" and
 disables when there is nothing to save, with the state as a label beside it.

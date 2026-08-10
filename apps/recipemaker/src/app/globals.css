@@ -6,37 +6,34 @@
  *
  * The recipe canvas does NOT use these. It is styled per recipe from
  * Recipe.style — see design/canvas/spec.html. A recipe in sage and cream
- * inside terracotta chrome is correct, not a bug. */
+ * inside paprika chrome is correct, not a bug. */
 
 @theme {
   /* Paper — warm off-whites. Pure #fff reads as screen, not page. */
-  --color-paper: #fdfbf7;
+  --color-paper: #fffcf6;
   --color-paper-raised: #ffffff;
-  --color-paper-sunken: #f5f1e8;
+  --color-paper-sunken: #fdf2e3;
 
   /* Ink — warm near-blacks rather than neutral grey. */
-  --color-ink: #1c1917;
-  --color-ink-muted: #57534e;
-  --color-ink-faint: #a8a29e;
-  --color-rule: #e7e1d6;
+  --color-ink: #191410;
+  --color-ink-muted: #5d5147;
+  --color-ink-faint: #9b8d80;
+  --color-rule: #eadfcd;
 
-  /* Terracotta — navigation, section marks, links. */
-  --color-accent: #b45309;
-  --color-accent-soft: #fef3e2;
-  --color-accent-ink: #7c3a06;
+  /* Paprika — navigation, section marks, links. 5.43:1 on paper, and 5.56:1
+   * carrying white text, so the same value works as a fill and as type. */
+  --color-accent: #b4432a;
+  --color-accent-soft: #f8ecea;
+  --color-accent-ink: #8f351f;
 
   /* Herb — quantities, so numbers separate from ingredient names. */
-  --color-herb: #4d7c4f;
-  --color-herb-soft: #eef3ec;
+  --color-herb: #2f6b4f;
+  --color-herb-soft: #e8f0e9;
 
-  --color-danger: #b91c1c;
-  --color-danger-soft: #fef2f2;
-
-  /* Serif carries content so it looks set; sans carries the interface so
-   * controls never pretend to be content. */
-  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --font-body: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Crimson rather than red: the accent is a red-orange, and a pure red sat
+   * only 11deg of hue away. Destructive must not look like ordinary. */
+  --color-danger: #9f1239;
+  --color-danger-soft: #fdf0f3;
 
   /* 18px body: instructions are read at arm's length from a worktop. */
   --text-recipe: 1.125rem;
@@ -48,6 +45,27 @@
   --shadow-raise: 0 2px 4px rgb(28 25 23 / 0.06), 0 12px 32px rgb(28 25 23 / 0.10);
 }
 
+/* Fonts have to be `inline`, and that is not a style preference.
+ *
+ * next/font defines --font-fraunces and friends on <body>, outside the theme.
+ * A plain @theme entry whose value is var(--font-fraunces) resolves to nothing:
+ * Tailwind emits the theme variable at :root, where that name does not exist
+ * yet, and `font-display` silently produced the default sans. The whole
+ * typographic half of the refresh looked applied and wasn't.
+ *
+ * `inline` substitutes the value into the utility instead of emitting a
+ * variable, so the lookup happens on the element, below <body>, where the
+ * font variables are in scope.
+ *
+ * Fraunces sets headings, Lora body copy, Work Sans the interface. Fraunces
+ * replaced Nunito because this palette is a familiar one, so the type is what
+ * has to carry the character. See design/tokens.css. */
+@theme inline {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-lora), Georgia, "Iowan Old Style", serif;
+  --font-ui: var(--font-work-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -55,7 +73,11 @@ html {
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-ui);
+  /* The next/font variable directly, not var(--font-ui): the theme entry is
+   * `inline`, so --font-ui is substituted into utilities and never emitted as
+   * a property. Referencing it here resolved to nothing, the declaration was
+   * dropped, and Tailwind's preflight sans quietly won. */
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

@@ -2,46 +2,47 @@ import type { Metadata } from "next";
 import { Nunito, Fraunces, Playfair_Display, Lora, Work_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 
-// Nunito carries the interface and is the only font that loads eagerly — the
-// app chrome needs it on first paint.
-const nunito = Nunito({
-  variable: "--font-nunito",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
-
-// The canvas faces: what a *recipe* can be set in, chosen per recipe by the
-// style generator. All are preload:false on purpose. They are not used by the
-// landing page, the library or the editor chrome, so preloading them would
-// cost every visitor bytes for something most pages never render. They load
-// when a styled recipe actually asks for them.
-//
-// Kept deliberately small. Every extra family is weight on the wire, and the
-// generator picks better from a short list of faces that clearly differ than
-// from a long list of near-duplicates.
+// The chrome's three faces. These load eagerly because the app is set in them:
+// Fraunces on headings, Lora on body copy, Work Sans on controls. Anything the
+// first paint needs must not wait for a lazy fetch, or the page arrives in
+// fallback faces and reflows.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
-  preload: false,
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
 });
 
 const lora = Lora({
   variable: "--font-lora",
   subsets: ["latin"],
   display: "swap",
-  preload: false,
 });
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Nunito is now canvas-only — it backs the "rounded" key a recipe can be set
+// in. It carried the chrome's headings until Fraunces took over.
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  display: "swap",
+  preload: false,
+});
+
+// Canvas-only faces: what a *recipe* can be set in and the chrome never uses.
+// preload:false on purpose — the landing page, the library and the editor
+// don't render them, so preloading would cost every visitor bytes for
+// something most pages never show. They load when a styled recipe asks.
+//
+// Fraunces, Lora and Work Sans are available to recipes too, but they're
+// declared above because the chrome needs them first.
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
   preload: false,
