@@ -135,14 +135,42 @@
     structure and is not the AI's to change.</p>
   <table>
     <tr><th>Token</th><th>Controls</th></tr>
-    <tr><td><code>--c-bg</code></td><td>Page colour, or the base under a background image</td></tr>
-    <tr><td><code>--c-bg-image</code></td><td>Generated background, optional</td></tr>
+    <tr><td><code>--c-bg</code></td><td>Page colour</td></tr>
     <tr><td><code>--c-ink</code> / <code>--c-muted</code></td><td>Primary and secondary text</td></tr>
-    <tr><td><code>--c-accent</code></td><td>Section marks, rules, ornament</td></tr>
+    <tr><td><code>--c-accent</code></td><td>Section marks and the step-number circles</td></tr>
     <tr><td><code>--c-qty</code></td><td>Quantities and units</td></tr>
     <tr><td><code>--c-rule</code></td><td>Hairlines between ingredients</td></tr>
-    <tr><td><code>--c-display</code> / <code>--c-body</code></td><td>Title face and reading face</td></tr>
+    <tr><td><code>--c-display</code> / <code>--c-body</code></td><td>Heading face and reading face</td></tr>
+    <tr><td><code>titleSize</code></td><td>Title, 20–64px. Not a variable — a number on the style</td></tr>
+    <tr><td><code>bodySize</code></td><td>Everything else, 13–26px. Inherited from the article</td></tr>
   </table>
+  <p style="max-width:var(--measure); font-size:var(--text-sm); color:var(--ink-muted)">
+    There is no background-image token. An earlier draft of this page listed one, copied from
+    ChordSheetMaker, where a song sheet sits on a generated image. A recipe doesn't: pictures
+    here are of the food, they sit <em>in</em> the document, and a photograph behind ingredient
+    text is the fastest way to make measurements unreadable.</p>
+
+  <h2>Faces</h2>
+  <p style="max-width:var(--measure); font-size:var(--text-sm); color:var(--ink-muted)">
+    The generator picks a <strong>key</strong>, never a font name. Naming a face freely produces
+    something plausible and uninstalled — it falls back silently and the whole feature looks
+    broken with nothing in the output to explain why. <code>FONT_STACKS</code> in
+    <code>lib/canvasStyle.ts</code> is the list.</p>
+  <table>
+    <tr><th>Key</th><th>Face</th><th>Body text?</th></tr>
+    <tr><td><code>fraunces</code></td><td>Warm, characterful serif — home cooking, baking</td><td class="yes">yes</td></tr>
+    <tr><td><code>playfair</code></td><td>High contrast, formal — something special</td><td class="yes">yes</td></tr>
+    <tr><td><code>lora</code></td><td>Quiet serif, easy over a long method</td><td class="yes">yes</td></tr>
+    <tr><td><code>worksans</code></td><td>Clean sans — modern, everyday</td><td class="yes">yes</td></tr>
+    <tr><td><code>serif</code> / <code>sans</code> / <code>rounded</code></td><td>System faces, no download</td><td class="yes">yes</td></tr>
+    <tr><td><code>caveat</code></td><td>Handwriting — a handed-down recipe</td><td class="no">headings only</td></tr>
+    <tr><td><code>mono</code></td><td>System monospace</td><td class="no">headings only</td></tr>
+  </table>
+  <p style="max-width:var(--measure); font-size:var(--text-sm); color:var(--ink-muted)">
+    <code>BODY_FONT_KEYS</code> is the shorter list, and the validator enforces it. Handwriting is
+    charming in a title and punishing in a method — a page of Caveat read at arm's length is a
+    chore, and the model reaches for it whenever a recipe sounds nostalgic. Mono is out for the
+    same reason: it belongs to code, not cooking.</p>
 
   <h2>Fixed — not the AI's to change</h2>
   <table>
@@ -158,9 +186,19 @@
 
   <div class="rule-card">
     <h3>Contrast is enforced in code, not requested in the prompt</h3>
-    <p>Body text must clear 4.5:1 against its background, and quantities must clear it too.
-      A model asked nicely will still produce sage-on-cream that fails. Clamp the generated
-      values on the way in and reject the style if it can't be fixed.</p>
+    <p><code>ink</code> must clear <strong>7:1</strong> against <code>bg</code> — AAA, not AA,
+      because a method is read at arm's length in bad kitchen light. <code>muted</code>,
+      <code>accent</code> and <code>qty</code> must each clear <strong>4.5:1</strong>. The prompt
+      states the thresholds and <code>validateStyle()</code> checks them anyway: a model asked
+      nicely will still produce sage-on-cream that fails, confidently. A rejected style is retried
+      once with the specific failures fed back, then abandoned — the existing style stays, because
+      a recipe that looks like all the others beats one nobody can read.</p>
+    <p style="margin-top:8px"><strong>Hand-picked styles are advisory only.</strong> Someone
+      choosing their own colours is told the ratio and not overruled. The generator is held to a
+      standard because nobody chose its palette; a person choosing badly is entitled to.</p>
+    <p style="margin-top:8px">Checking the three shipped presets against this validator is what
+      found HEIRLOOM's quantities at 3.74:1 — below AA, on the most-scanned element of the default
+      style. Run new presets through it before shipping them.</p>
     <div class="pair">
       <div class="ex ex-good"><b>passes</b>3 dl plain flour — readable at a glance</div>
       <div class="ex ex-bad"><b>fails</b>3 dl plain flour — moody, unusable</div>
@@ -174,11 +212,12 @@
   </div>
 
   <div class="rule-card">
-    <h3>Every style must survive print</h3>
-    <p>PDF export and, later, print-on-demand both mean a canvas can end up on paper. A dark
-      background costs ink and reads badly. Either generate a print variant alongside the screen
-      one, or keep backgrounds light enough to print — decide before the styling feature ships,
-      not after someone orders a book.</p>
+    <h3>Every style must survive print — settled</h3>
+    <p>This was an open question when the page was written; it has been decided. The prompt
+      requires a light, warm background and forbids pure white, so there is no separate print
+      variant to keep in step. Export is the browser's own print dialog over a real stylesheet,
+      not a rasterised image, so a canvas prints as selectable text with
+      <code>print-color-adjust: exact</code> keeping its colours.</p>
   </div>
 
   <div class="rule-card">

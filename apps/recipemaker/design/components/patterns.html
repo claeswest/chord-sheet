@@ -1,0 +1,251 @@
+<!-- @dsCard group="Chrome" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interaction patterns — RecipeBookMaker</title>
+<style data-tokens="generated from tokens.css — edit that file, then run design/build.mjs">
+/* RecipeBookMaker design tokens.
+ *
+ * The single source of truth for the look. Preview files in this folder import
+ * this, and src/app/globals.css should too — a token changed here must change
+ * the product, or the style guide becomes decoration.
+ *
+ * Direction: warm, printed, editorial. The product is about recipes worth
+ * keeping, so it should read like paper and ink rather than software. This is
+ * deliberately nothing like ChordSheetMaker's dark purple — separate products,
+ * separate identities.
+ */
+
+:root {
+  /* ── Paper ────────────────────────────────────────────────────────────────
+   * Warm off-whites. Pure #fff is avoided: it reads as screen, not page. */
+  --paper:        #fdfbf7;  /* page background */
+  --paper-raised: #ffffff;  /* cards sitting on the page */
+  --paper-sunken: #f5f1e8;  /* wells, quiet blocks, table stripes */
+
+  /* ── Ink ──────────────────────────────────────────────────────────────────
+   * Warm near-blacks rather than pure grey — softer against warm paper. */
+  --ink:          #1c1917;  /* headings, primary text */
+  --ink-muted:    #57534e;  /* body text, descriptions */
+  --ink-faint:    #a8a29e;  /* metadata, placeholders, timestamps */
+  --rule:         #e7e1d6;  /* hairlines, borders, dividers */
+
+  /* ── Accent ───────────────────────────────────────────────────────────────
+   * Terracotta. Warm, kitchen-adjacent, and distinct from the red used for
+   * destructive actions. Used sparingly: section marks, links, active states. */
+  --accent:       #b45309;
+  --accent-soft:  #fef3e2;  /* tinted backgrounds */
+  --accent-ink:   #7c3a06;  /* text on accent-soft, hover states */
+
+  /* ── Herb ─────────────────────────────────────────────────────────────────
+   * The secondary. Used for quantities and measurements so numbers separate
+   * from ingredient names at a glance. */
+  --herb:         #4d7c4f;
+  --herb-soft:    #eef3ec;
+
+  /* ── State ────────────────────────────────────────────────────────────────*/
+  --danger:       #b91c1c;
+  --danger-soft:  #fef2f2;
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+   * Serif for content, sans for interface. A recipe should look set, not
+   * rendered; controls should look like controls. */
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale — 1.25 ratio, rounded to whole pixels. */
+  --text-xs:   0.75rem;   /* 12 — metadata */
+  --text-sm:   0.875rem;  /* 14 — UI, labels */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — recipe body, set larger: read from a worktop */
+  --text-xl:   1.5rem;    /* 24 — section headings */
+  --text-2xl:  2rem;      /* 32 — recipe titles */
+  --text-3xl:  2.5rem;    /* 40 — page titles */
+
+  --leading-tight: 1.2;
+  --leading-body:  1.65;  /* generous: instructions are read while cooking */
+
+  /* ── Space ────────────────────────────────────────────────────────────────
+   * 4px base. Only these values — no arbitrary margins. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────────
+   * Pills for actions, gentle radii for surfaces. */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-pill: 999px;
+
+  /* Shadows are warm-tinted, never neutral grey. */
+  --shadow-card:  0 1px 2px rgba(28, 25, 23, 0.04), 0 4px 16px rgba(28, 25, 23, 0.06);
+  --shadow-raise: 0 2px 4px rgba(28, 25, 23, 0.06), 0 12px 32px rgba(28, 25, 23, 0.10);
+
+  --measure: 34rem;  /* max line length for readable instructions */
+}
+
+</style>
+<style>
+  body { margin: 0; padding: var(--space-8); background: var(--paper); color: var(--ink);
+         font-family: var(--font-ui); }
+  h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+  .lede { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 var(--space-8);
+          font-family: var(--font-body); font-size: var(--text-lg); line-height: var(--leading-body); }
+  h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--ink-faint); margin: var(--space-8) 0 var(--space-3); }
+  .card { border: 1px solid var(--rule); border-radius: var(--radius-md); padding: var(--space-4);
+          background: var(--paper-raised); margin-bottom: var(--space-3); max-width: 46rem; }
+  .card h3 { margin: 0 0 var(--space-1); font-size: var(--text-base); }
+  .card p { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--ink-muted);
+            line-height: 1.6; }
+  .card p:last-child { margin-bottom: 0; }
+  .where { font-size: var(--text-xs); color: var(--ink-faint); margin-top: var(--space-3); }
+  code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--paper-sunken);
+         padding: 1px 5px; border-radius: 4px; }
+  .demo { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;
+          margin: var(--space-3) 0; }
+  .btn { border-radius: 999px; padding: 6px 18px; font-size: var(--text-sm); font-weight: 600;
+         border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer; }
+  .btn-solid { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-quiet { border: none; color: var(--ink-faint); }
+  .state { font-size: var(--text-sm); color: var(--ink-faint); }
+  .state-dirty { color: var(--accent); }
+  .cost { border-left: 3px solid var(--accent); padding-left: var(--space-3);
+          font-size: var(--text-sm); color: var(--ink-muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h1>Interaction patterns</h1>
+  <p class="lede">Decisions that recur across the app, each one arrived at by getting it wrong
+    first. Worth reading before adding a control, so the next one behaves like the last.</p>
+
+  <h2>Destructive actions</h2>
+  <div class="card">
+    <h3>Two clicks, and the second one expires</h3>
+    <p>Delete arms on the first click and confirms on the second, reverting after five seconds.
+      A button left armed on a worktop is a trap: you come back, click the label you remember,
+      and the recipe is gone.</p>
+    <div class="demo">
+      <button class="btn btn-quiet">Delete</button>
+      <span class="state">→ armed →</span>
+      <button class="btn btn-danger">Really delete?</button>
+    </div>
+    <p>Not <code>window.confirm()</code>. It is suppressed in some embedded contexts, which turns
+      a destructive action into a silent no-op, and it cannot name the thing it is about to
+      remove.</p>
+    <p class="where">DeleteRecipeButton · ShareButton (stop sharing)</p>
+  </div>
+
+  <h2>AI-assisted editing</h2>
+  <div class="card">
+    <h3>It proposes, the reader decides</h3>
+    <p>Anything a model suggests is shown beside what the recipe says now, with a reason, and
+      applies only when accepted. Two buttons: <strong>Use this</strong> and
+      <strong>Keep mine</strong>. Never a single "Fix" — that is the app deciding.</p>
+    <div class="demo">
+      <span class="state"><b>2 c.</b> → <b style="color:var(--herb)">2 t.</b></span>
+      <button class="btn btn-solid">Use this</button>
+      <button class="btn btn-quiet">Keep mine</button>
+    </div>
+    <p>The import is deliberately literal for the same reason: it copies "2 c. baking soda" exactly
+      as the card has it. Correcting silently rewrites someone's own recipe and they never find
+      out. A wrong number you can see beats a plausible one you cannot check.</p>
+    <p class="where">ReviewRecipe · StylePicker</p>
+  </div>
+
+  <div class="card">
+    <h3>Generated values are validated, not trusted</h3>
+    <p>Colours must be hex, faces must be keys the app actually loads, sizes are clamped, and
+      anything containing braces, semicolons or <code>url()</code> is dropped — these values are
+      written into a style attribute. A proposal that changes nothing, or arrives without a
+      reason, is discarded rather than shown.</p>
+    <p class="where">canvasStyle.parseStyle · styleGen.validateStyle · reviewRecipe.parseFixes</p>
+  </div>
+
+  <h2>Saving</h2>
+  <div class="card">
+    <h3>State is text; buttons are verbs</h3>
+    <p>The save button always reads <strong>Save</strong> and disables when there is nothing to
+      save. It used to read "Saved" — a state pretending to be an action, inviting a click that
+      does nothing.</p>
+    <div class="demo">
+      <button class="btn btn-solid" style="opacity:.4">Save</button>
+      <span class="state">Saved</span>
+      <span class="state">·</span>
+      <button class="btn btn-solid">Save</button>
+      <span class="state state-dirty">Unsaved changes</span>
+    </div>
+    <p class="where">RecipeEditor save bar</p>
+  </div>
+
+  <div class="card">
+    <h3>Leaving saves; it doesn't ask</h3>
+    <p><code>beforeunload</code> does not fire on client-side navigation, so in-app links used to
+      discard unsaved work in silence. Clicking one now saves first, and stays put if the save
+      fails rather than navigating away from an error.</p>
+    <p>A confirm dialog was the obvious alternative and is worse: it puts the decision back on
+      someone who has just expressed it by editing, and browsers can suppress it — which either
+      traps them on the page or loses the work anyway.</p>
+    <p>Decisions already made are saved immediately: accepting a suggestion, applying a style,
+      storing a picture. A half-typed recipe is a draft; a clicked "Use this" is not.</p>
+    <p class="where">RecipeEditor · ReviewRecipe · GenerateImage</p>
+  </div>
+
+  <h2>Controls that earn their space</h2>
+  <div class="card">
+    <h3>Revealed by focus, never by hover alone</h3>
+    <p>Per-step picture buttons appear when the step has focus, or when it already has a picture.
+      Focus rather than hover so it works on a phone: tapping into the step is what reveals them.
+      Hover-only controls do not exist on a touch screen.</p>
+    <p>The measure that justified it: three stacked buttons beside a one-line textarea made every
+      step 72px instead of 43px — 145px of page over five steps, for controls nobody was using
+      yet.</p>
+    <p class="where">RecipeEditor method steps</p>
+  </div>
+
+  <div class="card">
+    <h3>Advanced controls start closed</h3>
+    <p>Two menus, two sliders and six colour wells are a lot of permanently open controls for
+      something most people set once, if ever. Presets answer it for nearly everyone; the manual
+      panel is a <code>&lt;details&gt;</code>.</p>
+    <p class="where">StyleControls</p>
+  </div>
+
+  <h2>Where things live</h2>
+  <div class="card">
+    <h3>Editing is the page; finishing is below it</h3>
+    <p>Checking and appearance sit under the recipe, past a divider marked <em>Finishing</em>.
+      They used to sit between the title and the ingredients, where three panels separated
+      someone from the thing they opened the editor to change.</p>
+    <p>The cook view is the mirror image: it carries no controls for changing content at all.
+      Input boxes are the wrong thing to have open on a worktop, and they print as empty
+      rectangles.</p>
+    <p class="where">RecipeEditor · cook page · share page</p>
+  </div>
+
+  <div class="card">
+    <h3>Paid features degrade, they don't error</h3>
+    <p>A control that cannot work is not offered. With no Stripe keys the pricing page still
+      renders and the buy button reads "Not available yet" — per plan, not per account, so a
+      half-configured deployment sells the plan that is ready and hides the one that isn't.</p>
+    <p>Turning something <em>off</em> is never gated. Sharing is a paid feature; withdrawing a
+      public link is not, because someone whose subscription lapsed must still be able to take
+      it down.</p>
+    <p class="where">plans.ts · canBuyPlan · share route</p>
+  </div>
+
+  <p class="cost">These are all the same rule seen from different sides: the person using this
+    owns their recipes. The app can suggest, validate and warn — it does not decide, correct or
+    discard on their behalf.</p>
+</body>
+</html>
