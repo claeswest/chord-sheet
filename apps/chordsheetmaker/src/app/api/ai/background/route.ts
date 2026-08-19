@@ -130,7 +130,12 @@ export async function POST(req: NextRequest) {
 
   const { title, artist, lyrics, bgStyle = "abstract" } = await req.json();
   if (!title && !lyrics) {
-    return NextResponse.json({ error: "No song content provided" }, { status: 400 });
+    // Hit most often on a song that hasn't been written yet: the button is
+    // there from the first moment, and there is nothing to draw from.
+    return NextResponse.json(
+      { error: "Give the song a title or some lyrics first — the picture is drawn from them." },
+      { status: 400 },
+    );
   }
 
   const promptSystem = STYLE_PROMPTS[bgStyle] ?? STYLE_PROMPTS.abstract;
@@ -145,7 +150,18 @@ export async function POST(req: NextRequest) {
   const textUrl = geminiUrl(GEMINI_TEXT_MODEL, apiKey);
   const textRes = await geminiFetch(textUrl, {
     contents: [{ parts: [{ text: `${promptSystem}\n\nSong:\n${songContent}` }] }],
-    generationConfig: { temperature: 0.8, maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 } },
+    // 1200, not 200. thinkingBudget: 0 is NOT honoured by gemini-flash-latest —
+    // measured, it still spent 189 of a 200-token budget thinking and emitted
+    // 7 tokens of prompt before hitting MAX_TOKENS. The image model was then
+    // being handed a fragment like "Sweeping brushstrokes of deep maritime",
+    // or nothing at all, which is why backgrounds failed intermittently for
+    // everyone and looked worst on new songs. Thinking measures 350-500 tokens
+    // here, so the cap has to clear that plus the ~60 tokens of actual answer.
+    generationConfig: {
+      temperature: 0.8,
+      maxOutputTokens: 1200,
+      thinkingConfig: { thinkingBudget: 0 }, // kept: it halves thinking, though it can't zero it
+    },
   });
 
   if (!textRes.ok) {
@@ -155,10 +171,25 @@ export async function POST(req: NextRequest) {
   }
 
   const textData = await textRes.json();
-  const imagePrompt: string = textData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  const candidate = textData.candidates?.[0];
+  const imagePrompt: string = candidate?.content?.parts?.[0]?.text?.trim() ?? "";
+  const finishReason: string = candidate?.finishReason ?? "";
 
-  if (!imagePrompt) {
-    return NextResponse.json({ error: "AI returned empty image prompt" }, { status: 502 });
+  // A truncated prompt is worse than none: it still generates, so the failure
+  // arrives as a background that has nothing to do with the song rather than
+  // as an error. Refuse it, and log the token accounting — that is what made
+  // this diagnosable.
+  if (!imagePrompt || finishReason === "MAX_TOKENS") {
+    console.error("[ai/background] unusable prompt", {
+      finishReason,
+      promptChars: imagePrompt.length,
+      thoughtsTokens: textData.usageMetadata?.thoughtsTokenCount,
+      outputTokens: textData.usageMetadata?.candidatesTokenCount,
+    });
+    return NextResponse.json(
+      { error: "Couldn't describe the song well enough to draw it. Try again." },
+      { status: 502 },
+    );
   }
 
   // Step 2: Generate image using Gemini image generation model.
