@@ -103,7 +103,7 @@ const BG_STYLES = [
   { id: "pastel",        label: "Pastel",        emoji: "🌸" },
   { id: "retro",         label: "Retro",         emoji: "📼" },
   { id: "warm",          label: "Warm",          emoji: "🌟" },
-  { id: "ethereal",      label: "Ethereal",      emoji: "🌫️" },
+  { id: "photoreal",     label: "Photo Real",    emoji: "🏞️" },
   { id: "lofi",          label: "Lo-Fi",         emoji: "🎧" },
   { id: "darkacademia",  label: "Dark Academia", emoji: "📚" },
   { id: "anime",         label: "Anime",         emoji: "⛩️" },
