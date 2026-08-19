@@ -103,16 +103,32 @@ export async function POST(req: NextRequest) {
         // Sent when the cancellation is SCHEDULED, not when access finally
         // lapses — which can be a year off. This is the window in which asking
         // why is still worth anything.
-        await notifyAdmin(`Cancellation scheduled — ${plan}`, [
-          `${who} cancelled their ${plan} plan. Access runs until ${ends}.`,
-          `Status is still "${sub.status}" until then — a good window to reach out and ask why.`,
-        ]);
+        //
+        // A cancelled trial and a cancelled paid plan are different news:
+        // one is someone who never paid, the other is churn. The whole point
+        // of the message is deciding whether to reach out, so they don't get
+        // the same subject line.
+        const onTrial = sub.status === "trialing";
+        await notifyAdmin(
+          onTrial ? `Trial cancelled — ${plan}` : `Cancellation scheduled — ${plan}`,
+          onTrial
+            ? [
+                `${who} cancelled during their free trial, before paying anything.`,
+                `Access runs until ${ends}. They are still using it until then.`,
+              ]
+            : [
+                `${who} cancelled their paid ${plan} plan. Access runs until ${ends}.`,
+                `Status is still "${sub.status}" until then — a good window to reach out and ask why.`,
+              ],
+        );
       } else if (prevCancelAt && !cancelAt) {
         await logActivity("sub_changed", user.id, {
           plan, status: sub.status, event: "cancel_reverted",
         });
         await notifyAdmin(`Cancellation reversed — ${plan}`, [
-          `${who} resumed their ${plan} subscription.`,
+          sub.status === "trialing"
+            ? `${who} changed their mind and is continuing the trial.`
+            : `${who} resumed their ${plan} subscription.`,
         ]);
       }
       break;
@@ -126,9 +142,18 @@ export async function POST(req: NextRequest) {
       if (!user) break;
 
       await logActivity("sub_ended", user.id, { plan: user.plan });
-      await notifyAdmin(`Subscription ended — ${user.plan}`, [
-        `${user.name || "Someone"} (${user.email}) is back on the free plan.`,
-      ]);
+      // The stored status is the last one written before this event, so a
+      // "trialing" here means the trial ran out without ever converting —
+      // which is a different thing from a paying customer leaving.
+      const lapsedTrial = user.stripeSubscriptionStatus === "trialing";
+      await notifyAdmin(
+        lapsedTrial ? `Trial ended without converting` : `Subscription ended — ${user.plan}`,
+        [
+          lapsedTrial
+            ? `${user.name || "Someone"} (${user.email}) reached the end of their trial and did not subscribe.`
+            : `${user.name || "Someone"} (${user.email}) is back on the free plan.`,
+        ],
+      );
       await prisma.user.update({
         where: { id: user.id },
         data: {
