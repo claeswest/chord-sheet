@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/chrome/AppHeader";
 import { auth } from "@/lib/auth";
 import { listRecipes } from "@/lib/recipeDb";
 import { PLANS, planFromUser, getRecipeLimit, type Plan } from "@/lib/plans";
@@ -14,6 +15,8 @@ export default async function RecipesPage() {
 
   if (!session?.user?.id) {
     return (
+      <>
+      <AppHeader />
       <main className="mx-auto max-w-2xl px-6 py-24 text-center">
         <h1 className="font-display text-4xl font-extrabold">Your recipe book</h1>
         <p className="font-body text-recipe mt-3 text-ink-muted">
@@ -26,6 +29,7 @@ export default async function RecipesPage() {
           Sign in
         </Link>
       </main>
+      </>
     );
   }
 
@@ -36,6 +40,8 @@ export default async function RecipesPage() {
   const atLimit = limit !== null && recipes.length >= limit;
 
   return (
+    <>
+    <AppHeader />
     <main className="mx-auto max-w-4xl px-6 py-16">
       <div className="flex items-end justify-between gap-4">
         <div>
@@ -105,5 +111,6 @@ export default async function RecipesPage() {
         </p>
       )}
     </main>
+    </>
   );
 }

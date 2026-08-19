@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AppHeader from "@/components/chrome/AppHeader";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PLANS, formatPrice, planFromUser, type Plan } from "@/lib/plans";
@@ -82,6 +83,8 @@ export default async function PricingPage({
   const paid: Plan[] = ["monthly", "yearly"];
 
   return (
+    <>
+    <AppHeader />
     <main className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="font-display text-center text-4xl font-extrabold">Pricing</h1>
       <p className="font-body mt-3 text-center text-recipe text-ink-muted">
@@ -179,5 +182,6 @@ export default async function PricingPage({
         worth trying before you pay. Cancel any time; you keep access until the period ends.
       </p>
     </main>
+    </>
   );
 }

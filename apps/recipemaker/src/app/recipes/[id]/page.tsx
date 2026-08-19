@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import AppHeader from "@/components/chrome/AppHeader";
 import { auth } from "@/lib/auth";
 import { getRecipe } from "@/lib/recipeDb";
 import { prisma } from "@/lib/prisma";
@@ -46,6 +47,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   return (
     <>
+      <AppHeader />
       <div className="mx-auto flex max-w-3xl items-center gap-4 px-6 pt-6">
         <Link href="/recipes" className="text-sm text-ink-muted hover:text-ink">
           ← All recipes

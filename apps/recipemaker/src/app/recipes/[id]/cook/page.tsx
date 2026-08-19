@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import AppHeader from "@/components/chrome/AppHeader";
 import { auth } from "@/lib/auth";
 import { getRecipe } from "@/lib/recipeDb";
 import { prisma } from "@/lib/prisma";
@@ -53,6 +54,8 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
   const existingShare = await findShareForRecipe(session.user.id, recipe.id);
 
   return (
+    <>
+    <AppHeader />
     <main className="mx-auto max-w-3xl px-6 py-8">
       <div className="no-print mb-6 flex flex-wrap items-center gap-3">
         <Link href="/recipes" className="text-sm text-ink-muted hover:text-ink">
@@ -93,5 +96,6 @@ export default async function CookPage({ params }: { params: Promise<{ id: strin
         </p>
       )}
     </main>
+    </>
   );
 }

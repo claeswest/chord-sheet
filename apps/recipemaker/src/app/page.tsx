@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/chrome/AppHeader";
 import type { Metadata } from "next";
 import RecipeSample from "@/components/marketing/RecipeSample";
 import { HEIRLOOM, NORDIC, BOTANICAL } from "@/lib/canvasStyle";
@@ -37,17 +38,10 @@ function Section({
 export default function LandingPage() {
   return (
     <>
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-        <span className="font-display text-lg font-extrabold">
-          Recipe<span className="text-accent">Book</span>Maker
-        </span>
-        <Link
-          href="/login"
-          className="rounded-full border border-rule px-5 py-2 text-sm font-semibold hover:border-ink-faint"
-        >
-          Sign in
-        </Link>
-      </header>
+      {/* The shared header, not a bespoke one. The old landing header had no
+          route to /pricing, so a visitor could not find out what it costs
+          without signing up and filling the free tier first. */}
+      <AppHeader />
 
       {/* Hero — claim on the left, proof on the right. */}
       <section className="mx-auto grid max-w-5xl items-center gap-12 px-6 pb-16 pt-8 md:grid-cols-2">
