@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { activityTotals, recentActivity } from "@/lib/adminData";
 
 // What the log already knows. Nothing new is recorded to build this page —
@@ -44,20 +45,34 @@ function summarise(type: string, meta: unknown): string {
   return "";
 }
 
-export default async function AdminActivity() {
-  const [rows, totals] = await Promise.all([recentActivity(), activityTotals()]);
+export default async function AdminActivity({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const { type } = await searchParams;
+  const [rows, totals] = await Promise.all([recentActivity(100, type), activityTotals()]);
 
   return (
     <>
       <h2 className="font-display mt-8 text-xl font-bold">What gets used</h2>
       <div className="mt-3 flex flex-wrap gap-2">
+        {/* The counts double as the filter — the thing you want after seeing
+            "Imported a recipe 41" is those 41 rows. */}
+        <Link
+          href="/admin/activity"
+          className={`rounded-full border px-3 py-1 text-sm ${!type ? "border-ink bg-ink text-paper-raised" : "border-rule text-ink-muted hover:bg-paper-sunken"}`}
+        >
+          All
+        </Link>
         {totals.map((t) => (
-          <span
+          <Link
             key={t.type}
-            className="rounded-full border border-rule px-3 py-1 text-sm text-ink-muted"
+            href={`/admin/activity?type=${encodeURIComponent(t.type)}`}
+            className={`rounded-full border px-3 py-1 text-sm ${type === t.type ? "border-ink bg-ink text-paper-raised" : "border-rule text-ink-muted hover:bg-paper-sunken"}`}
           >
-            {LABELS[t.type] ?? t.type} <span className="font-semibold text-ink">{t.count}</span>
-          </span>
+            {LABELS[t.type] ?? t.type} <span className={type === t.type ? "font-semibold" : "font-semibold text-ink"}>{t.count}</span>
+          </Link>
         ))}
         {totals.length === 0 && <span className="text-sm text-ink-faint">Nothing logged yet.</span>}
       </div>

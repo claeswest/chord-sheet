@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getOverview, recentUsers } from "@/lib/adminData";
 import { cancellationPending } from "@clavos/core/billing";
 
@@ -33,11 +34,19 @@ function billingLabel(u: {
 }
 
 export default async function AdminOverview() {
-  const [o, users] = await Promise.all([getOverview(), recentUsers()]);
+  const [o, users] = await Promise.all([getOverview(), recentUsers(10)]);
 
   return (
     <>
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* First, because it is the number that decides whether any of the rest
+            matters. Gross: the prices include VAT, so this is what customers
+            pay, not what is banked. */}
+        <Stat
+          label="MRR (incl. VAT)"
+          value={`$${o.mrr.gross}`}
+          hint={o.mrr.inTrials > 0 ? `+$${o.mrr.inTrials} in trials` : "monthly recurring"}
+        />
         <Stat label="People" value={o.users.total} hint={`${o.users.last7} in the last 7 days`} />
         <Stat
           label="Recipes"
@@ -66,7 +75,12 @@ export default async function AdminOverview() {
         <Stat label="New this month" value={o.users.last30} />
       </section>
 
-      <h2 className="font-display mt-10 text-xl font-bold">Recent signups</h2>
+      <div className="mt-10 flex items-baseline justify-between gap-4">
+        <h2 className="font-display text-xl font-bold">Recent signups</h2>
+        <Link href="/admin/users" className="text-sm text-ink-muted hover:text-ink">
+          All people →
+        </Link>
+      </div>
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[42rem] text-sm">
           <thead>
