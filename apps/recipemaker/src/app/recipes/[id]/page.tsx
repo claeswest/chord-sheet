@@ -8,6 +8,8 @@ import { PLANS, planFromUser, type Plan } from "@/lib/plans";
 import { parseStyle } from "@/lib/canvasStyle";
 import { emptyContent, type RecipeContent } from "@/types/recipe";
 import RecipeEditor, { type EditorRecipe } from "@/components/editor/RecipeEditor";
+import CollectionPicker from "@/components/recipe/CollectionPicker";
+import { listCollections, collectionIdsForRecipe } from "@/lib/categoryDb";
 
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -33,6 +35,8 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const canDraw = PLANS[planFromUser(user ?? { plan: "free" }) as Plan].features.aiImages === true;
+  const collections = await listCollections(session.user.id);
+  const inCollections = await collectionIdsForRecipe(session.user.id, recipe.id);
 
   const editable: EditorRecipe = {
     id: recipe.id,
@@ -58,6 +62,13 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         >
           Cook view →
         </Link>
+      </div>
+      <div className="mx-auto max-w-3xl px-6">
+        <CollectionPicker
+          recipeId={recipe.id}
+          collections={collections}
+          initialIds={inCollections}
+        />
       </div>
       <RecipeEditor recipe={editable} canDraw={canDraw} style={parseStyle(recipe.style)} />
     </>

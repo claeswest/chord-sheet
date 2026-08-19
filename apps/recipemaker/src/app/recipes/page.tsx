@@ -7,10 +7,17 @@ import { prisma } from "@/lib/prisma";
 import { totalMinutes } from "@/types/recipe";
 import NewRecipeButton from "@/components/library/NewRecipeButton";
 import ImportRecipe from "@/components/library/ImportRecipe";
+import CollectionBar from "@/components/library/CollectionBar";
+import { listCollections } from "@/lib/categoryDb";
 
 export const metadata = { title: "Your recipes" };
 
-export default async function RecipesPage() {
+export default async function RecipesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ collection?: string }>;
+}) {
+  const { collection } = await searchParams;
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -36,8 +43,13 @@ export default async function RecipesPage() {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const plan = planFromUser(user ?? { plan: "free" }) as Plan;
   const limit = getRecipeLimit(plan);
-  const recipes = await listRecipes(session.user.id);
-  const atLimit = limit !== null && recipes.length >= limit;
+  const collections = await listCollections(session.user.id);
+  // The count and the limit are the whole book, not the filtered view — "3 of
+  // 10" has to mean the same thing on every shelf.
+  const recipes = await listRecipes(session.user.id, collection);
+  // Named apart from the per-card `total` minutes inside the map below.
+  const bookTotal = collection ? (await listRecipes(session.user.id)).length : recipes.length;
+  const atLimit = limit !== null && bookTotal >= limit;
 
   return (
     <>
@@ -48,12 +60,14 @@ export default async function RecipesPage() {
           <h1 className="font-display text-4xl font-extrabold">Your recipes</h1>
           {limit !== null && (
             <p className="mt-1 text-sm text-ink-faint">
-              {recipes.length} of {limit} · {PLANS[plan].name}
+              {bookTotal} of {limit} · {PLANS[plan].name}
             </p>
           )}
         </div>
         <NewRecipeButton disabled={atLimit} />
       </div>
+
+      <CollectionBar collections={collections} activeId={collection} />
 
       {/* Import sits above the list: it's the main way recipes get in, and on an
           empty library it's the only thing worth showing. */}
@@ -63,7 +77,9 @@ export default async function RecipesPage() {
 
       {recipes.length === 0 ? (
         <p className="font-body mt-8 text-center text-ink-faint">
-          Nothing saved yet — paste a recipe above, or start from scratch.
+          {collection
+            ? "Nothing in this collection yet — open a recipe and tick it."
+            : "Nothing saved yet — paste a recipe above, or start from scratch."}
         </p>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

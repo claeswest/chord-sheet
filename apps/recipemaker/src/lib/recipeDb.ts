@@ -17,9 +17,22 @@ export type RecipeListItem = {
   updatedAt: Date;
 };
 
-export async function listRecipes(userId: string): Promise<RecipeListItem[]> {
+export async function listRecipes(
+  userId: string,
+  /** Narrow to one collection. Omitted means the whole book. */
+  collectionId?: string,
+): Promise<RecipeListItem[]> {
   return prisma.recipe.findMany({
-    where: { userId },
+    where: {
+      userId,
+      // Filtering through the join rather than fetching ids first: one query,
+      // and the collection is checked against the same user in the same
+      // statement, so a guessed id returns nothing rather than someone else's
+      // shelf.
+      ...(collectionId
+        ? { categories: { some: { categoryId: collectionId, category: { userId } } } }
+        : {}),
+    },
     orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
     select: {
       id: true,
