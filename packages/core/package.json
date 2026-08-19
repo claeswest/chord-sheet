@@ -9,7 +9,8 @@
     "./rate-limit": "./src/rateLimit.ts",
     "./image": "./src/imageUtils.ts",
     "./errors": "./src/reportError.ts",
-    "./billing": "./src/billing.ts"
+    "./billing": "./src/billing.ts",
+    "./notify": "./src/notify.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

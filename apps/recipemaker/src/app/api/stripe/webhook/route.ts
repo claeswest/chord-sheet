@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { pendingCancellationAt, currentPeriodEnd } from "@clavos/core/billing";
 import { logActivity } from "@/lib/activity";
+import { notifyAdmin } from "@/lib/notify";
 
 // POST /api/stripe/webhook — the only thing that may change a user's plan.
 //
@@ -17,8 +18,9 @@ import { logActivity } from "@/lib/activity";
 //     marks a churned account as permanently "about to cancel" anywhere that
 //     tests the field for presence.
 //
-// No admin notifications: this app has no notify.ts or admin panel yet, so
-// events go to the activity log only. Add notifyAdmin here when it does.
+// Every subscription event is both logged and emailed. The log is the record;
+// the email is so you find out without going to look. Notifications are silent
+// unless ADMIN_EMAILS is set, and can never fail the webhook — see core/notify.
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -73,8 +75,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      const who = `${user.name || "Someone"} (${user.email})`;
+
       if (event.type === "customer.subscription.created") {
         await logActivity("sub_started", user.id, { plan, status: sub.status });
+        await notifyAdmin(
+          `New subscriber — ${plan}${sub.status === "trialing" ? " (trial)" : ""}`,
+          [`${who} started a ${plan} plan. Status: ${sub.status}.`],
+        );
         break;
       }
 
@@ -82,16 +90,30 @@ export async function POST(req: NextRequest) {
         await logActivity("sub_changed", user.id, {
           plan, status: sub.status, from: prevStatus, event: "trial_converted",
         });
+        await notifyAdmin(`Trial converted to paid — ${plan}`, [
+          `${who} converted to a paying ${plan} subscription.`,
+        ]);
       }
 
       if (!prevCancelAt && cancelAt) {
+        const ends = cancelAt.toISOString().slice(0, 10);
         await logActivity("sub_changed", user.id, {
           plan, status: sub.status, event: "cancel_scheduled", cancelAt: cancelAt.toISOString(),
         });
+        // Sent when the cancellation is SCHEDULED, not when access finally
+        // lapses — which can be a year off. This is the window in which asking
+        // why is still worth anything.
+        await notifyAdmin(`Cancellation scheduled — ${plan}`, [
+          `${who} cancelled their ${plan} plan. Access runs until ${ends}.`,
+          `Status is still "${sub.status}" until then — a good window to reach out and ask why.`,
+        ]);
       } else if (prevCancelAt && !cancelAt) {
         await logActivity("sub_changed", user.id, {
           plan, status: sub.status, event: "cancel_reverted",
         });
+        await notifyAdmin(`Cancellation reversed — ${plan}`, [
+          `${who} resumed their ${plan} subscription.`,
+        ]);
       }
       break;
     }
@@ -104,6 +126,9 @@ export async function POST(req: NextRequest) {
       if (!user) break;
 
       await logActivity("sub_ended", user.id, { plan: user.plan });
+      await notifyAdmin(`Subscription ended — ${user.plan}`, [
+        `${user.name || "Someone"} (${user.email}) is back on the free plan.`,
+      ]);
       await prisma.user.update({
         where: { id: user.id },
         data: {
