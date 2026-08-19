@@ -8,7 +8,8 @@
     "./pdf": "./src/pdf.ts",
     "./rate-limit": "./src/rateLimit.ts",
     "./image": "./src/imageUtils.ts",
-    "./errors": "./src/reportError.ts"
+    "./errors": "./src/reportError.ts",
+    "./billing": "./src/billing.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

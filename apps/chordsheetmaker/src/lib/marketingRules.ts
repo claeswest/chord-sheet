@@ -30,15 +30,17 @@ export type Audience = {
 /**
  * A scheduled cancellation that hasn't taken effect yet.
  *
- * The date matters, not merely its presence: `stripeCancelAt` is never cleared
- * when the subscription finally lapses, so a churned user keeps a past date on
- * their row forever. Anything testing `if (cancelAt)` will call them "leaving"
- * for the rest of time.
+ * Re-exported rather than redefined: this is the third place the same rule was
+ * written, and it now lives in @clavos/core/billing.
+ *
+ * The date matters, not merely its presence. This once said `stripeCancelAt`
+ * is never cleared when a subscription lapses — that was true when it was
+ * written and the webhook now clears it on `customer.subscription.deleted`.
+ * The rule still stands for a different reason: a cancellation scheduled for
+ * next March is not the same as one that already happened.
  */
-export function cancellationPending(cancelAt: Date | string | null | undefined): boolean {
-  if (!cancelAt) return false;
-  return new Date(cancelAt).getTime() > Date.now();
-}
+import { cancellationPending } from "@clavos/core/billing";
+export { cancellationPending };
 
 /**
  * Cancelled but still inside the notice period: `plan` still reads "monthly"

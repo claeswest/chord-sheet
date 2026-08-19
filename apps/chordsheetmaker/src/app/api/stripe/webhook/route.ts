@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { pendingCancellationAt, currentPeriodEnd } from "@clavos/core/billing";
 import { notifyAdmin } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import Stripe from "stripe";
@@ -61,16 +62,11 @@ export async function POST(req: NextRequest) {
       const prevStatus = user.stripeSubscriptionStatus;
       const prevCancelAt = user.stripeCancelAt;
 
-      // A pending cancellation shows up in two shapes depending on how it was
-      // made: cancel_at_period_end, or an explicit cancel_at timestamp (which
-      // is what the customer portal sets). Either way the status stays
-      // trialing/active until the date arrives, so this is the only signal
-      // that someone has left.
-      const cancelAt = sub.cancel_at
-        ? new Date(sub.cancel_at * 1000)
-        : sub.cancel_at_period_end
-        ? new Date(sub.items.data[0].current_period_end * 1000)
-        : null;
+      // Both shapes of a pending cancellation, and why it can't be read from
+      // the status, are explained in @clavos/core/billing. This derivation was
+      // wrong here once and the fix had to be carried to RecipeBookMaker by
+      // hand — which is why it now lives in one place.
+      const cancelAt = pendingCancellationAt(sub);
 
       await prisma.user.update({
         where: { id: user.id },
@@ -80,9 +76,7 @@ export async function POST(req: NextRequest) {
           stripePriceId: priceId,
           stripeSubscriptionStatus: sub.status, // trialing | active | past_due | canceled
           stripeCancelAt: cancelAt,
-          stripeCurrentPeriodEnd: new Date(
-            sub.items.data[0].current_period_end * 1000
-          ),
+          stripeCurrentPeriodEnd: currentPeriodEnd(sub),
         },
       });
 

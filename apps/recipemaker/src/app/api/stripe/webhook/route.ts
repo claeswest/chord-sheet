@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { pendingCancellationAt, currentPeriodEnd } from "@clavos/core/billing";
 import { logActivity } from "@/lib/activity";
 
 // POST /api/stripe/webhook — the only thing that may change a user's plan.
@@ -58,11 +59,7 @@ export async function POST(req: NextRequest) {
       const prevStatus = user.stripeSubscriptionStatus;
       const prevCancelAt = user.stripeCancelAt;
 
-      const cancelAt = sub.cancel_at
-        ? new Date(sub.cancel_at * 1000)
-        : sub.cancel_at_period_end
-          ? new Date(sub.items.data[0].current_period_end * 1000)
-          : null;
+      const cancelAt = pendingCancellationAt(sub);
 
       await prisma.user.update({
         where: { id: user.id },
@@ -72,7 +69,7 @@ export async function POST(req: NextRequest) {
           stripePriceId: priceId,
           stripeSubscriptionStatus: sub.status,
           stripeCancelAt: cancelAt,
-          stripeCurrentPeriodEnd: new Date(sub.items.data[0].current_period_end * 1000),
+          stripeCurrentPeriodEnd: currentPeriodEnd(sub),
         },
       });
 
