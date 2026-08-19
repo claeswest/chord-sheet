@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
+import { isAdmin } from "@/lib/admin";
 
 // The one bar every page of the app carries.
 //
@@ -27,6 +28,14 @@ export default async function AppHeader() {
           {signedIn && (
             <Link href="/recipes" className="text-ink-muted hover:text-ink">
               Recipes
+            </Link>
+          )}
+          {/* Only for the people in ADMIN_EMAILS. The layout under /admin
+              refuses everyone else anyway; hiding the link keeps it from being
+              a thing everyone sees and nobody can use. */}
+          {(await isAdmin()) && (
+            <Link href="/admin" className="text-ink-muted hover:text-ink">
+              Admin
             </Link>
           )}
           <Link href="/pricing" className="text-ink-muted hover:text-ink">
