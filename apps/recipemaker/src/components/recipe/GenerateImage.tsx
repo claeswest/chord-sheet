@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { compressImage } from "@clavos/core/image";
 
 // Draw a picture, shrink it, store it.
@@ -147,14 +148,27 @@ export default function GenerateImage({
           e.target.value = "";
         }}
       />
-      <button
-        onClick={generate}
-        disabled={busy !== null || !canGenerate}
-        title={canGenerate ? undefined : "Pictures are part of the paid plan"}
-        className="rounded-full border border-rule px-3 py-1 text-xs font-semibold hover:bg-paper-sunken disabled:opacity-40"
-      >
-        {busy ?? (hasImage ? "Draw again" : label)}
-      </button>
+      {/* A greyed-out button with the reason hidden in a title attribute reads
+          as broken, not as "not included" — and a tooltip doesn't exist at all
+          on a phone. When drawing isn't in the plan, say so where it can be
+          read, and keep Upload working: uploading is deliberately free, so
+          there is still something to do here. */}
+      {canGenerate ? (
+        <button
+          onClick={generate}
+          disabled={busy !== null}
+          className="rounded-full border border-rule px-3 py-1 text-xs font-semibold hover:bg-paper-sunken disabled:opacity-40"
+        >
+          {busy ?? (hasImage ? "Draw again" : label)}
+        </button>
+      ) : (
+        <span className="text-xs text-ink-muted">
+          Drawing is part of the paid plan.{" "}
+          <Link href="/pricing" className="text-accent underline">
+            See plans
+          </Link>
+        </span>
+      )}
       <button
         onClick={() => fileInput.current?.click()}
         disabled={busy !== null}
