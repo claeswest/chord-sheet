@@ -117,6 +117,10 @@ export default function RecipeEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Steps whose picture controls are open. Ids rather than indexes, so moving
+  // a step up or down doesn't open a different one.
+  const [openPictures, setOpenPictures] = useState<string[]>([]);
+
   // A working copy so the preview follows the sliders live. The picker and the
   // generator write to the server and refresh, which brings a new `style` prop
   // down — this effect adopts it so the two ways of choosing stay in step.
@@ -530,14 +534,17 @@ export default function RecipeEditor({
                     className={`${input} w-full resize-none overflow-hidden`}
                     aria-label={`Step ${si + 1}`}
                   />
-                  {/* Only present once you're working on this step, or once it
-                      has a picture. Two buttons under every step doubled the
-                      height of the method and competed with the text itself.
-                      Focus rather than hover, so it works on a phone: tapping
-                      into the step is what reveals them. */}
+                  {/* Opened by the Picture button in the controls beside this
+                      step, or already open because there is one.
+
+                      This used to reveal on focus, which hid it well enough
+                      that it read as a missing feature. Height was the reason,
+                      and most of that turned out to be the control buttons
+                      stacking vertically — fixed separately. What's left is a
+                      trigger that costs width, not height. */}
                   <div
                     className={`mt-2 flex-wrap items-center gap-3 ${
-                      s.imageUrl ? "flex" : "hidden group-focus-within:flex"
+                      s.imageUrl || openPictures.includes(s.id) ? "flex" : "hidden"
                     }`}
                   >
                     {s.imageUrl && (
@@ -587,6 +594,22 @@ export default function RecipeEditor({
                   >
                     ↓
                   </button>
+                  {/* In the cluster, not under the step: the row is already
+                      here, so this costs width and no height. */}
+                  {!s.imageUrl && (
+                    <button
+                      onClick={() =>
+                        setOpenPictures((o) =>
+                          o.includes(s.id) ? o.filter((x) => x !== s.id) : [...o, s.id],
+                        )
+                      }
+                      className={`${iconBtn} whitespace-nowrap`}
+                      aria-expanded={openPictures.includes(s.id)}
+                      aria-label={`Picture for step ${si + 1}`}
+                    >
+                      Picture
+                    </button>
+                  )}
                   <button onClick={() => removeStep(gi, si)} className={iconBtn} aria-label="Remove">
                     ✕
                   </button>
