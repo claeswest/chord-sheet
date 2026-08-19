@@ -19,6 +19,8 @@ export type Notifier = {
   send(subject: string, lines: string[]): Promise<void>;
 };
 
+let warnedMissingKey = false;
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -45,6 +47,17 @@ export function createNotifier(opts: {
       // Read at call time, not module load: on serverless the env is present
       // per invocation, and reading at import has bitten this codebase before.
       const key = process.env.RESEND_API_KEY;
+
+      // Recipients but no key is half a configuration, not a decision — and
+      // silence there is indistinguishable from "nothing happened". Said once
+      // per instance so a busy webhook doesn't fill the log.
+      if (!key && to.length > 0 && !warnedMissingKey) {
+        warnedMissingKey = true;
+        console.warn(
+          `[notify] ADMIN_EMAILS is set but RESEND_API_KEY is not — ${opts.product} notifications are silently disabled.`,
+        );
+      }
+
       if (!key || to.length === 0) return;
 
       try {
