@@ -4,7 +4,7 @@ import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
 import FaqSection from "@/components/ui/FaqSection";
 import StickyMobileCta from "@/components/ui/StickyMobileCta";
-import BuildStamp from "@/components/ui/BuildStamp";
+import BuildStamp from "@clavos/core/build-stamp";
 import FeatureCard from "@/components/ui/FeatureCard";
 import HeroDemo from "@/components/ui/HeroDemo";
 import TransformationSection from "@/components/ui/TransformationSection";

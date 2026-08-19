@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppHeader from "@/components/chrome/AppHeader";
+import BuildStamp from "@clavos/core/build-stamp";
 import { isAdmin } from "@/lib/admin";
 
 // Everything under /admin is gated here, once.
@@ -33,6 +34,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/activity" className="text-ink-muted hover:text-ink">
             Activity
           </Link>
+          {/* What is actually deployed. Here rather than in the app chrome:
+              it answers "did my change ship", which is an admin question. */}
+          <BuildStamp className="ml-auto font-mono text-[10px] text-ink-faint" />
         </nav>
         {children}
       </main>

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import Link from "next/link";
-import BuildStamp from "@/components/ui/BuildStamp";
+import BuildStamp from "@clavos/core/build-stamp";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await isAdmin();

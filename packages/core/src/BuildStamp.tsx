@@ -1,9 +1,17 @@
 "use client";
 
-// "What's deployed" stamp: commit + build time, inlined at build time (see
-// next.config.ts). The commit + absolute UTC are static (hydration-safe); the
-// "N minutes ago" is computed on the client after mount, so before hydration we
-// render the absolute time and swap to relative once mounted — no mismatch.
+// "What's deployed" stamp: commit + build time.
+//
+// Both values are inlined at build time by each app's next.config.ts, which
+// sets NEXT_PUBLIC_COMMIT_SHA and NEXT_PUBLIC_BUILD_TIME under `env`. That
+// substitution reaches this file because the apps list @clavos/core in
+// transpilePackages — without that, the names would survive to the browser as
+// undefined and the stamp would read "vdev · local".
+//
+// The commit and the absolute UTC are static, so they match what the server
+// rendered. The "N minutes ago" is computed after mount instead: it depends on
+// the current time, which differs between server and client. Rendering the
+// absolute time first and swapping once mounted keeps hydration clean.
 
 import { useEffect, useState } from "react";
 
@@ -29,6 +37,7 @@ export default function BuildStamp({
   showAbsolute = false,
 }: {
   className?: string;
+  /** Show the absolute UTC beside the relative time, not only in the tooltip. */
   showAbsolute?: boolean;
 }) {
   const [rel, setRel] = useState<string | null>(null);

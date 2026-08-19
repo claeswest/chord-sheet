@@ -10,7 +10,8 @@
     "./image": "./src/imageUtils.ts",
     "./errors": "./src/reportError.ts",
     "./billing": "./src/billing.ts",
-    "./notify": "./src/notify.ts"
+    "./notify": "./src/notify.ts",
+    "./build-stamp": "./src/BuildStamp.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

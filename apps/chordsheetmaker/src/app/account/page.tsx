@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
 import { syncStaleSubscription } from "@/lib/stripeSync";
-import BuildStamp from "@/components/ui/BuildStamp";
+import BuildStamp from "@clavos/core/build-stamp";
 import UserMenu from "@/components/ui/UserMenu";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
