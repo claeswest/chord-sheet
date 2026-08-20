@@ -1,6 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import AppHeader from "@/components/chrome/AppHeader";
 import type { Metadata } from "next";
+import recipeCard from "@/images/recipe-card.jpg";
+import recipeTin from "@/images/recipe-tin.jpg";
 import RecipeSample from "@/components/marketing/RecipeSample";
 import { HEIRLOOM, NORDIC, BOTANICAL } from "@/lib/canvasStyle";
 import { PANCAKES, SOUP, BUNS } from "@/data/sampleRecipes";
@@ -66,11 +69,29 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <RecipeSample
-          recipe={PANCAKES}
-          style={HEIRLOOM}
-          className="rounded-card border border-rule p-8 shadow-raise"
-        />
+        {/* Before and after, in one glance.
+            The page could already show what a recipe becomes — it could never
+            show where it came from, which is the half the promise rests on.
+            The card overhangs the corner rather than sitting beside it, so the
+            two read as one thing happening, not two pictures. */}
+        <div className="relative">
+          <RecipeSample
+            recipe={PANCAKES}
+            style={HEIRLOOM}
+            className="rounded-card border border-rule p-8 shadow-raise"
+          />
+          <Image
+            src={recipeCard}
+            alt="A handwritten recipe card on a kitchen table"
+            placeholder="blur"
+            sizes="(min-width: 768px) 13rem, 0px"
+            priority
+            /* md, not sm: below 768 the hero is a single column, the sample
+               spans the full width, and a card hanging 40px to its left hangs
+               off the page. */
+            className="absolute -bottom-8 -left-10 hidden w-52 -rotate-6 rounded-md border-4 border-paper-raised shadow-raise md:block"
+          />
+        </div>
       </section>
 
       <Section kicker="How it works" title="Three steps, then it's yours">
@@ -108,18 +129,32 @@ export default function LandingPage() {
       </section>
 
       <Section kicker="What it's for" title="The recipes worth not losing">
-        <div className="grid gap-8 sm:grid-cols-2">
-          {[
-            ["Family recipes", "The ones on index cards, in handwriting you recognise. Get them somewhere they won't fade or go missing."],
-            ["The weeknight ten", "The recipes you actually cook. Findable in seconds, not buried in a screenshot folder."],
-            ["A book worth giving", "Collect them together and you've made something — a recipe book with your name on it."],
-            ["Holidays and occasions", "Christmas, midsummer, birthdays. Grouped so next year you're not starting from memory."],
-          ].map(([title, body]) => (
-            <div key={title}>
-              <h3 className="font-display text-lg font-bold">{title}</h3>
-              <p className="font-body mt-2 leading-relaxed text-ink-muted">{body}</p>
-            </div>
-          ))}
+        <div className="grid items-start gap-10 md:grid-cols-[minmax(0,20rem)_1fr]">
+          {/* The tin is the argument. Everyone who has one knows what happens
+              to it eventually, and no sentence on this page says that as
+              quickly. Hidden on phones, where it would push the four reasons
+              below the fold to make room for atmosphere. */}
+          <Image
+            src={recipeTin}
+            alt="An old tin box full of worn, handwritten recipe cards"
+            placeholder="blur"
+            sizes="(min-width: 768px) 20rem, 0px"
+            className="hidden h-full max-h-[26rem] w-full rounded-card object-cover shadow-card md:block"
+          />
+
+          <div className="grid gap-8 sm:grid-cols-2">
+            {[
+              ["Family recipes", "The ones on index cards, in handwriting you recognise. Get them somewhere they won't fade or go missing."],
+              ["The weeknight ten", "The recipes you actually cook. Findable in seconds, not buried in a screenshot folder."],
+              ["A book worth giving", "Collect them together and you've made something — a recipe book with your name on it."],
+              ["Holidays and occasions", "Christmas, midsummer, birthdays. Grouped so next year you're not starting from memory."],
+            ].map(([title, body]) => (
+              <div key={title}>
+                <h3 className="font-display text-lg font-bold">{title}</h3>
+                <p className="font-body mt-2 leading-relaxed text-ink-muted">{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </Section>
 
