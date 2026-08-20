@@ -140,6 +140,15 @@ matters is the shape.
   `/admin/users` so you aren't paying yourself.
 - **Trials convert 7 days after signup.** Worth a personal email during the
   trial week; new subscribers are the best source of real testimonials.
+- **Nobody has checked whether `sign_up` is a key event in GA4.** Until it is,
+  Traffic acquisition shows sessions per channel but no signups per channel —
+  so the obvious question can't be answered: of the 11 signups in the 28 days
+  to 19 Aug 2026, Ads could attribute only 1. The other 10 are either genuinely
+  other channels, or ad clicks whose attribution was lost to consent, blockers,
+  cross-device or the attribution window. Roughly a third of traffic was paid,
+  so an even split would have given 3–4 — which is the size of gap attribution
+  loss usually explains. Admin → Events, mark it, and a month later the answer
+  exists. History can't be recomputed, so the clock starts when it's switched on.
 - **Dormant users** are visible in `/admin/activity` (filter out your own
   activity with the checkbox). The win-back email is for exactly them.
 - **`plans.ts` is the single source of truth** for tiers. Change it there and
