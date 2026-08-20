@@ -1,4 +1,6 @@
 import Script from "next/script";
+import { Suspense } from "react";
+import PageViews from "./PageViews";
 import { ADS_ID } from "@/lib/analytics";
 
 const AW_ID = ADS_ID; // single source of truth — lib/analytics sends conversions to it
@@ -41,6 +43,12 @@ export default function GoogleAnalytics() {
           `}
         </Script>
       )}
+
+      {/* Suspense is required, not decorative: useSearchParams on a
+          prerendered route fails the production build without a boundary. */}
+      <Suspense fallback={null}>
+        <PageViews />
+      </Suspense>
     </>
   );
 }
