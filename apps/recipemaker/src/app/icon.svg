@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- RecipeBookMaker. Paprika ground, cream pages — the chrome palette in
+       globals.css, so a tab looks like the app it belongs to.
+
+       An open book rather than a pot or a whisk: those say "food", and every
+       recipe site is already food. The name says BookMaker, and the wordmark
+       puts the accent on "Book".
+
+       Drawn for 16px first. Nothing here is thinner than two units, because
+       two units is one pixel in a browser tab — the gutter between the pages
+       is the whole reason this reads as a book rather than a pale blob, so it
+       is the one gap that must survive. -->
+  <rect width="32" height="32" rx="7.5" fill="#b4432a"/>
+  <path d="M4.6 9.6C7.8 8 11.6 8.3 14.9 10.2V24C11.6 22.1 7.8 21.8 4.6 23.4Z" fill="#fff7ec"/>
+  <path d="M27.4 9.6C24.2 8 20.4 8.3 17.1 10.2V24C20.4 22.1 24.2 21.8 27.4 23.4Z" fill="#fff7ec"/>
+</svg>
