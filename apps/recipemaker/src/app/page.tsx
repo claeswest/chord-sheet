@@ -67,31 +67,33 @@ export default function LandingPage() {
             </Link>
             <span className="text-sm text-ink-faint">Free to start · No card needed</span>
           </div>
-        </div>
 
-        {/* Before and after, in one glance.
-            The page could already show what a recipe becomes — it could never
-            show where it came from, which is the half the promise rests on.
-            The card overhangs the corner rather than sitting beside it, so the
-            two read as one thing happening, not two pictures. */}
-        <div className="relative">
-          <RecipeSample
-            recipe={PANCAKES}
-            style={HEIRLOOM}
-            className="rounded-card border border-rule p-8 shadow-raise"
-          />
+          {/* Before and after, side by side.
+              The page could already show what a recipe becomes — it could never
+              show where one comes from, and that is the half the promise rests
+              on. This sat on the sample's corner first, overhanging it for the
+              sake of the pairing; it covered two steps of the method. A
+              landing page that hides the product to make a point about the
+              product has lost the argument. It lives in the column's own empty
+              space now, and the pairing still reads across the gap.
+
+              Hidden below 768, where the hero is one column and this would
+              come between the button and the recipe. */}
           <Image
             src={recipeCard}
             alt="A handwritten recipe card on a kitchen table"
             placeholder="blur"
-            sizes="(min-width: 768px) 13rem, 0px"
+            sizes="(min-width: 768px) 15rem, 0px"
             priority
-            /* md, not sm: below 768 the hero is a single column, the sample
-               spans the full width, and a card hanging 40px to its left hangs
-               off the page. */
-            className="absolute -bottom-8 -left-10 hidden w-52 -rotate-6 rounded-md border-4 border-paper-raised shadow-raise md:block"
+            className="mt-14 hidden w-60 -rotate-6 rounded-md border-4 border-paper-raised shadow-raise md:block"
           />
         </div>
+
+        <RecipeSample
+          recipe={PANCAKES}
+          style={HEIRLOOM}
+          className="rounded-card border border-rule p-8 shadow-raise"
+        />
       </section>
 
       <Section kicker="How it works" title="Three steps, then it's yours">
