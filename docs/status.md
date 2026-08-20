@@ -101,9 +101,10 @@ matters is the shape.
    People don't buy what they've never felt.
 3. **Audit the paywall moments** (6th song, PDF, share): each should show the
    benefit, the price, "7 days free, no charge today" and a one-click path.
-4. ~~**Feed conversions back to Google Ads.**~~ **Done 4 Aug 2026** — but read
-   the warning under Watchpoints before trusting any historic conversion
-   number. `trackSignUp()` now reports a real Ads conversion, gated on
+4. ~~**Feed conversions back to Google Ads.**~~ **Done 4 Aug 2026, and made the
+   Primary action 20 Aug 2026** — but read the warning under Watchpoints before
+   trusting any historic conversion number. `trackSignUp()` reports a real Ads
+   conversion, gated on
    `NEXT_PUBLIC_ADS_SIGNUP_LABEL`. Note this is for *measurement*: the budget
    will not produce the ~15–30 conversions/month that conversion-based bidding
    needs, so the goal is knowing which keywords produce users, not Smart
@@ -117,16 +118,20 @@ matters is the shape.
 
 ## Watchpoints
 
-- **Every Google Ads "conversion" before Aug 2026 is fictional.** The Primary
-  action is `Sign-up (Page load welcome=1)`, which fires on any page load whose
+- **Every Google Ads "conversion" before 20 Aug 2026 is fictional.** The Primary
+  action was `Sign-up (Page load welcome=1)`, which fires on any page load whose
   URL contains `welcome=1` — and the only place the app produces that URL is
   the CTA buttons on the `[slug]` landing pages, shown to everyone, logged in
-  or not. It has been counting button clicks, not signups, since April. The
-  replacement (`Sign-up (account created)`, event-based) is deliberately
-  **Secondary** so it doesn't disturb bidding; promote it and demote the old
-  one once real conversions appear. Both sit in an **account-default goal
-  applied to all 32 campaigns**, including the unrelated shops in the same Ads
-  account — which is why the switch shouldn't be made casually.
+  or not. It counted button clicks, not signups, from April onwards. **Fixed 20
+  Aug 2026**: `Sign-up (account created)` is now the goal's only Primary action
+  and the old one is Secondary — demoted, not deleted, so the history stays
+  comparable. Don't read any month before that as real.
+- **The old `welcome=1` action recorded zero conversions in the 30 days to 19
+  Aug**, despite 135 campaign clicks in July. Unconfirmed hypothesis: the
+  `ChordSheetMaker-Search-Jul2026` relaunch points its ads somewhere other than
+  a `[slug]` landing page, so nobody passes a CTA that appends `?welcome=1`.
+  Check the ads' Final URL to settle it. Harmless either way now that the
+  action is Secondary, but the same mechanism could hide a real problem.
 - **`NEXT_PUBLIC_*` vars are baked in at build time.** Adding one in Vercel
   does nothing until a build runs *after* it exists; a redeploy triggered
   before adding the value ships a silent no-op. Verify by checking the value
