@@ -100,13 +100,24 @@ you're using. Same idea for GitHub.
 | `NEXT_PUBLIC_ADS_SIGNUP_LABEL` | Google Ads conversion tracking | the label after the slash in `send_to: 'AW-1064389018/<label>'`; **without it Ads records zero conversions and Search bids blind** |
 | `ERROR_WEBHOOK_URL` | error alerts | optional |
 
-## ⚠️ Local dev talks to the production database
+## Databases: four of them
 
-There is no separate dev database — `DATABASE_URL` points at the same Neon instance
-the live site uses. Anything you create, edit or delete while running `npm run dev`
-is **real production data**, and test signups/songs show up in the admin activity
-feed. Either be careful, or create a separate Neon branch for development and point
-your local `.env` at that.
+Each product has its own database, and each has a separate one for development —
+so `npm run dev` never touches live data, for either app:
+
+| | ChordSheetMaker | RecipeBookMaker |
+| --- | --- | --- |
+| Production | own database | own database |
+| Local dev | own database | own database |
+
+`DATABASE_URL` lives in each app's own `.env`; the production values are set in
+Vercel and nowhere in this repo. The dev databases start as snapshots, so they
+drift from production over time — recreate one when it gets too stale, and keep
+its auto-delete set to Never.
+
+Test signups and test recipes therefore stay out of the live admin feed. What is
+*not* separate is everything outside the database: Stripe (unless test keys are
+used locally), Resend, and any AI provider all hit the real service.
 
 ## Everyday commands
 

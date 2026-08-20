@@ -85,12 +85,11 @@ matters is the shape.
 | **This is a monorepo; the app lives in `apps/chordsheetmaker`** | Room for RecipeMaker and WorksheetMaker as separate products on shared infrastructure. Run npm commands from the root. Vercel's Root Directory must stay `apps/chordsheetmaker`. |
 | **Each product gets its own database** (5 Aug 2026) | So any one product can be sold, handed over or deleted without untangling a shared `User` table. Accepted cost: no shared login, and Stripe/admin/email exist once per app. See [`packages/core/README.md`](../packages/core/README.md). |
 | **Shared code takes the database client as an argument** | It's what lets `auth`, `billing` and `plans` be shared *code* despite separate databases. Nothing in `packages/core` may import a Prisma client. |
-| **Local dev has its own Neon branch** (5 Aug 2026) | Local development no longer writes to production. The dev branch is a snapshot, so it drifts — recreate it when it gets too stale, and keep its auto-delete set to Never. |
+| **Every app has a dev database of its own** (5 Aug 2026) | Four in total: production and dev, per product. Local development no longer writes to production. Each dev database starts as a snapshot, so it drifts — recreate it when it gets too stale, and keep its auto-delete set to Never. |
 | **Product 2 is RecipeBookMaker, at recipebookmaker.com** (5 Aug 2026) | Descriptive names are what make this family rank — the best-performing ad keywords for ChordSheetMaker were literally "chord chart maker". "CookbookMaker" was rejected: cookbookmaker.com is a funnel domain for Morris Press Cookbooks, an established US keepsake-cookbook printer, so the name was unwinnable in the default TLD. The workspace folder is still `apps/recipemaker`. |
 | **Setlists & collections are free** | Organising is what makes someone come back and accumulate songs — it feeds the 5-song limit rather than competing with it. The API never gated it; the pricing table was the thing that was wrong. |
 | **Guests are first-class** | The whole editor works with no account. The demo path *is* the funnel; asking for signup before value is what loses people. |
 | **Emails stay manual for now** | Deliberate: the founder reads the replies. Automation is the obvious next step, and `suggestNextTemplate()` + the cooldown already encode the logic. |
-| **Local dev uses the production database** | There is no separate dev DB. Test data shows up in the real admin feed. See the README warning. |
 | **Share links are detached snapshots** | A link keeps working after the song changes — but there's no owner recorded, so shares can't be listed or revoked. Adding `userId` would fix that. |
 
 ## Next up (rough priority)
