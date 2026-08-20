@@ -652,9 +652,38 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     }
   }, [isLoggedIn, songId, title, artist, lines, songStyle, semitones, router]);
 
+  // The strongest signup moment: the guest has built something worth losing.
+  // Shown once per device, ever — respect beats repetition.
+  //
+  // "Worth losing" is stricter than "not empty". Auto-save fires a second
+  // after the first keystroke, so a single typed character used to qualify —
+  // and because this is a one-shot, spending it there spends it forever, on
+  // someone who has nothing invested yet.
+  const maybeShowKeepModal = useCallback(() => {
+    if (isLoggedIn || typeof window === "undefined") return;
+    if (localStorage.getItem("guestKeepModalShown") === "1") return;
+    if (isDemo && !guestEdited) return; // the untouched demo isn't "their" chart yet
+
+    const contentLines = lines.filter((l) =>
+      l.type === "section" ? !!l.label : (!!l.text || l.chords.length > 0),
+    ).length;
+    // A named song with a line, or two lines without a name. Either is a chart
+    // someone would be annoyed to lose; one stray character is not.
+    const worthKeeping = contentLines >= 2 || (title.trim() !== "" && contentLines >= 1);
+    if (!worthKeeping) return;
+
+    localStorage.setItem("guestKeepModalShown", "1");
+    setShowKeepModal(true);
+    trackKeepModal("shown");
+  }, [isLoggedIn, isDemo, guestEdited, title, lines]);
+
   const handleSave = useCallback(() => {
     persistSong({ flash: true });
-  }, [persistSong]);
+    // Pressing Save is the clearest statement a guest can make that this is
+    // theirs and they want it kept. Auto-save can't carry that meaning — it
+    // happens a second after the first keystroke, whether they meant it or not.
+    maybeShowKeepModal();
+  }, [persistSong, maybeShowKeepModal]);
 
   // Keep ref in sync so auto-save effect always calls the latest persistSong
   // without needing it in the deps array (prevents spurious saves on router refresh)
@@ -727,28 +756,33 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     setLines(next);
   };
 
-  // The strongest signup moment: the guest has built something and paused.
-  // Shown once per device, ever — respect beats repetition.
-  const maybeShowKeepModal = useCallback(() => {
-    if (isLoggedIn || typeof window === "undefined") return;
-    if (localStorage.getItem("guestKeepModalShown") === "1") return;
-    if (isDemo && !guestEdited) return; // the untouched demo isn't "their" chart yet
-    const hasContent =
-      title.trim() !== "" || artist.trim() !== "" ||
-      lines.some((l) => (l.type === "section" ? !!l.label : (!!l.text || l.chords.length > 0)));
-    if (!hasContent) return;
-    localStorage.setItem("guestKeepModalShown", "1");
-    setShowKeepModal(true);
-    trackKeepModal("shown");
-  }, [isLoggedIn, isDemo, guestEdited, title, artist, lines]);
 
   // Fallback trigger: 3 minutes after the last guest edit (a natural pause).
-  // The play-exit trigger below usually fires first.
+  // Restarting on every edit is deliberate — but it does mean this only fires
+  // for someone who sits on the page doing nothing for three unbroken minutes,
+  // which is why it reached a tenth of the guests who built something. It
+  // stays as a backstop; the save and leave triggers are the real ones.
   useEffect(() => {
     if (!guestEdited || isLoggedIn) return;
     const t = setTimeout(maybeShowKeepModal, 3 * 60_000);
     return () => clearTimeout(t);
   }, [guestEdited, isLoggedIn, maybeShowKeepModal]);
+
+  // Leaving with work that exists only in this browser is the other moment
+  // worth interrupting — and the one where the loss actually happens.
+  //
+  // Opened on the way out, seen on the way back: a modal painted into a hidden
+  // tab is not a prompt. beforeunload can't do this (no custom UI), and exit
+  // intent by mouse position doesn't exist on a phone, where much of this
+  // traffic is. visibilitychange covers both, including switching apps.
+  useEffect(() => {
+    if (isLoggedIn) return;
+    const onHide = () => {
+      if (document.visibilityState === "hidden") maybeShowKeepModal();
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [isLoggedIn, maybeShowKeepModal]);
 
   // Persistent "saved only on this device" reminder for guests editing a song
   // with content (one banner at a time: the demo banner takes priority).
