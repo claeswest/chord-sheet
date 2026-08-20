@@ -11,6 +11,8 @@
     "./errors": "./src/reportError.ts",
     "./billing": "./src/billing.ts",
     "./notify": "./src/notify.ts",
+    "./email-template": "./src/emailTemplate.ts",
+    "./unsubscribe": "./src/unsubscribe.ts",
     "./build-stamp": "./src/BuildStamp.tsx"
   },
   "scripts": {

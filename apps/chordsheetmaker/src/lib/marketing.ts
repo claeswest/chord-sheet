@@ -3,7 +3,6 @@
 // one-click unsubscribe link (HMAC-signed, no login needed) and opted-out
 // users are always skipped by the sender.
 
-import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
 import { adminRecipients } from "./notify";
@@ -14,22 +13,11 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
 const BASE_URL = "https://chordsheetmaker.ai";
 
-function secret(): string {
-  return process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret";
-}
-
-export function unsubscribeToken(userId: string): string {
-  return createHmac("sha256", secret()).update(`unsub:${userId}`).digest("hex").slice(0, 32);
-}
-
-export function verifyUnsubscribeToken(userId: string, token: string): boolean {
-  const expected = unsubscribeToken(userId);
-  try {
-    return timingSafeEqual(Buffer.from(expected), Buffer.from(token));
-  } catch {
-    return false;
-  }
-}
+// Both live in @clavos/core now, unchanged — same secret, same digest, so
+// every link already sitting in an inbox keeps working. Re-exported because
+// the routes and pages here import them from this module.
+export { unsubscribeToken, verifyUnsubscribeToken } from "@clavos/core/unsubscribe";
+import { unsubscribeToken } from "@clavos/core/unsubscribe";
 
 export type SendResult =
   | "sent" | "skipped_optout" | "skipped_recent" | "skipped_ineligible" | "failed";
