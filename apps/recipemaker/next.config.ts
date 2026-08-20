@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  // The social card reads its fonts from disk at request time, and the path is
+  // built at runtime — nothing the tracer can follow. Without this the files
+  // are simply absent in production, and the only symptom is a share card
+  // rendered in the wrong typeface, which no build or test would catch.
+  outputFileTracingIncludes: {
+    "/opengraph-image": ["./assets/**/*"],
+  },
+
   env: {
     NEXT_PUBLIC_COMMIT_SHA: commitSha(),
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
