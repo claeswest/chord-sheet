@@ -510,22 +510,27 @@ export default function RecipeEditor({
                 </button>
                 {/* Same idea as the step's Picture button: a trigger in the
                     cluster costs width, not height, so a recipe without notes
-                    stays as short as it was. Hidden once there is a note,
-                    because the field is then already on screen. */}
-                {!it.note && (
-                  <button
-                    onClick={() =>
-                      setOpenNotes((o) =>
-                        o.includes(it.id) ? o.filter((x) => x !== it.id) : [...o, it.id],
-                      )
-                    }
-                    className={`${iconBtn} whitespace-nowrap`}
-                    aria-expanded={openNotes.includes(it.id)}
-                    aria-label={`Note for ${it.name || "ingredient"}`}
-                  >
-                    Note
-                  </button>
-                )}
+                    stays as short as it was.
+
+                    Kept in the layout when there is nothing to open, rather
+                    than removed. Dropping it shortened the cluster on exactly
+                    those rows, which widened their name field and left the
+                    right-hand edge of the list stepping in and out down the
+                    page. */}
+                <button
+                  onClick={() =>
+                    setOpenNotes((o) =>
+                      o.includes(it.id) ? o.filter((x) => x !== it.id) : [...o, it.id],
+                    )
+                  }
+                  className={`${iconBtn} whitespace-nowrap ${it.note ? "invisible" : ""}`}
+                  tabIndex={it.note ? -1 : undefined}
+                  aria-hidden={it.note ? true : undefined}
+                  aria-expanded={openNotes.includes(it.id)}
+                  aria-label={`Note for ${it.name || "ingredient"}`}
+                >
+                  Note
+                </button>
                 <button onClick={() => removeIngredient(gi, ii)} className={iconBtn} aria-label="Remove">
                   ✕
                 </button>
@@ -647,21 +652,24 @@ export default function RecipeEditor({
                     ↓
                   </button>
                   {/* In the cluster, not under the step: the row is already
-                      here, so this costs width and no height. */}
-                  {!s.imageUrl && (
-                    <button
-                      onClick={() =>
-                        setOpenPictures((o) =>
-                          o.includes(s.id) ? o.filter((x) => x !== s.id) : [...o, s.id],
-                        )
-                      }
-                      className={`${iconBtn} whitespace-nowrap`}
-                      aria-expanded={openPictures.includes(s.id)}
-                      aria-label={`Picture for step ${si + 1}`}
-                    >
-                      Picture
-                    </button>
-                  )}
+                      here, so this costs width and no height. Kept in the
+                      layout once there is a picture, for the same reason as
+                      the ingredient's Note button — removing it on some rows
+                      makes the list's right edge step in and out. */}
+                  <button
+                    onClick={() =>
+                      setOpenPictures((o) =>
+                        o.includes(s.id) ? o.filter((x) => x !== s.id) : [...o, s.id],
+                      )
+                    }
+                    className={`${iconBtn} whitespace-nowrap ${s.imageUrl ? "invisible" : ""}`}
+                    tabIndex={s.imageUrl ? -1 : undefined}
+                    aria-hidden={s.imageUrl ? true : undefined}
+                    aria-expanded={openPictures.includes(s.id)}
+                    aria-label={`Picture for step ${si + 1}`}
+                  >
+                    Picture
+                  </button>
                   <button onClick={() => removeStep(gi, si)} className={iconBtn} aria-label="Remove">
                     ✕
                   </button>
