@@ -19,7 +19,7 @@ import StylePreview from "@/components/recipe/StylePreview";
 import StyleControls from "@/components/recipe/StyleControls";
 import ReviewRecipe from "@/components/recipe/ReviewRecipe";
 import ImportRecipe from "@/components/library/ImportRecipe";
-import type { CanvasStyle } from "@/lib/canvasStyle";
+import { amount, type CanvasStyle } from "@/lib/canvasStyle";
 import type {
   Ingredient,
   IngredientGroup,
@@ -129,6 +129,16 @@ export default function RecipeEditor({
   // down — this effect adopts it so the two ways of choosing stay in step.
   const [workingStyle, setWorkingStyle] = useState(style);
   useEffect(() => setWorkingStyle(style), [style]);
+
+  // The first real ingredient and step, for the style preview. Searched rather
+  // than taken from group zero: an imported recipe can lead with an empty
+  // group, and a preview of nothing is worse than a preview of an example.
+  const firstIngredient = draft.content.ingredientGroups
+    .flatMap((g) => g.items)
+    .find((i) => i.name.trim() !== "");
+  const firstStep = draft.content.stepGroups
+    .flatMap((g) => g.items)
+    .find((s) => s.text.trim() !== "");
 
   // Nothing typed and nothing imported yet — measured on the draft, so it
   // vanishes the moment you start rather than waiting for a save.
@@ -329,7 +339,11 @@ export default function RecipeEditor({
         className="mt-3 w-full resize-none overflow-hidden text-ink-muted outline-none placeholder:text-ink-faint"
       />
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {/* Three numbers, then the source on a line of its own.
+          Source shared the row as a quarter-width box, which was fine for
+          "Mormor Karin" and useless for the thing it now usually holds: a URL,
+          clipped after twenty characters, unreadable and uncheckable. */}
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <label className="text-sm">
           <span className="text-ink-muted">Serves</span>
           <input
@@ -357,16 +371,19 @@ export default function RecipeEditor({
             className={`mt-1 w-full ${input}`}
           />
         </label>
-        <label className="text-sm">
-          <span className="text-ink-muted">Source</span>
-          <input
-            value={draft.source ?? ""}
-            onChange={(e) => patch({ source: e.target.value || null })}
-            placeholder="Mormor Karin"
-            className={`mt-1 w-full ${input}`}
-          />
-        </label>
       </div>
+
+      <label className="mt-4 block text-sm">
+        <span className="text-ink-muted">Source</span>
+        <input
+          value={draft.source ?? ""}
+          onChange={(e) => patch({ source: e.target.value || null })}
+          placeholder="Mormor Karin, a cookbook, or the address it came from"
+          // The whole value on hover, for a URL longer than even this field.
+          title={draft.source ?? ""}
+          className={`mt-1 w-full ${input}`}
+        />
+      </label>
 
       {/* An empty recipe offers the way in that the library offers. "New
           recipe" is the prominent button, but pasting or photographing is the
@@ -478,7 +495,12 @@ export default function RecipeEditor({
                         updateIngredient(gi, ii, { note: e.target.value });
                       }}
                       placeholder="finely chopped · to taste · 2–3 dl"
-                      className={`${input} w-full text-ink-muted sm:ml-44 sm:w-[calc(100%-11rem)]`}
+                      // Not the `input` class. A note in the same bordered box
+                      // as an ingredient reads as another ingredient, and a
+                      // twelve-ingredient recipe looked like sixteen rows
+                      // while the counter above insisted on twelve. Borderless
+                      // and italic says "about the line above".
+                      className="w-full rounded-lg border border-transparent bg-transparent px-3 py-1 text-sm italic text-ink-muted placeholder:not-italic placeholder:text-ink-faint focus:border-rule focus:outline-none sm:ml-44 sm:w-[calc(100%-11rem)]"
                       aria-label={`Note for ${it.name || "ingredient"}`}
                     />
                   )}
@@ -761,7 +783,15 @@ export default function RecipeEditor({
             <StylePicker recipeId={draft.id} />
           </div>
         </div>
-        <StylePreview style={workingStyle} title={draft.title} />
+        {/* The recipe's own first lines, so the panel's claim that this is
+            "for this recipe alone" is actually true on screen. */}
+        <StylePreview
+          style={workingStyle}
+          title={draft.title}
+          amount={firstIngredient ? amount(firstIngredient.quantity, firstIngredient.unit) : undefined}
+          ingredient={firstIngredient?.name}
+          step={firstStep?.text}
+        />
       </section>
 
       {/* Closed by default: two menus, two sliders and six colour wells is a
@@ -773,9 +803,16 @@ export default function RecipeEditor({
       </details>
 
       {/* Deleting belongs at the end of the page, not beside a count of
-          ingredients at the top under the "Cook view" link. */}
-      <div className="mt-10 flex items-center gap-3 border-t border-rule pt-6">
-        <span className="text-sm text-ink-faint">Finished with this recipe?</span>
+          ingredients at the top under the "Cook view" link.
+
+          It used to be introduced with "Finished with this recipe?", which
+          reads as "done cooking it" — an invitation to tick something off,
+          sitting next to a button that removes it for ever. The line now says
+          what happens. */}
+      <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-rule pt-6">
+        <span className="text-sm text-ink-faint">
+          Delete this recipe — it can&apos;t be undone.
+        </span>
         <DeleteRecipeButton recipeId={recipe.id} title={draft.title} />
       </div>
     </div>

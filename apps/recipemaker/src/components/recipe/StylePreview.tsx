@@ -10,8 +10,26 @@ import { styleVars } from "@/lib/canvasStyle";
 //
 // Deliberately not the whole recipe: it needs to show the type and the palette
 // at a glance beside the button, not compete with the editor for the page.
+//
+// It shows the recipe's OWN first ingredient and first step. It used to show
+// caster sugar and "stir until smooth" under a panel headed "for this recipe
+// alone", which is a claim and a contradiction in the same box. Invented lines
+// are kept only for a recipe that has nothing yet.
 
-export default function StylePreview({ style, title }: { style: CanvasStyle; title: string }) {
+export default function StylePreview({
+  style,
+  title,
+  amount,
+  ingredient,
+  step,
+}: {
+  style: CanvasStyle;
+  title: string;
+  /** The first ingredient's quantity and unit, already formatted. */
+  amount?: string;
+  ingredient?: string;
+  step?: string;
+}) {
   return (
     <div
       className="rounded-lg border border-rule p-4"
@@ -35,15 +53,15 @@ export default function StylePreview({ style, title }: { style: CanvasStyle; tit
         style={{ fontFamily: "var(--c-body)", borderColor: "var(--c-rule)" }}
       >
         <span className="font-bold tabular-nums" style={{ color: "var(--c-qty)" }}>
-          2 dl
+          {amount || "2 dl"}
         </span>
-        <span>caster sugar</span>
+        <span className="truncate">{ingredient || "caster sugar"}</span>
       </p>
       <p
         className="mt-2 text-sm"
         style={{ fontFamily: "var(--c-body)", color: "var(--c-muted)", lineHeight: 1.5 }}
       >
-        Stir until smooth, then leave to cool.
+        <span className="line-clamp-2">{step || "Stir until smooth, then leave to cool."}</span>
       </p>
     </div>
   );
