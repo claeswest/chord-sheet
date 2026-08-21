@@ -33,7 +33,11 @@ export default function StylePreview({
   return (
     <div
       className="rounded-lg border border-rule p-4"
-      style={{ ...styleVars(style), minWidth: "16rem" }}
+      // Capped as well as floored. With invented lines the content was always
+      // short enough to sit beside the explanation; with the recipe's own step
+      // it grew past the room in the flex row, wrapped onto its own line and
+      // stretched into a strip. A preview of a page should stay page-shaped.
+      style={{ ...styleVars(style), minWidth: "16rem", maxWidth: "22rem" }}
       aria-label="Preview of the recipe's style"
     >
       <p
