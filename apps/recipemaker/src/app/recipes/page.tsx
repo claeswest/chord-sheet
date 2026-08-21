@@ -8,6 +8,7 @@ import { totalMinutes } from "@/types/recipe";
 import NewRecipeButton from "@/components/library/NewRecipeButton";
 import ImportRecipe from "@/components/library/ImportRecipe";
 import CollectionBar from "@/components/library/CollectionBar";
+import ClaimPending from "@/components/library/ClaimPending";
 import { listCollections } from "@/lib/categoryDb";
 
 export const metadata = { title: "Your recipes" };
@@ -65,6 +66,12 @@ export default async function RecipesPage({
           )}
         </div>
         <NewRecipeButton disabled={atLimit} />
+      </div>
+
+      {/* Saves whatever someone read on the landing page before signing in.
+          Renders nothing when there's nothing waiting. */}
+      <div className="mt-8">
+        <ClaimPending />
       </div>
 
       <CollectionBar collections={collections} activeId={collection} />

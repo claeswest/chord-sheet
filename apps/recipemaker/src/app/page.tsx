@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import recipeCard from "@/images/recipe-card.jpg";
 import recipeTin from "@/images/recipe-tin.jpg";
 import RecipeSample from "@/components/marketing/RecipeSample";
+import TryIt from "@/components/marketing/TryIt";
 import { HEIRLOOM, NORDIC, BOTANICAL } from "@/lib/canvasStyle";
 import { PANCAKES, SOUP, BUNS } from "@/data/sampleRecipes";
 
@@ -94,6 +95,21 @@ export default function LandingPage() {
           style={HEIRLOOM}
           className="rounded-card border border-rule p-8 shadow-raise"
         />
+      </section>
+
+      {/* The demo is the argument.
+          Everything below this describes what the product does; this lets
+          someone find out, with their own recipe, before being asked for
+          anything. It sits directly under the hero because that is where the
+          claim was just made. */}
+      <section className="bg-paper-sunken">
+        <Section kicker="Try it now" title="Paste a recipe, see what it becomes">
+          <p className="font-body measure -mt-4 mb-8 text-lg leading-relaxed text-ink-muted">
+            Any recipe you have as text — from a website, a message, an email.
+            No account, nothing saved unless you want it.
+          </p>
+          <TryIt />
+        </Section>
       </section>
 
       <Section kicker="How it works" title="Three steps, then it's yours">
