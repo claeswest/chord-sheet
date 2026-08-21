@@ -34,11 +34,26 @@ export type TrialEmail = (typeof TRIAL_EMAILS)[number];
 export const eventType = (t: TrialEmail) => `email_${t}`;
 
 /**
+ * Slack at the top of every window, so consecutive runs overlap.
+ *
+ * Vercel Cron on the Hobby plan has an hour of play in when it fires. Two
+ * 24-hour windows only tile perfectly if the job runs at the same moment every
+ * day: run at 09:05 and then 09:58, and the second window starts 53 minutes
+ * after the first one ended. Anyone whose charge date falls in that gap gets
+ * nothing, silently, which is the exact failure the wide windows were meant to
+ * rule out.
+ *
+ * Overlapping instead of tiling costs nothing, because the activity log
+ * already makes a second send impossible. Two hours covers the plan's stated
+ * jitter with room to spare.
+ */
+const CRON_JITTER_DAYS = 2 / 24;
+
+/**
  * How many days before the first payment this email goes out, as a window.
  *
- * A window rather than a day because the job runs once every 24 hours: "two
- * days left" has to mean "somewhere in the 24 hours that are two days out", or
- * a cron that runs an hour late skips people silently.
+ * A window rather than an instant because the job runs once a day: "two days
+ * left" has to mean "somewhere in the 24 hours that are two days out".
  */
 export function daysBeforeCharge(t: TrialEmail): [from: number, to: number] {
   // A seven-day trial: tips on day one or two, while there's still a week to
@@ -48,7 +63,13 @@ export function daysBeforeCharge(t: TrialEmail): [from: number, to: number] {
   // [2, 3) rather than [1, 2) so the notice is 48–72 hours. At [1, 2) someone
   // whose trial ends the hour before the next run would get 24 hours exactly,
   // and the email says "two days".
-  return t === "trial_tips" ? [5, 6] : [2, 3];
+  //
+  // The slack goes on the top, which is the end that means "more days left"
+  // and so sends slightly sooner. Putting it on the bottom would close the
+  // same gap, but by sending later — and that would shave the trial warning
+  // under 48 hours. When a billing notice can err, it should err early.
+  const [from, to] = t === "trial_tips" ? [5, 6] : [2, 3];
+  return [from, to + CRON_JITTER_DAYS];
 }
 
 /**
