@@ -201,6 +201,11 @@ export function pretty(q: number): string {
 
 /** "1 dl", "3", "—" — the left column of an ingredient line. */
 export function amount(quantity: number | null, unit: string): string {
-  if (quantity == null) return unit ? unit : "—";
+  // A unit with no number is not an amount. "2 1/2 - 3 dl vetemjöl" imports as
+  // quantity null, unit "dl", note "2 1/2 - 3 dl" — ranges can't be a number,
+  // and the note is where the range goes. Printing the bare unit put "dl" in
+  // the amount column and "dl" again in the note, and told the cook nothing.
+  // The dash says "look at the line" instead.
+  if (quantity == null) return "—";
   return `${pretty(quantity)}${unit ? ` ${unit}` : ""}`;
 }
