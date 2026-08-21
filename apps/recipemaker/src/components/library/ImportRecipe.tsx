@@ -8,6 +8,18 @@ import { compressImage } from "@clavos/core/image";
 // than behind a modal — an extra click before the thing that makes the product
 // worth using is a click too many.
 
+/**
+ * Whether what was pasted is a link rather than a recipe.
+ *
+ * One line, nothing but a URL. Deliberately narrow: a recipe that happens to
+ * mention a website in its source line is still a recipe, and fetching it
+ * instead of reading it would throw away what the person actually pasted.
+ */
+function isBareUrl(s: string): boolean {
+  const t = s.trim();
+  return !/\s/.test(t) && /^https?:\/\/\S+$/i.test(t);
+}
+
 export default function ImportRecipe({
   disabled,
   intoRecipeId,
@@ -41,6 +53,7 @@ export default function ImportRecipe({
   const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [open, setOpen] = useState(!startCollapsed);
+  const looksLikeUrl = isBareUrl(text);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function pickPhoto(file: File) {
@@ -67,7 +80,11 @@ export default function ImportRecipe({
       const res = await fetch("/api/ai/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, image: photo, recipeId: intoRecipeId }),
+        body: JSON.stringify(
+          looksLikeUrl
+            ? { url: text.trim(), recipeId: intoRecipeId }
+            : { text, image: photo, recipeId: intoRecipeId },
+        ),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -103,7 +120,9 @@ export default function ImportRecipe({
   }
 
   // With a photo there is nothing to type — the picture IS the input.
-  const tooShort = !photo && text.trim().length < 20;
+  // A link can be shorter than any recipe, so the twenty-character floor —
+  // there to stop "pancakes" being sent to the model — must not block it.
+  const tooShort = !photo && !looksLikeUrl && text.trim().length < 20;
 
   if (!open) {
     return (
@@ -122,8 +141,8 @@ export default function ImportRecipe({
     <div className="rounded-card border border-rule bg-paper-raised p-6 shadow-card">
       <h2 className="font-display text-lg font-bold">Paste a recipe</h2>
       <p className="font-body mt-1 text-sm text-ink-muted">
-        From a website, a message, an email — anywhere. It gets sorted into ingredients and
-        steps for you.
+        A link, or the text itself — from a website, a message, an email. It gets sorted into
+        ingredients and steps for you.
       </p>
 
       <textarea
@@ -131,7 +150,9 @@ export default function ImportRecipe({
         onChange={(e) => setText(e.target.value)}
         disabled={disabled || busy}
         rows={5}
-        placeholder={"3 dl flour\n½ tsp salt\n6 dl milk\n\nWhisk to a smooth batter and let it rest…"}
+        placeholder={
+          "https://example.com/the-recipe\n\n— or the text itself:\n\n3 dl flour\n½ tsp salt\n6 dl milk\n\nWhisk to a smooth batter and let it rest…"
+        }
         className="mt-4 w-full resize-y rounded-lg border border-rule bg-paper p-3 text-sm focus:border-ink focus:outline-none disabled:opacity-50"
       />
 
@@ -178,7 +199,15 @@ export default function ImportRecipe({
           disabled={busy || disabled || tooShort}
           className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-paper-raised disabled:opacity-40"
         >
-          {busy ? "Reading it…" : photo ? "Read the photo" : "Import recipe"}
+          {busy
+            ? looksLikeUrl
+              ? "Fetching the page…"
+              : "Reading it…"
+            : photo
+              ? "Read the photo"
+              : looksLikeUrl
+                ? "Fetch this link"
+                : "Import recipe"}
         </button>
         {busy && <span className="text-sm text-ink-faint">This takes a few seconds.</span>}
         {error && <span className="text-sm text-danger">{error}</span>}

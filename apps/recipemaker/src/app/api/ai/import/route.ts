@@ -7,6 +7,7 @@ import { createRecipe, countRecipes, getRecipe } from "@/lib/recipeDb";
 import { prisma } from "@/lib/prisma";
 import { PLANS, planFromUser, type Plan } from "@/lib/plans";
 import { IMPORT_PROMPT, ImportError, parseImported } from "@/lib/recipeImport";
+import { fetchRecipeFromUrl, UrlFetchError } from "@/lib/recipeUrl";
 import type { RecipeContent } from "@/types/recipe";
 
 // POST /api/ai/import — paste recipe text, get a saved, structured recipe.
@@ -37,7 +38,32 @@ export async function POST(req: NextRequest) {
   // paste is the caller's problem, and answering it with "the server isn't
   // configured" sends them looking in the wrong place.
   const body = await req.json().catch(() => ({}));
-  const text = typeof body.text === "string" ? body.text.trim() : "";
+  let text = typeof body.text === "string" ? body.text.trim() : "";
+
+  // A link instead of the text. Most recipe sites publish the recipe as
+  // structured data, so this usually hands the model a clean recipe rather
+  // than a page — see recipeUrl.ts.
+  const url = typeof body.url === "string" ? body.url.trim() : "";
+  let fetchedSource: string | null = null;
+  let fromStructuredData = false;
+  if (url) {
+    try {
+      const fetched = await fetchRecipeFromUrl(url);
+      text = fetched.text;
+      fetchedSource = fetched.source;
+      fromStructuredData = fetched.structured;
+    } catch (e) {
+      return NextResponse.json(
+        {
+          error:
+            e instanceof UrlFetchError
+              ? e.message
+              : "Couldn't read that page. Paste the text instead.",
+        },
+        { status: 422 },
+      );
+    }
+  }
 
   // A photo of a cookbook page or a screenshot works as well as pasted text —
   // it's how most people actually have their recipes.
@@ -181,7 +207,9 @@ export async function POST(req: NextRequest) {
       servings: imported.servings,
       prepMinutes: imported.prepMinutes,
       cookMinutes: imported.cookMinutes,
-      source: imported.source,
+      // The link is the truest answer to "where did this come from", but
+      // only if the page didn't name something better — a cookbook, a person.
+      source: imported.source ?? fetchedSource,
     },
   });
 
@@ -189,7 +217,7 @@ export async function POST(req: NextRequest) {
     recipeId: recipe.id,
     title: imported.title,
     chars: text.length,
-    from: match ? "photo" : "text",
+    from: url ? (fromStructuredData ? "url_structured" : "url_page") : match ? "photo" : "text",
   });
 
   return NextResponse.json({ id: recipe.id, title: imported.title }, { status: 201 });
