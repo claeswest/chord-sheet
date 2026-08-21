@@ -120,6 +120,9 @@ export default function RecipeEditor({
   // Steps whose picture controls are open. Ids rather than indexes, so moving
   // a step up or down doesn't open a different one.
   const [openPictures, setOpenPictures] = useState<string[]>([]);
+  // Ingredients whose note field has been asked for. One that already has a
+  // note doesn't need to be listed — the field shows because the note exists.
+  const [openNotes, setOpenNotes] = useState<string[]>([]);
 
   // A working copy so the preview follows the sliders live. The picker and the
   // generator write to the server and refresh, which brings a new `style` prop
@@ -421,35 +424,66 @@ export default function RecipeEditor({
 
           <ul className="mt-3 space-y-2">
             {g.items.map((it, ii) => (
-              <li key={it.id} className="flex items-center gap-2">
-                <input
-                  value={it.quantity ?? ""}
-                  onChange={(e) => updateIngredient(gi, ii, { quantity: numberOrNull(e.target.value) })}
-                  // Hints only while the row is still blank. On a filled row —
-                  // "4 eggs", "salt" — a grey "3" or "dl" sitting in an empty
-                  // box is indistinguishable at a glance from a real value, and
-                  // eggs genuinely have no unit.
-                  placeholder={it.name ? "" : "3"}
-                  inputMode="decimal"
-                  className={`${input} w-16 shrink-0 font-semibold text-herb tabular-nums`}
-                  aria-label="Quantity"
-                />
-                <input
-                  value={it.unit}
-                  onChange={(e) => updateIngredient(gi, ii, { unit: e.target.value })}
-                  placeholder={it.name ? "" : "dl"}
-                  // w-24, not w-20: "portioner", "matskedar" and "förpackning"
-                  // all overflowed 80px and got visually truncated mid-word.
-                  className={`${input} w-24 shrink-0`}
-                  aria-label="Unit"
-                />
-                <input
-                  value={it.name}
-                  onChange={(e) => updateIngredient(gi, ii, { name: e.target.value })}
-                  placeholder="plain flour"
-                  className={`${input} min-w-0 flex-1`}
-                  aria-label="Ingredient"
-                />
+              <li key={it.id} className="flex items-start gap-2">
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={it.quantity ?? ""}
+                      onChange={(e) => updateIngredient(gi, ii, { quantity: numberOrNull(e.target.value) })}
+                      // Hints only while the row is still blank. On a filled row —
+                      // "4 eggs", "salt" — a grey "3" or "dl" sitting in an empty
+                      // box is indistinguishable at a glance from a real value, and
+                      // eggs genuinely have no unit.
+                      placeholder={it.name ? "" : "3"}
+                      inputMode="decimal"
+                      className={`${input} w-16 shrink-0 font-semibold text-herb tabular-nums`}
+                      aria-label="Quantity"
+                    />
+                    <input
+                      value={it.unit}
+                      onChange={(e) => updateIngredient(gi, ii, { unit: e.target.value })}
+                      placeholder={it.name ? "" : "dl"}
+                      // w-24, not w-20: "portioner", "matskedar" and "förpackning"
+                      // all overflowed 80px and got visually truncated mid-word.
+                      className={`${input} w-24 shrink-0`}
+                      aria-label="Unit"
+                    />
+                    <input
+                      value={it.name}
+                      onChange={(e) => updateIngredient(gi, ii, { name: e.target.value })}
+                      placeholder="plain flour"
+                      className={`${input} min-w-0 flex-1`}
+                      aria-label="Ingredient"
+                    />
+                  </div>
+
+                  {/* The note, on its own line under the ingredient.
+                      It was invisible here until now, while the cook view and
+                      the printed page showed it — so the importer could write
+                      "2 1/2 - 3 dl" or "as written" into a recipe and leave no
+                      way to read or correct it. That is the wrong half of the
+                      product to hide something in.
+
+                      Indented under the name from sm up, so it reads as
+                      belonging to the ingredient rather than as a new row. */}
+                  {(it.note || openNotes.includes(it.id)) && (
+                    <input
+                      value={it.note ?? ""}
+                      onChange={(e) => {
+                        // Held open from the first keystroke. Otherwise
+                        // deleting the last character of an imported note
+                        // removes the field from under the cursor, which reads
+                        // as the app crashing rather than as an empty field.
+                        setOpenNotes((o) => (o.includes(it.id) ? o : [...o, it.id]));
+                        updateIngredient(gi, ii, { note: e.target.value });
+                      }}
+                      placeholder="finely chopped · to taste · 2–3 dl"
+                      className={`${input} w-full text-ink-muted sm:ml-44 sm:w-[calc(100%-11rem)]`}
+                      aria-label={`Note for ${it.name || "ingredient"}`}
+                    />
+                  )}
+                </div>
+
                 <button
                   onClick={() => {
                     const groups = [...draft.content.ingredientGroups];
@@ -474,6 +508,24 @@ export default function RecipeEditor({
                 >
                   ↓
                 </button>
+                {/* Same idea as the step's Picture button: a trigger in the
+                    cluster costs width, not height, so a recipe without notes
+                    stays as short as it was. Hidden once there is a note,
+                    because the field is then already on screen. */}
+                {!it.note && (
+                  <button
+                    onClick={() =>
+                      setOpenNotes((o) =>
+                        o.includes(it.id) ? o.filter((x) => x !== it.id) : [...o, it.id],
+                      )
+                    }
+                    className={`${iconBtn} whitespace-nowrap`}
+                    aria-expanded={openNotes.includes(it.id)}
+                    aria-label={`Note for ${it.name || "ingredient"}`}
+                  >
+                    Note
+                  </button>
+                )}
                 <button onClick={() => removeIngredient(gi, ii)} className={iconBtn} aria-label="Remove">
                   ✕
                 </button>
