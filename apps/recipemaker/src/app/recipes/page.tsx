@@ -90,9 +90,16 @@ export default async function RecipesPage({
 
       {recipes.length === 0 ? (
         <p className="font-body mt-8 text-center text-ink-faint">
-          {collection
-            ? "Nothing in this collection yet — open a recipe and tick it."
-            : "Nothing saved yet — paste a recipe above, or start from scratch."}
+          {/* The search has to be answered first. "Nothing saved yet" is a lie
+              told to someone with a full shelf who typed a word that isn't in
+              it, and it sends them looking for a bug that isn't there. */}
+          {q
+            ? collection
+              ? `Nothing matching “${q}” in this collection.`
+              : `Nothing matching “${q}”.`
+            : collection
+              ? "Nothing in this collection yet — open a recipe and tick it."
+              : "Nothing saved yet — paste a recipe above, or start from scratch."}
         </p>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
