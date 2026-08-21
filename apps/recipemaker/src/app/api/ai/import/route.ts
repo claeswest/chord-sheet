@@ -43,7 +43,13 @@ export async function POST(req: NextRequest) {
   // A link instead of the text. Most recipe sites publish the recipe as
   // structured data, so this usually hands the model a clean recipe rather
   // than a page — see recipeUrl.ts.
-  const url = typeof body.url === "string" ? body.url.trim() : "";
+  // A bare link arriving as `text` is treated as a link, not as something to
+  // read. Old clients send it that way, and so does anyone posting to this
+  // endpoint directly — and the model's answer to "extract a recipe from
+  // https://…/kroppkakor-av-kokt-potatis/" is a complete, confident, invented
+  // recipe built from the words in the address. Observed, not imagined.
+  const bareUrl = /^https?:\/\/\S+$/i.test(text) ? text : "";
+  const url = typeof body.url === "string" && body.url.trim() ? body.url.trim() : bareUrl;
   let fetchedSource: string | null = null;
   let fromStructuredData = false;
   if (url) {
@@ -184,7 +190,7 @@ export async function POST(req: NextRequest) {
 
   let imported;
   try {
-    imported = parseImported(raw);
+    imported = parseImported(raw, match ? "photo" : "text");
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof ImportError ? e.message : "Couldn't read that as a recipe." },

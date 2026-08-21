@@ -30,6 +30,7 @@ Rules:
 - Use the SAME LANGUAGE as the input. Do not translate.
 - Do not invent ingredients, steps, quantities or times. If something is absent, use null.
 - IF THE INPUT IS A PICTURE: transcribe only words that are actually written in it — a cookbook page, a screenshot, a handwritten card. Judge nothing from how the food looks. A photograph of a finished dish with no writing in it is NOT a recipe: in that case return exactly {"error":"no_text"} and nothing else. Reconstructing a plausible recipe from a picture of food is the worst thing you can do here, because it looks right and is fiction.
+- THE SAME RULE APPLIES TO TEXT. You must only ever transcribe. If the input does not itself contain ingredients and instructions — it is a bare web address, a dish name, a shopping list, an article about food with no recipe in it — then there is nothing to extract: return exactly {"error":"no_text"} and nothing else. Never write a recipe from what you know about the dish. A confident, plausible, invented recipe under someone's own title is the worst possible output, because they will trust it and cook it.
 - Times: prepMinutes and cookMinutes only when the source separates them. If it gives ONE total ("Under 45 min", "Klart på 1 timme", "Ready in 30 minutes"), put that total in cookMinutes and leave prepMinutes null. Never split a total by guessing.
 - Copy quantities and units EXACTLY as written, even when they look wrong. "2 c. baking soda" stays 2 cups; "5 sticks margarine" stays 5 sticks. Do not correct, scale, convert or improve them. If a quantity looks like a mistake in the source, keep it and add note "as written" — the reader can decide. Silently fixing it rewrites someone's own recipe, and they will never know it happened.
 - quantity is a NUMBER or null. "a pinch", "to taste", "some" → quantity null, and put that wording in note.
@@ -121,7 +122,11 @@ export class ImportError extends Error {}
  * Parses and validates the model's JSON into something safe to store.
  * Throws ImportError with a message worth showing a user.
  */
-export function parseImported(raw: string): ImportedRecipe {
+export function parseImported(
+  raw: string,
+  /** Shapes the refusal message; the rule itself is the same either way. */
+  from: "photo" | "text" = "text",
+): ImportedRecipe {
   let data: unknown;
   try {
     data = JSON.parse(stripFence(raw));
@@ -131,13 +136,16 @@ export function parseImported(raw: string): ImportedRecipe {
   if (!data || typeof data !== "object") throw new ImportError("That didn't look like a recipe.");
   const d = data as Record<string, unknown>;
 
-  // The model's signal that a picture held no readable recipe. Worth an
-  // explicit channel: asked to extract a recipe from a photo of a finished
-  // dish, it will otherwise write a confident, plausible, entirely invented
-  // one — verified, before this rule existed, on a picture of pasta.
+  // The model's signal that the input held no recipe. Worth an explicit
+  // channel, because the alternative is not an error — it is a confident,
+  // plausible, entirely invented recipe under the right title. Verified on a
+  // picture of pasta before the rule existed, and again on a bare link, where
+  // it wrote a whole recipe from the words in the address.
   if (d.error === "no_text") {
     throw new ImportError(
-      "There's no recipe text in that picture. Photograph the page or the card, not the food.",
+      from === "photo"
+        ? "There's no recipe text in that picture. Photograph the page or the card, not the food."
+        : "There's no recipe in that. Paste the recipe itself — ingredients and steps — or a link to it.",
     );
   }
 
