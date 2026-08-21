@@ -8,6 +8,7 @@ import RecipeSample from "@/components/marketing/RecipeSample";
 import TryIt from "@/components/marketing/TryIt";
 import { HEIRLOOM, NORDIC, BOTANICAL } from "@/lib/canvasStyle";
 import { PANCAKES, SOUP, BUNS } from "@/data/sampleRecipes";
+import { LANDING_PAGES } from "@/data/landingPages";
 
 // Landing page.
 //
@@ -192,11 +193,26 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-rule">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-ink-faint">
-          <span>
-            Recipe<span className="text-accent">Book</span>Maker
-          </span>
-          <span>© {new Date().getFullYear()}</span>
+        <div className="mx-auto max-w-5xl px-6 py-10">
+          {/* The search pages, linked from the one page that gets crawled
+              first. Reachable only from the sitemap, they are five orphans;
+              linked, they are a site. */}
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {LANDING_PAGES.map((p) => (
+              <li key={p.slug}>
+                <Link href={`/${p.slug}`} className="text-ink-muted hover:text-ink">
+                  {p.h1}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-6 text-sm text-ink-faint">
+            <span>
+              Recipe<span className="text-accent">Book</span>Maker
+            </span>
+            <span>© {new Date().getFullYear()}</span>
+          </div>
         </div>
       </footer>
     </>
