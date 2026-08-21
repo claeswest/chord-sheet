@@ -1,6 +1,6 @@
 # Project status — pick-up notes
 
-*Last updated: 4 August 2026*
+*Last updated: 21 August 2026*
 
 Read this first when starting work on a new machine or in a fresh session. It
 covers what the code can't tell you: what was learned, what was decided and why,
@@ -21,6 +21,21 @@ campaign bringing a steady trickle of signups — **current figures are in
 The product does what it promises: get a chord chart, make it beautiful,
 transpose it, play it hands-free, share or print it. **The constraint is no
 longer features — it's retention and conversion.**
+
+RecipeBookMaker is live at [recipebookmaker.com](https://recipebookmaker.com)
+and is no longer a sketch. As of 21 August 2026 it has: Stripe checkout and
+billing on its own products and prices, a customer portal, subscription
+webhooks, admin notifications on new and departing subscribers, a read-only
+`/admin` (overview, people, activity) modelled on ChordSheetMaker's,
+collections, AI import from text and photographs, a second-pass checker that
+proposes quantity corrections, per-recipe AI styling and illustration, PDF and
+print, share links, an automated trial-email sequence, a favicon and a social
+card. Its own dev database, its own Neon project, its own Vercel project.
+
+The two apps now share real code through `@clavos/core`: billing state,
+admin notifications, the customer-email shell, unsubscribe tokens and the
+build stamp. Auth, plans and the domain models remain deliberately separate —
+see `packages/core/README.md` for what may be shared and why.
 
 ## What the data said (analysis, 27 July 2026)
 
@@ -60,6 +75,44 @@ matters is the shape.
    works correctly (cooldown respected, no double-sends), but the founder is
    personally doing what a scheduler should.
 
+## What the data said (analysis, 21 August 2026)
+
+First look at GA4's own funnel rather than the activity log, for the 28 days to
+19 August. It corrected two things this document had assumed.
+
+1. **The landing page is not the leak.** Of the visitors in that window, 46%
+   clicked "Try it free", 70% of those started the demo, and around half of
+   *those* got as far as saving a song. That is a healthy top of funnel, and
+   flatly contradicts the guess that people read the page and leave.
+2. **The leak is the ask.** Roughly fifty people saved something. The banner
+   reminder reached about forty of them. The one-time "keep your song" modal —
+   the moment the code itself calls the strongest signup moment — reached
+   **five**. Eleven accounts were created. See the fix below.
+3. **Paid search produced one attributable signup out of eleven**, for a full
+   month of budget, while paid traffic was roughly a third of all visits. An
+   even split would have given three or four. The gap is the size attribution
+   loss usually explains, so this is not yet proof the ads are bad — only proof
+   they are unmeasured. The GA4 key-event switch under Watchpoints decides it.
+4. **`page_view` was only ever sent on a full page load**, so GA4 saw one page
+   per visit and every session looked like a single-page visit. Any earlier
+   read of in-app behaviour from GA4 is worthless. Fixed 20 August; the clock
+   starts there.
+
+## What was built in response (August 2026)
+
+- **The "keep your song" modal now fires when a guest presses Save, and when
+  the tab is hidden** — the two moments where the loss is real. It previously
+  waited three unbroken minutes of idling, which is why it reached a tenth of
+  the people who had built something. It also now requires a named song with a
+  line, or two lines without a name: the modal is a one-shot, and "not empty"
+  let a single keystroke spend it forever.
+- **RecipeBookMaker trial emails** — tips on day one or two, and a service
+  message two days before the first charge. Daily Vercel cron behind
+  `CRON_SECRET`, idempotent through the activity log, windows overlapping so a
+  drifting cron can't skip anyone. See `src/lib/trialEmails.ts`.
+- **Route-change `page_view`**, which also revived the mid-funnel Ads
+  measurement that had silently read zero since the CTAs became `<Link>`s.
+
 ## What was built in response (July 2026)
 
 - **Guest "keep your song" modal** — one-time, fires at the moment of pride
@@ -91,17 +144,45 @@ matters is the shape.
 | **Guests are first-class** | The whole editor works with no account. The demo path *is* the funnel; asking for signup before value is what loses people. |
 | **Emails stay manual for now** | Deliberate: the founder reads the replies. Automation is the obvious next step, and `suggestNextTemplate()` + the cooldown already encode the logic. |
 | **Share links are detached snapshots** | A link keeps working after the song changes — but there's no owner recorded, so shares can't be listed or revoked. Adding `userId` would fix that. |
+| **RecipeBookMaker prices in USD** (Aug 2026) | Matches ChordSheetMaker, which also settles in SEK behind the scenes. A price's currency is fixed once created in Stripe, so this is not a decision that can be revisited cheaply. |
+| **The trial "ending" email ignores marketing opt-out** (Aug 2026) | It states a date and an amount for a subscription someone entered into, which makes it a service message, not a pitch. It carries no unsubscribe link for the same reason. The tips email is marketing and obeys the opt-out normally. |
+| **Trial emails are idempotent through the activity log** (Aug 2026) | Each writes its own event type and anyone who already has it is skipped, so the job is safe to run twice — a retried cron, a manual poke, two overlapping deploys. It is also why the send windows can safely overlap. |
 
 ## Next up (rough priority)
 
-1. **Automate the lifecycle emails.** Especially a day-0 welcome and an
-   automatic nudge the moment someone hits the 5-song limit — the hottest
-   moment in the funnel currently depends on the founder noticing.
-2. **Give free users a taste of Pro** — one watermarked PDF, one share link.
+1. **Watch what the keep-modal fix did**, before building anything else on top
+   of a guess. The number to read is `guest_keep_modal` (shown) against
+   `sign_up` in GA4. If "shown" climbs from five towards forty and the roughly
+   one-in-four conversion holds, accounts roughly double — and nothing else on
+   this list is worth as much per line of code.
+2. **Decide the ad budget.** A month of spend produced one attributable signup
+   while ten arrived from elsewhere. Do the GA4 key-event switch first
+   (Watchpoints), because it decides whether that one is the truth or an
+   artefact — but do not leave the question open for another month.
+3. **Give free users a taste of Pro** — one watermarked PDF, one share link.
    People don't buy what they've never felt.
-3. **Audit the paywall moments** (6th song, PDF, share): each should show the
+4. **RecipeBookMaker's own funnel is unmeasured.** ChordSheetMaker has an
+   activity log, GA4 events and a paid channel to argue about. The recipe app
+   has an activity log and nothing else. It also has no landing-page
+   instrumentation and no lifecycle email for people who never subscribe.
+5. **Audit the paywall moments** (6th song, PDF, share): each should show the
    benefit, the price, "7 days free, no charge today" and a one-click path.
-4. ~~**Feed conversions back to Google Ads.**~~ **Done 4 Aug 2026, and made the
+6. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
+   invented. There are real customers now — the 💬 *Feedback ask* email exists
+   precisely to collect a usable quote.
+7. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
+   in play mode, which doesn't exist yet), or PWA install so the app lives on
+   the tablet home screen.
+8. **Automate ChordSheetMaker's lifecycle emails** — a day-0 welcome, and a
+   nudge when someone hits the free limit. Deliberately demoted on 21 August
+   2026: this sat at number one for a month on the assumption that the people
+   existed to email. Eleven accounts in 28 days is not where the leverage is,
+   and the machinery to send them now exists in `@clavos/core` whenever the
+   numbers justify it. Fix the ask before automating the follow-up.
+
+**Done, but read the caveat:**
+
+- ~~**Feed conversions back to Google Ads.**~~ **Done 4 Aug 2026, and made the
    Primary action 20 Aug 2026** — but read the warning under Watchpoints before
    trusting any historic conversion number. `trackSignUp()` reports a real Ads
    conversion, gated on
@@ -109,12 +190,6 @@ matters is the shape.
    will not produce the ~15–30 conversions/month that conversion-based bidding
    needs, so the goal is knowing which keywords produce users, not Smart
    Bidding.
-5. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
-   invented. There are real customers now — the 💬 *Feedback ask* email exists
-   precisely to collect a usable quote.
-6. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
-   in play mode, which doesn't exist yet), or PWA install so the app lives on
-   the tablet home screen.
 
 ## Watchpoints
 
@@ -132,6 +207,20 @@ matters is the shape.
   a `[slug]` landing page, so nobody passes a CTA that appends `?welcome=1`.
   Check the ads' Final URL to settle it. Harmless either way now that the
   action is Secondary, but the same mechanism could hide a real problem.
+- **RecipeBookMaker's cron refuses to run without `CRON_SECRET`.** That is
+  deliberate — an unauthenticated endpoint that emails customers is a spam
+  cannon with your own domain on it — but it means a missing variable looks
+  exactly like a job that simply never fires. `/api/cron/lifecycle` answers
+  503 when the variable is absent and 401 when it is present and you didn't
+  bring it, which is how to tell the two apart from outside.
+- **Cron on Vercel's Hobby plan has an hour of jitter.** The trial-email
+  windows overlap rather than tile because of it; see the note in
+  `daysBeforeCharge()`. Anything else scheduled here must not assume a punctual
+  clock either.
+- **The social card reads its fonts from disk at request time.** The path is
+  built at runtime, so nothing traces it, and `next.config.ts` names the
+  `assets` folder explicitly. The only symptom of getting this wrong is a share
+  card in the wrong typeface — no build, test or typecheck will notice.
 - **`NEXT_PUBLIC_*` vars are baked in at build time.** Adding one in Vercel
   does nothing until a build runs *after* it exists; a redeploy triggered
   before adding the value ships a silent no-op. Verify by checking the value
@@ -164,4 +253,6 @@ matters is the shape.
 | A visual walkthrough / presentation | `/tour` on the site, or [`public/tour/index.html`](../public/tour/index.html) |
 | Product positioning and ideas | [`ChordSheetMaker-Brief.md`](../ChordSheetMaker-Brief.md) |
 | Poster naming & regeneration | [`docs/posters.md`](posters.md) |
-| Live numbers, users, activity | `/admin` |
+| RecipeBookMaker's visual language | [`apps/recipemaker/design/`](../apps/recipemaker/design/) — tokens, canvas spec, component patterns |
+| What the trial emails say and when | [`apps/recipemaker/src/lib/trialEmails.ts`](../apps/recipemaker/src/lib/trialEmails.ts) — copy and timing, no database |
+| Live numbers, users, activity | `/admin`, on either site — and the build stamp in the admin nav says which commit you are looking at |
