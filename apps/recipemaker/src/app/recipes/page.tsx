@@ -9,6 +9,7 @@ import NewRecipeButton from "@/components/library/NewRecipeButton";
 import ImportRecipe from "@/components/library/ImportRecipe";
 import CollectionBar from "@/components/library/CollectionBar";
 import ClaimPending from "@/components/library/ClaimPending";
+import RecipeSearch from "@/components/library/RecipeSearch";
 import { listCollections } from "@/lib/categoryDb";
 
 export const metadata = { title: "Your recipes" };
@@ -16,9 +17,9 @@ export const metadata = { title: "Your recipes" };
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ collection?: string }>;
+  searchParams: Promise<{ collection?: string; q?: string }>;
 }) {
-  const { collection } = await searchParams;
+  const { collection, q = "" } = await searchParams;
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -47,9 +48,10 @@ export default async function RecipesPage({
   const collections = await listCollections(session.user.id);
   // The count and the limit are the whole book, not the filtered view — "3 of
   // 10" has to mean the same thing on every shelf.
-  const recipes = await listRecipes(session.user.id, collection);
+  const recipes = await listRecipes(session.user.id, collection, q);
   // Named apart from the per-card `total` minutes inside the map below.
-  const bookTotal = collection ? (await listRecipes(session.user.id)).length : recipes.length;
+  const bookTotal =
+    collection || q ? (await listRecipes(session.user.id)).length : recipes.length;
   const atLimit = limit !== null && bookTotal >= limit;
 
   return (
@@ -68,6 +70,10 @@ export default async function RecipesPage({
         <NewRecipeButton disabled={atLimit} />
       </div>
 
+      <div className="mt-6">
+        <RecipeSearch q={q} collection={collection} />
+      </div>
+
       {/* Saves whatever someone read on the landing page before signing in.
           Renders nothing when there's nothing waiting. */}
       <div className="mt-8">
@@ -79,7 +85,7 @@ export default async function RecipesPage({
       {/* Import sits above the list: it's the main way recipes get in, and on an
           empty library it's the only thing worth showing. */}
       <div className="mt-8">
-        <ImportRecipe disabled={atLimit} />
+        <ImportRecipe disabled={atLimit} startCollapsed={bookTotal > 0} />
       </div>
 
       {recipes.length === 0 ? (

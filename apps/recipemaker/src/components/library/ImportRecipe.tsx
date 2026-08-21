@@ -12,8 +12,18 @@ export default function ImportRecipe({
   disabled,
   intoRecipeId,
   onImported,
+  startCollapsed = false,
 }: {
   disabled?: boolean;
+  /**
+   * Show a single line until asked, rather than the whole panel.
+   *
+   * Open is right on an empty library, where importing is the only thing worth
+   * doing. It is wrong once there are recipes: the panel took the top half of
+   * the page every visit, pushing the recipes — the reason for coming — below
+   * the fold, to offer something most visits don't need.
+   */
+  startCollapsed?: boolean;
   /**
    * Fill this recipe instead of creating one.
    *
@@ -30,6 +40,7 @@ export default function ImportRecipe({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [open, setOpen] = useState(!startCollapsed);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function pickPhoto(file: File) {
@@ -93,6 +104,19 @@ export default function ImportRecipe({
 
   // With a photo there is nothing to type — the picture IS the input.
   const tooShort = !photo && text.trim().length < 20;
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+        className="w-full rounded-card border border-dashed border-rule px-6 py-4 text-left text-sm text-ink-muted hover:border-ink hover:text-ink disabled:opacity-50"
+      >
+        <span className="font-semibold">Paste a recipe</span>
+        <span className="text-ink-faint"> — or photograph one. From a website, a message, an email.</span>
+      </button>
+    );
+  }
 
   return (
     <div className="rounded-card border border-rule bg-paper-raised p-6 shadow-card">

@@ -21,7 +21,11 @@ export async function listRecipes(
   userId: string,
   /** Narrow to one collection. Omitted means the whole book. */
   collectionId?: string,
+  /** Free-text match on title, description and source. */
+  query?: string,
 ): Promise<RecipeListItem[]> {
+  const q = query?.trim();
+
   return prisma.recipe.findMany({
     where: {
       userId,
@@ -31,6 +35,19 @@ export async function listRecipes(
       // shelf.
       ...(collectionId
         ? { categories: { some: { categoryId: collectionId, category: { userId } } } }
+        : {}),
+      // Title, description and source — the three things people remember. Not
+      // the ingredients: "everything with cardamom in it" is a different
+      // feature, and matching the JSON body as text would find the word in a
+      // step, in a note, or in a style name, which reads as random.
+      ...(q
+        ? {
+            OR: [
+              { title: { contains: q, mode: "insensitive" as const } },
+              { description: { contains: q, mode: "insensitive" as const } },
+              { source: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
         : {}),
     },
     orderBy: [{ order: "asc" }, { updatedAt: "desc" }],

@@ -63,6 +63,35 @@ function str(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
+/**
+ * Quietens a title that arrived in capitals.
+ *
+ * Copying verbatim is the rule everywhere else in this file, and it is the
+ * right rule: an importer that "fixes" 2 teaspoons to 2 tablespoons has
+ * destroyed the recipe. A title is the exception. Recipe sites set headings in
+ * caps with CSS and the text underneath is often capitals too, so a faithful
+ * copy leaves one card shouting at every other card in the library, for ever.
+ *
+ * Only when the whole thing is uppercase. A title with any lowercase in it has
+ * been cased by a person — "Mormors pannkakor", "Pasta alla NORMA" — and is
+ * left exactly as written. Small words stay small, except the first.
+ */
+const SMALL = new Set([
+  "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "of", "on",
+  "or", "the", "to", "with",
+]);
+
+function titleCase(s: string): string {
+  if (!s || s !== s.toUpperCase() || !/[A-ZÅÄÖ]/.test(s)) return s;
+  return s
+    .toLowerCase()
+    .split(" ")
+    .map((word, i) =>
+      i > 0 && SMALL.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1),
+    )
+    .join(" ");
+}
+
 function strOrNull(v: unknown): string | null {
   const s = str(v);
   return s === "" ? null : s;
@@ -164,7 +193,7 @@ export function parseImported(raw: string): ImportedRecipe {
   };
 
   return {
-    title: str(d.title) || "Untitled recipe",
+    title: titleCase(str(d.title)) || "Untitled recipe",
     description: strOrNull(d.description),
     servings: num(d.servings, 500),
     prepMinutes: num(d.prepMinutes, 10_000),
