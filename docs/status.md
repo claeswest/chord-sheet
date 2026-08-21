@@ -112,6 +112,15 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
   drifting cron can't skip anyone. See `src/lib/trialEmails.ts`.
 - **Route-change `page_view`**, which also revived the mid-funnel Ads
   measurement that had silently read zero since the CTAs became `<Link>`s.
+- **Try RecipeBookMaker without an account** — paste a recipe on the landing
+  page, see it rendered, and only then be asked for anything. Deliberately not
+  guest mode: nothing is stored, the parsed recipe sits in React state and
+  moves to sessionStorage only when someone chooses to keep it. Logged at both
+  ends (`tried_import` with no user, `claimed_try` after signing in), which is
+  the first time that app has measured anyone without an account.
+- **Five search pages for RecipeBookMaker**, each with the paste box high on
+  the page, plus a sitemap and robots rules. Search Console verified and the
+  sitemap read on 21 August 2026.
 
 ## What was built in response (July 2026)
 
@@ -161,19 +170,25 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
    artefact — but do not leave the question open for another month.
 3. **Give free users a taste of Pro** — one watermarked PDF, one share link.
    People don't buy what they've never felt.
-4. **RecipeBookMaker's own funnel is unmeasured.** ChordSheetMaker has an
-   activity log, GA4 events and a paid channel to argue about. The recipe app
-   has an activity log and nothing else. It also has no landing-page
-   instrumentation and no lifecycle email for people who never subscribe.
-5. **Audit the paywall moments** (6th song, PDF, share): each should show the
+4. **Wait for RecipeBookMaker to be found.** As of 21 August 2026 it has five
+   search pages, a sitemap Google has read, and Search Console verified — but
+   no inbound links and no history, so indexing will take weeks and "Discovered
+   – currently not indexed" is the expected state before then. Resist building
+   more until there is traffic to judge it by. The numbers to read when there
+   is: `tried_import` (no account) against `claimed_try` in `/admin/activity`,
+   and impressions per query in Search Console.
+5. **RecipeBookMaker still has no GA4 and no lifecycle email for people who
+   never subscribe.** The activity log covers what signed-in people do and now
+   what anonymous visitors paste; it does not cover who arrives and leaves.
+6. **Audit the paywall moments** (6th song, PDF, share): each should show the
    benefit, the price, "7 days free, no charge today" and a one-click path.
-6. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
+7. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
    invented. There are real customers now — the 💬 *Feedback ask* email exists
    precisely to collect a usable quote.
-7. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
+8. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
    in play mode, which doesn't exist yet), or PWA install so the app lives on
    the tablet home screen.
-8. **Automate ChordSheetMaker's lifecycle emails** — a day-0 welcome, and a
+9. **Automate ChordSheetMaker's lifecycle emails** — a day-0 welcome, and a
    nudge when someone hits the free limit. Deliberately demoted on 21 August
    2026: this sat at number one for a month on the assumption that the people
    existed to email. Eleven accounts in 28 days is not where the leverage is,
