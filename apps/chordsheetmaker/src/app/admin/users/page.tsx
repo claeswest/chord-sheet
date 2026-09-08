@@ -51,7 +51,7 @@ interface User {
   lastMarketingEmailAt: string | null;
   createdAt: string;
   _count: { songs: number; categories: number };
-  songs: Song[];
+  songs: (Song & { updatedAt: string })[];
   categories: { id: string; name: string; parentId: string | null }[];
   sessions: { expires: string }[];
 }
@@ -395,7 +395,28 @@ function AdminUsersInner() {
                       <td className="px-5 py-3 text-zinc-400 hidden md:table-cell">
                         <span className="truncate block max-w-[200px]">{user.email}</span>
                       </td>
-                      <td className="px-5 py-3 text-zinc-300">{user._count.songs}</td>
+                      <td className="px-5 py-3 text-zinc-300">
+                        <p>{user._count.songs}</p>
+                        {user.songs[0] ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setPreviewSongId(user.songs[0].id);
+                            }}
+                            className="mt-1 block max-w-[220px] rounded text-left text-xs text-indigo-300 hover:text-indigo-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-400"
+                            title={user.songs[0].title.trim() || "Untitled song"}
+                            aria-label={`Preview latest saved song: ${user.songs[0].title.trim() || "Untitled song"}`}
+                          >
+                            <span className="block truncate">{user.songs[0].title.trim() || "Untitled song"}</span>
+                            <span className="block text-zinc-400">
+                              Last saved <time dateTime={user.songs[0].updatedAt}>{formatDate(user.songs[0].updatedAt)}</time>
+                            </span>
+                          </button>
+                        ) : (
+                          <p className="mt-1 text-xs text-zinc-400">No saved songs</p>
+                        )}
+                      </td>
                       <td className="px-4 sm:px-5 py-3">
                         <PlanBadge
                           plan={user.plan}

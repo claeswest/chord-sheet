@@ -50,9 +50,9 @@ export async function GET(req: NextRequest) {
           select: { expires: true },
         },
         songs: {
-          orderBy: { createdAt: "desc" },
+          orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
           take: 5,
-          select: { id: true, title: true, artist: true, createdAt: true },
+          select: { id: true, title: true, artist: true, createdAt: true, updatedAt: true },
         },
         categories: {
           orderBy: { order: "asc" },
