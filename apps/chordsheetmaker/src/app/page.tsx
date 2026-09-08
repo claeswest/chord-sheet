@@ -195,7 +195,7 @@ export default async function HomePage() {
           <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 w-full sm:w-auto max-w-xs sm:max-w-none">
             <CtaLink
               from="home-hero"
-              href={session ? "/songs" : "/editor/new?start=demo"}
+              href={session ? "/editor/new" : "/editor/new?start=demo"}
               className="cta-glow relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 hover:scale-[1.03] text-center"
               style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
             >
@@ -203,7 +203,7 @@ export default async function HomePage() {
               <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)", backgroundSize: "200% 100%" }} />
               <span className="relative flex items-center justify-center gap-2">
-                Build a chart free
+                {session ? "Create a chord chart" : "Build a chart free"}
                 <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
                 </svg>
@@ -221,7 +221,7 @@ export default async function HomePage() {
           </div>
 
           {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
-          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/40 mb-7 sm:mb-9">
+          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/80 mb-7 sm:mb-9">
             Free to start · No credit card · Ready in 30 seconds
           </p>
 
@@ -262,13 +262,13 @@ export default async function HomePage() {
           </div>
 
           {/* Caption */}
-          <p className="relative text-xs text-white/55 mb-8 sm:mb-12">
+          <p className="relative text-xs text-white/80 mb-8 sm:mb-12">
             Auto-scroll in action — hands-free play mode, exactly as it looks when you play
           </p>
 
           {/* How it works — 3 numbered steps ("See how it works" lands here) */}
           <div id="how" className="relative w-full max-w-4xl mx-auto scroll-mt-24">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-5">How it works</span>
+            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-200 mb-5">How it works</span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
                 { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
@@ -281,7 +281,7 @@ export default async function HomePage() {
                   <span className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-indigo-500/25 border border-indigo-400/40 text-indigo-200 font-extrabold text-base md:text-lg shrink-0 md:mb-4 md:mx-auto">{h.n}</span>
                   <div>
                     <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
-                    <p className="text-xs md:text-sm text-white/50 leading-relaxed">{h.body}</p>
+                    <p className="text-xs md:text-sm text-white/80 leading-relaxed">{h.body}</p>
                   </div>
                 </div>
               ))}

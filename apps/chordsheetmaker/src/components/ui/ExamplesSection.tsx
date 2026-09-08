@@ -50,13 +50,13 @@ export default function ExamplesSection() {
               href={ex.href}
               target="_blank"
               rel="noopener"
-              className="group relative transition-transform duration-300 hover:-translate-y-2 text-left"
+              className="group relative flex transition-transform duration-300 hover:-translate-y-2 text-left"
             >
               {/* Soft shadow halo */}
               <div className="absolute -inset-2 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-2xl"
                 style={{ background: "radial-gradient(ellipse at center, rgba(99,102,241,0.25) 0%, transparent 70%)" }} />
 
-              <div className="relative rounded-2xl overflow-hidden border border-indigo-100 shadow-xl shadow-indigo-200/50 transition-shadow duration-300 group-hover:shadow-2xl group-hover:shadow-indigo-300/50 bg-white">
+              <div className="relative flex w-full flex-col rounded-2xl overflow-hidden border border-indigo-100 shadow-xl shadow-indigo-200/50 transition-shadow duration-300 group-hover:shadow-2xl group-hover:shadow-indigo-300/50 bg-white">
                 {/* Browser chrome bar */}
                 <div className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
@@ -83,12 +83,12 @@ export default function ExamplesSection() {
                 </div>
 
                 {/* Caption */}
-                <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white">
+                <div className="flex flex-1 flex-col items-start gap-3 px-4 py-4 bg-white">
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-zinc-800 truncate">{ex.title}</p>
-                    <p className="text-xs text-zinc-400 truncate">{ex.vibe}</p>
+                    <p className="text-sm font-bold text-zinc-800 leading-snug break-words">{ex.title}</p>
+                    <p className="mt-1 text-xs text-zinc-600 leading-relaxed">{ex.vibe}</p>
                   </div>
-                  <span className="shrink-0 text-xs font-semibold text-indigo-600 group-hover:translate-x-0.5 transition-transform">Open &amp; play →</span>
+                  <span className="mt-auto text-xs font-semibold text-indigo-600 group-hover:translate-x-0.5 transition-transform">Open &amp; play →</span>
                 </div>
               </div>
             </a>
