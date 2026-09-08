@@ -292,6 +292,9 @@ export default async function HomePage() {
         {/* ── Examples — the strongest proof, straight after the hero ──────── */}
         <ExamplesSection />
 
+        {/* Photo import: show the before/after result before listing features. */}
+        <TransformationSection />
+
         {/* ── Features — heading + cards in one section ────────────────────── */}
         <section id="features" className="px-4 sm:px-6 pt-12 sm:pt-16 pb-10 sm:pb-12 scroll-mt-16" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
           <div className="max-w-6xl mx-auto">
@@ -309,9 +312,6 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* ── Transformation ───────────────────────────────────────────────── */}
-        <TransformationSection />
 
         {/* ── Testimonial — reassurance right before the pricing decision ──── */}
         <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
