@@ -129,6 +129,9 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
   return { placed, untimed };
 }
 
+/** Past this the type stops being readable, so a box overflows visibly instead. */
+const FIT_FLOOR = 0.62;
+
 /**
  * Shrink any card whose text won't fit the minutes it has.
  *
@@ -138,9 +141,9 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
  * can hold, so it spilled over the lesson below. No stylesheet can know that;
  * only measurement can.
  *
- * Reads back after each step because a smaller font may re-flow a wrapped
- * subject onto one line and win far more than the ratio predicted. Floored at
- * 62%, since a box nobody can read is not a fit.
+ * Steps down and re-measures rather than computing a ratio, because a smaller
+ * font may re-flow a wrapped subject onto one line and win far more than any
+ * ratio would predict.
  */
 function useFitCards(schedule: Schedule, glossary: Glossary, editable: boolean) {
   useEffect(() => {
@@ -154,12 +157,40 @@ function useFitCards(schedule: Schedule, glossary: Glossary, editable: boolean) 
         if (!card) continue;
         card.style.removeProperty("--card-scale");
         const room = slot.clientHeight;
+
+        const tallEnough = () => card.scrollHeight <= room;
+        const wideEnough = () => {
+          for (const el of card.querySelectorAll<HTMLElement>(".subject, .where")) {
+            if (el.scrollWidth > el.clientWidth + 1) return false;
+          }
+          return true;
+        };
+        const set = (s: number) =>
+          s === 1
+            ? card.style.removeProperty("--card-scale")
+            : card.style.setProperty("--card-scale", String(s));
+
         let scale = 1;
-        for (let i = 0; i < 4 && card.scrollHeight > room; i++) {
-          scale = Math.max(0.62, scale * Math.max(0.8, room / card.scrollHeight));
-          card.style.setProperty("--card-scale", String(scale));
-          if (scale === 0.62) break;
+        // Height first, and it is not optional: a card taller than its slot
+        // sits on top of the next lesson.
+        for (let i = 0; i < 8 && scale > FIT_FLOOR && !tallEnough(); i++) {
+          scale = Math.max(FIT_FLOOR, scale * 0.92);
+          set(scale);
         }
+
+        // Then width, which is: keep going while an ellipsis is still eating a
+        // room number. Worth a couple of steps — Friday's pair of options wins
+        // it at 78% on landscape.
+        const forHeight = scale;
+        for (let i = 0; i < 8 && scale > FIT_FLOOR && !wideEnough(); i++) {
+          scale = Math.max(FIT_FLOOR, scale * 0.92);
+          set(scale);
+        }
+        // But in a 129px portrait column "Extra studietid Matematik · 403 ·
+        // MaAr,LiOv" does not fit at any readable size. Shrinking the whole
+        // sheet to its floor and truncating anyway pays legibility for
+        // nothing, so give it back.
+        if (!wideEnough()) set((scale = forHeight));
       }
     };
     const later = () => {
@@ -229,7 +260,10 @@ function MergedCard({
     <div className={`lesson merged ${choosing ? "asking" : ""}`} style={fit}>
       {(start || sharedEnd || choosing) && (
         <div className="time">
-          {start}
+          {/* "08:00" on its own read as a range someone forgot to finish. It
+              is a shared start whose ends differ, and each row states its
+              own — so say which of the two this is. */}
+          {sharedEnd || !lessons.some((l) => l.end) ? start : `från ${start}`}
           {sharedEnd && ` – ${sharedEnd}`}
           {/* The question and its escape hatch ride in the time row. A separate
               bar below cost about 20px, which on a proportional grid is not
@@ -249,9 +283,7 @@ function MergedCard({
           const subject = say(l.subject, glossary.subjects) ?? l.subject;
           const teacher = say(l.teacher, glossary.teachers);
           const tint = glossary.colors?.[l.subject.trim()];
-          const detail = [l.room, teacher, l.note, sharedEnd ? null : l.end && `slut ${l.end}`]
-            .filter(Boolean)
-            .join(" · ");
+          const detail = [l.room, teacher, l.note].filter(Boolean).join(" · ");
 
           return (
             <li
@@ -274,6 +306,12 @@ function MergedCard({
               {tint && <span className="dot" style={{ background: tint }} aria-hidden />}
               <span className="subject">{subject}</span>
               {detail && <span className="where">{detail}</span>}
+              {/* When the options don't end together there is no shared end to
+                  hoist, so each row carries its own — pinned right, where it
+                  can't be shortened. It sat at the tail of the room-and-teacher
+                  line before, and in a narrow column the ellipsis ate it: the
+                  box then showed a start time and no end at all. */}
+              {!sharedEnd && l.end && <span className="until">{l.end}</span>}
             </li>
           );
         })}
