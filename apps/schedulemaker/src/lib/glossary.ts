@@ -16,9 +16,37 @@ export type Glossary = {
   teachers: Record<string, string>;
   /** "MA" → "Matematik" */
   subjects: Record<string, string>;
+  /** "MA" → "#f4c9de". The school's own sheet is colour-coded and that is how
+   *  a child finds Tuesday; a monochrome copy throws that away. */
+  colors: Record<string, string>;
 };
 
-export const EMPTY_GLOSSARY: Glossary = { teachers: {}, subjects: {} };
+export const EMPTY_GLOSSARY: Glossary = { teachers: {}, subjects: {}, colors: {} };
+
+/**
+ * Colours assigned to subjects on first read, so the sheet arrives looking
+ * like something rather than a wall of one blue.
+ *
+ * Pale on purpose. These sit behind black text on paper, and a saturated fill
+ * costs a fortune in ink and makes the text harder to read at arm's length —
+ * which is the one thing this document has to do.
+ */
+const PALETTE = [
+  "#ffe2e2", "#dff0e4", "#e2ecff", "#fff2d0", "#f0e2ff",
+  "#d9f2f4", "#ffe6cc", "#e8eede", "#fbdff0", "#e4e7ef",
+];
+
+/** Fills in a colour for every subject that hasn't got one. */
+export function withDefaultColors(glossary: Glossary, subjects: string[]): Glossary {
+  const colors = { ...glossary.colors };
+  let next = 0;
+  for (const code of subjects) {
+    if (colors[code]) continue;
+    // Breaks stay uncoloured: they are the rows worth playing down.
+    colors[code] = ALREADY_WORDS.test(code) ? "" : PALETTE[next++ % PALETTE.length];
+  }
+  return { ...glossary, colors };
+}
 
 /** Every distinct code in the schedule, in the order it first appears. */
 export function codesIn(schedule: Schedule): { teachers: string[]; subjects: string[] } {
@@ -66,7 +94,12 @@ export function say(value: string | undefined, map: Record<string, string>): str
  * rename them buries the four codes that matter under a list of things that
  * are already words.
  */
-const ALREADY_WORDS = /^(lunch|rast|frukost|mellanmål|studietid|håltimme)$/i;
+const ALREADY_WORDS = /^(lunch|rast|frukost|mellanmål|håltimme|paus)$/i;
+
+/** Whether a lesson is a break rather than teaching — printed more quietly. */
+export function isBreak(subject: string): boolean {
+  return ALREADY_WORDS.test(subject.trim());
+}
 
 export function worthNaming(codes: string[]): string[] {
   return codes.filter((c) => !ALREADY_WORDS.test(c) && c.length <= 24);

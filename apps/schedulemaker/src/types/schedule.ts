@@ -69,3 +69,27 @@ export function timeRange(week: Week): { from: string; to: string } | null {
   if (times.length === 0) return null;
   return { from: times.reduce((a, b) => (a < b ? a : b)), to: times.reduce((a, b) => (a > b ? a : b)) };
 }
+
+/**
+ * Lessons that occupy the same slot, grouped.
+ *
+ * Two lessons with the same start time are not one after the other — they are
+ * alternatives. On these sheets that happens two ways: a language block
+ * offering French, Spanish and German in one cell, and a cell split into
+ * "BL jv" and "SV uv" for even and odd weeks. Rendering them as a stack of
+ * consecutive cards says something false about the day.
+ *
+ * Grouped on start time alone. An end time can differ between alternatives —
+ * the odd-week Swedish on one of these runs 25 minutes longer than the
+ * even-week art beside it — and requiring both to match would split a pair
+ * that the paper clearly shows as one box.
+ */
+export function slotsOf(day: Day): Lesson[][] {
+  const slots: Lesson[][] = [];
+  for (const lesson of day.lessons) {
+    const last = slots[slots.length - 1];
+    if (last && lesson.start !== "" && last[0].start === lesson.start) last.push(lesson);
+    else slots.push([lesson]);
+  }
+  return slots;
+}

@@ -15,11 +15,14 @@ import ScheduleSheet from "@/components/ScheduleSheet";
 import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
-import { EMPTY_GLOSSARY, type Glossary } from "@/lib/glossary";
+import { EMPTY_GLOSSARY, codesIn, withDefaultColors, type Glossary } from "@/lib/glossary";
 import type { Lesson, Schedule } from "@/types/schedule";
 
 const THEMES = [
   { id: "", name: "Papper", dot: "#3b5bdb" },
+  // Thin lines, no fills, black on white. Most people printing this at home
+  // have an office printer and no wish to spend a cartridge on a timetable.
+  { id: "plain", name: "Bläcksnål", dot: "#ffffff" },
   { id: "dusk", name: "Skymning", dot: "#7c8cff" },
   { id: "meadow", name: "Äng", dot: "#2f7d46" },
   { id: "candy", name: "Godis", dot: "#d6336c" },
@@ -27,12 +30,25 @@ const THEMES = [
 
 const STORE = "sm_state_v1";
 
-type Stored = { schedule: Schedule; glossary: Glossary; theme: string };
+/** Paper the sheet is laid out for. A3 is the same document, printed larger. */
+const PAPERS = [
+  { id: "a4-landscape", name: "A4 liggande", css: "A4 landscape", w: "297mm", h: "210mm" },
+  { id: "a4-portrait", name: "A4 stående", css: "A4 portrait", w: "210mm", h: "297mm" },
+  { id: "a3-landscape", name: "A3 liggande", css: "A3 landscape", w: "420mm", h: "297mm" },
+  { id: "a3-portrait", name: "A3 stående", css: "A3 portrait", w: "297mm", h: "420mm" },
+];
+
+type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string };
 
 export default function Home() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [glossary, setGlossary] = useState<Glossary>(EMPTY_GLOSSARY);
   const [theme, setTheme] = useState("");
+  const [paper, setPaper] = useState("a4-landscape");
+  // The original photograph, for checking against while editing. Held in
+  // memory only: it is a picture of a child's schedule, and writing it to
+  // localStorage would leave it on the disk long after the tab is closed.
+  const [source, setSource] = useState<string | null>(null);
   const [editing, setEditing] = useState(true);
   const [openLesson, setOpenLesson] = useState<{ weekId: string; dayId: string; lesson: Lesson } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -51,6 +67,7 @@ export default function Home() {
           setSchedule(s.schedule);
           setGlossary(s.glossary ?? EMPTY_GLOSSARY);
           setTheme(s.theme ?? "");
+          setPaper(s.paper ?? "a4-landscape");
         }
       }
     } catch {
@@ -62,12 +79,12 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     try {
-      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme }));
+      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper }));
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme]);
+  }, [loaded, schedule, glossary, theme, paper]);
 
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
@@ -84,7 +101,8 @@ export default function Home() {
         return;
       }
       setSchedule(data.schedule);
-      setGlossary(EMPTY_GLOSSARY);
+      // Colours up front, so the sheet arrives looking like something.
+      setGlossary(withDefaultColors(EMPTY_GLOSSARY, codesIn(data.schedule).subjects));
     } catch {
       setError("Kunde inte nå servern.");
     } finally {
@@ -103,7 +121,9 @@ export default function Home() {
       });
       // A phone photo is several megabytes of detail the model can't use.
       // 1600px keeps a room number legible and stays inside the body limit.
-      await read({ image: await compressImage(dataUrl, 1600, 0.85) });
+      const small = await compressImage(dataUrl, 1600, 0.85);
+      setSource(small);
+      await read({ image: small });
     } catch {
       setError("Kunde inte läsa filen.");
     }
@@ -130,6 +150,30 @@ export default function Home() {
     setOpenLesson(null);
   }
 
+  function addLesson(weekId: string, dayId: string) {
+    if (!schedule) return;
+    const lesson: Lesson = {
+      id: Math.random().toString(36).slice(2, 10),
+      start: "",
+      end: "",
+      subject: "Nytt pass",
+    };
+    setSchedule({
+      ...schedule,
+      weeks: schedule.weeks.map((w) =>
+        w.id !== weekId
+          ? w
+          : {
+              ...w,
+              days: w.days.map((d) => (d.id !== dayId ? d : { ...d, lessons: [...d.lessons, lesson] })),
+            },
+      ),
+    });
+    // Straight into the editor: an empty card called "Nytt pass" is not what
+    // anyone wanted, it is the first half of what they wanted.
+    setOpenLesson({ weekId, dayId, lesson });
+  }
+
   function deleteLesson() {
     if (!schedule || !openLesson) return;
     const { weekId, dayId, lesson } = openLesson;
@@ -149,14 +193,21 @@ export default function Home() {
     setOpenLesson(null);
   }
 
+  const sheetPaper = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
+
   return (
     <main className="app" data-theme={theme || undefined}>
+      {/* @page can't be set from a class, so the chosen size is injected.
+          Without it the browser prints A4 whatever the sheet is laid out for,
+          and an A3 schedule comes out cropped. */}
+      <style>{`@page { size: ${sheetPaper.css}; margin: 0; }
+        .sheet { width: ${sheetPaper.w}; min-height: ${sheetPaper.h}; }`}</style>
       {!schedule && (
         <div className="no-print">
           <h1 style={{ fontFamily: "var(--font-display)", marginBottom: 4 }}>Gör ett snyggare schema</h1>
           <p className="hint" style={{ marginTop: 0 }}>
-            Fotografera schemat du fått hem. Det stannar i den här webbläsaren — ingenting skickas
-            vidare och ingenting sparas hos oss.
+            Fotografera schemat du fått hem. Bilden skickas till Google för att läsas av, och
+            sparas inte hos oss — det färdiga schemat stannar i den här webbläsaren.
           </p>
 
           <div className="controls" style={{ marginTop: 24 }}>
@@ -216,9 +267,19 @@ export default function Home() {
                 onClick={() => setTheme(t.id)}
               />
             ))}
+            <select
+              value={paper}
+              onChange={(e) => setPaper(e.target.value)}
+              aria-label="Pappersformat"
+            >
+              {PAPERS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
             <button
               onClick={() => {
                 setSchedule(null);
+                setSource(null);
                 setGlossary(EMPTY_GLOSSARY);
                 setText("");
               }}
@@ -239,6 +300,17 @@ export default function Home() {
             <GlossaryPanel schedule={schedule} glossary={glossary} onChange={setGlossary} />
           )}
 
+          {editing && source && (
+            <details className="panel no-print">
+              <summary>
+                <span className="panel-title">Originalet</span>
+                <span className="hint"> — jämför utan att leta rätt på papperet</span>
+              </summary>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={source} alt="Det fotograferade schemat" className="source-photo" />
+            </details>
+          )}
+
           <FitToWidth>
             <ScheduleSheet
               schedule={schedule}
@@ -246,6 +318,7 @@ export default function Home() {
               editable={editing}
               onChange={setSchedule}
               onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
+              onAddLesson={addLesson}
             />
           </FitToWidth>
 
