@@ -225,6 +225,33 @@ export default function Home() {
     });
   }
 
+  /** Put a decided slot back to being a question. */
+  function reopenChoice(weekId: string, dayId: string, slotStart: string) {
+    if (!schedule) return;
+    setSchedule({
+      ...schedule,
+      weeks: schedule.weeks.map((w) =>
+        w.id !== weekId
+          ? w
+          : {
+              ...w,
+              days: w.days.map((d) =>
+                d.id !== dayId
+                  ? d
+                  : {
+                      ...d,
+                      lessons: d.lessons.map((l) =>
+                        l.start === slotStart && l.start !== ""
+                          ? { ...l, resolved: false, hidden: false }
+                          : l,
+                      ),
+                    },
+              ),
+            },
+      ),
+    });
+  }
+
   function deleteLesson() {
     if (!schedule || !openLesson) return;
     const { weekId, dayId, lesson } = openLesson;
@@ -411,6 +438,7 @@ export default function Home() {
               onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
               onAddLesson={addLesson}
               onPickOption={pickOption}
+              onReopenChoice={reopenChoice}
             />
           </FitToWidth>
 

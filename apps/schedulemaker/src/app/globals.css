@@ -219,3 +219,7 @@ table.grid tbody tr:last-child td, table.grid tbody tr:last-child th { border-bo
 .choice-ask { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin: 1mm 0 0.5mm; }
 .choice-ask span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .slot.choice:has(.choice-ask) { border-color: var(--accent); border-style: solid; }
+
+/* An option in a slot nobody has decided yet: the card is the button. */
+.lesson.choosable { cursor: pointer; }
+.lesson.choosable:hover { outline: 2px solid var(--accent); outline-offset: 1px; }

@@ -23,12 +23,15 @@ function LessonCard({
   glossary,
   editable,
   faded,
+  choosing,
   onEdit,
 }: {
   lesson: Lesson;
   glossary: Glossary;
   editable: boolean;
   faded: boolean;
+  /** This card is one of several options nobody has decided between yet. */
+  choosing?: boolean;
   onEdit?: () => void;
 }) {
   const subject = say(lesson.subject, glossary.subjects) ?? lesson.subject;
@@ -38,7 +41,7 @@ function LessonCard({
 
   return (
     <div
-      className={`lesson ${quiet ? "minor" : ""} ${faded ? "set-aside" : ""} ${editable ? "editable" : ""}`}
+      className={`lesson ${quiet ? "minor" : ""} ${faded ? "set-aside" : ""} ${editable ? "editable" : ""} ${choosing ? "choosable" : ""}`}
       style={tint && !quiet && !faded ? { background: tint } : undefined}
       onClick={editable ? onEdit : undefined}
       tabIndex={editable ? 0 : undefined}
@@ -76,6 +79,7 @@ export default function ScheduleSheet({
   onEditLesson,
   onAddLesson,
   onPickOption,
+  onReopenChoice,
 }: {
   schedule: Schedule;
   glossary: Glossary;
@@ -90,6 +94,8 @@ export default function ScheduleSheet({
    * counts as decided, which is what the step to the finished sheet asks for.
    */
   onPickOption?: (weekId: string, dayId: string, lessonId: string | null, slotStart?: string) => void;
+  /** Ask the question again: undo the decision, keep nothing set aside. */
+  onReopenChoice?: (weekId: string, dayId: string, slotStart: string) => void;
 }) {
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
@@ -121,23 +127,23 @@ export default function ScheduleSheet({
                     lesson={l}
                     glossary={glossary}
                     editable={editable}
-                    faded={Boolean(l.hidden)}
-                    onEdit={() => onEditLesson?.(week.id, day.id, l)}
+                    faded={Boolean(l.hidden) && (!choice || decided)}
+                    choosing={choice && editable && !decided}
+                    onEdit={() =>
+                      // Undecided: the card is the answer to the question the
+                      // slot is asking. Decided: it is a lesson to edit. Five
+                      // "bara denna" buttons stacked under five options was
+                      // most of why this slot was 370px tall.
+                      choice && !decided
+                        ? onPickOption?.(week.id, day.id, l.id)
+                        : onEditLesson?.(week.id, day.id, l)
+                    }
                   />
-                  {choice && editable && !decided && (
-                    <button
-                      className="pick no-print"
-                      onClick={() => onPickOption?.(week.id, day.id, l.id)}
-                      title="Behåll bara den här"
-                    >
-                      bara denna
-                    </button>
-                  )}
                 </div>
               ))}
               {choice && !decided && (
                 <div className="choice-ask no-print">
-                  <span>Vilket gäller?</span>
+                  <span>Klicka det som gäller</span>
                   <button
                     className="pick"
                     onClick={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
@@ -149,7 +155,7 @@ export default function ScheduleSheet({
               {choice && decided && editable && (
                 <button
                   className="pick no-print"
-                  onClick={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
+                  onClick={() => onReopenChoice?.(week.id, day.id, slot[0].start)}
                 >
                   ändra val
                 </button>
