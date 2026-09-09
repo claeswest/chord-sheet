@@ -42,6 +42,73 @@ export function normalizeGlossary(g: Partial<Glossary> | null | undefined): Glos
 }
 
 /**
+ * Subject codes standard enough across Swedish schools to fill in unasked.
+ *
+ * Only the ones that are not a guess. "Sv" is Svenska everywhere; "Sp" is
+ * Spanska on one sheet and Språkval on the next, so it stays a code. NO and SO
+ * are missing on purpose — they are what everyone actually calls them, and
+ * writing "Naturorienterande ämnen" across a Tuesday helps nobody.
+ *
+ * Short forms where the short form is the spoken one: Idrott, not "Idrott och
+ * hälsa"; Hemkunskap, not "Hem- och konsumentkunskap". These have to fit in a
+ * column an inch wide, and the long name would push out the room number.
+ *
+ * Matched whole and case-insensitively, so "Eng2" — English, group two — is
+ * left alone rather than being flattened to Engelska and losing the group.
+ */
+const KNOWN_SUBJECTS: Record<string, string> = {
+  sv: "Svenska",
+  sva: "Svenska som andraspråk",
+  ma: "Matematik",
+  en: "Engelska",
+  eng: "Engelska",
+  ty: "Tyska",
+  fr: "Franska",
+  bi: "Biologi",
+  fy: "Fysik",
+  ke: "Kemi",
+  ge: "Geografi",
+  hi: "Historia",
+  re: "Religion",
+  sh: "Samhällskunskap",
+  bd: "Bild",
+  bl: "Bild",
+  mu: "Musik",
+  sl: "Slöjd",
+  "sl tr": "Träslöjd",
+  "sl tx": "Textilslöjd",
+  idh: "Idrott",
+  id: "Idrott",
+  hkk: "Hemkunskap",
+  tk: "Teknik",
+  te: "Teknik",
+  mo: "Modersmål",
+};
+
+/** The name this app would fill in for a code, if it knows one. */
+export function suggestedName(code: string): string | undefined {
+  return KNOWN_SUBJECTS[code.trim().toLowerCase().replace(/\s+/g, " ")];
+}
+
+/**
+ * Writes in the names it is sure of, leaving everything else as printed.
+ *
+ * Keyed on whether the code has been *touched*, not on whether it is empty.
+ * Clearing a name is how you say "print the code as the school wrote it", and
+ * refilling it on the next load would overrule that every time the page
+ * opened.
+ */
+export function withKnownNames(glossary: Glossary, subjects: string[]): Glossary {
+  const named = { ...normalizeGlossary(glossary).subjects };
+  for (const code of subjects) {
+    if (code in named) continue;
+    const guess = suggestedName(code);
+    if (guess && guess.toLowerCase() !== code.trim().toLowerCase()) named[code] = guess;
+  }
+  return { ...normalizeGlossary(glossary), subjects: named };
+}
+
+/**
  * Colours assigned to subjects on first read, so the sheet arrives looking
  * like something rather than a wall of one blue.
  *

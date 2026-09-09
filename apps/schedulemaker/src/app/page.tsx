@@ -16,7 +16,14 @@ import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
-import { EMPTY_GLOSSARY, codesIn, normalizeGlossary, withDefaultColors, type Glossary } from "@/lib/glossary";
+import {
+  EMPTY_GLOSSARY,
+  codesIn,
+  normalizeGlossary,
+  withDefaultColors,
+  withKnownNames,
+  type Glossary,
+} from "@/lib/glossary";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
 const THEMES = [
@@ -77,10 +84,12 @@ export default function Home() {
         const s = JSON.parse(raw) as Stored;
         if (s.schedule) {
           setSchedule(s.schedule);
-          // Tops up any subject without a colour — one added by hand since,
-          // or one an older version of this app deliberately left blank.
+          // Tops up any subject without a colour or a known name — one added
+          // by hand since, or one an older version of this app left blank.
+          // Neither overwrites anything already decided.
+          const subjects = codesIn(s.schedule).subjects;
           setGlossary(
-            withDefaultColors(normalizeGlossary(s.glossary), codesIn(s.schedule).subjects),
+            withDefaultColors(withKnownNames(normalizeGlossary(s.glossary), subjects), subjects),
           );
           setTheme(s.theme ?? "");
           setPaper(s.paper ?? "a4-landscape");
@@ -117,8 +126,10 @@ export default function Home() {
         return;
       }
       setSchedule(data.schedule);
-      // Colours up front, so the sheet arrives looking like something.
-      setGlossary(withDefaultColors(EMPTY_GLOSSARY, codesIn(data.schedule).subjects));
+      // Colours and the names we're sure of up front, so the sheet arrives
+      // looking like something and already half in words.
+      const read = codesIn(data.schedule).subjects;
+      setGlossary(withDefaultColors(withKnownNames(EMPTY_GLOSSARY, read), read));
     } catch {
       setError("Kunde inte nå servern.");
     } finally {
