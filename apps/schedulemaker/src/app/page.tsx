@@ -15,6 +15,7 @@ import ScheduleSheet from "@/components/ScheduleSheet";
 import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
+import PrintFit from "@/components/PrintFit";
 import { EMPTY_GLOSSARY, codesIn, normalizeGlossary, withDefaultColors, type Glossary } from "@/lib/glossary";
 import type { Lesson, Schedule } from "@/types/schedule";
 
@@ -57,6 +58,8 @@ export default function Home() {
   // Nothing is written back until the first read completes, so a failed load
   // can't wipe what's already there.
   const [loaded, setLoaded] = useState(false);
+  // How much the sheet has to shrink to fit one page. 1 means it already does.
+  const [fit, setFit] = useState(1);
 
   useEffect(() => {
     try {
@@ -321,6 +324,13 @@ export default function Home() {
             </button>
           </div>
 
+          {fit < 0.995 && (
+            <p className="hint no-print" style={{ marginTop: -8 }}>
+              Schemat är högre än en sida och krymps till {Math.round(fit * 100)} % vid utskrift,
+              så att allt får plats på ett ark.
+            </p>
+          )}
+
           <p className="hint no-print" style={{ marginTop: -8 }}>
             {editing
               ? "Klicka på titeln, en dag eller ett pass för att ändra det. Kontrollera mot originalet innan du skriver ut."
@@ -343,6 +353,12 @@ export default function Home() {
               <img src={source} alt="Det fotograferade schemat" className="source-photo" />
             </details>
           )}
+
+          <PrintFit
+            pageHeightMm={parseInt(sheetPaper.h, 10)}
+            deps={`${JSON.stringify(schedule)}|${editing}|${paper}`}
+            onFit={setFit}
+          />
 
           <FitToWidth>
             <ScheduleSheet
