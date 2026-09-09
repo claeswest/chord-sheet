@@ -81,11 +81,14 @@ body {
    card's padding — so the day name heads a straight left edge down the
    column instead of hanging 2mm out from it. */
 .dayname {
-  flex: 1 1 0; min-width: 0; padding-left: 4mm;
+  flex: 1 1 0; min-width: 0; text-align: center;
   font-family: var(--font-display); font-size: 14px; font-weight: 700;
 }
 
-.tbody { position: relative; display: flex; }
+/* The first hour label sits centred on its own line, and that line is the top
+   of the grid — so without this it was printed straight onto the rule under
+   the day names. */
+.tbody { position: relative; display: flex; margin-top: 3mm; }
 .tbody .gutter { position: relative; flex: 0 0 var(--gutter); }
 .hlabel {
   position: absolute; right: 2.5mm; transform: translateY(-0.42em);
