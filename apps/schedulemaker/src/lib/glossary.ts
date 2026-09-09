@@ -245,6 +245,18 @@ export function isBreak(subject: string): boolean {
 }
 
 /**
+ * A break you eat at, as opposed to one you just have.
+ *
+ * Narrower than isBreak on purpose: a knife and fork against "Rast" or
+ * "Håltimme" would be telling a child there is food when there isn't.
+ */
+const MEAL_WORDS = /^(lunch|lunchrast|frukost|mellanmål|mellis)$/i;
+
+export function isMeal(subject: string): boolean {
+  return MEAL_WORDS.test(subject.trim());
+}
+
+/**
  * Everything else is a lesson, including "Extra studietid Matematik" and
  * "Prov-komplettering".
  *

@@ -339,6 +339,20 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
   text-transform: uppercase; letter-spacing: 0.13em; color: var(--ink);
 }
 .lesson.pause .time, .lesson.pause .where { color: var(--ink); opacity: 0.6; }
+/* Knife and fork, stroked in currentColor so it follows the theme and costs
+   the ink-saving one nothing extra.
+   Sized from the same expression as the subject rather than in em: it sits
+   beside .subject, not inside it, so an em here is the card's inherited size
+   and the icon would have stayed put while the fit measurement shrank the
+   words next to it. */
+.meal {
+  flex: 0 0 auto;
+  width: calc(var(--subject-size) * var(--card-scale, 1) * 1.2);
+  height: calc(var(--subject-size) * var(--card-scale, 1) * 1.2);
+  fill: none; stroke: currentColor; stroke-width: 2.1;
+  stroke-linecap: round; stroke-linejoin: round;
+  align-self: center; opacity: 0.8;
+}
 /* A break in a short box is compact first: it has less room, and giving it a
    shape of its own was never meant to cost it a line. */
 .lesson.pause.compact { --subject-size: 9.5px; }
