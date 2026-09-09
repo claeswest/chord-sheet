@@ -24,6 +24,16 @@ export type Lesson = {
   /** Anything else written in the cell, copied rather than interpreted. */
   note?: string;
   /**
+   * A human has decided what to do with this slot's choice.
+   *
+   * Separate from `hidden` because keeping every option can be the right
+   * answer: a cell split into "BL jv" and "SV uv" is art on even weeks and
+   * Swedish on odd, and both are true. A gate that demanded one would be
+   * wrong about half this child's Fridays. So the question is whether someone
+   * looked, not whether they narrowed it.
+   */
+  resolved?: boolean;
+  /**
    * Set aside: an option in a choice slot that isn't the one this child takes.
    *
    * Kept rather than deleted. The sheet said five languages and the paper is
@@ -123,6 +133,19 @@ export function startHour(lesson: Lesson): number | null {
  * per distinct time would be two rows with one card each, which aligns
  * nothing. The card still prints its own exact times.
  */
+/** Choice slots nobody has decided about yet. */
+export function unresolvedChoices(schedule: Schedule): number {
+  let n = 0;
+  for (const week of schedule.weeks) {
+    for (const day of week.days) {
+      for (const slot of slotsOf(day, true)) {
+        if (slot.length > 1 && !slot.every((l) => l.resolved)) n++;
+      }
+    }
+  }
+  return n;
+}
+
 export function hoursOf(week: Week): number[] {
   const hours = new Set<number>();
   for (const day of week.days) {

@@ -83,8 +83,13 @@ export default function ScheduleSheet({
   onChange?: (next: Schedule) => void;
   onEditLesson?: (weekId: string, dayId: string, lesson: Lesson) => void;
   onAddLesson?: (weekId: string, dayId: string) => void;
-  /** Keep this option and set the rest of its slot aside. */
-  onPickOption?: (weekId: string, dayId: string, lessonId: string | null) => void;
+  /**
+   * Decide a choice slot: keep one option, or keep them all.
+   *
+   * lessonId names the survivor; null keeps every option. Either way the slot
+   * counts as decided, which is what the step to the finished sheet asks for.
+   */
+  onPickOption?: (weekId: string, dayId: string, lessonId: string | null, slotStart?: string) => void;
 }) {
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
@@ -107,7 +112,7 @@ export default function ScheduleSheet({
       <td>
         {slotsAt(day, hour).map((slot) => {
           const choice = slot.length > 1;
-          const anySetAside = slot.some((l) => l.hidden);
+          const decided = slot.every((l) => l.resolved);
           return (
             <div className={choice ? "slot choice" : "slot"} key={slot[0].id}>
               {slot.map((l) => (
@@ -119,22 +124,41 @@ export default function ScheduleSheet({
                     faded={Boolean(l.hidden)}
                     onEdit={() => onEditLesson?.(week.id, day.id, l)}
                   />
-                  {choice && editable && !l.hidden && slot.length > 1 && (
+                  {choice && editable && !decided && (
                     <button
                       className="pick no-print"
                       onClick={() => onPickOption?.(week.id, day.id, l.id)}
                       title="Behåll bara den här"
                     >
-                      välj
+                      bara denna
                     </button>
                   )}
                 </div>
               ))}
-              {choice && !anySetAside && <p className="choice-note">ett av dessa</p>}
-              {choice && anySetAside && editable && (
-                <button className="pick no-print" onClick={() => onPickOption?.(week.id, day.id, null)}>
-                  visa alla igen
+              {choice && !decided && (
+                <div className="choice-ask no-print">
+                  <span>Vilket gäller?</span>
+                  <button
+                    className="pick"
+                    onClick={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
+                  >
+                    behåll båda
+                  </button>
+                </div>
+              )}
+              {choice && decided && editable && (
+                <button
+                  className="pick no-print"
+                  onClick={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
+                >
+                  ändra val
                 </button>
+              )}
+              {/* Neutral on purpose. A kept-together slot is sometimes even and odd
+                  weeks and sometimes two groups that both run; saying "båda
+                  veckorna" asserts a reason the sheet never gave. */}
+              {choice && decided && !editable && slot.length > 1 && (
+                <p className="choice-note">båda gäller</p>
               )}
             </div>
           );

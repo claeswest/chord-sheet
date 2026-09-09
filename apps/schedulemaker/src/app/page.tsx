@@ -9,7 +9,7 @@
 // carrying a child's name, class, school and daily movements, the cheapest way
 // to look after it is not to have it.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { compressImage } from "@clavos/core/image";
 import ScheduleSheet from "@/components/ScheduleSheet";
 import FitToWidth from "@/components/FitToWidth";
@@ -17,7 +17,7 @@ import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import { EMPTY_GLOSSARY, codesIn, normalizeGlossary, withDefaultColors, type Glossary } from "@/lib/glossary";
-import type { Lesson, Schedule } from "@/types/schedule";
+import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
 const THEMES = [
   { id: "", name: "Papper", dot: "#3b5bdb" },
@@ -50,7 +50,13 @@ export default function Home() {
   // memory only: it is a picture of a child's schedule, and writing it to
   // localStorage would leave it on the disk long after the tab is closed.
   const [source, setSource] = useState<string | null>(null);
-  const [editing, setEditing] = useState(true);
+  // Two steps, not a toggle. Editing is where the schedule is made true —
+  // names, corrections, and above all which of the five languages this child
+  // actually reads. The finished sheet is where it is looked at and printed.
+  // A printed timetable offering five languages in one box is simply wrong,
+  // so the step across asks for those decisions first.
+  const [mode, setMode] = useState<"edit" | "view">("edit");
+  const editing = mode === "edit";
   const [openLesson, setOpenLesson] = useState<{ weekId: string; dayId: string; lesson: Lesson } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +66,9 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   // How much the sheet has to shrink to fit one page. 1 means it already does.
   const [fit, setFit] = useState(1);
+  // Which slot a "behåll båda" / "ändra val" click was about, since those
+  // carry no lesson to identify it by.
+  const pendingSlotStart = useRef<string | null>(null);
 
   useEffect(() => {
     try {
@@ -184,8 +193,9 @@ export default function Home() {
    * all back — the paper offered five languages and that record stays, so
    * changing your mind next term isn't another photograph.
    */
-  function pickOption(weekId: string, dayId: string, lessonId: string | null) {
+  function pickOption(weekId: string, dayId: string, lessonId: string | null, slotStart?: string) {
     if (!schedule) return;
+    pendingSlotStart.current = slotStart ?? null;
     setSchedule({
       ...schedule,
       weeks: schedule.weeks.map((w) =>
@@ -196,12 +206,17 @@ export default function Home() {
               days: w.days.map((d) => {
                 if (d.id !== dayId) return d;
                 const chosen = lessonId ? d.lessons.find((l) => l.id === lessonId) : null;
+                // Without a chosen lesson we still need to know which slot was
+                // asked about, so the caller's slot is identified by the click
+                // target's start time, carried in openSlotStart.
+                const slotStart = chosen?.start ?? pendingSlotStart.current;
                 return {
                   ...d,
                   lessons: d.lessons.map((l) => {
-                    const sameSlot = chosen ? l.start === chosen.start && l.start !== "" : true;
+                    const sameSlot = slotStart !== null && l.start === slotStart && l.start !== "";
                     if (!sameSlot) return l;
-                    return { ...l, hidden: chosen ? l.id !== chosen.id : false };
+                    // Decided either way: one kept, or all kept on purpose.
+                    return { ...l, resolved: true, hidden: chosen ? l.id !== chosen.id : false };
                   }),
                 };
               }),
@@ -230,6 +245,7 @@ export default function Home() {
   }
 
   const sheetPaper = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
+  const openChoices = schedule ? unresolvedChoices(schedule) : 0;
 
   return (
     <main className="app" data-theme={theme || undefined}>
@@ -289,35 +305,61 @@ export default function Home() {
       {schedule && (
         <>
           <div className="controls no-print">
-            <button onClick={() => window.print()} className="primary">Skriv ut</button>
-            <button onClick={() => setEditing((e) => !e)} aria-pressed={editing}>
-              {editing ? "Klar med ändringar" : "Ändra"}
-            </button>
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                className="swatch"
-                style={{ background: t.dot }}
-                aria-label={t.name}
-                aria-pressed={theme === t.id}
-                onClick={() => setTheme(t.id)}
-              />
-            ))}
-            <select
-              value={paper}
-              onChange={(e) => setPaper(e.target.value)}
-              aria-label="Pappersformat"
-            >
-              {PAPERS.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+            {editing ? (
+              <>
+                {/* The one way onwards, and it is refused while a choice is
+                    open. Disabling it with a reason beside it beats letting
+                    someone print a sheet that offers five languages at once. */}
+                <button
+                  className="primary"
+                  onClick={() => setMode("view")}
+                  disabled={openChoices > 0}
+                >
+                  Se färdigt schema →
+                </button>
+                {openChoices > 0 && (
+                  <span className="hint">
+                    {openChoices === 1
+                      ? "1 val kvar att bestämma i schemat"
+                      : `${openChoices} val kvar att bestämma i schemat`}
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <button className="primary" onClick={() => window.print()}>
+                  Skriv ut
+                </button>
+                <button onClick={() => setMode("edit")}>← Ändra</button>
+                {THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    className="swatch"
+                    style={{ background: t.dot }}
+                    aria-label={t.name}
+                    aria-pressed={theme === t.id}
+                    onClick={() => setTheme(t.id)}
+                  />
+                ))}
+                <select
+                  value={paper}
+                  onChange={(e) => setPaper(e.target.value)}
+                  aria-label="Pappersformat"
+                >
+                  {PAPERS.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
             <button
+              style={{ marginLeft: "auto" }}
               onClick={() => {
                 setSchedule(null);
                 setSource(null);
                 setGlossary(EMPTY_GLOSSARY);
                 setText("");
+                setMode("edit");
               }}
             >
               Börja om
@@ -333,8 +375,8 @@ export default function Home() {
 
           <p className="hint no-print" style={{ marginTop: -8 }}>
             {editing
-              ? "Klicka på titeln, en dag eller ett pass för att ändra det. Kontrollera mot originalet innan du skriver ut."
-              : "Kontrollera mot originalet innan du skriver ut."}
+              ? "Klicka på titeln, en dag eller ett pass för att ändra det."
+              : "Så här kommer det ut. Kontrollera mot originalet innan du skriver ut."}
           </p>
 
           {error && <p className="error no-print">{error}</p>}
