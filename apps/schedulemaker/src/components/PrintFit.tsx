@@ -44,11 +44,22 @@ export default function PrintFit({
       const sheet = document.querySelector<HTMLElement>(".sheet");
       if (!sheet) return;
 
+      // Hiding everything unprintable collapses the page — here from 1490px
+      // to 794px, which is barely a viewport. The browser clamps the scroll
+      // position to fit the shorter document, and restoring the height does
+      // not restore the scroll: every edit threw the reader back to the top.
+      const scroller = document.scrollingElement ?? document.documentElement;
+      const y = scroller.scrollTop;
+
       document.documentElement.classList.add("measuring-print");
       // Read before the class is removed; scrollHeight is the content, which
       // is what min-height was hiding.
       const natural = sheet.scrollHeight;
       document.documentElement.classList.remove("measuring-print");
+
+      // Same task as the collapse, so the page never paints at the wrong
+      // offset.
+      if (scroller.scrollTop !== y) scroller.scrollTop = y;
 
       const available = pageHeightMm * PX_PER_MM;
       // A hair under 1 rather than exactly, so a sheet that measures precisely

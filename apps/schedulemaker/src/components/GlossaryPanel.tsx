@@ -10,6 +10,7 @@
 // translating from the paper the school sent, and you need to see which of
 // "AAC" and "AnOh" you are naming right now.
 
+import { useState } from "react";
 import type { Schedule } from "@/types/schedule";
 import { codesIn, worthNaming, type Glossary } from "@/lib/glossary";
 
@@ -33,8 +34,17 @@ export default function GlossaryPanel({
   const set = (kind: "teachers" | "subjects" | "colors", code: string, value: string) =>
     onChange({ ...glossary, [kind]: { ...glossary[kind], [code]: value } });
 
+  // Decided on the first render and then left to the reader. As a prop it was
+  // recomputed on every keystroke, so typing the first name made "0 av 33"
+  // false and slammed the panel shut on the hands still typing in it.
+  const [open, setOpen] = useState(done === 0);
+
   return (
-    <details className="panel no-print" open={done === 0}>
+    <details
+      className="panel no-print"
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
       <summary>
         <span className="panel-title">Namn och färger</span>
         <span className="hint"> — {done} av {total} namngivna</span>
