@@ -522,33 +522,35 @@ export default function ScheduleSheet({
 
   return (
     <div className="sheet">
-      {/* undefined is a schedule read before this line existed and gets the
-          default; "" is someone who deleted it on purpose and gets nothing. */}
-      {(schedule.heading ?? DEFAULT_HEADING) !== "" || editable ? (
+      <div className="sheet-head">
+        {/* undefined is a schedule read before this line existed and gets the
+            default; "" is someone who deleted it on purpose and gets nothing. */}
+        {(schedule.heading ?? DEFAULT_HEADING) !== "" || editable ? (
+          <EditableText
+            as="h1"
+            className="banner"
+            value={schedule.heading ?? DEFAULT_HEADING}
+            placeholder="Rubrik, t.ex. Hannas schema"
+            editable={editable}
+            onChange={(heading) => patch({ heading })}
+          />
+        ) : null}
         <EditableText
-          as="h1"
-          className="banner"
-          value={schedule.heading ?? DEFAULT_HEADING}
-          placeholder="Rubrik, t.ex. Hannas schema"
+          as="h2"
+          value={schedule.title}
+          placeholder="Klass eller grupp, t.ex. 7A"
           editable={editable}
-          onChange={(heading) => patch({ heading })}
+          onChange={(title) => patch({ title })}
         />
-      ) : null}
-      <EditableText
-        as="h2"
-        value={schedule.title}
-        placeholder="Klass eller grupp, t.ex. 7A"
-        editable={editable}
-        onChange={(title) => patch({ title })}
-      />
-      <EditableText
-        as="p"
-        className="subtitle"
-        value={schedule.subtitle ?? ""}
-        placeholder="Skola, termin…"
-        editable={editable}
-        onChange={(subtitle) => patch({ subtitle: subtitle || null })}
-      />
+        <EditableText
+          as="p"
+          className="subtitle"
+          value={schedule.subtitle ?? ""}
+          placeholder="Skola, termin…"
+          editable={editable}
+          onChange={(subtitle) => patch({ subtitle: subtitle || null })}
+        />
+      </div>
 
       {schedule.weeks.map((week) => {
         const span = weekSpan(week, editable);
