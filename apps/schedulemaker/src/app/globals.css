@@ -131,6 +131,16 @@ body {
   hyphens: auto; font-variant-numeric: tabular-nums;
 }
 .notes { margin-top: 8mm; font-size: 12px; color: var(--muted); }
+.note { display: flex; align-items: baseline; gap: 6px; }
+.note > p { margin: 0.6mm 0; }
+/* Quiet, but never hidden. Hiding it until hover would repeat the problem it
+   exists to solve — and on a touch screen there is no hover to reveal it. */
+.drop-note {
+  font-size: 13px; line-height: 1; padding: 2px 7px; border-radius: 999px;
+  opacity: 0.35; transition: opacity 0.12s;
+}
+.note:hover .drop-note, .drop-note:focus-visible { opacity: 0.9; }
+.add-note:disabled { opacity: 0.4; cursor: default; }
 
 /* ── Controls (never printed) ─────────────────────────────────────────── */
 .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 20px; }

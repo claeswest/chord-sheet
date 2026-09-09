@@ -638,26 +638,42 @@ export default function ScheduleSheet({
         // its 8mm top margin was the last of the gap between the shrink figure
         // quoted in edit and the one the printer gets.
         <div className={schedule.notes.length === 0 ? "notes no-print" : "notes"}>
-          {schedule.notes.map((n, i) => (
-            <EditableText
-              key={i}
-              as="p"
-              value={n}
-              placeholder="Anteckning"
-              editable={editable}
-              onChange={(text) =>
-                patch({
-                  notes: text
-                    ? schedule.notes.map((old, j) => (j === i ? text : old))
-                    : schedule.notes.filter((_, j) => j !== i),
-                })
-              }
-            />
-          ))}
+          {schedule.notes.map((n, i) =>
+            // An empty note is a row waiting to be typed into. It is not
+            // something to print, so the finished sheet skips it.
+            !editable && !n.trim() ? null : (
+              <div className="note" key={i}>
+                <EditableText
+                  as="p"
+                  value={n}
+                  placeholder="Anteckning"
+                  editable={editable}
+                  onChange={(text) =>
+                    patch({ notes: schedule.notes.map((old, j) => (j === i ? text : old)) })
+                  }
+                />
+                {editable && (
+                  // Clearing the text used to be the only way to delete a
+                  // note, which is not something anyone would guess.
+                  <button
+                    className="drop-note no-print"
+                    aria-label="Ta bort anteckningen"
+                    title="Ta bort"
+                    onClick={() => patch({ notes: schedule.notes.filter((_, j) => j !== i) })}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ),
+          )}
           {editable && (
             <button
               className="add-note no-print"
-              onClick={() => patch({ notes: [...schedule.notes, "Ny anteckning"] })}
+              // Enter leaves the focus on this button, so holding it down adds
+              // a note per keypress. One empty row is enough to type into.
+              disabled={schedule.notes.at(-1) === ""}
+              onClick={() => patch({ notes: [...schedule.notes, ""] })}
             >
               + Lägg till anteckning
             </button>
