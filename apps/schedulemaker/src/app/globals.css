@@ -121,8 +121,14 @@ body {
 /* Swedish compounds are long and these columns are narrow, so let them break
    properly instead of overflowing: "Hemkunskapssal" divides, "Hkk" doesn't.
    text-wrap: pretty keeps a two-line subject from ending in one short word. */
+/* The size is a variable rather than a value per rule. .lesson.minor and
+   .lesson.compact are the same specificity, so whichever sat lower in this
+   file won — a short "Extra studietid Matematik" is both, and it was being
+   set in minor's 12px instead of compact's 10px, wide enough to wrap onto a
+   line its box didn't have. */
+.lesson { --subject-size: 12.5px; }
 .lesson .subject {
-  font-family: var(--font-display); font-size: calc(12.5px * var(--card-scale, 1));
+  font-family: var(--font-display); font-size: calc(var(--subject-size) * var(--card-scale, 1));
   font-weight: 700; hyphens: auto; text-wrap: pretty;
 }
 /* Tabular figures so room numbers line up down a column, as on the original. */
@@ -258,7 +264,7 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 .lesson.compact { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4px; padding: 0.4mm 2mm; }
 .lesson.compact .time { flex: 0 0 auto; font-size: calc(8.5px * var(--card-scale, 1)); }
 .lesson.compact .body { flex: 1 1 auto; min-width: 0; gap: 0 4px; }
-.lesson.compact .subject { font-size: calc(10px * var(--card-scale, 1)); }
+.lesson.compact { --subject-size: 10px; }
 .lesson.compact .where { font-size: calc(8.5px * var(--card-scale, 1)); }
 
 /* No second line to wrap onto: one row, and the room gives way before the
@@ -307,9 +313,12 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
    like five lessons. */
 .lesson.minor {
   background: transparent !important; border: 0; padding-left: 0;
-  opacity: 0.72;
+  opacity: 0.72; --subject-size: 12px;
 }
-.lesson.minor .subject { font-weight: 500; font-size: calc(12px * var(--card-scale, 1)); font-family: var(--font-body); }
+.lesson.minor .subject { font-weight: 500; font-family: var(--font-body); }
+/* A break that is also a short box is compact first: it has less room, and
+   playing it down was never meant to cost it a line. */
+.lesson.minor.compact { --subject-size: 10px; }
 
 .add-lesson { font-size: 11px; padding: 2px 10px; margin-top: 1mm; opacity: 0.75; }
 .pair .tint { flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 1px solid #d6d6de; border-radius: 8px; background: none; cursor: pointer; }

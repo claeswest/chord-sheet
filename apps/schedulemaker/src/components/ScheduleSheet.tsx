@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
 import { isMinor, say, type Glossary } from "@/lib/glossary";
@@ -165,7 +165,9 @@ const SEP = " · ";
  * font may re-flow a wrapped subject onto one line and win far more than any
  * ratio would predict.
  */
-function useFitCards(schedule: Schedule, glossary: Glossary, editable: boolean) {
+function useFitCards() {
+  const rerun = useRef<() => void>(undefined);
+
   useEffect(() => {
     const sheet = document.querySelector<HTMLElement>(".sheet");
     if (!sheet) return;
@@ -218,20 +220,30 @@ function useFitCards(schedule: Schedule, glossary: Glossary, editable: boolean) 
       queued = requestAnimationFrame(fit);
     };
 
+    rerun.current = later;
     later();
     // Fonts settle after first paint, and metrics before they do are a
     // fallback face's, not the one that prints.
     document.fonts?.ready.then(later);
-    // Switching to portrait halves the column width without changing any of
-    // the data this effect depends on.
+    // Switching to portrait halves the column width without changing nothing
+    // else this component is told about.
     const ro = new ResizeObserver(later);
     ro.observe(sheet);
     return () => {
+      rerun.current = undefined;
       ro.disconnect();
       cancelAnimationFrame(queued);
     };
-    // Naming a teacher lengthens the text as surely as editing a lesson does.
-  }, [schedule, glossary, editable]);
+  }, []);
+
+  // Deliberately every render, with no dependency list. Anything that reaches
+  // the sheet changes how much text is in it — a lesson edited, a teacher
+  // named, a choice decided — and a list of the things that do would be a list
+  // to keep correct forever. It is one measuring pass over about thirty boxes,
+  // and it only runs when something has actually re-rendered.
+  useEffect(() => {
+    rerun.current?.();
+  });
 }
 
 // "Båda" only when there are two. A language block offering English, French,
@@ -424,7 +436,7 @@ export default function ScheduleSheet({
   /** Ask the question again: undo the decision, keep nothing set aside. */
   onReopenChoice?: (weekId: string, dayId: string, slotStart: string) => void;
 }) {
-  useFitCards(schedule, glossary, editable);
+  useFitCards();
 
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
