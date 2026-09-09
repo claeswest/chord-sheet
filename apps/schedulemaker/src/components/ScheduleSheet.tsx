@@ -22,7 +22,81 @@ import EditableText from "./EditableText";
 // Spanish and German is four choices, and a button that calls them both is
 // wrong about the one slot on these sheets that most needs a decision.
 const keepAll = (n: number) => (n === 2 ? "behåll båda" : `behåll alla ${n}`);
-const allApply = (n: number) => (n === 2 ? "båda gäller" : `alla ${n} gäller`);
+
+/**
+ * A slot where everything was kept, drawn the way the paper drew it: one box.
+ *
+ * Five kept options used to be five stacked cards, each repeating the same
+ * start time. On the original that block is a single box with the language
+ * codes listed inside it, and five bordered cards said something the school
+ * never said — that these are five things, one after another. One box, one
+ * time, a line per option.
+ *
+ * The shared time is printed once at the top, but only when the options agree
+ * on it. The odd-week Swedish in one of these runs 25 minutes past the
+ * even-week art beside it, and hoisting one of those two end times to the top
+ * of the box would put a time against a lesson that doesn't end then.
+ */
+function MergedCard({
+  lessons,
+  glossary,
+  editable,
+  onEditLesson,
+}: {
+  lessons: Lesson[];
+  glossary: Glossary;
+  editable: boolean;
+  onEditLesson?: (lesson: Lesson) => void;
+}) {
+  const start = lessons[0].start;
+  const ends = new Set(lessons.map((l) => l.end).filter(Boolean));
+  const sharedEnd = ends.size === 1 && lessons.every((l) => l.end) ? [...ends][0] : null;
+
+  return (
+    <div className="lesson merged">
+      {(start || sharedEnd) && (
+        <div className="time">
+          {start}
+          {sharedEnd && ` – ${sharedEnd}`}
+        </div>
+      )}
+      <ul className="options">
+        {lessons.map((l) => {
+          const subject = say(l.subject, glossary.subjects) ?? l.subject;
+          const teacher = say(l.teacher, glossary.teachers);
+          const tint = glossary.colors?.[l.subject.trim()];
+          const detail = [l.room, teacher, l.note, sharedEnd ? null : l.end && `slut ${l.end}`]
+            .filter(Boolean)
+            .join(" · ");
+
+          return (
+            <li
+              key={l.id}
+              className={editable ? "opt editable" : "opt"}
+              onClick={editable ? () => onEditLesson?.(l) : undefined}
+              tabIndex={editable ? 0 : undefined}
+              role={editable ? "button" : undefined}
+              onKeyDown={
+                editable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onEditLesson?.(l);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              {tint && <span className="dot" style={{ background: tint }} aria-hidden />}
+              <span className="subject">{subject}</span>
+              {detail && <span className="where">{detail}</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 function LessonCard({
   lesson,
@@ -125,9 +199,25 @@ export default function ScheduleSheet({
         {slotsAt(day, hour).map((slot) => {
           const choice = slot.length > 1;
           const decided = slot.every((l) => l.resolved);
+          const kept = slot.filter((l) => !l.hidden);
+          // Everything survived the decision: one box, as on the paper. The
+          // set-aside ones still render below it in edit mode so the choice
+          // can be changed; print drops them.
+          const merged = choice && decided && kept.length > 1;
           return (
-            <div className={choice ? "slot choice" : "slot"} key={slot[0].id}>
-              {slot.map((l) => (
+            // The dashed frame marks a question. Once it's answered — and in
+            // the finished sheet, where every slot is — the frame around a
+            // single box is a second box saying nothing.
+            <div className={choice && editable ? "slot choice" : "slot"} key={slot[0].id}>
+              {merged && (
+                <MergedCard
+                  lessons={kept}
+                  glossary={glossary}
+                  editable={editable}
+                  onEditLesson={(l) => onEditLesson?.(week.id, day.id, l)}
+                />
+              )}
+              {(merged ? slot.filter((l) => l.hidden) : slot).map((l) => (
                 <div key={l.id} className="option">
                   <LessonCard
                     lesson={l}
@@ -165,12 +255,6 @@ export default function ScheduleSheet({
                 >
                   ändra val
                 </button>
-              )}
-              {/* Neutral on purpose. A kept-together slot is sometimes even and odd
-                  weeks and sometimes two groups that both run; saying "båda
-                  veckorna" asserts a reason the sheet never gave. */}
-              {choice && decided && !editable && slot.length > 1 && (
-                <p className="choice-note">{allApply(slot.length)}</p>
               )}
             </div>
           );
@@ -241,7 +325,14 @@ export default function ScheduleSheet({
               </thead>
               <tbody>
                 {rows.map((hour) => (
-                  <tr key={hour ?? "untimed"}>
+                  // The trailing row holds nothing but "+ pass" when the sheet
+                  // gave every lesson a time. Marking it unprintable keeps it
+                  // out of the fit measurement too, which was quoting a
+                  // shrink of 63 % in edit for a sheet that prints at 74 %.
+                  <tr
+                    key={hour ?? "untimed"}
+                    className={hour === null && !untimed(week) ? "no-print" : undefined}
+                  >
                     <th className="hour-col" scope="row">
                       {hour === null ? "" : `${String(hour).padStart(2, "0")}`}
                     </th>
@@ -257,7 +348,10 @@ export default function ScheduleSheet({
       })}
 
       {(schedule.notes.length > 0 || editable) && (
-        <div className="notes">
+        // With no notes written, this block is just somewhere to add one — and
+        // its 8mm top margin was the last of the gap between the shrink figure
+        // quoted in edit and the one the printer gets.
+        <div className={schedule.notes.length === 0 ? "notes no-print" : "notes"}>
           {schedule.notes.map((n, i) => (
             <EditableText
               key={i}

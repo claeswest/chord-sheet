@@ -172,10 +172,23 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 }
 .slot.choice .lesson { margin-bottom: 1mm; }
 .slot .lesson:last-child { margin-bottom: 0; }
-.choice-note {
-  margin: 0.5mm 0 1mm; font-size: 9px; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--muted); text-align: right;
+/* One box holding several options, as the original prints it: the time once
+   at the top, then a line each. Deliberately not five cards — see MergedCard. */
+.lesson.merged .options { list-style: none; margin: 0; padding: 0; }
+.lesson.merged .opt {
+  display: flex; align-items: baseline; gap: 4px;
+  line-height: 1.25; padding: 0.2mm 0;
 }
+.lesson.merged .subject { font-size: 12.5px; }
+.lesson.merged .where { flex: 1; min-width: 0; }
+/* The subject colour survives the merge — one box can't have five
+   backgrounds, so each line carries its own instead. */
+.lesson.merged .dot {
+  flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+.lesson.merged .opt.editable { cursor: pointer; border-radius: 4px; }
+.lesson.merged .opt.editable:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* Breaks are the rows worth playing down: five lunches a week should not look
    like five lessons. */
