@@ -1,0 +1,126 @@
+/* Plain CSS, no Tailwind — deliberately.
+ *
+ * This document's job is to come out of a printer correctly. Print wants
+ * millimetres, @page rules and control over what breaks where; a utility
+ * framework built for screens fights all three. The other apps in this repo
+ * use Tailwind because they are screens first. This one is paper first.
+ */
+
+:root {
+  --paper: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #6b6b6b;
+  --rule: #e3e3e3;
+  --accent: #3b5bdb;
+  --accent-soft: #edf2ff;
+  --font-display: ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 10px;
+}
+
+/* Themes a child would actually choose. Each sets the same four variables,
+ * so a new one is four lines and never touches the layout. */
+[data-theme="dusk"] {
+  --paper: #10132a; --ink: #f2f4ff; --muted: #9aa3d0; --rule: #2b3160;
+  --accent: #7c8cff; --accent-soft: #1c2148;
+}
+[data-theme="meadow"] {
+  --paper: #f6fbf4; --ink: #16281b; --muted: #5d7a63; --rule: #d5e6d6;
+  --accent: #2f7d46; --accent-soft: #e4f3e6;
+}
+[data-theme="candy"] {
+  --paper: #fff7fb; --ink: #3b1130; --muted: #9c6383; --rule: #f3d9e6;
+  --accent: #d6336c; --accent-soft: #ffe3ee;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #f4f4f6;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.app { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+
+/* ── The sheet ─────────────────────────────────────────────────────────────
+ * Sized in millimetres so that what is on screen is what comes out of the
+ * printer. Landscape A4 by default; A3 is the same document scaled by the
+ * printer, not a second layout to maintain. */
+.sheet {
+  width: 297mm;
+  min-height: 210mm;
+  padding: 12mm 14mm;
+  margin: 0 auto;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 16px 48px rgb(0 0 0 / 0.10);
+  transform-origin: top center;
+}
+
+.sheet h1 { font-family: var(--font-display); font-size: 30px; margin: 0; letter-spacing: -0.01em; }
+.sheet .subtitle { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+.week-label {
+  font-family: var(--font-display); font-size: 15px; margin: 10mm 0 3mm;
+  color: var(--accent); text-transform: uppercase; letter-spacing: 0.12em;
+}
+
+table.grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.grid th {
+  font-family: var(--font-display); font-size: 14px; text-align: left;
+  padding: 0 0 3mm; border-bottom: 2px solid var(--accent);
+}
+table.grid td { vertical-align: top; padding: 2mm 3mm 2mm 0; border-bottom: 1px solid var(--rule); }
+
+.lesson { break-inside: avoid; padding: 1.5mm 2mm; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 1.5mm; }
+.lesson .time { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lesson .subject { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+.lesson .where { font-size: 11px; color: var(--muted); }
+.notes { margin-top: 8mm; font-size: 12px; color: var(--muted); }
+
+/* ── Controls (never printed) ─────────────────────────────────────────── */
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 20px; }
+button, .btn {
+  font: inherit; font-size: 14px; font-weight: 600; padding: 9px 18px; border-radius: 999px;
+  border: 1px solid #d6d6de; background: #fff; color: #1a1a1a; cursor: pointer;
+}
+button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+button:disabled { opacity: 0.45; cursor: default; }
+.swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #d6d6de; cursor: pointer; padding: 0; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #1a1a1a; }
+textarea { width: 100%; font: inherit; padding: 12px; border: 1px solid #d6d6de; border-radius: 10px; resize: vertical; }
+.error { color: #b3261e; font-size: 14px; }
+.hint { color: var(--muted); font-size: 13px; }
+
+/* ── Print ─────────────────────────────────────────────────────────────────
+ * The sheet is already A4-landscape sized, so printing is mostly a matter of
+ * removing everything else and letting the page be the page. */
+@page { size: A4 landscape; margin: 0; }
+
+@media print {
+  body { background: #fff; }
+  .app { max-width: none; padding: 0; }
+  .no-print { display: none !important; }
+  .sheet {
+    width: auto; min-height: auto; margin: 0;
+    box-shadow: none; transform: none;
+    /* Themes are the point of this app; a printer that drops the background
+       prints somebody else's schedule. */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Screen-only scaling of the sheet — see FitToWidth.tsx. The wrapper owns the
+ * height because a transform doesn't change layout. */
+.fit-outer { overflow: hidden; }
+.fit-inner { transform-origin: top left; width: max-content; }
+
+@media print {
+  /* The page is the page again: no scaling, no clipping, no imposed height. */
+  .fit-outer { height: auto !important; overflow: visible; }
+  .fit-inner { transform: none !important; width: auto; }
+}
