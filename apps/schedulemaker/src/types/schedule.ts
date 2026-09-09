@@ -114,25 +114,61 @@ export function slotsOf(day: Day, includeHidden = false): Lesson[][] {
   return slots;
 }
 
-/** The hour a lesson starts in, or null when the sheet gave no time. */
-export function startHour(lesson: Lesson): number | null {
-  const m = lesson.start.match(/^(\d{1,2}):(\d{2})$/);
-  return m ? Number(m[1]) : null;
+/**
+ * Minutes past midnight, for laying out a time axis. Null when unparseable.
+ *
+ * This is the one place a printed time becomes a number, and it stays inside
+ * layout: what a card prints is still the string the sheet gave. Position is
+ * arithmetic; the text is a quotation.
+ */
+export function minutesOf(time: string): number | null {
+  const m = time.match(/^(\d{1,2})[:.](\d{2})$/);
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  return h > 23 || min > 59 ? null : h * 60 + min;
 }
 
 /**
- * The hours the week actually uses, in order.
- *
- * The sheet is laid out as one row per hour so that days line up: with ten
- * slots in a Monday column, "what happens at ten" otherwise means reading
- * every card. The original paper solved this with a clock down the margin,
- * and this is the same idea without the proportional grid — which would have
- * to squash a 40-minute lesson or invent a gap to keep the scale honest.
- *
- * Hours, not exact times. Monday starts at 08:10 and Tuesday at 08:25; a row
- * per distinct time would be two rows with one card each, which aligns
- * nothing. The card still prints its own exact times.
+ * How long a lesson runs. A timed lesson with no end gets a nominal length —
+ * it has to occupy something, and a zero-height box would vanish.
  */
+const ASSUMED_MINUTES = 40;
+
+export function lessonSpan(lesson: Lesson): { from: number; to: number } | null {
+  const from = minutesOf(lesson.start);
+  if (from === null) return null;
+  const to = minutesOf(lesson.end);
+  return { from, to: to !== null && to > from ? to : from + ASSUMED_MINUTES };
+}
+
+/** A slot runs from its shared start to the latest end among its options. */
+export function slotSpan(slot: Lesson[]): { from: number; to: number } | null {
+  const spans = slot.map(lessonSpan).filter((s) => s !== null);
+  if (spans.length === 0) return null;
+  return {
+    from: Math.min(...spans.map((s) => s.from)),
+    to: Math.max(...spans.map((s) => s.to)),
+  };
+}
+
+/**
+ * The clock range a week needs, rounded out to whole hours.
+ *
+ * Rounded out rather than starting at the first lesson so the axis reads in
+ * whole hours, the way the original's margin does.
+ */
+export function weekSpan(week: Week, includeHidden = false): { from: number; to: number } | null {
+  const spans = week.days
+    .flatMap((d) => slotsOf(d, includeHidden))
+    .map(slotSpan)
+    .filter((s) => s !== null);
+  if (spans.length === 0) return null;
+  const from = Math.min(...spans.map((s) => s.from));
+  const to = Math.max(...spans.map((s) => s.to));
+  return { from: Math.floor(from / 60) * 60, to: Math.ceil(to / 60) * 60 };
+}
+
 /** Choice slots nobody has decided about yet. */
 export function unresolvedChoices(schedule: Schedule): number {
   let n = 0;
@@ -144,16 +180,4 @@ export function unresolvedChoices(schedule: Schedule): number {
     }
   }
   return n;
-}
-
-export function hoursOf(week: Week): number[] {
-  const hours = new Set<number>();
-  for (const day of week.days) {
-    for (const lesson of day.lessons) {
-      if (lesson.hidden) continue;
-      const h = startHour(lesson);
-      if (h !== null) hours.add(h);
-    }
-  }
-  return [...hours].sort((a, b) => a - b);
 }

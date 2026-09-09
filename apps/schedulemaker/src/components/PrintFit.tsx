@@ -23,8 +23,6 @@ const PX_PER_MM = 96 / 25.4;
 /** Hides everything print hides, so the measurement is of what will print. */
 const MEASURING = `
   html.measuring-print .no-print { display: none !important; }
-  html.measuring-print .lesson.set-aside { display: none !important; }
-  html.measuring-print .slot.choice { border: 0 !important; padding: 0 !important; }
   html.measuring-print .sheet { min-height: 0 !important; }
 `;
 
