@@ -49,10 +49,35 @@ export function normalizeGlossary(g: Partial<Glossary> | null | undefined): Glos
  * costs a fortune in ink and makes the text harder to read at arm's length —
  * which is the one thing this document has to do.
  */
-const PALETTE = [
-  "#ffe2e2", "#dff0e4", "#e2ecff", "#fff2d0", "#f0e2ff",
-  "#d9f2f4", "#ffe6cc", "#e8eede", "#fbdff0", "#e4e7ef",
-];
+/**
+ * A hue per subject, spaced by the golden angle.
+ *
+ * A fixed list of ten was the first attempt and it wrapped: a real timetable
+ * has thirty-odd codes, so "SO", "Sl tx" and "Prov-komplettering" all came out
+ * the same pale green. Colour is a key — "the pink one is maths" — and a key
+ * that repeats is worse than no key, because it invites a wrong reading rather
+ * than no reading.
+ *
+ * 137.508° is the angle that keeps every next hue as far as possible from all
+ * the previous ones, so neighbours in the list are never neighbours in colour.
+ *
+ * Saturation and lightness are fixed and pale: these sit behind black text on
+ * paper, read at arm's length, printed on whatever is in the machine.
+ */
+function tintFor(index: number): string {
+  const hue = (index * 137.508) % 360;
+  return hslToHex(hue, 0.62, 0.92);
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(v * 255).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
 
 /** Fills in a colour for every subject that hasn't got one. */
 export function withDefaultColors(glossary: Glossary, subjects: string[]): Glossary {
@@ -61,13 +86,24 @@ export function withDefaultColors(glossary: Glossary, subjects: string[]): Gloss
   for (const code of subjects) {
     if (colors[code]) continue;
     // Breaks stay uncoloured: they are the rows worth playing down.
-    colors[code] = ALREADY_WORDS.test(code) ? "" : PALETTE[next++ % PALETTE.length];
+    // Breaks and admin slots stay uncoloured: they are the rows worth
+    // playing down, not worth a hue of their own.
+    colors[code] = isMinor(code) ? "" : tintFor(next++);
   }
   return { ...glossary, colors };
 }
 
-/** Every distinct code in the schedule, in the order it first appears. */
+/**
+ * Every distinct code, most-used first.
+ *
+ * A real timetable produced 36 of them in first-seen order, which put "MaAr",
+ * who teaches six lessons, somewhere in the middle and "PhHe", who teaches
+ * one, above him. Naming the four that matter should not mean reading
+ * thirty-six boxes to find them.
+ */
 export function codesIn(schedule: Schedule): { teachers: string[]; subjects: string[] } {
+  const teacherCount = new Map<string, number>();
+  const subjectCount = new Map<string, number>();
   const teachers: string[] = [];
   const subjects: string[] = [];
   for (const week of schedule.weeks) {
@@ -75,14 +111,26 @@ export function codesIn(schedule: Schedule): { teachers: string[]; subjects: str
       for (const l of day.lessons) {
         // A cell can name two people — "MaAr,LiOv" — and each is its own code.
         for (const t of (l.teacher ?? "").split(/[,/]/).map((s) => s.trim())) {
-          if (t && !teachers.includes(t)) teachers.push(t);
+          if (!t) continue;
+          if (!teachers.includes(t)) teachers.push(t);
+          teacherCount.set(t, (teacherCount.get(t) ?? 0) + 1);
         }
         const s = l.subject.trim();
-        if (s && !subjects.includes(s)) subjects.push(s);
+        if (!s) continue;
+        if (!subjects.includes(s)) subjects.push(s);
+        subjectCount.set(s, (subjectCount.get(s) ?? 0) + 1);
       }
     }
   }
-  return { teachers, subjects };
+  // Stable: equal counts keep first-seen order rather than shuffling between
+  // renders, which would move a box out from under the cursor.
+  const by = (counts: Map<string, number>, order: string[]) => (a: string, b: string) =>
+    (counts.get(b) ?? 0) - (counts.get(a) ?? 0) || order.indexOf(a) - order.indexOf(b);
+
+  return {
+    teachers: [...teachers].sort(by(teacherCount, teachers)),
+    subjects: [...subjects].sort(by(subjectCount, subjects)),
+  };
 }
 
 /**
@@ -114,11 +162,24 @@ export function say(value: string | undefined, map: Record<string, string>): str
  */
 const ALREADY_WORDS = /^(lunch|rast|frukost|mellanmål|håltimme|paus)$/i;
 
-/** Whether a lesson is a break rather than teaching — printed more quietly. */
-export function isBreak(subject: string): boolean {
-  return ALREADY_WORDS.test(subject.trim());
+/**
+ * Slots that are not a lesson.
+ *
+ * Breaks, and the administrative filler a secondary timetable is full of —
+ * "Extra studietid Matematik", "Prov-komplettering", "Veckoplanering". Printed
+ * in bold beside Matematik they read as equally important, and they are the
+ * least important thing on the sheet.
+ */
+const ADMIN = /(studietid|prov-?komplettering|veckoplanering|mentorstid|klassråd|elevens val)/i;
+
+export function isMinor(subject: string): boolean {
+  const s = subject.trim();
+  return ALREADY_WORDS.test(s) || ADMIN.test(s);
 }
 
+/** Kept for the sheet's older name. */
+export const isBreak = isMinor;
+
 export function worthNaming(codes: string[]): string[] {
-  return codes.filter((c) => !ALREADY_WORDS.test(c) && c.length <= 24);
+  return codes.filter((c) => !isMinor(c) && c.length <= 24);
 }

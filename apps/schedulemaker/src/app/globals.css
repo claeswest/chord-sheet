@@ -193,3 +193,25 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 .panel[open] summary::before { content: "▾ "; }
 .source-photo { display: block; width: 100%; margin-top: 12px; border-radius: 10px; border: 1px solid #e4e4ea; }
 select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px; border: 1px solid #d6d6de; background: #fff; cursor: pointer; }
+
+
+/* ── The hour column ───────────────────────────────────────────────────── */
+th.hour-col {
+  width: 12mm; border-bottom: 0; padding: 2mm 3mm 2mm 0;
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  color: var(--muted); text-align: right; vertical-align: top;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+table.grid thead th.hour-col { border-bottom: 2px solid var(--accent); }
+table.grid tbody tr td { border-bottom: 1px solid var(--rule); }
+table.grid tbody tr:last-child td, table.grid tbody tr:last-child th { border-bottom: 0; }
+
+/* An option that isn't the one this child takes: still on the sheet while
+   editing, gone when printed. */
+.option { position: relative; }
+.lesson.set-aside { opacity: 0.4; background: transparent !important; border: 1px dashed var(--rule); }
+@media print { .lesson.set-aside { display: none; } .slot.choice { border: 0; padding: 0; } }
+.pick {
+  font-size: 10px; padding: 1px 8px; border-radius: 999px; margin: 0 0 1.5mm auto;
+  display: block; opacity: 0.8;
+}

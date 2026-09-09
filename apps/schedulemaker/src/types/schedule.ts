@@ -23,6 +23,15 @@ export type Lesson = {
   room?: string;
   /** Anything else written in the cell, copied rather than interpreted. */
   note?: string;
+  /**
+   * Set aside: an option in a choice slot that isn't the one this child takes.
+   *
+   * Kept rather than deleted. The sheet said five languages and the paper is
+   * the record; picking German should not destroy the evidence that Spanish
+   * was on offer, and changing your mind next term should not mean
+   * photographing the schedule again.
+   */
+  hidden?: boolean;
 };
 
 export type Day = {
@@ -84,12 +93,44 @@ export function timeRange(week: Week): { from: string; to: string } | null {
  * even-week art beside it — and requiring both to match would split a pair
  * that the paper clearly shows as one box.
  */
-export function slotsOf(day: Day): Lesson[][] {
+export function slotsOf(day: Day, includeHidden = false): Lesson[][] {
   const slots: Lesson[][] = [];
   for (const lesson of day.lessons) {
+    if (lesson.hidden && !includeHidden) continue;
     const last = slots[slots.length - 1];
     if (last && lesson.start !== "" && last[0].start === lesson.start) last.push(lesson);
     else slots.push([lesson]);
   }
   return slots;
+}
+
+/** The hour a lesson starts in, or null when the sheet gave no time. */
+export function startHour(lesson: Lesson): number | null {
+  const m = lesson.start.match(/^(\d{1,2}):(\d{2})$/);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * The hours the week actually uses, in order.
+ *
+ * The sheet is laid out as one row per hour so that days line up: with ten
+ * slots in a Monday column, "what happens at ten" otherwise means reading
+ * every card. The original paper solved this with a clock down the margin,
+ * and this is the same idea without the proportional grid — which would have
+ * to squash a 40-minute lesson or invent a gap to keep the scale honest.
+ *
+ * Hours, not exact times. Monday starts at 08:10 and Tuesday at 08:25; a row
+ * per distinct time would be two rows with one card each, which aligns
+ * nothing. The card still prints its own exact times.
+ */
+export function hoursOf(week: Week): number[] {
+  const hours = new Set<number>();
+  for (const day of week.days) {
+    for (const lesson of day.lessons) {
+      if (lesson.hidden) continue;
+      const h = startHour(lesson);
+      if (h !== null) hours.add(h);
+    }
+  }
+  return [...hours].sort((a, b) => a - b);
 }

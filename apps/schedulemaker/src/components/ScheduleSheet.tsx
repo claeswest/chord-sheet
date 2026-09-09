@@ -1,21 +1,72 @@
 "use client";
 
-import type { Lesson, Schedule } from "@/types/schedule";
-import { slotsOf } from "@/types/schedule";
-import { isBreak, say, type Glossary } from "@/lib/glossary";
+import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
+import { hoursOf, slotsOf, startHour } from "@/types/schedule";
+import { isMinor, say, type Glossary } from "@/lib/glossary";
 import EditableText from "./EditableText";
 
-// The printable sheet. A plain table, not a positioned hour grid.
+// The printable sheet: one row per hour, one column per day.
 //
-// An hour grid looks better in a screenshot and is wrong on paper: school days
-// have lessons of unequal length and gaps that mean something, and forcing
-// them onto a fixed axis either squashes a 40-minute lesson or invents a
-// 15-minute gap that isn't there. A column per day, in printed order, cannot
-// misrepresent what was on the original.
+// Not a proportional grid. Keeping the scale honest would mean squashing a
+// 40-minute lesson or inventing a gap, and the sheet's whole job is to say
+// what the paper said. Not a plain list either: with ten slots in a Monday
+// column, "what happens at ten" meant reading every card. An hour per row
+// aligns the days, which is what the clock down the margin of the original was
+// doing, and every card still prints its own exact times.
 //
 // The same component renders the finished sheet and the editable one. Two
-// components would drift, and the whole promise here is that what you edit is
-// what comes out of the printer.
+// components would drift, and the promise here is that what you edit is what
+// comes out of the printer.
+
+function LessonCard({
+  lesson,
+  glossary,
+  editable,
+  faded,
+  onEdit,
+}: {
+  lesson: Lesson;
+  glossary: Glossary;
+  editable: boolean;
+  faded: boolean;
+  onEdit?: () => void;
+}) {
+  const subject = say(lesson.subject, glossary.subjects) ?? lesson.subject;
+  const teacher = say(lesson.teacher, glossary.teachers);
+  const tint = glossary.colors?.[lesson.subject.trim()];
+  const quiet = isMinor(lesson.subject);
+
+  return (
+    <div
+      className={`lesson ${quiet ? "minor" : ""} ${faded ? "set-aside" : ""} ${editable ? "editable" : ""}`}
+      style={tint && !quiet && !faded ? { background: tint } : undefined}
+      onClick={editable ? onEdit : undefined}
+      tabIndex={editable ? 0 : undefined}
+      role={editable ? "button" : undefined}
+      onKeyDown={
+        editable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onEdit?.();
+              }
+            }
+          : undefined
+      }
+    >
+      {(lesson.start || lesson.end) && (
+        <div className="time">
+          {lesson.start}
+          {lesson.end && ` – ${lesson.end}`}
+        </div>
+      )}
+      <div className="subject">{subject}</div>
+      {(lesson.room || teacher || lesson.note) && (
+        <div className="where">{[lesson.room, teacher, lesson.note].filter(Boolean).join(" · ")}</div>
+      )}
+    </div>
+  );
+}
 
 export default function ScheduleSheet({
   schedule,
@@ -24,6 +75,7 @@ export default function ScheduleSheet({
   onChange,
   onEditLesson,
   onAddLesson,
+  onPickOption,
 }: {
   schedule: Schedule;
   glossary: Glossary;
@@ -31,6 +83,8 @@ export default function ScheduleSheet({
   onChange?: (next: Schedule) => void;
   onEditLesson?: (weekId: string, dayId: string, lesson: Lesson) => void;
   onAddLesson?: (weekId: string, dayId: string) => void;
+  /** Keep this option and set the rest of its slot aside. */
+  onPickOption?: (weekId: string, dayId: string, lessonId: string | null) => void;
 }) {
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
@@ -40,6 +94,59 @@ export default function ScheduleSheet({
         w.id !== weekId ? w : { ...w, days: w.days.map((d) => (d.id === dayId ? { ...d, name } : d)) },
       ),
     });
+
+  /** The slots of one day that start in a given hour; null means "no time". */
+  const slotsAt = (day: Day, hour: number | null) =>
+    slotsOf(day, editable).filter((slot) => startHour(slot[0]) === hour);
+
+  const untimed = (week: Week) =>
+    week.days.some((d) => slotsOf(d, editable).some((s) => startHour(s[0]) === null));
+
+  function DayCell({ week, day, hour }: { week: Week; day: Day; hour: number | null }) {
+    return (
+      <td>
+        {slotsAt(day, hour).map((slot) => {
+          const choice = slot.length > 1;
+          const anySetAside = slot.some((l) => l.hidden);
+          return (
+            <div className={choice ? "slot choice" : "slot"} key={slot[0].id}>
+              {slot.map((l) => (
+                <div key={l.id} className="option">
+                  <LessonCard
+                    lesson={l}
+                    glossary={glossary}
+                    editable={editable}
+                    faded={Boolean(l.hidden)}
+                    onEdit={() => onEditLesson?.(week.id, day.id, l)}
+                  />
+                  {choice && editable && !l.hidden && slot.length > 1 && (
+                    <button
+                      className="pick no-print"
+                      onClick={() => onPickOption?.(week.id, day.id, l.id)}
+                      title="Behåll bara den här"
+                    >
+                      välj
+                    </button>
+                  )}
+                </div>
+              ))}
+              {choice && !anySetAside && <p className="choice-note">ett av dessa</p>}
+              {choice && anySetAside && editable && (
+                <button className="pick no-print" onClick={() => onPickOption?.(week.id, day.id, null)}>
+                  visa alla igen
+                </button>
+              )}
+            </div>
+          );
+        })}
+        {hour === null && editable && (
+          <button className="add-lesson no-print" onClick={() => onAddLesson?.(week.id, day.id)}>
+            + pass
+          </button>
+        )}
+      </td>
+    );
+  }
 
   return (
     <div className="sheet">
@@ -59,103 +166,59 @@ export default function ScheduleSheet({
         onChange={(subtitle) => patch({ subtitle: subtitle || null })}
       />
 
-      {schedule.weeks.map((week) => (
-        <section key={week.id}>
-          {(week.label || (editable && schedule.weeks.length > 1)) && (
-            <EditableText
-              as="p"
-              className="week-label"
-              value={week.label}
-              placeholder="Vecka…"
-              editable={editable}
-              onChange={(label) =>
-                patch({ weeks: schedule.weeks.map((w) => (w.id === week.id ? { ...w, label } : w)) })
-              }
-            />
-          )}
-          <table className="grid">
-            <thead>
-              <tr>
-                {week.days.map((day) => (
-                  <th key={day.id} scope="col">
-                    <EditableText
-                      value={day.name}
-                      placeholder="Dag"
-                      editable={editable}
-                      onChange={(name) => renameDay(week.id, day.id, name)}
-                    />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {week.days.map((day) => (
-                  <td key={day.id}>
-                    {slotsOf(day).map((slot) => (
-                      // A slot holding more than one lesson is a choice, not a
-                      // sequence — the language block, or even/odd weeks.
-                      <div
-                        className={slot.length > 1 ? "slot choice" : "slot"}
-                        key={slot[0].id}
-                      >
-                        {slot.map((l) => {
-                          const subject = say(l.subject, glossary.subjects) ?? l.subject;
-                          const teacher = say(l.teacher, glossary.teachers);
-                          const tint = glossary.colors?.[l.subject.trim()];
-                          const quiet = isBreak(l.subject);
-                          return (
-                            <div
-                              className={`lesson ${quiet ? "minor" : ""} ${editable ? "editable" : ""}`}
-                              key={l.id}
-                              style={tint && !quiet ? { background: tint } : undefined}
-                              onClick={editable ? () => onEditLesson?.(week.id, day.id, l) : undefined}
-                              tabIndex={editable ? 0 : undefined}
-                              role={editable ? "button" : undefined}
-                              onKeyDown={
-                                editable
-                                  ? (e) => {
-                                      if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        onEditLesson?.(week.id, day.id, l);
-                                      }
-                                    }
-                                  : undefined
-                              }
-                            >
-                              {(l.start || l.end) && (
-                                <div className="time">
-                                  {l.start}
-                                  {l.end && ` – ${l.end}`}
-                                </div>
-                              )}
-                              <div className="subject">{subject}</div>
-                              {(l.room || teacher || l.note) && (
-                                <div className="where">
-                                  {[l.room, teacher, l.note].filter(Boolean).join(" · ")}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        {slot.length > 1 && <p className="choice-note">ett av dessa</p>}
-                      </div>
+      {schedule.weeks.map((week) => {
+        const hours = hoursOf(week);
+        const rows: (number | null)[] = [...hours];
+        // A trailing row for anything the sheet gave no time for, and in edit
+        // mode always, so there is somewhere to put a new lesson.
+        if (untimed(week) || editable) rows.push(null);
+
+        return (
+          <section key={week.id}>
+            {(week.label || (editable && schedule.weeks.length > 1)) && (
+              <EditableText
+                as="p"
+                className="week-label"
+                value={week.label}
+                placeholder="Vecka…"
+                editable={editable}
+                onChange={(label) =>
+                  patch({ weeks: schedule.weeks.map((w) => (w.id === week.id ? { ...w, label } : w)) })
+                }
+              />
+            )}
+            <table className="grid">
+              <thead>
+                <tr>
+                  <th className="hour-col" />
+                  {week.days.map((day) => (
+                    <th key={day.id} scope="col">
+                      <EditableText
+                        value={day.name}
+                        placeholder="Dag"
+                        editable={editable}
+                        onChange={(name) => renameDay(week.id, day.id, name)}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((hour) => (
+                  <tr key={hour ?? "untimed"}>
+                    <th className="hour-col" scope="row">
+                      {hour === null ? "" : `${String(hour).padStart(2, "0")}`}
+                    </th>
+                    {week.days.map((day) => (
+                      <DayCell key={day.id} week={week} day={day} hour={hour} />
                     ))}
-                    {editable && (
-                      <button
-                        className="add-lesson no-print"
-                        onClick={() => onAddLesson?.(week.id, day.id)}
-                      >
-                        + pass
-                      </button>
-                    )}
-                  </td>
+                  </tr>
                 ))}
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      ))}
+              </tbody>
+            </table>
+          </section>
+        );
+      })}
 
       {(schedule.notes.length > 0 || editable) && (
         <div className="notes">

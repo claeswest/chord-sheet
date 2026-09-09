@@ -174,6 +174,39 @@ export default function Home() {
     setOpenLesson({ weekId, dayId, lesson });
   }
 
+  /**
+   * Keep one option in a choice slot and set the others aside.
+   *
+   * A slot is the run of lessons sharing a start time. Passing null puts them
+   * all back — the paper offered five languages and that record stays, so
+   * changing your mind next term isn't another photograph.
+   */
+  function pickOption(weekId: string, dayId: string, lessonId: string | null) {
+    if (!schedule) return;
+    setSchedule({
+      ...schedule,
+      weeks: schedule.weeks.map((w) =>
+        w.id !== weekId
+          ? w
+          : {
+              ...w,
+              days: w.days.map((d) => {
+                if (d.id !== dayId) return d;
+                const chosen = lessonId ? d.lessons.find((l) => l.id === lessonId) : null;
+                return {
+                  ...d,
+                  lessons: d.lessons.map((l) => {
+                    const sameSlot = chosen ? l.start === chosen.start && l.start !== "" : true;
+                    if (!sameSlot) return l;
+                    return { ...l, hidden: chosen ? l.id !== chosen.id : false };
+                  }),
+                };
+              }),
+            },
+      ),
+    });
+  }
+
   function deleteLesson() {
     if (!schedule || !openLesson) return;
     const { weekId, dayId, lesson } = openLesson;
@@ -319,6 +352,7 @@ export default function Home() {
               onChange={setSchedule}
               onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
               onAddLesson={addLesson}
+              onPickOption={pickOption}
             />
           </FitToWidth>
 
