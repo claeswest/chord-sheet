@@ -141,6 +141,9 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
 /** Past this the type stops being readable, so a box overflows visibly instead. */
 const FIT_FLOOR = 0.62;
 
+/** What the school itself prints across the top, until it is worth changing. */
+const DEFAULT_HEADING = "SCHEMA";
+
 /**
  * Room, teacher and note are joined with the bullet bound to the word before
  * it — a non-breaking space, then the bullet, then an ordinary one.
@@ -519,10 +522,22 @@ export default function ScheduleSheet({
 
   return (
     <div className="sheet">
+      {/* undefined is a schedule read before this line existed and gets the
+          default; "" is someone who deleted it on purpose and gets nothing. */}
+      {(schedule.heading ?? DEFAULT_HEADING) !== "" || editable ? (
+        <EditableText
+          as="h1"
+          className="banner"
+          value={schedule.heading ?? DEFAULT_HEADING}
+          placeholder="Rubrik, t.ex. Hannas schema"
+          editable={editable}
+          onChange={(heading) => patch({ heading })}
+        />
+      ) : null}
       <EditableText
-        as="h1"
+        as="h2"
         value={schedule.title}
-        placeholder="Vems schema? T.ex. Astrids schema"
+        placeholder="Klass eller grupp, t.ex. 7A"
         editable={editable}
         onChange={(title) => patch({ title })}
       />

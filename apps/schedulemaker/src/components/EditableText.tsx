@@ -22,7 +22,7 @@ export default function EditableText({
   editable: boolean;
   placeholder?: string;
   className?: string;
-  as?: "span" | "p" | "h1";
+  as?: "span" | "p" | "h1" | "h2";
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);

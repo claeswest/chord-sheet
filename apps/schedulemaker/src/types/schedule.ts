@@ -59,6 +59,19 @@ export type Week = {
 };
 
 export type Schedule = {
+  /**
+   * The banner across the top. "SCHEMA" until someone writes something better.
+   *
+   * The school prints the word because it only ever sends one sheet home. A
+   * fridge holds three, and "Hannas schema" across the top is how you find the
+   * right one from across the kitchen — which is the whole reason this is a
+   * separate line from the class below it rather than the same one.
+   *
+   * Optional because schedules read before this existed don't have it, and
+   * absent is not the same as deliberately blank: undefined gets the default,
+   * "" prints nothing.
+   */
+  heading?: string;
   /** Whose schedule it is: "4B", "Astrid", "Avd. 3 natt". */
   title: string;
   /** School, term, ward — whatever the sheet says underneath. */

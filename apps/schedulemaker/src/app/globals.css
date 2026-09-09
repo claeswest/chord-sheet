@@ -61,8 +61,16 @@ body {
   transform-origin: top center;
 }
 
-.sheet h1 { font-family: var(--font-display); font-size: 30px; margin: 0; letter-spacing: -0.01em; }
-.sheet .subtitle { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+/* The banner, centred as the school prints it. Wide tracking because this is
+   read from across the kitchen, not up close: on a fridge holding three of
+   these, it is the line that says which child's week you are looking at. */
+.sheet h1.banner {
+  font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  margin: 0 0 6px; text-align: center; letter-spacing: 0.14em;
+}
+/* The class sits under it, left, where the original puts "Klass: 7A". */
+.sheet h2 { font-family: var(--font-display); font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+.sheet .subtitle { color: var(--muted); margin: 3px 0 0; font-size: 14px; }
 .week-label {
   font-family: var(--font-display); font-size: 15px; margin: 10mm 0 3mm;
   color: var(--accent); text-transform: uppercase; letter-spacing: 0.12em;
