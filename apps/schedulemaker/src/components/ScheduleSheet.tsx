@@ -41,8 +41,17 @@ const PX_PER_MIN = 0.95;
  */
 const MIN_SLOT_PX = 14;
 
-/** Below this a card can't hold three stacked lines, so it goes to one. */
+/** Below this a card can't hold three stacked lines, so it goes to one row. */
 const COMPACT_PX = 34;
+
+/**
+ * Below this there is no second line to wrap onto, so the row has to truncate.
+ *
+ * A 30-minute box can take two lines and should use them rather than cut
+ * "Extra studietid Matematik" down to "Extr…". A 15-minute one cannot, and
+ * letting it wrap just pushes it onto the lesson below.
+ */
+const TIGHT_PX = 22;
 
 /**
  * Type sized so a box of options fits the minutes it actually occupies.
@@ -131,6 +140,17 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
 
 /** Past this the type stops being readable, so a box overflows visibly instead. */
 const FIT_FLOOR = 0.62;
+
+/**
+ * Room, teacher and note are joined with the bullet bound to the word before
+ * it — a non-breaking space, then the bullet, then an ordinary one.
+ *
+ * "Hemkunskapssal L,104 · FiLo" is wider than a column and has to break
+ * somewhere. Breaking at the space in front of the bullet starts the next line
+ * with "· FiLo", which reads as a bullet list of one. This way the line ends
+ * "…L,104 ·" and the break lands where a reader expects it.
+ */
+const SEP = " · ";
 
 /**
  * Shrink any card whose text won't fit the minutes it has.
@@ -283,7 +303,7 @@ function MergedCard({
           const subject = say(l.subject, glossary.subjects) ?? l.subject;
           const teacher = say(l.teacher, glossary.teachers);
           const tint = glossary.colors?.[l.subject.trim()];
-          const detail = [l.room, teacher, l.note].filter(Boolean).join(" · ");
+          const detail = [l.room, teacher, l.note].filter(Boolean).join(SEP);
 
           return (
             <li
@@ -325,6 +345,7 @@ function LessonCard({
   glossary,
   editable,
   compact,
+  tight,
   onEdit,
 }: {
   lesson: Lesson;
@@ -332,17 +353,19 @@ function LessonCard({
   editable: boolean;
   /** Too short for stacked lines — everything on one row instead. */
   compact?: boolean;
+  /** Too short even to wrap that row, so it truncates. */
+  tight?: boolean;
   onEdit?: () => void;
 }) {
   const subject = say(lesson.subject, glossary.subjects) ?? lesson.subject;
   const teacher = say(lesson.teacher, glossary.teachers);
   const tint = glossary.colors?.[lesson.subject.trim()];
   const quiet = isMinor(lesson.subject);
-  const where = [lesson.room, teacher, lesson.note].filter(Boolean).join(" · ");
+  const where = [lesson.room, teacher, lesson.note].filter(Boolean).join(SEP);
 
   return (
     <div
-      className={`lesson ${quiet ? "minor" : ""} ${editable ? "editable" : ""} ${compact ? "compact" : ""}`}
+      className={`lesson ${quiet ? "minor" : ""} ${editable ? "editable" : ""} ${compact ? "compact" : ""} ${tight ? "tight" : ""}`}
       style={tint && !quiet ? { background: tint } : undefined}
       onClick={editable ? onEdit : undefined}
       tabIndex={editable ? 0 : undefined}
@@ -466,6 +489,7 @@ export default function ScheduleSheet({
             glossary={glossary}
             editable={editable}
             compact={height !== null && height < COMPACT_PX}
+            tight={height !== null && height < TIGHT_PX}
             onEdit={() => onEditLesson?.(week.id, day.id, kept[0])}
           />
         )}
