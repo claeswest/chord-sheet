@@ -240,6 +240,9 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
   --accent: #000000; --accent-soft: transparent;
 }
 [data-theme="plain"] .lesson { border: 1px solid var(--rule); background: transparent !important; }
+/* Plain is the ink-saving theme, so a break keeps its capitals but not its
+   band. The caps alone still say it isn't a lesson. */
+[data-theme="plain"] .lesson.pause { background: transparent !important; }
 [data-theme="plain"] .week-label { color: #000; }
 
 /* ── Slots, and the ones holding a choice ──────────────────────────────── */
@@ -320,16 +323,25 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 .lesson.merged .opt.editable { cursor: pointer; border-radius: 4px; }
 .lesson.merged .opt.editable:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-/* Breaks are the rows worth playing down: five lunches a week should not look
-   like five lessons. */
-.lesson.minor {
-  background: transparent !important; border: 0; padding-left: 0;
-  opacity: 0.72; --subject-size: 12px;
+/* A break is a landmark, not a lesson. It used to be faded to 72% on nothing
+   at all, which made the one fixed point of the day the faintest thing on the
+   sheet — and "before lunch" is how a child describes their own afternoon.
+   So: a plain grey band, no subject colour, letterspaced capitals. Different
+   from a lesson in kind rather than in strength.
+   Built from --rule and --ink, which every theme already sets, so a break
+   picks up the right grey without any theme having to know it exists. */
+.lesson.pause {
+  background: var(--rule) !important; border: 0;
+  --subject-size: 11px;
 }
-.lesson.minor .subject { font-weight: 500; font-family: var(--font-body); }
-/* A break that is also a short box is compact first: it has less room, and
-   playing it down was never meant to cost it a line. */
-.lesson.minor.compact { --subject-size: 10px; }
+.lesson.pause .subject {
+  font-family: var(--font-body); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.13em; color: var(--ink);
+}
+.lesson.pause .time, .lesson.pause .where { color: var(--ink); opacity: 0.6; }
+/* A break in a short box is compact first: it has less room, and giving it a
+   shape of its own was never meant to cost it a line. */
+.lesson.pause.compact { --subject-size: 9.5px; }
 
 .add-lesson { font-size: 11px; padding: 2px 10px; margin-top: 1mm; opacity: 0.75; }
 .pair .tint { flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 1px solid #d6d6de; border-radius: 8px; background: none; cursor: pointer; }

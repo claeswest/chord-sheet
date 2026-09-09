@@ -85,10 +85,9 @@ export function withDefaultColors(glossary: Glossary, subjects: string[]): Gloss
   let next = 0;
   for (const code of subjects) {
     if (colors[code]) continue;
-    // Breaks stay uncoloured: they are the rows worth playing down.
-    // Breaks and admin slots stay uncoloured: they are the rows worth
-    // playing down, not worth a hue of their own.
-    colors[code] = isMinor(code) ? "" : tintFor(next++);
+    // Breaks stay uncoloured — they are not a subject, and the sheet gives
+    // them a band of their own instead.
+    colors[code] = isBreak(code) ? "" : tintFor(next++);
   }
   return { ...glossary, colors };
 }
@@ -160,26 +159,36 @@ export function say(value: string | undefined, map: Record<string, string>): str
  * rename them buries the four codes that matter under a list of things that
  * are already words.
  */
-const ALREADY_WORDS = /^(lunch|rast|frukost|mellanmål|håltimme|paus)$/i;
-
 /**
- * Slots that are not a lesson.
+ * A break: not a lesson, but not nothing either.
  *
- * Breaks, and the administrative filler a secondary timetable is full of —
- * "Extra studietid Matematik", "Prov-komplettering", "Veckoplanering". Printed
- * in bold beside Matematik they read as equally important, and they are the
- * least important thing on the sheet.
+ * These used to be lumped in with administrative slots and both were faded
+ * out together. They are not the same thing. Lunch is the fixed point a school
+ * day is measured against — "before lunch" and "after lunch" is how a child
+ * describes their own day — so it earns a shape of its own on the sheet,
+ * distinct from a lesson without being quieter than one.
+ *
+ * A break has no subject colour because it is not a subject; it gets a band
+ * instead, in the sheet's stylesheet.
  */
-const ADMIN = /(studietid|prov-?komplettering|veckoplanering|mentorstid|klassråd|elevens val)/i;
+const BREAK_WORDS = /^(lunch|rast|frukost|mellanmål|håltimme|paus)$/i;
 
-export function isMinor(subject: string): boolean {
-  const s = subject.trim();
-  return ALREADY_WORDS.test(s) || ADMIN.test(s);
+export function isBreak(subject: string): boolean {
+  return BREAK_WORDS.test(subject.trim());
 }
 
-/** Kept for the sheet's older name. */
-export const isBreak = isMinor;
-
+/**
+ * Everything else is a lesson, including "Extra studietid Matematik" and
+ * "Prov-komplettering".
+ *
+ * They were treated as filler and left uncoloured, which on a sheet where
+ * every other block is coloured does not read as unimportant — it reads as
+ * unfinished. They are also real: they have a room, a teacher and a time, and
+ * a child who misses one has missed something. Colour them like the rest, and
+ * let whoever prints it decide otherwise.
+ */
 export function worthNaming(codes: string[]): string[] {
-  return codes.filter((c) => !isMinor(c) && c.length <= 24);
+  // 32 rather than 24: "Extra studietid Matematik" is 25 characters, and the
+  // cap was quietly deciding it wasn't worth naming.
+  return codes.filter((c) => !isBreak(c) && c.length <= 32);
 }

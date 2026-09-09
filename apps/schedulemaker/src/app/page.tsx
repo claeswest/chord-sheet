@@ -77,7 +77,11 @@ export default function Home() {
         const s = JSON.parse(raw) as Stored;
         if (s.schedule) {
           setSchedule(s.schedule);
-          setGlossary(normalizeGlossary(s.glossary));
+          // Tops up any subject without a colour — one added by hand since,
+          // or one an older version of this app deliberately left blank.
+          setGlossary(
+            withDefaultColors(normalizeGlossary(s.glossary), codesIn(s.schedule).subjects),
+          );
           setTheme(s.theme ?? "");
           setPaper(s.paper ?? "a4-landscape");
         }

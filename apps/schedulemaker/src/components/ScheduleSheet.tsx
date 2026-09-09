@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
-import { isMinor, say, type Glossary } from "@/lib/glossary";
+import { isBreak, say, type Glossary } from "@/lib/glossary";
 import EditableText from "./EditableText";
 
 // The printable sheet: a clock down the margin, a column per day, and every
@@ -375,13 +375,13 @@ function LessonCard({
   const subject = say(lesson.subject, glossary.subjects) ?? lesson.subject;
   const teacher = say(lesson.teacher, glossary.teachers);
   const tint = glossary.colors?.[lesson.subject.trim()];
-  const quiet = isMinor(lesson.subject);
+  const pause = isBreak(lesson.subject);
   const where = [lesson.room, teacher, lesson.note].filter(Boolean).join(SEP);
 
   return (
     <div
-      className={`lesson ${quiet ? "minor" : ""} ${editable ? "editable" : ""} ${compact ? "compact" : ""} ${tight ? "tight" : ""}`}
-      style={tint && !quiet ? { background: tint } : undefined}
+      className={`lesson ${pause ? "pause" : ""} ${editable ? "editable" : ""} ${compact ? "compact" : ""} ${tight ? "tight" : ""}`}
+      style={tint && !pause ? { background: tint } : undefined}
       onClick={editable ? onEdit : undefined}
       tabIndex={editable ? 0 : undefined}
       role={editable ? "button" : undefined}
