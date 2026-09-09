@@ -18,6 +18,12 @@ import EditableText from "./EditableText";
 // components would drift, and the promise here is that what you edit is what
 // comes out of the printer.
 
+// "Båda" only when there are two. A language block offering English, French,
+// Spanish and German is four choices, and a button that calls them both is
+// wrong about the one slot on these sheets that most needs a decision.
+const keepAll = (n: number) => (n === 2 ? "behåll båda" : `behåll alla ${n}`);
+const allApply = (n: number) => (n === 2 ? "båda gäller" : `alla ${n} gäller`);
+
 function LessonCard({
   lesson,
   glossary,
@@ -148,7 +154,7 @@ export default function ScheduleSheet({
                     className="pick"
                     onClick={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
                   >
-                    behåll båda
+                    {keepAll(slot.length)}
                   </button>
                 </div>
               )}
@@ -164,7 +170,7 @@ export default function ScheduleSheet({
                   weeks and sometimes two groups that both run; saying "båda
                   veckorna" asserts a reason the sheet never gave. */}
               {choice && decided && !editable && slot.length > 1 && (
-                <p className="choice-note">båda gäller</p>
+                <p className="choice-note">{allApply(slot.length)}</p>
               )}
             </div>
           );

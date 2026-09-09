@@ -66,7 +66,7 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   // How much the sheet has to shrink to fit one page. 1 means it already does.
   const [fit, setFit] = useState(1);
-  // Which slot a "behåll båda" / "ändra val" click was about, since those
+  // Which slot a "behåll alla" / "ändra val" click was about, since those
   // carry no lesson to identify it by.
   const pendingSlotStart = useRef<string | null>(null);
 
