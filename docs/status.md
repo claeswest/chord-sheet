@@ -1,6 +1,6 @@
 # Project status — pick-up notes
 
-*Last updated: 21 August 2026*
+*Last updated: 9 September 2026*
 
 Read this first when starting work on a new machine or in a fresh session. It
 covers what the code can't tell you: what was learned, what was decided and why,
@@ -170,13 +170,24 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
    artefact — but do not leave the question open for another month.
 3. **Give free users a taste of Pro** — one watermarked PDF, one share link.
    People don't buy what they've never felt.
-4. **Wait for RecipeBookMaker to be found.** As of 21 August 2026 it has five
-   search pages, a sitemap Google has read, and Search Console verified — but
-   no inbound links and no history, so indexing will take weeks and "Discovered
-   – currently not indexed" is the expected state before then. Resist building
-   more until there is traffic to judge it by. The numbers to read when there
-   is: `tried_import` (no account) against `claimed_try` in `/admin/activity`,
-   and impressions per query in Search Console.
+4. **Let RecipeBookMaker's search pages mature. Deliberately parked, 9 Sep
+   2026.** Indexing was never the problem: Google took them within days of the
+   sitemap, and five of eight known pages are indexed. The first 18 days gave
+   **143 impressions, 0 clicks, average position 57** — page six, where a zero
+   click-through rate is the expected result and says nothing about the copy.
+   Two pages carry it all (`recipe-card-maker` 73, `print-recipe-cards` 55);
+   `family-cookbook-maker` and `recipe-organizer` had none and are probably
+   among the three not indexed — worth a look before anything else here.
+   The queries are the encouraging part: 41 of them, all commercial and all on
+   topic — *recipe card maker*, *recipe card builder*, *how to print recipe
+   cards*, *best way to digitize old family recipes*. Google understands what
+   the pages are; the domain simply has no authority yet, which is a matter of
+   months and links, not of more pages. **Don't build more of them.**
+   Three ways forward when it's time, in the order worth considering:
+   Swedish pages — `receptkort` already appears in the query list, and Swedish
+   terms are a fraction of the competition for a market that is home; ads on
+   exactly these queries, since the list above is a keyword set with proven
+   demand; or simply waiting.
 5. **RecipeBookMaker still has no GA4 and no lifecycle email for people who
    never subscribe.** The activity log covers what signed-in people do and now
    what anonymous visitors paste; it does not cover who arrives and leaves.
@@ -228,6 +239,18 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
   exactly like a job that simply never fires. `/api/cron/lifecycle` answers
   503 when the variable is absent and 401 when it is present and you didn't
   bring it, which is how to tell the two apart from outside.
+- **The dev databases drift, and it will mislead you.** They are Neon branches
+  of production; reset one with **Reset from parent** on the branch rather than
+  deleting and recreating it, which keeps the connection string and so needs no
+  `.env` change. Both were five weeks stale on 9 Sep 2026, and the symptom was
+  not obviously staleness: every subscription's `stripeCurrentPeriodEnd` had
+  fallen into the past, so `planFromUser` reported paying customers as free and
+  a limit check appeared to be locking them out. Reset both, then restart the
+  dev servers — open connections are cut.
+- **The trial emails have run end to end once, on a real customer.** 23 Aug
+  2026: the ending notice went at 09:39, the subscription was cancelled at
+  09:46, and it ended on the 26th with no charge. That is the whole sequence
+  working, including the part that could not be verified when it was built.
 - **Cron on Vercel's Hobby plan has an hour of jitter.** The trial-email
   windows overlap rather than tile because of it; see the note in
   `daysBeforeCharge()`. Anything else scheduled here must not assume a punctual
