@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
 import { isMinor, say, type Glossary } from "@/lib/glossary";
@@ -126,6 +127,60 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
   flush();
 
   return { placed, untimed };
+}
+
+/**
+ * Shrink any card whose text won't fit the minutes it has.
+ *
+ * How much text fits depends on the column's width, which depends on the
+ * paper: on A4 landscape "Ma-Problemlösning" is one line, and on A4 portrait
+ * the same column is 129px and it becomes two — one line more than its hour
+ * can hold, so it spilled over the lesson below. No stylesheet can know that;
+ * only measurement can.
+ *
+ * Reads back after each step because a smaller font may re-flow a wrapped
+ * subject onto one line and win far more than the ratio predicted. Floored at
+ * 62%, since a box nobody can read is not a fit.
+ */
+function useFitCards(schedule: Schedule, glossary: Glossary, editable: boolean) {
+  useEffect(() => {
+    const sheet = document.querySelector<HTMLElement>(".sheet");
+    if (!sheet) return;
+
+    let queued = 0;
+    const fit = () => {
+      for (const slot of sheet.querySelectorAll<HTMLElement>(".col > .slot")) {
+        const card = slot.querySelector<HTMLElement>(":scope > .lesson");
+        if (!card) continue;
+        card.style.removeProperty("--card-scale");
+        const room = slot.clientHeight;
+        let scale = 1;
+        for (let i = 0; i < 4 && card.scrollHeight > room; i++) {
+          scale = Math.max(0.62, scale * Math.max(0.8, room / card.scrollHeight));
+          card.style.setProperty("--card-scale", String(scale));
+          if (scale === 0.62) break;
+        }
+      }
+    };
+    const later = () => {
+      cancelAnimationFrame(queued);
+      queued = requestAnimationFrame(fit);
+    };
+
+    later();
+    // Fonts settle after first paint, and metrics before they do are a
+    // fallback face's, not the one that prints.
+    document.fonts?.ready.then(later);
+    // Switching to portrait halves the column width without changing any of
+    // the data this effect depends on.
+    const ro = new ResizeObserver(later);
+    ro.observe(sheet);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(queued);
+    };
+    // Naming a teacher lengthens the text as surely as editing a lesson does.
+  }, [schedule, glossary, editable]);
 }
 
 // "Båda" only when there are two. A language block offering English, French,
@@ -308,6 +363,8 @@ export default function ScheduleSheet({
   /** Ask the question again: undo the decision, keep nothing set aside. */
   onReopenChoice?: (weekId: string, dayId: string, slotStart: string) => void;
 }) {
+  useFitCards(schedule, glossary, editable);
+
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
   const renameDay = (weekId: string, dayId: string, name: string) =>
