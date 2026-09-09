@@ -24,12 +24,21 @@ import EditableText from "./EditableText";
 /**
  * How tall a minute is.
  *
- * Sized so a 40-minute lesson clears three lines of type, which is what a card
- * needs for time, subject and room. A whole school day then lands around 450px
- * — comfortably inside a landscape page, so the usual sheet prints at full
- * size instead of being shrunk to fit.
+ * Sized so an ordinary school day fills the page rather than stopping three
+ * quarters of the way down. A printed sheet measured 78% of an A4 landscape
+ * page at 0.95, which is 31mm of paper doing nothing on a document whose whole
+ * job is to be read from across a kitchen.
+ *
+ * Scaling the finished sheet up instead is not available: it is already
+ * exactly 297mm wide, and zoom takes both dimensions, so anything above 1
+ * would run off the sides. Making the minute taller adds height only.
+ *
+ * 1.08 rather than the 1.116 that would fill an empty page exactly, so the
+ * common case has room to spare and prints at full size. Anything taller —
+ * a longer day, a note or two underneath — is shrunk to fit by PrintFit, and
+ * still comes out larger than it did at 0.95.
  */
-const PX_PER_MIN = 0.95;
+const PX_PER_MIN = 1.08;
 
 /**
  * Nothing may be shorter than this, or a very short slot is unreadable.
@@ -176,7 +185,8 @@ function useFitCards() {
     if (!sheet) return;
 
     let queued = 0;
-    const fit = () => {
+    const fit = (pass = 0) => {
+      let unsettled = false;
       for (const slot of sheet.querySelectorAll<HTMLElement>(".col > .slot")) {
         const card = slot.querySelector<HTMLElement>(":scope > .lesson");
         if (!card) continue;
@@ -216,11 +226,21 @@ function useFitCards() {
         // sheet to its floor and truncating anyway pays legibility for
         // nothing, so give it back.
         if (!wideEnough()) set((scale = forHeight));
+        if (!tallEnough()) unsettled = true;
       }
+
+      // A pass can land before the layout it is measuring has settled: the
+      // width scaler and the print measurement both move things after the
+      // render that scheduled this one, and on first load that left two boxes
+      // sitting on the lesson below them until the next edit happened to fix
+      // it. If anything is still too tall, the measurement was taken too
+      // early — look again next frame. Bounded, because a box that overflows
+      // at the floor will overflow on every pass.
+      if (unsettled && pass < 2) queued = requestAnimationFrame(() => fit(pass + 1));
     };
     const later = () => {
       cancelAnimationFrame(queued);
-      queued = requestAnimationFrame(fit);
+      queued = requestAnimationFrame(() => fit());
     };
 
     rerun.current = later;
