@@ -50,3 +50,8 @@ next-env.d.ts
 .env*
 !.env.example
 .next-build/
+
+# Real timetables used for testing Schedule Maker. Photographs of children's
+# schedules — school, class, teachers, times. This repository is public, and
+# `public/` is also served over HTTP, so they live here and go nowhere.
+apps/schedulemaker/samples/

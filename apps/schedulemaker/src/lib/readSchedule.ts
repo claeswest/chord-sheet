@@ -29,8 +29,8 @@ Rules:
 - Days keep the sheet's order and the sheet's names, including a Saturday or a Sunday if there is one.
 - A cell holding several things ("Matte, sal 12, AB") splits into subject, room and teacher only where the sheet makes that obvious. Anything you cannot confidently split goes in note, unchanged.
 - Repeated free periods, lunch and breaks ARE part of the day: include them as lessons with the subject as written ("Lunch", "Rast").
-- notes: any text outside the grid — footnotes, reminders, "Idrott jämna veckor". Copy each as its own string.
-- title: whose schedule it is, as printed ("4B", "Astrid Westlin"). If the sheet does not say, use "".
+- notes: real footnotes and reminders outside the grid — "Idrott jämna veckor", "Ta med simsaker". NOT the document's own furniture: the word "SCHEMA" or "Timetable" at the top, a print date, a page number and the school's name are not notes. If there are no footnotes, notes is [].
+- title: whose schedule it is — the class or the name only. Drop the field label the sheet prints in front of it: "Klass: 7A" gives title "7A", "Class 3A" gives "3A". If the sheet does not say, use "".
 - subtitle: school, term, ward, date range — whatever sits under the title, else null.
 
 Shape:
