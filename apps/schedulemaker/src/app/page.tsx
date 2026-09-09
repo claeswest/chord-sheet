@@ -15,7 +15,7 @@ import ScheduleSheet from "@/components/ScheduleSheet";
 import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
-import { EMPTY_GLOSSARY, codesIn, withDefaultColors, type Glossary } from "@/lib/glossary";
+import { EMPTY_GLOSSARY, codesIn, normalizeGlossary, withDefaultColors, type Glossary } from "@/lib/glossary";
 import type { Lesson, Schedule } from "@/types/schedule";
 
 const THEMES = [
@@ -65,7 +65,7 @@ export default function Home() {
         const s = JSON.parse(raw) as Stored;
         if (s.schedule) {
           setSchedule(s.schedule);
-          setGlossary(s.glossary ?? EMPTY_GLOSSARY);
+          setGlossary(normalizeGlossary(s.glossary));
           setTheme(s.theme ?? "");
           setPaper(s.paper ?? "a4-landscape");
         }

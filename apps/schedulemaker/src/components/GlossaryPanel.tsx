@@ -27,8 +27,8 @@ export default function GlossaryPanel({
 
   const total = teachers.length + named.length;
   const done =
-    teachers.filter((c) => glossary.teachers[c]?.trim()).length +
-    named.filter((c) => glossary.subjects[c]?.trim()).length;
+    teachers.filter((c) => glossary.teachers?.[c]?.trim()).length +
+    named.filter((c) => glossary.subjects?.[c]?.trim()).length;
 
   const set = (kind: "teachers" | "subjects" | "colors", code: string, value: string) =>
     onChange({ ...glossary, [kind]: { ...glossary[kind], [code]: value } });
@@ -52,7 +52,7 @@ export default function GlossaryPanel({
               <label key={code} className="pair">
                 <span className="code">{code}</span>
                 <input
-                  value={glossary.teachers[code] ?? ""}
+                  value={glossary.teachers?.[code] ?? ""}
                   onChange={(e) => set("teachers", code, e.target.value)}
                   // Not a name. A placeholder that reads as a real name, in a
                   // list where the box two along genuinely says Denise, makes
@@ -74,7 +74,7 @@ export default function GlossaryPanel({
               <label key={code} className="pair">
                 <span className="code">{code}</span>
                 <input
-                  value={glossary.subjects[code] ?? ""}
+                  value={glossary.subjects?.[code] ?? ""}
                   onChange={(e) => set("subjects", code, e.target.value)}
                   placeholder="skriv ämnet…"
                   aria-label={`Namn för ${code}`}
@@ -82,7 +82,7 @@ export default function GlossaryPanel({
                 <input
                   type="color"
                   className="tint"
-                  value={glossary.colors[code] || "#e2ecff"}
+                  value={glossary.colors?.[code] || "#e2ecff"}
                   onChange={(e) => set("colors", code, e.target.value)}
                   aria-label={`Färg för ${code}`}
                   title={`Färg för ${code}`}

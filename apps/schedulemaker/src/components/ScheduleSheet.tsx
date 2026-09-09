@@ -102,7 +102,7 @@ export default function ScheduleSheet({
                         {slot.map((l) => {
                           const subject = say(l.subject, glossary.subjects) ?? l.subject;
                           const teacher = say(l.teacher, glossary.teachers);
-                          const tint = glossary.colors[l.subject.trim()];
+                          const tint = glossary.colors?.[l.subject.trim()];
                           const quiet = isBreak(l.subject);
                           return (
                             <div

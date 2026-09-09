@@ -24,6 +24,24 @@ export type Glossary = {
 export const EMPTY_GLOSSARY: Glossary = { teachers: {}, subjects: {}, colors: {} };
 
 /**
+ * A glossary with every map present, whatever was handed in.
+ *
+ * Anything restored from storage was written by an older version of this file,
+ * and an older version had fewer maps. Reading `glossary.colors[code]` off a
+ * two-map object throws and takes the whole page with it — which is exactly
+ * what happened the first time colours shipped to a browser that already had a
+ * schedule saved. JSON.parse succeeds on that data; only the shape is old, so
+ * a try/catch around parsing never sees it.
+ */
+export function normalizeGlossary(g: Partial<Glossary> | null | undefined): Glossary {
+  return {
+    teachers: g?.teachers ?? {},
+    subjects: g?.subjects ?? {},
+    colors: g?.colors ?? {},
+  };
+}
+
+/**
  * Colours assigned to subjects on first read, so the sheet arrives looking
  * like something rather than a wall of one blue.
  *
@@ -38,7 +56,7 @@ const PALETTE = [
 
 /** Fills in a colour for every subject that hasn't got one. */
 export function withDefaultColors(glossary: Glossary, subjects: string[]): Glossary {
-  const colors = { ...glossary.colors };
+  const colors = { ...normalizeGlossary(glossary).colors };
   let next = 0;
   for (const code of subjects) {
     if (colors[code]) continue;
