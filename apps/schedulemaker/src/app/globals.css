@@ -149,8 +149,13 @@ body {
 .rule { position: absolute; left: 0; right: 0; height: 0; pointer-events: none; }
 .rule.hour { border-top: 1px solid var(--rule); }
 /* The half-hour tick is the scale the school prints. It has to be faint enough
-   that a page of them doesn't read as a table of empty rows. */
-.rule.half { border-top: 1px dotted var(--rule); opacity: 0.45; }
+   that a page of them doesn't read as a table of empty rows.
+   Dashed, not dotted: the rule renders at 0.8px, and at that width a dotted
+   border is sub-pixel dots that anti-alias into a continuous faint line — so
+   it read as a thin solid rule rather than a subordinate one, most visibly in
+   the ink-saving style where it shares its colour with the hour line. A dash
+   is about three times the border width and survives. */
+.rule.half { border-top: 1px dashed var(--rule); opacity: 0.45; }
 
 .col { position: relative; flex: 1 1 0; min-width: 0; }
 .col + .col { border-left: 1px solid var(--rule); }
