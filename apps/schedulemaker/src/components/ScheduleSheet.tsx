@@ -177,11 +177,14 @@ const SEP = " · ";
  * font may re-flow a wrapped subject onto one line and win far more than any
  * ratio would predict.
  */
-function useFitCards() {
+function useFitCards(ref: React.RefObject<HTMLDivElement | null>) {
   const rerun = useRef<() => void>(undefined);
 
   useEffect(() => {
-    const sheet = document.querySelector<HTMLElement>(".sheet");
+    // Its own sheet, not the first one on the page. The front page renders a
+    // sample sheet through this same component, and a global lookup would have
+    // one instance measuring the other's boxes.
+    const sheet = ref.current;
     if (!sheet) return;
 
     let queued = 0;
@@ -257,7 +260,7 @@ function useFitCards() {
       ro.disconnect();
       cancelAnimationFrame(queued);
     };
-  }, []);
+  }, [ref]);
 
   // Deliberately every render, with no dependency list. Anything that reaches
   // the sheet changes how much text is in it — a lesson edited, a teacher
@@ -484,7 +487,8 @@ export default function ScheduleSheet({
   /** Ask the question again: undo the decision, keep nothing set aside. */
   onReopenChoice?: (weekId: string, dayId: string, slotStart: string) => void;
 }) {
-  useFitCards();
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useFitCards(sheetRef);
 
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
@@ -566,7 +570,7 @@ export default function ScheduleSheet({
   }
 
   return (
-    <div className="sheet">
+    <div className="sheet" ref={sheetRef}>
       <div className="sheet-head">
         {/* undefined is a schedule read before this line existed and gets the
             default; "" is someone who deleted it on purpose and gets nothing. */}

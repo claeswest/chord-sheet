@@ -173,6 +173,132 @@ textarea { width: 100%; font: inherit; padding: 12px; border: 1px solid #d6d6de;
 .error { color: #b3261e; font-size: 14px; }
 .hint { color: var(--muted); font-size: 13px; }
 
+/* ── The front page ────────────────────────────────────────────────────────
+ * Its own small design system, built from the sheet's: hour rules above each
+ * block, tabular figures for the step numbers, the same paper white and the
+ * same accent. Nothing here is decoration invented for a landing page — every
+ * device on it is borrowed from the document it sells, which is also the only
+ * honest way to show what the thing does.
+ */
+.landing { position: relative; padding-bottom: 24px; }
+
+/* A pair of lessons in a column, at 20px. */
+.masthead { display: flex; align-items: center; gap: 9px; margin-bottom: 44px; }
+.mark {
+  position: relative; width: 20px; height: 20px; border-radius: 6px;
+  background: var(--accent-soft); border: 1px solid #d7e0fb; flex: 0 0 auto;
+}
+.mark::before, .mark::after {
+  content: ""; position: absolute; left: 4px; border-radius: 1.5px; background: var(--accent);
+}
+.mark::before { top: 4px; width: 12px; height: 5px; }
+.mark::after { top: 11px; width: 8px; height: 5px; opacity: 0.55; }
+.wordmark {
+  font-family: var(--font-display); font-weight: 700; font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+/* Top-aligned, not centred: the left column grows by 200px when the text box
+   opens, and centring made the sheet slide down the page in response to a
+   click nowhere near it. */
+.hero {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  gap: 56px; align-items: start; margin-bottom: 84px;
+}
+/* Balanced rather than broken by hand: a fixed <br> is right at one width and
+   wrong at every other, and this headline has to hold together from a phone to
+   a desktop. */
+.hero h1 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(30px, 3.6vw, 42px); line-height: 1.12; letter-spacing: -0.02em;
+  margin: 0 0 18px; text-wrap: balance;
+}
+.lead { font-size: 17px; line-height: 1.55; color: #45454f; margin: 0; max-width: 52ch; }
+
+.start { margin: 30px 0 0; }
+.pickfile {
+  position: relative; display: inline-block; padding: 14px 30px; border-radius: 999px;
+  background: #1a1a1a; color: #fff; border: 1px solid #1a1a1a;
+  font-family: var(--font-display); font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.pickfile:hover { background: #000; }
+.pickfile.is-busy { opacity: 0.5; cursor: default; }
+/* Covers the label, invisible but focusable, so the keyboard reaches it and
+   the ring lands on the thing that looks like the button. */
+.filein { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.pickfile:focus-within { outline: 3px solid rgba(59, 91, 219, 0.5); outline-offset: 3px; }
+.or { margin: 12px 0 0; font-size: 13.5px; color: var(--muted); }
+kbd {
+  font: inherit; font-size: 12px; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid #d6d6de; border-bottom-width: 2px; background: #fff; color: #1a1a1a;
+}
+
+/* A link, not a button: it is the smaller of two doors, and dressing it as a
+   second button would make people weigh the two. */
+.linky {
+  border: 0; background: none; padding: 0; margin-top: 18px;
+  color: var(--accent); font-size: 14.5px; font-weight: 600; cursor: pointer;
+}
+.linky:hover { text-decoration: underline; }
+.typein { margin-top: 20px; max-width: 52ch; }
+.typein label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.typein-actions { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+.typein-actions .linky { margin-top: 0; }
+.fineprint {
+  margin: 26px 0 0; font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 46ch;
+}
+
+.hero-sheet { margin: 0; }
+.hero-sheet .fit-outer {
+  background: #fff; border: 1px solid #e6e6ec; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 20, 40, 0.06), 0 18px 44px -12px rgba(20, 20, 40, 0.22);
+}
+/* The sheet carries its own paper shadow for the editor. Inside this frame
+   that is a shadow within a shadow, and the edge goes muddy. */
+.hero-sheet .sheet { box-shadow: none; }
+.hero-sheet figcaption { margin-top: 12px; font-size: 12.5px; color: var(--muted); text-align: center; }
+
+/* An hour rule over each one, and the number set like a label in the margin. */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; margin-bottom: 84px; }
+.steps article { border-top: 2px solid var(--accent); padding-top: 14px; }
+.stepno {
+  display: block; font-size: 12px; font-weight: 700; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.steps h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 8px; letter-spacing: -0.01em; }
+.steps p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #45454f; }
+
+.pitfalls { margin-bottom: 72px; }
+.pitfalls h2 {
+  font-family: var(--font-display); font-size: clamp(22px, 2.4vw, 27px);
+  margin: 0 0 10px; letter-spacing: -0.015em;
+}
+.pitfalls dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin: 30px 0 0; }
+.pitfalls dt {
+  font-family: var(--font-display); font-weight: 700; font-size: 15.5px; margin-bottom: 7px;
+}
+.pitfalls dd { margin: 0; font-size: 14.5px; line-height: 1.55; color: #45454f; }
+
+.landing-foot { border-top: 1px solid var(--rule); padding-top: 22px; }
+.landing-foot p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); max-width: 68ch; }
+
+/* Dropping an image anywhere on the page works, so the page says so. */
+.landing.dropping::after {
+  content: ""; position: fixed; inset: 12px; border: 2px dashed var(--accent);
+  border-radius: 16px; pointer-events: none; z-index: 40;
+}
+.dropnote {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: #1a1a1a; color: #fff; padding: 12px 22px; border-radius: 999px;
+  font-family: var(--font-display); font-weight: 700; z-index: 41; pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 40px; margin-bottom: 64px; }
+  .hero-sheet { order: -1; }
+  .steps, .pitfalls dl { grid-template-columns: 1fr; gap: 26px; }
+}
+
 /* ── Print ─────────────────────────────────────────────────────────────────
  * The sheet is already A4-landscape sized, so printing is mostly a matter of
  * removing everything else and letting the page be the page. */

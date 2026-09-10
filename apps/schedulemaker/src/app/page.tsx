@@ -16,6 +16,7 @@ import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
+import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
   codesIn,
@@ -67,7 +68,6 @@ export default function Home() {
   const [openLesson, setOpenLesson] = useState<{ weekId: string; dayId: string; lesson: Lesson } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [text, setText] = useState("");
   // Nothing is written back until the first read completes, so a failed load
   // can't wipe what's already there.
   const [loaded, setLoaded] = useState(false);
@@ -297,51 +297,12 @@ export default function Home() {
       <style>{`@page { size: ${sheetPaper.css}; margin: 0; }
         .sheet { width: ${sheetPaper.w}; min-height: ${sheetPaper.h}; }`}</style>
       {!schedule && (
-        <div className="no-print">
-          <h1 style={{ fontFamily: "var(--font-display)", marginBottom: 4 }}>Gör ett snyggare schema</h1>
-          <p className="hint" style={{ marginTop: 0 }}>
-            Fotografera schemat du fått hem. Bilden skickas till Google för att läsas av, och
-            sparas inte hos oss — det färdiga schemat stannar i den här webbläsaren.
-          </p>
-
-          <div className="controls" style={{ marginTop: 24 }}>
-            <label className="btn" style={{ cursor: "pointer" }}>
-              Välj foto
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                disabled={busy}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) pickPhoto(f);
-                  e.target.value = ""; // so the same file can be picked twice
-                }}
-              />
-            </label>
-            {busy && <span className="hint">Läser schemat…</span>}
-          </div>
-
-          <details style={{ marginTop: 20 }}>
-            <summary className="hint" style={{ cursor: "pointer" }}>
-              …eller klistra in det som text
-            </summary>
-            <textarea
-              rows={8}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={"Måndag\n08:20–09:00 Matematik, sal 12\n09:10–10:00 Idrott"}
-              style={{ marginTop: 10 }}
-            />
-            <div className="controls" style={{ marginTop: 10 }}>
-              <button className="primary" disabled={busy || text.trim().length < 20} onClick={() => read({ text })}>
-                Läs schemat
-              </button>
-            </div>
-          </details>
-
-          {error && <p className="error">{error}</p>}
-        </div>
+        <Landing
+          busy={busy}
+          error={error}
+          onPhoto={pickPhoto}
+          onText={(t) => read({ text: t })}
+        />
       )}
 
       {schedule && (
@@ -400,7 +361,6 @@ export default function Home() {
                 setSchedule(null);
                 setSource(null);
                 setGlossary(EMPTY_GLOSSARY);
-                setText("");
                 setMode("edit");
               }}
             >
