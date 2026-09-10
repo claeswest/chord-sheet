@@ -16,6 +16,7 @@ import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
+import InkToggle from "@/components/InkToggle";
 import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
@@ -365,14 +366,7 @@ export default function Home() {
                 ))}
                 {/* Beside the styles, not among them: it applies to whichever
                     one is chosen. */}
-                <button
-                  className="inktoggle"
-                  aria-pressed={ink}
-                  title="Skriv ut utan fyllningar, svart på vitt"
-                  onClick={() => setInk(!ink)}
-                >
-                  Bläcksnål
-                </button>
+                <InkToggle on={ink} onChange={setInk} />
                 <select
                   value={paper}
                   onChange={(e) => setPaper(e.target.value)}

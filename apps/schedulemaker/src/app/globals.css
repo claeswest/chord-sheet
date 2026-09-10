@@ -589,14 +589,30 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
 }
 
 
-/* The ink switch. Deliberately not a swatch: it is not one of the styles, it
-   is a condition applied over whichever style is chosen. */
-.inktoggle {
-  font-size: 13px; font-weight: 600; padding: 7px 15px; border-radius: 999px;
-  border: 1px solid #dcdce4; background: #fff; color: #45454f; cursor: pointer;
+/* The ink switch. A checkbox rather than a button, because it is a setting
+   with two states and not a thing to do — and because a pill, filled black
+   when on, is exactly the shape this app uses for its primary action. */
+.inkcheck {
+  display: inline-flex; align-items: flex-start; gap: 9px; cursor: pointer;
+  text-align: left; font-size: 13.5px; color: #45454f;
 }
-.inktoggle:hover { border-color: #b9b9c6; }
-.inktoggle[aria-pressed="true"] {
-  background: #1a1a1a; border-color: #1a1a1a; color: #fff;
+.inkcheck input {
+  appearance: none; -webkit-appearance: none;
+  width: 18px; height: 18px; flex: 0 0 auto; margin: 1px 0 0;
+  border: 1.5px solid #b9b9c6; border-radius: 5px; background: #fff;
+  display: grid; place-content: center; cursor: pointer;
 }
-.inktoggle.wide { display: block; margin: 10px auto 0; }
+.inkcheck:hover input { border-color: #8a8a99; }
+.inkcheck input:checked { background: #1a1a1a; border-color: #1a1a1a; }
+/* The tick is two borders on a rotated box — it stays crisp at any zoom, and
+   needs no glyph that a printer might not have. */
+.inkcheck input::before {
+  content: ""; width: 4.5px; height: 9px; margin-top: -2px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+}
+.inkcheck input:checked::before { transform: rotate(45deg) scale(1); }
+.inkcheck input:focus-visible { outline: 3px solid rgba(59, 91, 219, 0.5); outline-offset: 2px; }
+.inkcheck-text { display: block; line-height: 1.35; }
+.inkcheck-text small { display: block; font-size: 12px; color: var(--muted); }
+.inkrow { display: flex; justify-content: center; margin-top: 12px; }

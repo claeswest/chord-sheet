@@ -17,6 +17,7 @@
 import { useEffect, useRef, useState } from "react";
 import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
+import InkToggle from "./InkToggle";
 import { SAMPLE_SCHEDULE } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
 import { THEMES } from "@/lib/themes";
@@ -292,13 +293,9 @@ export default function Landing({
           {/* Under the styles rather than in the row, because it is not one of
               them: it applies to whichever style is chosen, and it is a
               question about your printer rather than your taste. */}
-          <button
-            className="inktoggle wide"
-            aria-pressed={ink}
-            onClick={() => onInk(!ink)}
-          >
-            Bläcksnål utskrift — inga fyllningar, svart på vitt
-          </button>
+          <div className="inkrow">
+            <InkToggle on={ink} onChange={onInk} hint="inga fyllningar, svart på vitt" />
+          </div>
           <figcaption>
             {ink
               ? "Stilens typsnitt är kvar; färgerna sparas till skärmen."
