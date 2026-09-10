@@ -86,6 +86,8 @@ export default function Landing({
   onText,
   theme,
   onTheme,
+  ink,
+  onInk,
 }: {
   busy: boolean;
   phase: null | "shrink" | "read";
@@ -94,6 +96,8 @@ export default function Landing({
   onText: (text: string) => void;
   theme: string;
   onTheme: (id: string) => void;
+  ink: boolean;
+  onInk: (on: boolean) => void;
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -265,7 +269,7 @@ export default function Landing({
           {/* The style is applied to this figure, so the swatches below change
               the actual sheet rather than a picture of one — and the choice is
               lifted to the app, so it is still yours after you upload. */}
-          <div className="paper" data-theme={theme || undefined}>
+          <div className="paper" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
             <FitToWidth>
               <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} />
             </FitToWidth>
@@ -285,9 +289,21 @@ export default function Landing({
               </button>
             ))}
           </div>
+          {/* Under the styles rather than in the row, because it is not one of
+              them: it applies to whichever style is chosen, and it is a
+              question about your printer rather than your taste. */}
+          <button
+            className="inktoggle wide"
+            aria-pressed={ink}
+            onClick={() => onInk(!ink)}
+          >
+            Bläcksnål utskrift — inga fyllningar, svart på vitt
+          </button>
           <figcaption>
-            {THEMES.find((t) => t.id === theme)?.note} Byt stil här — den följer med till ditt eget
-            schema.
+            {ink
+              ? "Stilens typsnitt är kvar; färgerna sparas till skärmen."
+              : THEMES.find((t) => t.id === theme)?.note}{" "}
+            Allt du väljer här följer med till ditt eget schema.
           </figcaption>
         </figure>
       </section>

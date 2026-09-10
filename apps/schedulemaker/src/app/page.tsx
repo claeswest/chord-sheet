@@ -38,13 +38,15 @@ const PAPERS = [
   { id: "a3-portrait", name: "A3 stående", css: "A3 portrait", w: "297mm", h: "420mm" },
 ];
 
-type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string };
+type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string; ink?: boolean };
 
 export default function Home() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [glossary, setGlossary] = useState<Glossary>(EMPTY_GLOSSARY);
   const [theme, setTheme] = useState("");
   const [paper, setPaper] = useState("a4-landscape");
+  /** Print without fills, whatever the style. A fact about the printer. */
+  const [ink, setInk] = useState(false);
   // The original photograph, for checking against while editing. Held in
   // memory only: it is a picture of a child's schedule, and writing it to
   // localStorage would leave it on the disk long after the tab is closed.
@@ -84,7 +86,10 @@ export default function Home() {
           setGlossary(
             withDefaultColors(withKnownNames(normalizeGlossary(s.glossary), subjects), subjects),
           );
-          setTheme(s.theme ?? "");
+          // "plain" was the ink-saving style before it became a switch.
+          // Restoring it as a style id would leave the setting silently off.
+          setTheme(s.theme === "plain" ? "" : s.theme ?? "");
+          setInk(s.ink ?? s.theme === "plain");
           setPaper(s.paper ?? "a4-landscape");
         }
       }
@@ -97,12 +102,12 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     try {
-      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper }));
+      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink }));
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme, paper]);
+  }, [loaded, schedule, glossary, theme, paper, ink]);
 
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
@@ -295,7 +300,11 @@ export default function Home() {
   // picking a dark paper also repainted the landing's own body text in a colour
   // meant to sit on a dark sheet.
   return (
-    <main className="app" data-theme={schedule ? theme || undefined : undefined}>
+    <main
+      className="app"
+      data-theme={schedule ? theme || undefined : undefined}
+      data-ink={schedule && ink ? "save" : undefined}
+    >
       {/* @page can't be set from a class, so the chosen size is injected.
           Without it the browser prints A4 whatever the sheet is laid out for,
           and an A3 schedule comes out cropped. */}
@@ -310,6 +319,8 @@ export default function Home() {
           onText={(t) => read({ text: t })}
           theme={theme}
           onTheme={setTheme}
+          ink={ink}
+          onInk={setInk}
         />
       )}
 
@@ -352,6 +363,16 @@ export default function Home() {
                     onClick={() => setTheme(t.id)}
                   />
                 ))}
+                {/* Beside the styles, not among them: it applies to whichever
+                    one is chosen. */}
+                <button
+                  className="inktoggle"
+                  aria-pressed={ink}
+                  title="Skriv ut utan fyllningar, svart på vitt"
+                  onClick={() => setInk(!ink)}
+                >
+                  Bläcksnål
+                </button>
                 <select
                   value={paper}
                   onChange={(e) => setPaper(e.target.value)}
@@ -408,7 +429,7 @@ export default function Home() {
 
           <PrintFit
             pageHeightMm={parseInt(sheetPaper.h, 10)}
-            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}`}
+            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}`}
             onFit={setFit}
           />
 

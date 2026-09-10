@@ -440,17 +440,26 @@ kbd {
 .dialog input { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #d6d6de; border-radius: 8px; }
 button.danger { color: #b3261e; border-color: #f0c9c6; }
 
-/* ── Ink-light: thin lines, no fills, black on white ───────────────────── */
-[data-theme="plain"] {
+/* ── Ink-saving: thin lines, no fills, black on white ──────────────────────
+ * A switch over the top of any style rather than a style of its own, because
+ * it answers a question about your printer and not about your taste.
+ *
+ * It overrides the colours and leaves the letterform alone. That is the whole
+ * of it: the one thing a style still contributes here is its typeface, and
+ * printing a dark paper in order to save ink would be the single most
+ * expensive thing this app could offer. */
+[data-ink="save"] {
   --paper: #ffffff; --ink: #000000; --muted: #444444; --rule: #b8b8b8;
   --accent: #000000; --accent-soft: transparent;
-  --font-display: var(--font-grotesque);
 }
-[data-theme="plain"] .lesson { border: 1px solid var(--rule); background: transparent !important; }
-/* Plain is the ink-saving theme, so a break keeps its capitals but not its
-   band. The caps alone still say it isn't a lesson. */
-[data-theme="plain"] .lesson.pause { background: transparent !important; }
-[data-theme="plain"] .week-label { color: #000; }
+[data-ink="save"] .lesson { border: 1px solid var(--rule); background: transparent !important; }
+/* A break keeps its capitals but not its band. The caps alone still say it
+   isn't a lesson. */
+[data-ink="save"] .lesson.pause { background: transparent !important; }
+[data-ink="save"] .week-label { color: #000; }
+/* The colour dots down a merged box are ink too, and there is nothing left for
+   them to key against once the fills are gone. */
+[data-ink="save"] .lesson .dot { display: none; }
 
 /* ── Slots, and the ones holding a choice ──────────────────────────────── */
 .slot { margin-bottom: 1.5mm; }
@@ -579,3 +588,15 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
   display: block; opacity: 0.8;
 }
 
+
+/* The ink switch. Deliberately not a swatch: it is not one of the styles, it
+   is a condition applied over whichever style is chosen. */
+.inktoggle {
+  font-size: 13px; font-weight: 600; padding: 7px 15px; border-radius: 999px;
+  border: 1px solid #dcdce4; background: #fff; color: #45454f; cursor: pointer;
+}
+.inktoggle:hover { border-color: #b9b9c6; }
+.inktoggle[aria-pressed="true"] {
+  background: #1a1a1a; border-color: #1a1a1a; color: #fff;
+}
+.inktoggle.wide { display: block; margin: 10px auto 0; }
