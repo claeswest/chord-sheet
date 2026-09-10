@@ -400,7 +400,25 @@ export default function Home() {
           {fit < 0.995 && (
             <p className="hint no-print" style={{ marginTop: -8 }}>
               Schemat är högre än en sida och krymps till {Math.round(fit * 100)} % vid utskrift,
-              så att allt får plats på ett ark.
+              så att allt får plats på ett ark.{" "}
+              {/* Below three quarters the type is getting genuinely small — a
+                  two-week schedule lands around 66% on A4. A3 is the same
+                  document on bigger paper and measured 93% for that case, so
+                  the promise here is "clearer", not "full size": the first
+                  draft of this line said full size and the measurement said
+                  otherwise. */}
+              {fit < 0.75 && paper.startsWith("a4") && (
+                <>
+                  På A3 blir texten tydligare — samma ark, större papper.{" "}
+                  <button
+                    className="linky"
+                    style={{ marginTop: 0 }}
+                    onClick={() => setPaper(paper === "a4-portrait" ? "a3-portrait" : "a3-landscape")}
+                  >
+                    Byt till A3
+                  </button>
+                </>
+              )}
             </p>
           )}
 
