@@ -58,6 +58,8 @@ export default function Home() {
   const editing = mode === "edit";
   const [openLesson, setOpenLesson] = useState<{ weekId: string; dayId: string; lesson: Lesson } | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Which of the two real stages of an import is running. */
+  const [phase, setPhase] = useState<null | "shrink" | "read">(null);
   const [error, setError] = useState<string | null>(null);
   // Nothing is written back until the first read completes, so a failed load
   // can't wipe what's already there.
@@ -104,6 +106,7 @@ export default function Home() {
 
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
+    setPhase("read");
     setError(null);
     try {
       const res = await fetch("/api/read", {
@@ -125,11 +128,17 @@ export default function Home() {
       setError("Kunde inte nå servern.");
     } finally {
       setBusy(false);
+      setPhase(null);
     }
   }
 
   async function pickPhoto(file: File) {
     setError(null);
+    // Two stages, and both are real: a phone photo is shrunk here in the
+    // browser before anything is sent. Naming them beats one label for ten
+    // seconds — and inventing a third would be theatre, since nothing between
+    // "sent" and "answered" is observable from here.
+    setPhase("shrink");
     try {
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const r = new FileReader();
@@ -144,6 +153,7 @@ export default function Home() {
       await read({ image: small });
     } catch {
       setError("Kunde inte läsa filen.");
+      setPhase(null);
     }
   }
 
@@ -294,6 +304,7 @@ export default function Home() {
       {!schedule && (
         <Landing
           busy={busy}
+          phase={phase}
           error={error}
           onPhoto={pickPhoto}
           onText={(t) => read({ text: t })}

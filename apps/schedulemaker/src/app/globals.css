@@ -221,12 +221,39 @@ textarea { width: 100%; font: inherit; padding: 12px; border: 1px solid #d6d6de;
 
 .start { margin: 30px 0 0; }
 .pickfile {
-  position: relative; display: inline-block; padding: 14px 30px; border-radius: 999px;
+  position: relative; display: inline-flex; align-items: center;
+  padding: 14px 30px; border-radius: 999px;
   background: #1a1a1a; color: #fff; border: 1px solid #1a1a1a;
   font-family: var(--font-display); font-size: 16px; font-weight: 700; cursor: pointer;
 }
 .pickfile:hover { background: #000; }
-.pickfile.is-busy { opacity: 0.5; cursor: default; }
+
+/* Working, not disabled. Greying it out and stopping every moving thing for
+   ten seconds reads as "broken"; the button is doing the one job it was
+   pressed for, so it stays black and keeps moving. */
+.pickfile.is-working { cursor: default; overflow: hidden; }
+.pickfile.is-working::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 22%, rgba(255, 255, 255, 0.17) 50%, transparent 78%);
+  transform: translateX(-100%);
+  animation: sheen 1.7s ease-in-out infinite;
+}
+@keyframes sheen { to { transform: translateX(100%); } }
+
+/* Indeterminate on purpose. Nothing between "sent" and "answered" is
+   observable from here, and a bar creeping to 90% would be a drawing of a
+   guess. A turning ring claims only that work is happening. */
+.spinner {
+  width: 15px; height: 15px; flex: 0 0 auto; margin-right: 10px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3); border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pickfile.is-working::after, .spinner { animation: none; }
+  .spinner { border-color: rgba(255, 255, 255, 0.65); border-top-color: #fff; }
+}
 /* Covers the label, invisible but focusable, so the keyboard reaches it and
    the ring lands on the thing that looks like the button. */
 .filein { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }

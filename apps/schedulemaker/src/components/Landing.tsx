@@ -80,6 +80,7 @@ const FAULTS: [string, string][] = [
 
 export default function Landing({
   busy,
+  phase,
   error,
   onPhoto,
   onText,
@@ -87,6 +88,7 @@ export default function Landing({
   onTheme,
 }: {
   busy: boolean;
+  phase: null | "shrink" | "read";
   error: string | null;
   onPhoto: (file: File) => void;
   onText: (text: string) => void;
@@ -97,13 +99,38 @@ export default function Landing({
   const [typing, setTyping] = useState(false);
   const [text, setText] = useState("");
   const area = useRef<HTMLTextAreaElement>(null);
+  const working = busy || phase !== null;
+
+  /**
+   * Seconds since the import started.
+   *
+   * The only honest number available: nothing between "sent" and "answered" is
+   * observable from a browser, so a progress bar would be a drawing of a
+   * guess. Elapsed time is measured, and it is what lets the page stop
+   * promising ten seconds once ten seconds have passed.
+   */
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!working) {
+      setElapsed(0);
+      return;
+    }
+    const started = Date.now();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 500);
+    return () => clearInterval(id);
+  }, [working]);
+
+  const waiting =
+    elapsed < 12
+      ? "Schemat analyseras — dagar, tider, ämnen och lärarkoder läses av. Det brukar ta ett tiotal sekunder."
+      : "Det tar längre än vanligt. Ett tätt gymnasieschema kan behöva upp mot en halv minut.";
 
   // A screenshot of the school's PDF is already on the clipboard by the time
   // most people get here, and asking them to save it to disk first so they can
   // pick it out of a file dialog is a step that exists for no one's benefit.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      if (busy) return;
+      if (working) return;
       const file = [...(e.clipboardData?.files ?? [])].find((f) => f.type.startsWith("image/"));
       if (file) {
         e.preventDefault();
@@ -112,7 +139,7 @@ export default function Landing({
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [busy, onPhoto]);
+  }, [working, onPhoto]);
 
   useEffect(() => {
     if (typing) area.current?.focus();
@@ -121,7 +148,7 @@ export default function Landing({
   const drop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    if (busy) return;
+    if (working) return;
     const file = [...e.dataTransfer.files].find((f) => f.type.startsWith("image/"));
     if (file) onPhoto(file);
   };
@@ -131,7 +158,7 @@ export default function Landing({
       className={`landing no-print ${dragging ? "dropping" : ""}`}
       onDragOver={(e) => {
         e.preventDefault();
-        if (!busy) setDragging(true);
+        if (!working) setDragging(true);
       }}
       onDragLeave={(e) => {
         // Only when the pointer has actually left the page, not when it
@@ -160,23 +187,30 @@ export default function Landing({
             {/* The input is transparent and laid over the label rather than
                 hidden. `hidden` takes it out of the tab order too, which left
                 the one action on this page unreachable from a keyboard. */}
-            <label className={`pickfile ${busy ? "is-busy" : ""}`}>
+            <label className={`pickfile ${working ? "is-working" : ""}`}>
               <input
                 type="file"
                 accept="image/*"
                 className="filein"
-                disabled={busy}
+                disabled={working}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) onPhoto(f);
                   e.target.value = ""; // so the same file can be picked twice
                 }}
               />
-              {busy ? "Läser schemat…" : "Välj foto"}
+              {working ? (
+                <>
+                  <span className="spinner" aria-hidden />
+                  {phase === "shrink" ? "Förminskar bilden" : "Läser av schemat"}
+                </>
+              ) : (
+                "Välj foto"
+              )}
             </label>
             <p className="or" role="status">
-              {busy ? (
-                "Läser av bilden. Det tar ungefär tio sekunder."
+              {working ? (
+                waiting
               ) : (
                 <>
                   eller dra hit bilden — eller klistra in den med <kbd>Ctrl</kbd> + <kbd>V</kbd>
@@ -203,7 +237,7 @@ export default function Landing({
               <div className="typein-actions">
                 <button
                   className="primary"
-                  disabled={busy || text.trim().length < 20}
+                  disabled={working || text.trim().length < 20}
                   onClick={() => onText(text)}
                 >
                   Läs schemat
