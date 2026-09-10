@@ -354,7 +354,11 @@ export default function Landing({
       </section>
 
       <section className="pitfalls" aria-labelledby="pitfalls-heading">
-        <h2 id="pitfalls-heading">Sex saker som är fel på arket du fått hem</h2>
+        {/* Not "arket du fått hem". Second person turns an observation about
+            what timetabling software prints into an accusation about the
+            reader's own child's sheet, which they did not choose and cannot
+            help. The faults are general; the fix is ours. */}
+        <h2 id="pitfalls-heading">Vanliga fel med de scheman som barnen får med sig hem</h2>
         <p className="lead">
           Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
           ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
