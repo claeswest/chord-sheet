@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
-import { isBreak, say, type Glossary } from "@/lib/glossary";
+import { inkOn, isBreak, say, type Glossary } from "@/lib/glossary";
 import SubjectIcon from "./SubjectIcon";
 import EditableText from "./EditableText";
 
@@ -146,6 +146,19 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
   flush();
 
   return { placed, untimed };
+}
+
+/**
+ * A tinted card carries its own ink, so the words contrast with the card
+ * rather than with the paper behind it.
+ *
+ * Returns undefined for a break, which has no tint and takes the style's own
+ * colours, and for a subject nobody has coloured.
+ */
+function tintedStyle(tint: string | undefined, pause: boolean): React.CSSProperties | undefined {
+  if (!tint || pause) return undefined;
+  const { ink, muted } = inkOn(tint);
+  return { background: tint, color: ink, ["--card-muted" as string]: muted };
 }
 
 /** Past this the type stops being readable, so a box overflows visibly instead. */
@@ -410,7 +423,10 @@ function LessonCard({
   return (
     <div
       className={`lesson ${pause ? "pause" : ""} ${editable ? "editable" : ""} ${compact ? "compact" : ""} ${tight ? "tight" : ""}`}
-      style={tint && !pause ? { background: tint } : undefined}
+      // The tint decides the text on top of it. Paper and ink flip with the
+      // style; a subject's colour does not, so the card has to answer for its
+      // own contrast. See inkOn.
+      style={tintedStyle(tint, pause)}
       onClick={editable ? onEdit : undefined}
       tabIndex={editable ? 0 : undefined}
       role={editable ? "button" : undefined}

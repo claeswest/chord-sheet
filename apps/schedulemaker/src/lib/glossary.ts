@@ -136,6 +136,41 @@ function tintFor(index: number): string {
   return hslToHex(hue, 0.62, 0.92);
 }
 
+/**
+ * Text that contrasts with the card it sits on, not with the paper.
+ *
+ * A subject tint is stored data — one hue per subject, the same value whatever
+ * style the sheet is printed in — while the ink flips with the style. On the
+ * dark paper the two met: near-white text on a pale pink card measured 1.16 to
+ * 1, against the 4.5 that readable body text needs. Every lesson on the sheet,
+ * which is to say all of its content, was unreadable.
+ *
+ * The same trap is one colour-picker click away in every other style: the
+ * glossary lets anyone choose navy for Matematik, and dark text on navy fails
+ * exactly as badly.
+ *
+ * 0.179 is where the two candidates cross — above it black wins, below it
+ * white does — so this is the choice the contrast formula would make, not a
+ * guess at one.
+ */
+export function inkOn(hex: string): { ink: string; muted: string } {
+  const light = luminance(hex) > 0.179;
+  return light
+    ? { ink: "#1a1a1a", muted: "#5f5f68" }
+    : { ink: "#f4f5ff", muted: "#c5cae8" };
+}
+
+function luminance(hex: string): number {
+  const m = hex.trim().match(/^#?([0-9a-f]{6})$/i);
+  if (!m) return 1; // unparseable: assume a light card and keep dark ink
+  const n = parseInt(m[1], 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+}
+
 function hslToHex(h: number, s: number, l: number): string {
   const f = (n: number) => {
     const k = (n + h / 30) % 12;

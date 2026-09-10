@@ -150,14 +150,16 @@ export default function Landing({
       <section className="hero">
         <div className="hero-copy">
           <h1>
-            Ett skolschema som går att läsa på kylskåpsdörren
+            Gör skolschemat tydligt och personligt
           </h1>
           <p className="lead">
-            Fotografera arket skolan skickade hem. Du får tillbaka det i rätt proportioner, med
-            lärarkoderna utskrivna i klartext och ämnena i färg — färdigt att skriva ut på ett enda
-            A4.
+            Ladda upp skolans schema, välj en stil och kontrollera innehållet.
+            Skriv sedan ut det till kylskåpet, skrivbordet eller skolväskan.
           </p>
 
+          <div className="upload-panel">
+          <h2>Börja med ditt schema</h2>
+          <p className="upload-hint">Ett tydligt foto eller en skärmbild räcker.</p>
           <div className="start">
             {/* The input is transparent and laid over the label rather than
                 hidden. `hidden` takes it out of the tab order too, which left
@@ -180,7 +182,7 @@ export default function Landing({
                   {phase === "shrink" ? "Förminskar bilden" : "Läser av schemat"}
                 </>
               ) : (
-                "Välj foto"
+                "Ladda upp en bild"
               )}
             </label>
             <p className="or" role="status">
@@ -188,7 +190,7 @@ export default function Landing({
                 waiting
               ) : (
                 <>
-                  eller dra hit bilden — eller klistra in den med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                  Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
                 </>
               )}
             </p>
@@ -196,7 +198,7 @@ export default function Landing({
 
           {!typing ? (
             <button className="linky" onClick={() => setTyping(true)}>
-              Har du bara texten? Skriv in den i stället →
+              Klistra in schema som text →
             </button>
           ) : (
             <div className="typein">
@@ -230,9 +232,10 @@ export default function Landing({
             </p>
           )}
 
+          </div>
           <p className="fineprint">
-            Fotot skickas till Google för att läsas av och sparas inte hos oss. Det färdiga schemat
-            ligger kvar i den här webbläsaren och når aldrig våra servrar.
+            Inget konto behövs. Bilden skickas till Google för avläsning och sparas inte av oss.
+            Dina ändringar sparas i den här webbläsaren.
           </p>
         </div>
 
@@ -240,12 +243,16 @@ export default function Landing({
           {/* The style is applied to this figure, so the swatches below change
               the actual sheet rather than a picture of one — and the choice is
               lifted to the app, so it is still yours after you upload. */}
+          <p className="preview-label">Exempel på ett färdigt schema</p>
           <div className="paper" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
             <FitToWidth>
               <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} icons={icons} />
             </FitToWidth>
           </div>
 
+          <div className="style-panel">
+          <h2>Välj din stil</h2>
+          <p className="style-intro">Prova på exemplet. Dina val följer med när du laddar upp.</p>
           <div className="styles" role="group" aria-label="Stil på schemat">
             {THEMES.map((t) => (
               <button
@@ -264,15 +271,16 @@ export default function Landing({
               them: it applies to whichever style is chosen, and it is a
               question about your printer rather than your taste. */}
           <div className="inkrow">
-            <Check label="Bläcksnål utskrift" hint="inga fyllningar, svart på vitt" on={ink} onChange={onInk} />
-            <Check label="Ämnessymboler" hint="en liten bild per ämne" on={icons} onChange={onIcons} />
+            <Check label="Bläcksnål utskrift" hint="svart på vitt, utan färgfyllningar" on={ink} onChange={onInk} />
+            <Check label="Ämnessymboler" hint="visa en ikon vid ämnet" on={icons} onChange={onIcons} />
           </div>
-          <figcaption>
+          <p className="style-note" aria-live="polite">
             {ink
-              ? "Stilens typsnitt är kvar; färgerna sparas till skärmen."
+              ? "Svart text på vitt, utan färgfyllningar. Typsnittet behålls."
               : THEMES.find((t) => t.id === theme)?.note}{" "}
-            Allt du väljer här följer med till ditt eget schema.
-          </figcaption>
+
+          </p>
+          </div>
         </figure>
       </section>
 

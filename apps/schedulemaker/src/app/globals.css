@@ -170,7 +170,10 @@ body {
 /* Every size is scaled by --card-scale, which useFitCards sets on a card whose
    text won't fit its own minutes. 1 unless measurement says otherwise. */
 .lesson { break-inside: avoid; padding: 1mm 2mm; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 1.5mm; }
-.lesson .time { font-size: calc(10px * var(--card-scale, 1)); line-height: 1.3; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* --card-muted is set on a tinted card by tintedStyle, so the secondary text
+   contrasts with the card too. Falls back to the style's muted everywhere
+   else — a break, or a subject nobody has coloured. */
+.lesson .time { font-size: calc(10px * var(--card-scale, 1)); line-height: 1.3; color: var(--card-muted, var(--muted)); font-variant-numeric: tabular-nums; }
 .lesson .body { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 5px; line-height: 1.25; }
 /* Swedish compounds are long and these columns are narrow, so let them break
    properly instead of overflowing: "Hemkunskapssal" divides, "Hkk" doesn't.
@@ -194,7 +197,7 @@ body {
 }
 /* Tabular figures so room numbers line up down a column, as on the original. */
 .lesson .where {
-  font-size: calc(10px * var(--card-scale, 1)); color: var(--muted);
+  font-size: calc(10px * var(--card-scale, 1)); color: var(--card-muted, var(--muted));
   hyphens: auto; font-variant-numeric: tabular-nums;
 }
 .notes { margin-top: 8mm; font-size: 12px; color: var(--muted); }
@@ -686,3 +689,24 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
   .setgroup { padding: 3px 10px; }
   .setgroup + .setgroup { border-left: 0; }
 }
+
+/* Landing controls are grouped separately from the printable sheet. */
+.upload-panel { margin-top: 28px; padding: 24px; background: #fff; border: 1px solid #e3e0ec; border-radius: 16px; }
+.upload-panel h2, .style-panel h2 { margin: 0 0 6px; font-size: 17px; letter-spacing: -0.01em; }
+.upload-hint, .style-intro { margin: 0; color: #5b5865; font-size: 14px; line-height: 1.5; }
+.upload-panel .start { margin-top: 20px; }
+.upload-panel .pickfile { justify-content: center; width: 100%; border-radius: 10px; }
+.upload-panel .or { line-height: 1.65; }
+.hero-copy .fineprint { margin-top: 18px; max-width: 54ch; font-size: 12px; line-height: 1.65; }
+.preview-label { margin: 0 0 12px; color: #625d71; font-size: 12px; font-weight: 600; }
+.style-panel { margin-top: 20px; padding: 22px; background: #fff; border: 1px solid #e3e0ec; border-radius: 16px; }
+.style-panel .styles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.style-panel .style { border-radius: 8px; padding: 9px 6px; justify-content: center; font-size: 12px; gap: 5px; }
+.style-panel .inkrow { justify-content: flex-start; border-top: 1px solid #eeeaf3; padding-top: 16px; margin-top: 18px; }
+.style-note { margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: #625d71; }
+@media (max-width: 900px) {
+  .hero-sheet { order: initial; }
+  .upload-panel, .style-panel { padding: 20px; }
+}
+
+@media (max-width: 420px) { .style-panel .styles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
