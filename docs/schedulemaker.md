@@ -53,9 +53,17 @@ has told a child the wrong thing. The one place a time becomes a number is
 `minutesOf()`, and that result is only ever used for *position*; what a card
 prints is still the quotation.
 
-**A schedule holds weeks, plural.** Swedish schools routinely print two grids —
-jämna and udda veckor. A reader asked for one grid will either merge them or
-silently pick one, and both are wrong in a way nobody notices until a Tuesday.
+**Two grids become one week.** A sheet printed as "jämna veckor" and "udda
+veckor" is folded into a single week as it is read: a lesson identical in both
+appears once, and lessons that differ appear as two at the same time, each
+carrying its grid's label in `note`. The sheet then draws them as one box with
+two rows — which is already what a one-grid sheet does when it writes "BL jv"
+and "SV uv" in a single cell.
+
+This replaced rendering two full grids under each other, which said the same
+thing twice and printed at 66% to fit a page. `weeks` is still an array, and
+the multi-grid rendering still works, because schedules read by earlier
+versions are sitting in people's browsers with two entries in it.
 
 **Choice slots.** Lessons sharing a start time are alternatives, not a sequence:
 a language block offering five languages, or a cell split into art on even weeks

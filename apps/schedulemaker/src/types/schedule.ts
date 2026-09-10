@@ -8,10 +8,19 @@
 // parsed it into a number has told a child the wrong thing, and the whole
 // point of this is that the paper on the fridge is right.
 //
-// A schedule holds *weeks*, plural. Swedish schools routinely print two grids
-// — jämna and udda veckor — and a model asked for one grid will either merge
-// them or silently pick one. Both are wrong in a way nobody notices until a
-// Tuesday.
+// A schedule holds *weeks*, plural — but the reader returns one.
+//
+// This started as two grids for the two a Swedish school might print, jämna
+// and udda veckor. It was solving a problem the app already had a better
+// answer to: when a school does put different lessons in alternating weeks,
+// it writes them in one cell — "BL jv" and "SV uv" — and two lessons at the
+// same time are already one box with two rows here. Two full grids under each
+// other said the same thing twice, and printed at 66% to fit a page.
+//
+// So a two-grid sheet is folded into one week at read time, each lesson
+// carrying its grid's label. The array stays because schedules read by earlier
+// versions are in people's browsers with two entries in it, and they still
+// have to render.
 
 export type Lesson = {
   id: string;

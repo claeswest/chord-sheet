@@ -90,11 +90,23 @@ export async function POST(req: NextRequest) {
     }
     const json = await res.json();
     raw = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  } catch {
-    return NextResponse.json(
-      { error: "The reader timed out. Try again, or crop the photo to the grid." },
-      { status: 504 },
-    );
+  } catch (e) {
+    // Everything that threw here used to be reported as a timeout, which sent
+    // people off cropping their photo when the real answer was that this
+    // machine could not reach Google at all — a failure that arrives in well
+    // under a second. Say which it was, and log the cause either way: the
+    // route's own console is the only place the reason survives.
+    const timedOut = e instanceof Error && (e.name === "AbortError" || e.name === "TimeoutError");
+    console.error("[api/read] request failed:", e);
+    return timedOut
+      ? NextResponse.json(
+          { error: "The reader timed out. Try again, or crop the photo to the grid." },
+          { status: 504 },
+        )
+      : NextResponse.json(
+          { error: "Kunde inte nå avläsningen just nu. Försök igen om en stund." },
+          { status: 502 },
+        );
   }
 
   try {

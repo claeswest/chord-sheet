@@ -25,7 +25,10 @@ Rules:
 - Transcribe only what is written. Never add a lesson, a teacher, a room or a time that is not on the sheet. If a cell has no teacher, leave teacher out. Do not guess from the subject.
 - IF THERE IS NO TIMETABLE IN THE IMAGE — a photo of a person, a building, a letter home, a blank page — return exactly {"error":"no_schedule"} and nothing else. Never reconstruct a plausible school week from what you know about schools. It would look right and be fiction.
 - Times exactly as printed: "08:20", not 8.20 or 08:00. If a row spans a period with no clock time ("Pass 1", "Förmiddag"), leave start and end as "" and put the label in subject or note as written.
-- MANY SHEETS SHOW TWO GRIDS — "jämna veckor" and "udda veckor", or "Vecka A" and "Vecka B". Return one entry in "weeks" for EACH grid, with its printed label. Never merge them and never pick one. If there is a single grid, return one week with label "".
+- SOME SHEETS SHOW TWO GRIDS — "jämna veckor" and "udda veckor", or "Vecka A" and "Vecka B". Return ONE week holding both, like this:
+  - A lesson that is THE SAME in both grids — same day, same time, same subject — is ONE lesson, with no note. Most of the week is this. Writing it twice would say a child has two Swedish lessons at nine o'clock.
+  - A lesson that DIFFERS between the grids, or appears in only one of them, is kept as its own lesson with the grid's label copied into "note" — "jämna veckor". Two of them at the same time on the same day is correct and expected; it is exactly how a one-grid sheet writes the same thing, with "BL jv" and "SV uv" in a single cell.
+  - Never drop a grid and never pick one.
 - Days keep the sheet's order and the sheet's names, including a Saturday or a Sunday if there is one.
 - A cell holding several things ("Matte, sal 12, AB") splits into subject, room and teacher only where the sheet makes that obvious. Anything you cannot confidently split goes in note, unchanged.
 - Repeated free periods, lunch and breaks ARE part of the day: include them as lessons with the subject as written ("Lunch", "Rast").
