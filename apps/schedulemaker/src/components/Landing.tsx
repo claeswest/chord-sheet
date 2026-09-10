@@ -19,6 +19,7 @@ import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
 import { SAMPLE_SCHEDULE } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
+import { THEMES } from "@/lib/themes";
 
 const SAMPLE_SUBJECTS = codesIn(SAMPLE_SCHEDULE).subjects;
 const SAMPLE_GLOSSARY = withDefaultColors(
@@ -45,18 +46,35 @@ const STEPS: [string, string, string][] = [
   ],
 ];
 
-const PITFALLS: [string, string][] = [
+// Written against three real printouts — a lower-secondary, an upper-secondary
+// and an F-6 — rather than against an idea of what school schedules are like.
+// Every left-hand side here is something one of those three sheets actually
+// does, which is why none of them is phrased as a complaint about schools: they
+// are all what a timetabling system prints when nobody has looked at the paper.
+const FAULTS: [string, string][] = [
   [
-    "Två veckor är två veckor",
-    "Jämna och udda veckor står som två rutnät på skolans papper. Slås de ihop blir onsdagen fel varannan vecka — här förblir de två.",
+    "Koder i stället för ord",
+    "DLE, AAC, 21SVESVESVE01bSA21A. Ett av arken vi tittat på bär en avkodningstabell längst ner — utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Denise.",
   ],
   [
-    "Ett språkval är ett val",
-    "En ruta med franska, spanska och tyska är tre alternativ, inte tre lektioner. Du får peka ut vilket som gäller innan schemat kan skrivas ut.",
+    "Halva pappret är tomt",
+    "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
   ],
   [
-    "Längden betyder något",
-    "En lektion är exakt så hög som den är lång, som på skolans eget ark. Ett pass som pågår över elva blir inte borta ur elvaraden.",
+    "Allt är lika viktigt",
+    "Ämne, lärare och sal sätts i samma grad och samma vikt — ”SO LoAl 401” — så ögat har inget att fästa vid. Hos oss är ämnet störst och salen dämpad.",
+  ],
+  [
+    "Färg som slåss med texten",
+    "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
+  ],
+  [
+    "Klockslagen ligger i vägen",
+    "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
+  ],
+  [
+    "Rasten syns inte",
+    "Lunchen är en ruta som alla andra, i samma färg som en lektion. Det är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
   ],
 ];
 
@@ -65,11 +83,15 @@ export default function Landing({
   error,
   onPhoto,
   onText,
+  theme,
+  onTheme,
 }: {
   busy: boolean;
   error: string | null;
   onPhoto: (file: File) => void;
   onText: (text: string) => void;
+  theme: string;
+  onTheme: (id: string) => void;
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -206,10 +228,33 @@ export default function Landing({
         </div>
 
         <figure className="hero-sheet" aria-label="Exempel på ett färdigt schema">
-          <FitToWidth>
-            <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} />
-          </FitToWidth>
-          <figcaption>Så här kommer det ut. Påhittad klass, riktig utskrift.</figcaption>
+          {/* The style is applied to this figure, so the swatches below change
+              the actual sheet rather than a picture of one — and the choice is
+              lifted to the app, so it is still yours after you upload. */}
+          <div className="paper" data-theme={theme || undefined}>
+            <FitToWidth>
+              <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} />
+            </FitToWidth>
+          </div>
+
+          <div className="styles" role="group" aria-label="Stil på schemat">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                className="style"
+                aria-pressed={theme === t.id}
+                onClick={() => onTheme(t.id)}
+                title={t.note}
+              >
+                <span className="style-dot" style={{ background: t.dot }} aria-hidden />
+                {t.name}
+              </button>
+            ))}
+          </div>
+          <figcaption>
+            {THEMES.find((t) => t.id === theme)?.note} Byt stil här — den följer med till ditt eget
+            schema.
+          </figcaption>
         </figure>
       </section>
 
@@ -224,13 +269,13 @@ export default function Landing({
       </section>
 
       <section className="pitfalls">
-        <h2>Det som brukar bli fel</h2>
+        <h2>Sex saker som är fel på arket du fått hem</h2>
         <p className="lead">
-          Ett schema är inte en lista, och de flesta försök att göra om det till en tappar bort
-          samma tre saker.
+          Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
+          ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
         </p>
         <dl>
-          {PITFALLS.map(([term, body]) => (
+          {FAULTS.map(([term, body]) => (
             <div key={term}>
               <dt>{term}</dt>
               <dd>{body}</dd>

@@ -25,17 +25,8 @@ import {
   withKnownNames,
   type Glossary,
 } from "@/lib/glossary";
+import { THEMES } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
-
-const THEMES = [
-  { id: "", name: "Papper", dot: "#3b5bdb" },
-  // Thin lines, no fills, black on white. Most people printing this at home
-  // have an office printer and no wish to spend a cartridge on a timetable.
-  { id: "plain", name: "Bläcksnål", dot: "#ffffff" },
-  { id: "dusk", name: "Skymning", dot: "#7c8cff" },
-  { id: "meadow", name: "Äng", dot: "#2f7d46" },
-  { id: "candy", name: "Godis", dot: "#d6336c" },
-];
 
 const STORE = "sm_state_v1";
 
@@ -289,8 +280,12 @@ export default function Home() {
   const sheetPaper = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
   const openChoices = schedule ? unresolvedChoices(schedule) : 0;
 
+  // The style belongs to the sheet, and only while the sheet is what the page
+  // is. On the front page it is set on the preview instead: themed up here,
+  // picking a dark paper also repainted the landing's own body text in a colour
+  // meant to sit on a dark sheet.
   return (
-    <main className="app" data-theme={theme || undefined}>
+    <main className="app" data-theme={schedule ? theme || undefined : undefined}>
       {/* @page can't be set from a class, so the chosen size is injected.
           Without it the browser prints A4 whatever the sheet is laid out for,
           and an A3 schedule comes out cropped. */}
@@ -302,6 +297,8 @@ export default function Home() {
           error={error}
           onPhoto={pickPhoto}
           onText={(t) => read({ text: t })}
+          theme={theme}
+          onTheme={setTheme}
         />
       )}
 
