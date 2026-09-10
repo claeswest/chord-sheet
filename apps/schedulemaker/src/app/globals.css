@@ -364,24 +364,25 @@ kbd {
 .steps h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 8px; letter-spacing: -0.01em; }
 .steps p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #45454f; }
 
-.pitfalls { margin-bottom: 72px; }
-.pitfalls h2 {
+.benefits { margin-bottom: 48px; }
+.benefits > .lead { max-width: 60ch; font-size: 16px; }
+.benefits h2 {
   font-family: var(--font-display); font-size: clamp(22px, 2.4vw, 27px);
   margin: 0 0 10px; letter-spacing: -0.015em;
 }
-.pitfalls dl {
+.benefits dl {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 34px 30px; margin: 34px 0 0;
 }
-/* Each fault sits under a rule, as the steps do — the sheet's hour lines
-   turned into the page's own grid. */
-.pitfalls dl > div { border-top: 1px solid var(--rule); padding-top: 14px; }
-.pitfalls dt {
+/* Quiet separators keep benefits easy to scan. */
+.benefits dl > div { border-top: 1px solid var(--rule); padding-top: 14px; }
+.benefits dt {
   font-family: var(--font-display); font-weight: 700; font-size: 15.5px; margin-bottom: 7px;
 }
-.pitfalls dd { margin: 0; font-size: 14.5px; line-height: 1.55; color: #45454f; }
+.benefits dd { margin: 0; font-size: 14.5px; line-height: 1.55; color: #45454f; }
 
-.landing-foot { border-top: 1px solid var(--rule); padding-top: 22px; }
+.landing-foot { padding: 24px 28px; border: 1px solid #e3e0ec; border-radius: 16px; background: #eeecf5; }
+.landing-foot h2 { margin: 0 0 6px; font-size: 15px; font-weight: 650; color: #302b3f; }
 .landing-foot p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); max-width: 68ch; }
 
 /* Dropping an image anywhere on the page works, so the page says so. */
@@ -398,7 +399,7 @@ kbd {
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 40px; margin-bottom: 64px; }
   .hero-sheet { order: -1; }
-  .steps, .pitfalls dl { grid-template-columns: 1fr; gap: 26px; }
+  .steps, .benefits dl { grid-template-columns: 1fr; gap: 26px; }
 }
 
 /* ── Print ─────────────────────────────────────────────────────────────────

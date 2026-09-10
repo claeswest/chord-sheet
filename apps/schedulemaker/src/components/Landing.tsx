@@ -28,55 +28,19 @@ const SAMPLE_GLOSSARY = withDefaultColors(
   SAMPLE_SUBJECTS,
 );
 
-/** Steps, in the sheet's own hour-label type. */
 const STEPS: [string, string, string][] = [
-  [
-    "01",
-    "Fotografera",
-    "Mobilkameran räcker. Sneda bilder, skuggor och skrynkligt papper går bra — det är så scheman ser ut när de kommit hem i en ryggsäck.",
-  ],
-  [
-    "02",
-    "Rätta och namnge",
-    "Koderna blir ord. SV blir Svenska av sig självt, DLE blir Denise när du skrivit det en gång. Står det fem språk i samma ruta pekar du ut det ditt barn faktiskt läser.",
-  ],
-  [
-    "03",
-    "Skriv ut",
-    "Ett ark, inte två. A4 eller A3, liggande eller stående, i färg eller bläcksnålt svartvitt.",
-  ],
+  ["01", "Ladda upp ditt schema", "Ta ett tydligt foto, dra in en bild eller klistra in schemat som text."],
+  ["02", "Gör det till ditt", "Kontrollera tiderna, skriv ut lärarnas namn och välj rätt lektioner. Anpassa färger och stil efter smak."],
+  ["03", "Skriv ut", "Välj A4 eller A3, stående eller liggande. Skriv ut i färg eller välj bläcksnålt läge."],
 ];
 
-// Written against three real printouts — a lower-secondary, an upper-secondary
-// and an F-6 — rather than against an idea of what school schedules are like.
-// Every left-hand side here is something one of those three sheets actually
-// does, which is why none of them is phrased as a complaint about schools: they
-// are all what a timetabling system prints when nobody has looked at the paper.
-const FAULTS: [string, string][] = [
-  [
-    "Koder i stället för ord",
-    "DLE, AAC, 21SVESVESVE01bSA21A. Ett av arken vi tittat på bär en avkodningstabell längst ner — utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Denise.",
-  ],
-  [
-    "Halva pappret är tomt",
-    "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
-  ],
-  [
-    "Allt är lika viktigt",
-    "Ämne, lärare och sal sätts i samma grad och samma vikt — ”SO LoAl 401” — så ögat har inget att fästa vid. Hos oss är ämnet störst och salen dämpad.",
-  ],
-  [
-    "Färg som slåss med texten",
-    "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
-  ],
-  [
-    "Klockslagen ligger i vägen",
-    "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
-  ],
-  [
-    "Rasten syns inte",
-    "Lunchen är en ruta som alla andra, i samma färg som en lektion. Det är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
-  ],
+const BENEFITS: [string, string][] = [
+  ["Begripliga namn", "Vanliga ämnesförkortningar skrivs ut automatiskt. Lärarnas namn fyller du i en gång."],
+  ["Skoldagen i rätt proportioner", "Långa lektioner får större rutor och mellanrummen visar dagens pauser."],
+  ["Det viktigaste syns först", "Ämnet står tydligt, med tid, lärare och sal intill."],
+  ["En färg för varje ämne", "Följ ämnena genom veckan med färger du själv kan ändra."],
+  ["Bara de lektioner som gäller", "Välj rätt alternativ vid exempelvis språkval. Jämna och udda veckor kan hållas isär."],
+  ["Ett schema med personlig stil", "Välj bland stilar med olika typsnitt och färger, lägg till ämnessymboler och sätt barnets namn överst."],
 ];
 
 export default function Landing({
@@ -312,7 +276,7 @@ export default function Landing({
         </figure>
       </section>
 
-      <section className="steps">
+      <section className="steps" aria-label="Så fungerar det">
         {STEPS.map(([n, title, body]) => (
           <article key={n}>
             <span className="stepno">{n}</span>
@@ -322,14 +286,13 @@ export default function Landing({
         ))}
       </section>
 
-      <section className="pitfalls">
-        <h2>Sex saker som är fel på arket du fått hem</h2>
+      <section className="benefits" aria-labelledby="benefits-heading">
+        <h2 id="benefits-heading">Lättare att läsa. Enklare att använda.</h2>
         <p className="lead">
-          Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
-          ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
+          Ett tydligt schema hjälper hela familjen att få koll på skolveckan.
         </p>
         <dl>
-          {FAULTS.map(([term, body]) => (
+          {BENEFITS.map(([term, body]) => (
             <div key={term}>
               <dt>{term}</dt>
               <dd>{body}</dd>
@@ -339,10 +302,10 @@ export default function Landing({
       </section>
 
       <footer className="landing-foot">
+        <h2>Inget konto behövs</h2>
         <p>
-          Ett barns schema är namn, klass, skola och var de befinner sig varje timme på dygnet. Det
-          billigaste sättet att ta hand om sådant är att inte ha det: här finns inget konto, ingen
-          databas och ingenting sparat på en server.
+          Fotot skickas till Google för avläsning och sparas inte av oss.
+          Ditt schema och dina ändringar sparas lokalt i den här webbläsaren.
         </p>
       </footer>
 
