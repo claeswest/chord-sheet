@@ -17,7 +17,7 @@
 import { useEffect, useRef, useState } from "react";
 import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
-import InkToggle from "./InkToggle";
+import Check from "./Check";
 import { SAMPLE_SCHEDULE } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
 import { THEMES } from "@/lib/themes";
@@ -89,6 +89,8 @@ export default function Landing({
   onTheme,
   ink,
   onInk,
+  icons,
+  onIcons,
 }: {
   busy: boolean;
   phase: null | "shrink" | "read";
@@ -99,6 +101,8 @@ export default function Landing({
   onTheme: (id: string) => void;
   ink: boolean;
   onInk: (on: boolean) => void;
+  icons: boolean;
+  onIcons: (on: boolean) => void;
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -272,7 +276,7 @@ export default function Landing({
               lifted to the app, so it is still yours after you upload. */}
           <div className="paper" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
             <FitToWidth>
-              <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} />
+              <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} icons={icons} />
             </FitToWidth>
           </div>
 
@@ -294,7 +298,8 @@ export default function Landing({
               them: it applies to whichever style is chosen, and it is a
               question about your printer rather than your taste. */}
           <div className="inkrow">
-            <InkToggle on={ink} onChange={onInk} hint="inga fyllningar, svart på vitt" />
+            <Check label="Bläcksnål utskrift" hint="inga fyllningar, svart på vitt" on={ink} onChange={onInk} />
+            <Check label="Ämnessymboler" hint="en liten bild per ämne" on={icons} onChange={onIcons} />
           </div>
           <figcaption>
             {ink

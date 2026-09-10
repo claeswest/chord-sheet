@@ -16,7 +16,7 @@ import FitToWidth from "@/components/FitToWidth";
 import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
-import InkToggle from "@/components/InkToggle";
+import Check from "@/components/Check";
 import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
@@ -39,7 +39,7 @@ const PAPERS = [
   { id: "a3-portrait", name: "A3 stående", css: "A3 portrait", w: "297mm", h: "420mm" },
 ];
 
-type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string; ink?: boolean };
+type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string; ink?: boolean; icons?: boolean };
 
 export default function Home() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
@@ -48,6 +48,8 @@ export default function Home() {
   const [paper, setPaper] = useState("a4-landscape");
   /** Print without fills, whatever the style. A fact about the printer. */
   const [ink, setInk] = useState(false);
+  /** Little subject drawings. Fun, and findable by a child who cannot read yet. */
+  const [icons, setIcons] = useState(true);
   // The original photograph, for checking against while editing. Held in
   // memory only: it is a picture of a child's schedule, and writing it to
   // localStorage would leave it on the disk long after the tab is closed.
@@ -91,6 +93,7 @@ export default function Home() {
           // Restoring it as a style id would leave the setting silently off.
           setTheme(s.theme === "plain" ? "" : s.theme ?? "");
           setInk(s.ink ?? s.theme === "plain");
+          setIcons(s.icons ?? true);
           setPaper(s.paper ?? "a4-landscape");
         }
       }
@@ -103,12 +106,12 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     try {
-      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink }));
+      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink, icons }));
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme, paper, ink]);
+  }, [loaded, schedule, glossary, theme, paper, ink, icons]);
 
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
@@ -322,6 +325,8 @@ export default function Home() {
           onTheme={setTheme}
           ink={ink}
           onInk={setInk}
+          icons={icons}
+          onIcons={setIcons}
         />
       )}
 
@@ -366,7 +371,8 @@ export default function Home() {
                 ))}
                 {/* Beside the styles, not among them: it applies to whichever
                     one is chosen. */}
-                <InkToggle on={ink} onChange={setInk} />
+                <Check label="Bläcksnål" on={ink} onChange={setInk} />
+                <Check label="Symboler" on={icons} onChange={setIcons} />
                 <select
                   value={paper}
                   onChange={(e) => setPaper(e.target.value)}
@@ -423,7 +429,7 @@ export default function Home() {
 
           <PrintFit
             pageHeightMm={parseInt(sheetPaper.h, 10)}
-            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}`}
+            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}|${icons}`}
             onFit={setFit}
           />
 
@@ -432,6 +438,7 @@ export default function Home() {
               schedule={schedule}
               glossary={glossary}
               editable={editing}
+              icons={icons}
               onChange={setSchedule}
               onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
               onAddLesson={addLesson}

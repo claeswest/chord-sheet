@@ -561,7 +561,7 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
    beside .subject, not inside it, so an em here is the card's inherited size
    and the icon would have stayed put while the fit measurement shrank the
    words next to it. */
-.meal {
+.subject-icon {
   flex: 0 0 auto;
   width: calc(var(--subject-size) * var(--card-scale, 1) * 1.2);
   height: calc(var(--subject-size) * var(--card-scale, 1) * 1.2);
@@ -615,4 +615,4 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
 .inkcheck input:focus-visible { outline: 3px solid rgba(59, 91, 219, 0.5); outline-offset: 2px; }
 .inkcheck-text { display: block; line-height: 1.35; }
 .inkcheck-text small { display: block; font-size: 12px; color: var(--muted); }
-.inkrow { display: flex; justify-content: center; margin-top: 12px; }
+.inkrow { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin-top: 14px; }

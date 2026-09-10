@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
-import { isBreak, isMeal, say, type Glossary } from "@/lib/glossary";
+import { isBreak, say, type Glossary } from "@/lib/glossary";
+import SubjectIcon from "./SubjectIcon";
 import EditableText from "./EditableText";
 
 // The printable sheet: a clock down the margin, a column per day, and every
@@ -378,34 +379,13 @@ function MergedCard({
   );
 }
 
-/**
- * Knife and fork, drawn rather than typed.
- *
- * Not the emoji: 🍴 is a colour glyph that comes out of one printer as a black
- * outline, another as a full-colour picture, and a third as a box — and this
- * document's whole job is to be printed. Strokes in currentColor follow the
- * theme, including the ink-saving one, and stay sharp at any size.
- *
- * Two tines, not four. At the size this prints — about 3mm — anything more
- * closes up into a smudge.
- */
-function MealIcon() {
-  return (
-    <svg className="meal" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M7 3v5.4a2.3 2.3 0 0 0 4.6 0V3" />
-      <path d="M9.3 10.8V21" />
-      <path d="M17.4 3c1.7 1.9 1.7 5.6 0 7.5" />
-      <path d="M17.4 10.5V21" />
-    </svg>
-  );
-}
-
 function LessonCard({
   lesson,
   glossary,
   editable,
   compact,
   tight,
+  icons,
   onEdit,
 }: {
   lesson: Lesson;
@@ -415,6 +395,8 @@ function LessonCard({
   compact?: boolean;
   /** Too short even to wrap that row, so it truncates. */
   tight?: boolean;
+  /** Draw the subject's little picture. */
+  icons?: boolean;
   onEdit?: () => void;
 }) {
   const subject = say(lesson.subject, glossary.subjects) ?? lesson.subject;
@@ -452,8 +434,8 @@ function LessonCard({
           own text — and 40 minutes is the commonest lesson there is. */}
       <div className="body">
         {/* Outside .subject, so the fit measurement still measures text
-            against the column and an ellipsis never eats half a fork. */}
-        {isMeal(lesson.subject) && <MealIcon />}
+            against the column and an ellipsis never eats half a drawing. */}
+        {icons && <SubjectIcon subject={lesson.subject} />}
         <span className="subject">{subject}</span>
         {where && <span className="where">{where}</span>}
       </div>
@@ -465,6 +447,7 @@ export default function ScheduleSheet({
   schedule,
   glossary,
   editable = false,
+  icons = true,
   onChange,
   onEditLesson,
   onAddLesson,
@@ -474,6 +457,8 @@ export default function ScheduleSheet({
   schedule: Schedule;
   glossary: Glossary;
   editable?: boolean;
+  /** Little subject drawings on the cards. */
+  icons?: boolean;
   onChange?: (next: Schedule) => void;
   onEditLesson?: (weekId: string, dayId: string, lesson: Lesson) => void;
   onAddLesson?: (weekId: string, dayId: string) => void;
@@ -554,6 +539,7 @@ export default function ScheduleSheet({
             editable={editable}
             compact={height !== null && height < COMPACT_PX}
             tight={height !== null && height < TIGHT_PX}
+            icons={icons}
             onEdit={() => onEditLesson?.(week.id, day.id, kept[0])}
           />
         )}
