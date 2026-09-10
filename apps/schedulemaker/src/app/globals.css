@@ -631,3 +631,44 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
 .inkcheck-text { display: block; line-height: 1.35; }
 .inkcheck-text small { display: block; font-size: 12px; color: var(--muted); }
 .inkrow { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin-top: 14px; }
+
+/* ── The toolbar ───────────────────────────────────────────────────────────
+ * Two rows, because there are two kinds of thing in it: what you do, and what
+ * the sheet is. They were one flat line — print, back, eight anonymous dots,
+ * two checkboxes, a paper menu, start over — and nothing told the eye where
+ * one group ended and the next began.
+ *
+ * Chrome colours are fixed rather than themed. This bar sits outside the
+ * sheet, and --rule follows the sheet's style: on the dark paper it would
+ * paint a near-black divider across a light page. */
+.toolbar { margin: 0 0 20px; }
+.toolbar .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.settings {
+  display: flex; flex-wrap: wrap; align-items: center;
+  margin-top: 12px; padding: 9px 4px;
+  background: #fff; border: 1px solid #e6e6ec; border-radius: 12px;
+}
+.setgroup { display: flex; align-items: center; gap: 9px; padding: 3px 16px; }
+.setgroup + .setgroup { border-left: 1px solid #ececf2; }
+.setlabel {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.09em; color: #8a8a99;
+}
+/* Reserves its width so switching style doesn't shuffle the row along. */
+.setvalue { font-size: 13px; font-weight: 600; color: #45454f; min-width: 6.5em; }
+.swatches { display: flex; gap: 5px; }
+
+/* Quiet by default and loud only once it is armed. */
+.quiet { border: 0; background: none; color: #6b6b6b; margin-left: auto; }
+.quiet:hover { color: #1a1a1a; text-decoration: underline; }
+.confirm {
+  display: flex; align-items: center; gap: 8px; margin-left: auto;
+  font-size: 14px; color: #45454f;
+}
+.confirm .quiet { margin-left: 0; }
+
+@media (max-width: 700px) {
+  .setgroup { padding: 3px 10px; }
+  .setgroup + .setgroup { border-left: 0; }
+}

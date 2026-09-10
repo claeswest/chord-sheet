@@ -50,6 +50,8 @@ export default function Home() {
   const [ink, setInk] = useState(false);
   /** Little subject drawings. Fun, and findable by a child who cannot read yet. */
   const [icons, setIcons] = useState(true);
+  /** "Börja om" is armed before it fires. See the toolbar. */
+  const [resetting, setResetting] = useState(false);
   // The original photograph, for checking against while editing. Held in
   // memory only: it is a picture of a child's schedule, and writing it to
   // localStorage would leave it on the disk long after the tab is closed.
@@ -164,6 +166,14 @@ export default function Home() {
       setError("Kunde inte läsa filen.");
       setPhase(null);
     }
+  }
+
+  function startOver() {
+    setSchedule(null);
+    setSource(null);
+    setGlossary(EMPTY_GLOSSARY);
+    setMode("edit");
+    setResetting(false);
   }
 
   function saveLesson(next: Lesson) {
@@ -332,69 +342,107 @@ export default function Home() {
 
       {schedule && (
         <>
-          <div className="controls no-print">
-            {editing ? (
-              <>
-                {/* The one way onwards, and it is refused while a choice is
-                    open. Disabling it with a reason beside it beats letting
-                    someone print a sheet that offers five languages at once. */}
-                <button
-                  className="primary"
-                  onClick={() => setMode("view")}
-                  disabled={openChoices > 0}
-                >
-                  Se färdigt schema →
-                </button>
-                {openChoices > 0 && (
-                  <span className="hint">
-                    {openChoices === 1
-                      ? "1 val kvar att bestämma i schemat"
-                      : `${openChoices} val kvar att bestämma i schemat`}
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                <button className="primary" onClick={() => window.print()}>
-                  Skriv ut
-                </button>
-                <button onClick={() => setMode("edit")}>← Ändra</button>
-                {THEMES.map((t) => (
+          {/* Two rows, because there are two kinds of thing here. What you do
+              — print, go back, start over — sat in one flat line with what the
+              sheet is: eight anonymous dots, two checkboxes and a paper menu.
+              Interleaved like that nothing tells the eye where one group ends
+              and the next begins. */}
+          <div className="toolbar no-print">
+            <div className="bar">
+              {editing ? (
+                <>
+                  {/* The one way onwards, and it is refused while a choice is
+                      open. Disabling it with a reason beside it beats letting
+                      someone print a sheet that offers five languages at once. */}
                   <button
-                    key={t.id}
-                    className="swatch"
-                    style={{ background: t.dot }}
-                    aria-label={t.name}
-                    aria-pressed={theme === t.id}
-                    onClick={() => setTheme(t.id)}
-                  />
-                ))}
-                {/* Beside the styles, not among them: it applies to whichever
-                    one is chosen. */}
-                <Check label="Bläcksnål" on={ink} onChange={setInk} />
-                <Check label="Symboler" on={icons} onChange={setIcons} />
-                <select
-                  value={paper}
-                  onChange={(e) => setPaper(e.target.value)}
-                  aria-label="Pappersformat"
-                >
-                  {PAPERS.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </>
+                    className="primary"
+                    onClick={() => setMode("view")}
+                    disabled={openChoices > 0}
+                  >
+                    Se färdigt schema →
+                  </button>
+                  {openChoices > 0 && (
+                    <span className="hint">
+                      {openChoices === 1
+                        ? "1 val kvar att bestämma i schemat"
+                        : `${openChoices} val kvar att bestämma i schemat`}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button className="primary" onClick={() => window.print()}>
+                    Skriv ut
+                  </button>
+                  <button onClick={() => setMode("edit")}>← Ändra</button>
+                </>
+              )}
+
+              {/* One click used to throw away the schedule, and naming a set of
+                  teacher codes is an afternoon. It asks now. */}
+              {resetting ? (
+                <span className="confirm">
+                  Ta bort schemat?
+                  <button className="danger" onClick={startOver}>
+                    Ja, ta bort
+                  </button>
+                  <button className="quiet" onClick={() => setResetting(false)}>
+                    Avbryt
+                  </button>
+                </span>
+              ) : (
+                <button className="quiet" onClick={() => setResetting(true)}>
+                  Börja om
+                </button>
+              )}
+            </div>
+
+            {!editing && (
+              <div className="settings">
+                <div className="setgroup" role="group" aria-label="Stil">
+                  <span className="setlabel">Stil</span>
+                  <div className="swatches">
+                    {THEMES.map((t) => (
+                      <button
+                        key={t.id}
+                        className="swatch"
+                        style={{ background: t.dot }}
+                        aria-label={t.name}
+                        title={t.name}
+                        aria-pressed={theme === t.id}
+                        onClick={() => setTheme(t.id)}
+                      />
+                    ))}
+                  </div>
+                  {/* Named, because eight dots cannot say which is which — and
+                      three of these are brown. */}
+                  <span className="setvalue">{THEMES.find((t) => t.id === theme)?.name}</span>
+                </div>
+
+                <div className="setgroup">
+                  {/* "Format", not "Papper": the default style is itself called
+                      Papper, and "Stil: Papper | Papper: A4 liggande" is not a
+                      sentence anyone can read. */}
+                  <span className="setlabel">Format</span>
+                  <select
+                    value={paper}
+                    onChange={(e) => setPaper(e.target.value)}
+                    aria-label="Pappersformat"
+                  >
+                    {PAPERS.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="setgroup">
+                  {/* Beside the styles, not among them: they apply to whichever
+                      one is chosen. */}
+                  <Check label="Bläcksnål" on={ink} onChange={setInk} />
+                  <Check label="Symboler" on={icons} onChange={setIcons} />
+                </div>
+              </div>
             )}
-            <button
-              style={{ marginLeft: "auto" }}
-              onClick={() => {
-                setSchedule(null);
-                setSource(null);
-                setGlossary(EMPTY_GLOSSARY);
-                setMode("edit");
-              }}
-            >
-              Börja om
-            </button>
           </div>
 
           {fit < 0.995 && (
