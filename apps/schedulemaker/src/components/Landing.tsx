@@ -132,7 +132,9 @@ export default function Landing({
   const waiting =
     elapsed < 12
       ? "Schemat analyseras — dagar, tider, ämnen och lärarkoder läses av. Det brukar ta ett tiotal sekunder."
-      : "Det tar längre än vanligt. Ett tätt gymnasieschema kan behöva upp mot en halv minut.";
+      // Measured, not guessed: a photographed 7A högstadieschema with 43
+      // lessons took 36 seconds. "Half a minute" was already wrong for it.
+      : "Det tar längre än vanligt. Ett tätt schema kan behöva en minut.";
 
   // A screenshot of the school's PDF is already on the clipboard by the time
   // most people get here, and asking them to save it to disk first so they can

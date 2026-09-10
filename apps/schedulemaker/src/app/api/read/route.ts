@@ -97,7 +97,13 @@ export async function POST(req: NextRequest) {
     // under a second. Say which it was, and log the cause either way: the
     // route's own console is the only place the reason survives.
     const timedOut = e instanceof Error && (e.name === "AbortError" || e.name === "TimeoutError");
-    console.error("[api/read] request failed:", e);
+    // The cause, not just the wrapper. Node reports every network failure as
+    // "TypeError: fetch failed"; which one it was — ENOTFOUND, ECONNREFUSED,
+    // a certificate — lives one level down, and without it the log says
+    // nothing a person can act on.
+    const c = e instanceof Error ? (e.cause as { code?: string; message?: string } | undefined) : undefined;
+    const why = c ? `${c.code ?? ""} ${c.message ?? ""}`.trim() : "no cause";
+    console.error(`[api/read] request failed: ${String(e)} | cause: ${why}`);
     return timedOut
       ? NextResponse.json(
           { error: "The reader timed out. Try again, or crop the photo to the grid." },
