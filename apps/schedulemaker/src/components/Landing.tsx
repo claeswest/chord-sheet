@@ -39,8 +39,49 @@ const BENEFITS: [string, string][] = [
   ["Skoldagen i rätt proportioner", "Långa lektioner får större rutor och mellanrummen visar dagens pauser."],
   ["Det viktigaste syns först", "Ämnet står tydligt, med tid, lärare och sal intill."],
   ["En färg för varje ämne", "Följ ämnena genom veckan med färger du själv kan ändra."],
-  ["Bara de lektioner som gäller", "Välj rätt alternativ vid exempelvis språkval. Jämna och udda veckor kan hållas isär."],
+  // Not "jämna och udda veckor kan hållas isär": they are deliberately not
+  // held apart. Two grids are folded into one week and the lesson that only
+  // applies every other week carries the label — which is what the sheet a
+  // school prints on one grid does anyway.
+  ["Bara de lektioner som gäller", "Välj rätt alternativ vid exempelvis språkval. Gäller en lektion bara varannan vecka står det i rutan."],
   ["Ett schema med personlig stil", "Välj bland stilar med olika typsnitt och färger, lägg till ämnessymboler och sätt barnets namn överst."],
+];
+
+// Written against three real printouts — a lower-secondary, an upper-secondary
+// and an F-6 — rather than against an idea of what school schedules are like.
+// Every left-hand side here is something one of those three sheets actually
+// does, which is why none of them is phrased as a complaint about schools: they
+// are all what a timetabling system prints when nobody has looked at the paper.
+//
+// This sits under the benefits rather than instead of them. The two do
+// different jobs: the list above says what you get, this one says why you
+// wanted it — and it is the half no competitor can copy, because it was
+// written with the arks on the desk.
+const FAULTS: [string, string][] = [
+  [
+    "Koder i stället för ord",
+    "DLE, AAC, 21SVESVESVE01bSA21A. Ett av arken vi tittat på bär en avkodningstabell längst ner — utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Denise.",
+  ],
+  [
+    "Halva pappret är tomt",
+    "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
+  ],
+  [
+    "Allt är lika viktigt",
+    "Ämne, lärare och sal sätts i samma grad och samma vikt — ”SO LoAl 401” — så ögat har inget att fästa vid. Hos oss är ämnet störst och salen dämpad.",
+  ],
+  [
+    "Färg som slåss med texten",
+    "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
+  ],
+  [
+    "Klockslagen ligger i vägen",
+    "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
+  ],
+  [
+    "Rasten syns inte",
+    "Lunchen är en ruta som alla andra, i samma färg som en lektion. Det är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
+  ],
 ];
 
 export default function Landing({
@@ -158,88 +199,92 @@ export default function Landing({
           </p>
 
           <div className="upload-panel">
-          <h2>Börja med ditt schema</h2>
-          <p className="upload-hint">Ett tydligt foto eller en skärmbild räcker.</p>
-          <div className="start">
-            {/* The input is transparent and laid over the label rather than
-                hidden. `hidden` takes it out of the tab order too, which left
-                the one action on this page unreachable from a keyboard. */}
-            <label className={`pickfile ${working ? "is-working" : ""}`}>
-              <input
-                type="file"
-                accept="image/*"
-                className="filein"
-                disabled={working}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onPhoto(f);
-                  e.target.value = ""; // so the same file can be picked twice
-                }}
-              />
-              {working ? (
-                <>
-                  <span className="spinner" aria-hidden />
-                  {phase === "shrink" ? "Förminskar bilden" : "Läser av schemat"}
-                </>
-              ) : (
-                "Ladda upp en bild"
-              )}
-            </label>
-            <p className="or" role="status">
-              {working ? (
-                waiting
-              ) : (
-                <>
-                  Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
-                </>
-              )}
-            </p>
-          </div>
-
-          {!typing ? (
-            <button className="linky" onClick={() => setTyping(true)}>
-              Klistra in schema som text →
-            </button>
-          ) : (
-            <div className="typein">
-              <label htmlFor="paste">Skriv eller klistra in schemat</label>
-              <textarea
-                id="paste"
-                ref={area}
-                rows={7}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder={"Måndag\n08:10–09:00 Svenska, sal 12\n09:10–10:00 Matematik, sal 12"}
-              />
-              <div className="typein-actions">
-                <button
-                  className="primary"
-                  disabled={working || text.trim().length < 20}
-                  onClick={() => onText(text)}
-                >
-                  Läs schemat
-                </button>
-                <button className="linky" onClick={() => setTyping(false)}>
-                  Avbryt
-                </button>
-              </div>
+            <h2>Börja med ditt schema</h2>
+            <p className="upload-hint">Ett tydligt foto eller en skärmbild räcker.</p>
+            <div className="start">
+              {/* The input is transparent and laid over the label rather than
+                  hidden. `hidden` takes it out of the tab order too, which left
+                  the one action on this page unreachable from a keyboard. */}
+              <label className={`pickfile ${working ? "is-working" : ""}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="filein"
+                  disabled={working}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onPhoto(f);
+                    e.target.value = ""; // so the same file can be picked twice
+                  }}
+                />
+                {working ? (
+                  <>
+                    <span className="spinner" aria-hidden />
+                    {phase === "shrink" ? "Förminskar bilden" : "Läser av schemat"}
+                  </>
+                ) : (
+                  "Ladda upp en bild"
+                )}
+              </label>
+              <p className="or" role="status">
+                {working ? (
+                  waiting
+                ) : (
+                  <>
+                    Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                  </>
+                )}
+              </p>
             </div>
-          )}
 
-          {error && (
-            <p className="error" role="alert">
-              {error}
-            </p>
-          )}
+            {!typing ? (
+              <button className="linky" onClick={() => setTyping(true)}>
+                Klistra in schema som text →
+              </button>
+            ) : (
+              <div className="typein">
+                <label htmlFor="paste">Skriv eller klistra in schemat</label>
+                <textarea
+                  id="paste"
+                  ref={area}
+                  rows={7}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder={"Måndag\n08:10–09:00 Svenska, sal 12\n09:10–10:00 Matematik, sal 12"}
+                />
+                <div className="typein-actions">
+                  <button
+                    className="primary"
+                    disabled={working || text.trim().length < 20}
+                    onClick={() => onText(text)}
+                  >
+                    Läs schemat
+                  </button>
+                  <button className="linky" onClick={() => setTyping(false)}>
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            )}
 
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
           </div>
-          <p className="fineprint">
-            Inget konto behövs. Bilden skickas till Google för avläsning och sparas inte av oss.
-            Dina ändringar sparas i den här webbläsaren.
-          </p>
+
+          {/* One line, not the privacy paragraph: that argument is made once,
+              at the foot of the page, and making it twice reads as protesting.
+              What belongs beside the button is only what you need before you
+              press it. */}
+          <p className="fineprint">Inget konto. Ingenting sparas hos oss.</p>
         </div>
 
-        <figure className="hero-sheet" aria-label="Exempel på ett färdigt schema">
+        {/* The label is visible text inside the figure, so it is the figure's
+            accessible name already. An aria-label on top of it made a screen
+            reader read the same sentence twice. */}
+        <figure className="hero-sheet">
           {/* The style is applied to this figure, so the swatches below change
               the actual sheet rather than a picture of one — and the choice is
               lifted to the app, so it is still yours after you upload. */}
@@ -251,35 +296,34 @@ export default function Landing({
           </div>
 
           <div className="style-panel">
-          <h2>Välj din stil</h2>
-          <p className="style-intro">Prova på exemplet. Dina val följer med när du laddar upp.</p>
-          <div className="styles" role="group" aria-label="Stil på schemat">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                className="style"
-                aria-pressed={theme === t.id}
-                onClick={() => onTheme(t.id)}
-                title={t.note}
-              >
-                <span className="style-dot" style={{ background: t.dot }} aria-hidden />
-                {t.name}
-              </button>
-            ))}
-          </div>
-          {/* Under the styles rather than in the row, because it is not one of
-              them: it applies to whichever style is chosen, and it is a
-              question about your printer rather than your taste. */}
-          <div className="inkrow">
-            <Check label="Bläcksnål utskrift" hint="svart på vitt, utan färgfyllningar" on={ink} onChange={onInk} />
-            <Check label="Ämnessymboler" hint="visa en ikon vid ämnet" on={icons} onChange={onIcons} />
-          </div>
-          <p className="style-note" aria-live="polite">
-            {ink
-              ? "Svart text på vitt, utan färgfyllningar. Typsnittet behålls."
-              : THEMES.find((t) => t.id === theme)?.note}{" "}
-
-          </p>
+            <h2>Välj din stil</h2>
+            <p className="style-intro">Prova på exemplet. Dina val följer med när du laddar upp.</p>
+            <div className="styles" role="group" aria-label="Stil på schemat">
+              {THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  className="style"
+                  aria-pressed={theme === t.id}
+                  onClick={() => onTheme(t.id)}
+                  title={t.note}
+                >
+                  <span className="style-dot" style={{ background: t.dot }} aria-hidden />
+                  {t.name}
+                </button>
+              ))}
+            </div>
+            {/* Under the styles rather than in the row, because it is not one of
+                them: it applies to whichever style is chosen, and it is a
+                question about your printer rather than your taste. */}
+            <div className="inkrow">
+              <Check label="Bläcksnål utskrift" hint="svart på vitt, utan färgfyllningar" on={ink} onChange={onInk} />
+              <Check label="Ämnessymboler" hint="visa en ikon vid ämnet" on={icons} onChange={onIcons} />
+            </div>
+            <p className="style-note" aria-live="polite">
+              {ink
+                ? "Svart text på vitt, utan färgfyllningar. Typsnittet behålls."
+                : THEMES.find((t) => t.id === theme)?.note}
+            </p>
           </div>
         </figure>
       </section>
@@ -309,11 +353,29 @@ export default function Landing({
         </dl>
       </section>
 
+      <section className="pitfalls" aria-labelledby="pitfalls-heading">
+        <h2 id="pitfalls-heading">Sex saker som är fel på arket du fått hem</h2>
+        <p className="lead">
+          Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
+          ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
+        </p>
+        <dl>
+          {FAULTS.map(([term, body]) => (
+            <div key={term}>
+              <dt>{term}</dt>
+              <dd>{body}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
       <footer className="landing-foot">
         <h2>Inget konto behövs</h2>
         <p>
-          Fotot skickas till Google för avläsning och sparas inte av oss.
-          Ditt schema och dina ändringar sparas lokalt i den här webbläsaren.
+          Ett barns schema är namn, klass, skola och var de befinner sig varje timme på dygnet. Det
+          billigaste sättet att ta hand om sådant är att inte ha det: fotot skickas till Google för
+          avläsning och sparas inte av oss, och schemat du gjort ligger kvar i den här webbläsaren.
+          Ingen databas, ingenting på en server.
         </p>
       </footer>
 
