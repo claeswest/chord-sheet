@@ -13,28 +13,52 @@
   --rule: #e3e3e3;
   --accent: #3b5bdb;
   --accent-soft: #edf2ff;
-  --font-display: ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --font-rounded: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+  /* Helvetica and Arial ahead of Segoe UI on purpose. Windows has no rounded
+     UI face, so --font-rounded falls through to Segoe UI there; with Segoe
+     first here too, two of the four styles rendered in exactly the same
+     letterform — measured identical to the hundredth of a pixel. */
+  --font-grotesque: "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-humanist: Optima, Candara, "Gill Sans", "Gill Sans MT", system-ui, sans-serif;
+
+  --font-display: var(--font-rounded);
   --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius: 10px;
 }
 
-/* Themes a child would actually choose. Each sets the same four variables,
- * so a new one is four lines and never touches the layout. */
+/* Four display faces, all of them already on the machine.
+ *
+ * No webfont: this document is measured before it is printed — every card is
+ * sized against the text in it — and a face that arrives after the measurement
+ * would leave the sheet laid out for a face nobody sees. System stacks are
+ * also the only ones that survive being opened on a school computer offline.
+ *
+ * Only the display face changes between styles. The body face stays a sans in
+ * all of them because it sets the clock: Georgia and its kin have old-style
+ * figures, and a time axis where the 3 and the 9 hang below the line is a
+ * worse axis. */
+/* Themes a child would actually choose. Each sets the same handful of
+ * variables, so a new one never touches the layout. */
 [data-theme="dusk"] {
   --paper: #10132a; --ink: #f2f4ff; --muted: #9aa3d0; --rule: #2b3160;
   --accent: #7c8cff; --accent-soft: #1c2148;
+  --font-display: var(--font-humanist);
 }
 [data-theme="meadow"] {
   --paper: #f6fbf4; --ink: #16281b; --muted: #5d7a63; --rule: #d5e6d6;
   --accent: #2f7d46; --accent-soft: #e4f3e6;
+  --font-display: var(--font-humanist);
 }
 [data-theme="candy"] {
   --paper: #fff7fb; --ink: #3b1130; --muted: #9c6383; --rule: #f3d9e6;
   --accent: #d6336c; --accent-soft: #ffe3ee;
+  --font-display: var(--font-rounded);
 }
 [data-theme="chalk"] {
   --paper: #fbf7f0; --ink: #2c241c; --muted: #7d6f5f; --rule: #e6ddcd;
   --accent: #a4623a; --accent-soft: #f4ebdd;
+  --font-display: var(--font-serif);
 }
 
 * { box-sizing: border-box; }
@@ -420,6 +444,7 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 [data-theme="plain"] {
   --paper: #ffffff; --ink: #000000; --muted: #444444; --rule: #b8b8b8;
   --accent: #000000; --accent-soft: transparent;
+  --font-display: var(--font-grotesque);
 }
 [data-theme="plain"] .lesson { border: 1px solid var(--rule); background: transparent !important; }
 /* Plain is the ink-saving theme, so a break keeps its capitals but not its

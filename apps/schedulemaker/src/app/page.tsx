@@ -408,7 +408,7 @@ export default function Home() {
 
           <PrintFit
             pageHeightMm={parseInt(sheetPaper.h, 10)}
-            deps={`${JSON.stringify(schedule)}|${editing}|${paper}`}
+            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}`}
             onFit={setFit}
           />
 

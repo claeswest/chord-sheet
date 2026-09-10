@@ -12,17 +12,17 @@
 export type Theme = { id: string; name: string; dot: string; note: string };
 
 export const THEMES: Theme[] = [
-  { id: "", name: "Papper", dot: "#3b5bdb", note: "Vitt och blått. Standard." },
+  { id: "", name: "Papper", dot: "#3b5bdb", note: "Vitt och blått, rundad stil. Standard." },
   {
     id: "plain",
     name: "Bläcksnål",
     dot: "#ffffff",
     // Most people printing this at home have an office inkjet and no wish to
     // spend a cartridge on a timetable.
-    note: "Rena linjer, inga fyllningar.",
+    note: "Rena linjer, inga fyllningar. Neutral stil.",
   },
-  { id: "chalk", name: "Krita", dot: "#c08a5e", note: "Varmt papper, dämpade toner." },
-  { id: "dusk", name: "Skymning", dot: "#7c8cff", note: "Mörkt papper, ljus text." },
-  { id: "meadow", name: "Äng", dot: "#2f7d46", note: "Grönt och lugnt." },
-  { id: "candy", name: "Godis", dot: "#d6336c", note: "Rosa, för den som vill." },
+  { id: "chalk", name: "Krita", dot: "#c08a5e", note: "Varmt papper, dämpade toner, antikva." },
+  { id: "dusk", name: "Skymning", dot: "#7c8cff", note: "Mörkt papper, ljus text, humanistisk stil." },
+  { id: "meadow", name: "Äng", dot: "#2f7d46", note: "Grönt och lugnt, humanistisk stil." },
+  { id: "candy", name: "Godis", dot: "#d6336c", note: "Rosa och rundat, för den som vill." },
 ];
