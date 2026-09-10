@@ -183,7 +183,14 @@ body {
 .lesson { --subject-size: 12.5px; }
 .lesson .subject {
   font-family: var(--font-display); font-size: calc(var(--subject-size) * var(--card-scale, 1));
-  font-weight: 700; hyphens: auto; text-wrap: pretty;
+  /* text-wrap-style, not the text-wrap shorthand. The shorthand also sets
+     text-wrap-mode, so `text-wrap: pretty` here quietly overrode the
+     `white-space: nowrap` a merged option row inherits from its parent: in a
+     five-day column "Svenska som andraspråk 1" wrapped to two lines inside an
+     11px row and printed on top of the row beneath it. A browser without the
+     longhand simply ignores this line, which loses a nicety and breaks
+     nothing. */
+  font-weight: 700; hyphens: auto; text-wrap-style: pretty;
 }
 /* Tabular figures so room numbers line up down a column, as on the original. */
 .lesson .where {
@@ -534,7 +541,13 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
   line-height: calc(var(--opt-h) * var(--card-scale, 1));
   white-space: nowrap;
 }
-.lesson.merged .subject { font-size: 1em; }
+/* One line each, and truncated rather than spilling if it will not fit — the
+   row's height is fixed to the minutes the box owns, so a second line has
+   nowhere to go. The fit pass counts a clipped subject as not fitting and
+   shrinks the type first; this is what happens when even that is not enough. */
+.lesson.merged .subject {
+  font-size: 1em; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
 .lesson.merged .where {
   flex: 1 1 auto; min-width: 0; font-size: 0.88em;
   overflow: hidden; text-overflow: ellipsis;
