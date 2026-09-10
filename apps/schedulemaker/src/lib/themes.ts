@@ -1,9 +1,6 @@
 // The styles a sheet can be printed in.
 //
-// Each is six custom properties and nothing else — no layout, no type, no
-// second stylesheet to keep in step. That is the whole reason there can be a
-// row of them: a style cannot break the sheet, because a style cannot reach
-// the parts that could break.
+// Themes set colours and display fonts. Card fitting is repeated when fonts load.
 //
 // The subject tints are not in here. They belong to the glossary, one hue per
 // subject spaced by the golden angle, so they follow the schedule from style
@@ -25,4 +22,7 @@ export const THEMES: Theme[] = [
   { id: "dusk", name: "Skymning", dot: "#7c8cff", note: "Mörkt papper, ljus text, humanistisk stil." },
   { id: "meadow", name: "Äng", dot: "#2f7d46", note: "Grönt och lugnt, humanistisk stil." },
   { id: "candy", name: "Godis", dot: "#d6336c", note: "Rosa och rundat, för den som vill." },
+  { id: "schoolbook", name: "Skolbok", dot: "#245e85", note: "Ljust blått med tydliga ämnesrubriker i Lexend." },
+  { id: "classic", name: "Klassisk", dot: "#79502e", note: "Varmt elfenben med rubriker i Lora och lättlästa tider." },
+  { id: "playful", name: "Lekfull", dot: "#87522b", note: "Solgult med handskriven huvudrubrik i Caveat." },
 ];

@@ -252,12 +252,14 @@ function useFitCards(ref: React.RefObject<HTMLDivElement | null>) {
     // Fonts settle after first paint, and metrics before they do are a
     // fallback face's, not the one that prints.
     document.fonts?.ready.then(later);
+    document.fonts.addEventListener("loadingdone", later);
     // Switching to portrait halves the column width without changing nothing
     // else this component is told about.
     const ro = new ResizeObserver(later);
     ro.observe(sheet);
     return () => {
       rerun.current = undefined;
+      document.fonts.removeEventListener("loadingdone", later);
       ro.disconnect();
       cancelAnimationFrame(queued);
     };

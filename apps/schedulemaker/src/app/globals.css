@@ -27,17 +27,8 @@
   --radius: 10px;
 }
 
-/* Four display faces, all of them already on the machine.
- *
- * No webfont: this document is measured before it is printed — every card is
- * sized against the text in it — and a face that arrives after the measurement
- * would leave the sheet laid out for a face nobody sees. System stacks are
- * also the only ones that survive being opened on a school computer offline.
- *
- * Only the display face changes between styles. The body face stays a sans in
- * all of them because it sets the clock: Georgia and its kin have old-style
- * figures, and a time axis where the 3 and the 9 hang below the line is a
- * worse axis. */
+/* Existing themes use system fonts. New themes use self-hosted Google fonts.
+ * Times retain the system sans; cards refit after fonts load. */
 /* Themes a child would actually choose. Each sets the same handful of
  * variables, so a new one never touches the layout. */
 [data-theme="dusk"] {
@@ -59,6 +50,25 @@
   --paper: #fbf7f0; --ink: #2c241c; --muted: #7d6f5f; --rule: #e6ddcd;
   --accent: #a4623a; --accent-soft: #f4ebdd;
   --font-display: var(--font-serif);
+}
+
+[data-theme="schoolbook"] {
+  --paper: #f5faff; --ink: #172d40; --muted: #506577; --rule: #d1e0ec;
+  --accent: #245e85; --accent-soft: #e2eef8;
+  --font-display: var(--font-lexend), var(--font-rounded);
+}
+[data-theme="classic"] {
+  --paper: #fffaf0; --ink: #30261b; --muted: #71604d; --rule: #e6d9c6;
+  --accent: #79502e; --accent-soft: #f4e9d8;
+  --font-display: var(--font-lora), var(--font-serif);
+}
+[data-theme="playful"] {
+  --paper: #fffdf2; --ink: #352e21; --muted: #716348; --rule: #e8dfbd;
+  --accent: #87522b; --accent-soft: #fff1be;
+}
+[data-theme="playful"] .sheet h1.banner {
+  font-family: var(--font-caveat), cursive;
+  font-size: 32px; letter-spacing: 0.03em;
 }
 
 * { box-sizing: border-box; }

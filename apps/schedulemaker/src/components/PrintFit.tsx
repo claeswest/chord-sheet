@@ -73,8 +73,15 @@ export default function PrintFit({
     // Measured again on the way into the print dialog: fonts may have settled
     // since, and the answer has to be right for the paper, not for the moment
     // the schedule happened to change.
+    let active = true;
+    document.fonts.ready.then(() => { if (active) measure(); });
+    document.fonts.addEventListener("loadingdone", measure);
     window.addEventListener("beforeprint", measure);
-    return () => window.removeEventListener("beforeprint", measure);
+    return () => {
+      active = false;
+      document.fonts.removeEventListener("loadingdone", measure);
+      window.removeEventListener("beforeprint", measure);
+    };
   }, [pageHeightMm, deps, onFit]);
 
   return (
