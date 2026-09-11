@@ -396,6 +396,10 @@ kbd {
   gap: 44px; align-items: start; margin-top: 34px;
 }
 .specimen { margin: 0; position: sticky; top: 24px; }
+/* The second sheet on the other side, so two photos in a row read as two
+   exhibits rather than one long column of pictures. */
+.pitfalls-body + .pitfalls-body { margin-top: 64px; }
+.pitfalls-body.flip .specimen { order: 2; }
 .specimen-img {
   position: relative; border-radius: 12px; overflow: hidden; background: #fff;
   border: 1px solid #e6e6ec;
@@ -458,6 +462,7 @@ kbd {
   /* Stacked, the list is below the photo whatever happens, so holding the
      photo in place would only cover the list with it. */
   .specimen { position: static; max-width: 520px; }
+  .pitfalls-body.flip .specimen { order: 0; }
 }
 
 /* ── Print ─────────────────────────────────────────────────────────────────

@@ -147,11 +147,12 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
   `.env`. The sample photographs in `apps/schedulemaker/samples/` are real
   children's timetables, and that folder is gitignored. They must never move to
   `public/` — Next serves that over HTTP.
-  - The one exception is `public/solglantan.webp`, the "before" photo in the
-    faults section of the front page. The parent it belongs to rebuilt it with
-    an invented school, town and teacher codes before it came here; only the
-    times are real, and they have to be, because `lib/sample.ts` is the same
-    week and the page compares the two. Any replacement needs the same
+  - The exceptions are `public/solglantan.webp` and
+    `public/manskensskolan.webp`, the photos in the faults section of the
+    front page. The parent they belong to rebuilt both with invented schools,
+    towns, years and teacher codes before they came here. Only the times are
+    real — and for Solgläntan they have to be, because `lib/sample.ts` is the
+    same week and the page compares the two. Any replacement needs the same
     treatment, by the person whose child it is — not a blur added afterwards.
 - **Read `node_modules/next/dist/docs/` before writing Next code.** This is
   Next 16.2.2 and it is not the Next you remember.

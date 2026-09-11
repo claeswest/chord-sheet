@@ -61,7 +61,9 @@ const BENEFITS: [string, string][] = [
 // `at` is the pin's position on public/solglantan.webp, in percent of its
 // width and height. It is set beside the thing rather than on it, so the
 // fault stays visible under its number.
-const FAULTS: { term: string; body: React.ReactNode; at: [number, number] }[] = [
+type Fault = { term: string; body: React.ReactNode; at: [number, number] };
+
+const FAULTS: Fault[] = [
   {
     term: "Koder i stället för ord",
     // Subjects as well as teachers: TK is not obviously teknik to everyone,
@@ -115,6 +117,56 @@ const FAULTS: { term: string; body: React.ReactNode; at: [number, number] }[] = 
     term: "Lunchen ser ut som en lektion",
     body: "Rasten får en vit ruta och syns. Lunchen gör det inte: den är en brun ruta med samma sorts text som lektionerna, i nästan samma färg som idrotten. Men lunchen är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
     at: [36.8, 60.0],
+  },
+];
+
+// A second sheet, for what the first one doesn't do. Only faults that are new
+// here: this one is grey and full of codes too, but ① and ② already say so,
+// and saying it twice would make the list longer without making it truer.
+const MORE_FAULTS: Fault[] = [
+  {
+    term: "Alla språkval i samma ruta",
+    body: "Måndag 08:10: engelska, franska, spanska i två grupper och tyska, med lärare och sal för varje — fem rader i en text som kräver förstoringsglas. Samma ruta igen på onsdag. Barnet läser ett av språken. Hos oss pekar du ut vilket, och de andra fyra försvinner från arket.",
+    at: [19.8, 24.2],
+  },
+  {
+    // Ink-saving is also colourless, which is why the last sentence is there:
+    // the fault is not the absence of colour but that nobody chose it.
+    term: "Ingen färg alls",
+    body: "Varje lektion är en likadan vit ruta. För att hitta veckans alla mattelektioner får man läsa varenda en, och lunchen ser ut precis som matten. Färg är det snabbaste sättet att hitta i en vecka, och här finns ingen. Hos oss får varje ämne en egen blek ton och lunchen ett eget band. Svartvitt är ett val du gör för din skrivare, inte något arket bestämt åt dig.",
+    at: [35.9, 49.0],
+  },
+];
+
+/**
+ * The photographs, each with the faults pinned to it.
+ *
+ * Both were rebuilt by the parent they belong to with invented schools,
+ * years and teacher codes before they came here — see docs/schedulemaker.md.
+ * The first is the same week as the sample sheet; the second is not, and its
+ * caption does not claim to be.
+ */
+const SPECIMENS: {
+  src: string;
+  size: [number, number];
+  alt: string;
+  caption: string;
+  faults: Fault[];
+}[] = [
+  {
+    src: "/solglantan.webp",
+    size: [900, 990],
+    alt: "Foto av ett utskrivet skolschema för klass 3B: tidsaxel från 06:00 till 17:30 där mer än hälften är grått, lektioner i mättade färger märkta med förkortningar som SO, MA och KRN, och små klockslag på rutornas kanter.",
+    caption:
+      "Samma vecka som exemplet högst upp, så som den kom hem från skolan. Skola och lärare är anonymiserade.",
+    faults: FAULTS,
+  },
+  {
+    src: "/manskensskolan.webp",
+    size: [900, 994],
+    alt: "Foto av ett utskrivet högstadieschema för klass 7B, helt i svartvitt: vita lektionsrutor på grå botten, förkortningar som NO, HeLo och Sl tx, och en måndagsruta med fem språkval i mycket liten text.",
+    caption: "Ett högstadieschema från en annan skola. Skola och lärare är anonymiserade.",
+    faults: MORE_FAULTS,
   },
 ];
 
@@ -397,58 +449,56 @@ export default function Landing({
         <h2 id="pitfalls-heading">Vanliga fel med de scheman som barnen får med sig hem</h2>
         <p className="lead">
           Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
-          ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
+          ingen har tittat på papperet efteråt — och det är precis de sakerna vi rättar.
         </p>
-        <div className="pitfalls-body">
-          <figure className="specimen">
-            <div className="specimen-img">
-              <img
-                src="/solglantan.webp"
-                width={900}
-                height={990}
-                loading="lazy"
-                alt="Foto av ett utskrivet skolschema för klass 3B: tidsaxel från 06:00 till 17:30 där mer än hälften är grått, lektioner i mättade färger märkta med förkortningar som SO, MA och KRN, och små klockslag på rutornas kanter."
-              />
-              {/* Decorative: the numbers in the list carry the meaning, and a
-                  screen reader would otherwise hear "1 2 3 4 5 6" first. */}
-              {FAULTS.map((f, i) => (
-                <span
-                  key={f.term}
-                  className={`pin ${pointing === i ? "on" : ""}`}
-                  style={{ left: `${f.at[0]}%`, top: `${f.at[1]}%` }}
-                  aria-hidden
-                  onMouseEnter={() => setPointing(i)}
-                  onMouseLeave={() => setPointing(null)}
-                >
-                  {i + 1}
-                </span>
-              ))}
-            </div>
-            <figcaption>
-              Samma vecka som exemplet högst upp, så som den kom hem från skolan. Skola och lärare
-              är anonymiserade.
-            </figcaption>
-          </figure>
+        {SPECIMENS.map((s, si) => {
+          // Numbered straight through, so the second sheet's faults read as
+          // more of the same list rather than a new one starting again at 1.
+          const first = SPECIMENS.slice(0, si).reduce((n, p) => n + p.faults.length, 0);
+          return (
+            <div key={s.src} className={`pitfalls-body ${si % 2 ? "flip" : ""}`}>
+              <figure className="specimen">
+                <div className="specimen-img">
+                  <img src={s.src} width={s.size[0]} height={s.size[1]} loading="lazy" alt={s.alt} />
+                  {/* Decorative: the numbers in the list carry the meaning, and a
+                      screen reader would otherwise hear "1 2 3 4 5 6" first. */}
+                  {s.faults.map((f, i) => (
+                    <span
+                      key={f.term}
+                      className={`pin ${pointing === first + i ? "on" : ""}`}
+                      style={{ left: `${f.at[0]}%`, top: `${f.at[1]}%` }}
+                      aria-hidden
+                      onMouseEnter={() => setPointing(first + i)}
+                      onMouseLeave={() => setPointing(null)}
+                    >
+                      {first + i + 1}
+                    </span>
+                  ))}
+                </div>
+                <figcaption>{s.caption}</figcaption>
+              </figure>
 
-          <ol className="faults">
-            {FAULTS.map((f, i) => (
-              <li
-                key={f.term}
-                className={pointing === i ? "on" : undefined}
-                onMouseEnter={() => setPointing(i)}
-                onMouseLeave={() => setPointing(null)}
-              >
-                <h3>
-                  <span className="faultno" aria-hidden>
-                    {i + 1}
-                  </span>
-                  {f.term}
-                </h3>
-                <p>{f.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+              <ol className="faults" start={first + 1}>
+                {s.faults.map((f, i) => (
+                  <li
+                    key={f.term}
+                    className={pointing === first + i ? "on" : undefined}
+                    onMouseEnter={() => setPointing(first + i)}
+                    onMouseLeave={() => setPointing(null)}
+                  >
+                    <h3>
+                      <span className="faultno" aria-hidden>
+                        {first + i + 1}
+                      </span>
+                      {f.term}
+                    </h3>
+                    <p>{f.body}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          );
+        })}
       </section>
 
       <footer className="landing-foot">
