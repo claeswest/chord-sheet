@@ -88,8 +88,10 @@ const FAULTS: { term: string; body: string; at: [number, number] }[] = [
     at: [20.3, 45.0],
   },
   {
-    term: "Rasten syns inte",
-    body: "Rast och lunch är rutor som alla andra, med samma sorts text som en lektion. Men lunchen är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
+    // Not "rasten syns inte": on this sheet it does — white on the grey.
+    // Lunch is the one that hides, as a box among the lessons.
+    term: "Lunchen ser ut som en lektion",
+    body: "Rasten får en vit ruta och syns. Lunchen gör det inte: den är en brun ruta med samma sorts text som lektionerna, i nästan samma färg som idrotten. Men lunchen är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
     at: [36.8, 60.0],
   },
 ];
