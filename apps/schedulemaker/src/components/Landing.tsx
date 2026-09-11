@@ -85,8 +85,13 @@ const FAULTS: { term: string; body: React.ReactNode; at: [number, number] }[] = 
     at: [18.9, 73.2],
   },
   {
-    term: "Halva pappret är tomt",
-    body: "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
+    // The grey belongs to this fault rather than a seventh: it is printed on
+    // exactly the empty half, so it is the same waste seen twice — the most
+    // ink where there is least to say. 60% is measured, not guessed: pixels
+    // of low saturation and mid lightness inside the day columns of the
+    // photo, 06:00 to 17:30, came to 59.1%.
+    term: "Halva pappret är tomt — och grått",
+    body: "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det. Resten är inte ens tomt, utan tryckt i grått: knappt 60 procent av rutnätet är grå färg. Mest bläck där det står minst, och ett ark som ser tungt och trist ut. Vår axel börjar när första lektionen börjar, och standardstilen lämnar det tomma vitt. Bläcksnålt läge tar bort alla fyllningar, i vilken stil som helst.",
     at: [49.7, 82.8],
   },
   {
