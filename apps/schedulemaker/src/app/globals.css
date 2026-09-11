@@ -427,6 +427,9 @@ kbd {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px;
 }
 .faults h3 { display: flex; align-items: center; gap: 10px; }
+/* The words the sheet prints instead of the code, set the way the sheet
+   sets them: darkest ink, bold. */
+.faults strong { color: #1a1a1a; font-weight: 700; }
 .faults li.on .faultno { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .pin, .faultno { transition: none; } }
 

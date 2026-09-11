@@ -61,11 +61,28 @@ const BENEFITS: [string, string][] = [
 // `at` is the pin's position on public/solglantan.webp, in percent of its
 // width and height. It is set beside the thing rather than on it, so the
 // fault stays visible under its number.
-const FAULTS: { term: string; body: string; at: [number, number] }[] = [
+const FAULTS: { term: string; body: React.ReactNode; at: [number, number] }[] = [
   {
     term: "Koder i stället för ord",
-    body: "KRN, MTP, QRP — tre bokstäver per lärare och ingen förklaring någonstans. Ett annat ark vi tittat på har en avkodningstabell längst ner: utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Karin.",
-    at: [84.7, 30.5],
+    // Subjects as well as teachers: TK is not obviously teknik to everyone,
+    // and a parent who didn't go to a Swedish school has no way in at all.
+    // The closing example is Friday's TK with MTP, which the sample above
+    // prints as Teknik and Mattias — both halves of the fault in one box.
+    // SO and NO are left as codes on purpose (see KNOWN_SUBJECTS), so this
+    // doesn't claim every code becomes a word.
+    //
+    // The pin is under Monday's "IDH VSL Sporthallen" rather than at Friday's
+    // TK: that box is too narrow to hold a pin without covering the code it
+    // points at, and IDH VSL is the same fault with grey space beneath it.
+    body: (
+      <>
+        TK, IDH och BL för ämnena, KRN, MTP och QRP för lärarna — och ingen förklaring någonstans.
+        Alla vet inte att TK är teknik, eller att ”SL TX” är textilslöjd. Ett ark vi tittat på har
+        till och med en avkodningstabell längst ner: utskriften erkänner själv att den inte går att
+        läsa. Vi skriver så alla lättare förstår: <strong>Teknik</strong>, och <strong>Mattias</strong>.
+      </>
+    ),
+    at: [18.9, 73.2],
   },
   {
     term: "Halva pappret är tomt",
