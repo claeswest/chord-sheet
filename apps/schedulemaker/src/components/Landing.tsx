@@ -18,13 +18,13 @@ import { useEffect, useRef, useState } from "react";
 import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
 import Check from "./Check";
-import { SAMPLE_SCHEDULE } from "@/lib/sample";
+import { SAMPLE_SCHEDULE, SAMPLE_TEACHERS } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
 import { THEMES } from "@/lib/themes";
 
 const SAMPLE_SUBJECTS = codesIn(SAMPLE_SCHEDULE).subjects;
 const SAMPLE_GLOSSARY = withDefaultColors(
-  withKnownNames(EMPTY_GLOSSARY, SAMPLE_SUBJECTS),
+  withKnownNames({ ...EMPTY_GLOSSARY, teachers: SAMPLE_TEACHERS }, SAMPLE_SUBJECTS),
   SAMPLE_SUBJECTS,
 );
 
@@ -47,41 +47,51 @@ const BENEFITS: [string, string][] = [
   ["Ett schema med personlig stil", "Välj bland stilar med olika typsnitt och färger, lägg till ämnessymboler och sätt barnets namn överst."],
 ];
 
-// Written against three real printouts — a lower-secondary, an upper-secondary
-// and an F-6 — rather than against an idea of what school schedules are like.
-// Every left-hand side here is something one of those three sheets actually
-// does, which is why none of them is phrased as a complaint about schools: they
-// are all what a timetabling system prints when nobody has looked at the paper.
+// Written against real printouts rather than against an idea of what school
+// schedules are like, and shown against one of them: the photograph beside
+// this list is the same week as the sample sheet at the top of the page, as
+// the school printed it. Every fault is pinned to the place on that sheet
+// where it happens, so the list is a caption for a picture rather than a set
+// of claims to take on trust.
 //
-// This sits under the benefits rather than instead of them. The two do
-// different jobs: the list above says what you get, this one says why you
-// wanted it — and it is the half no competitor can copy, because it was
-// written with the arks on the desk.
-const FAULTS: [string, string][] = [
-  [
-    "Koder i stället för ord",
-    "DLE, AAC, 21SVESVESVE01bSA21A. Ett av arken vi tittat på bär en avkodningstabell längst ner — utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Denise.",
-  ],
-  [
-    "Halva pappret är tomt",
-    "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
-  ],
-  [
-    "Allt är lika viktigt",
-    "Ämne, lärare och sal sätts i samma grad och samma vikt — ”SO LoAl 401” — så ögat har inget att fästa vid. Hos oss är ämnet störst och salen dämpad.",
-  ],
-  [
-    "Färg som slåss med texten",
-    "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
-  ],
-  [
-    "Klockslagen ligger i vägen",
-    "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
-  ],
-  [
-    "Rasten syns inte",
-    "Lunchen är en ruta som alla andra, i samma färg som en lektion. Det är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
-  ],
+// None of it is phrased as a complaint about schools. It is what a
+// timetabling system prints when nobody has looked at the paper — and the
+// reader did not make this sheet either, so it is not about theirs.
+//
+// `at` is the pin's position on public/solglantan.webp, in percent of its
+// width and height. It is set beside the thing rather than on it, so the
+// fault stays visible under its number.
+const FAULTS: { term: string; body: string; at: [number, number] }[] = [
+  {
+    term: "Koder i stället för ord",
+    body: "KRN, MTP, QRP — tre bokstäver per lärare och ingen förklaring någonstans. Ett annat ark vi tittat på har en avkodningstabell längst ner: utskriften erkänner själv att den inte går att läsa. Här står det Svenska, och Karin.",
+    at: [84.7, 30.5],
+  },
+  {
+    term: "Halva pappret är tomt",
+    body: "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det; resten är grått. Vår axel börjar när första lektionen börjar.",
+    at: [49.7, 82.8],
+  },
+  {
+    term: "Allt är lika viktigt",
+    body: "Ämne och lärare sätts i samma grad och samma vikt — ”SO KRN” — så ögat har inget att fästa vid. Hos oss är ämnet störst, och lärare och sal står dämpat intill.",
+    at: [64.5, 74.1],
+  },
+  {
+    term: "Färg som slåss med texten",
+    body: "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
+    at: [48.8, 47.3],
+  },
+  {
+    term: "Klockslagen ligger i vägen",
+    body: "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
+    at: [20.3, 45.0],
+  },
+  {
+    term: "Rasten syns inte",
+    body: "Rast och lunch är rutor som alla andra, med samma sorts text som en lektion. Men lunchen är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
+    at: [36.8, 60.0],
+  },
 ];
 
 export default function Landing({
@@ -111,6 +121,8 @@ export default function Landing({
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
+  /** Which fault the pointer is on, so its pin on the photo can answer. */
+  const [pointing, setPointing] = useState<number | null>(null);
   const [text, setText] = useState("");
   const area = useRef<HTMLTextAreaElement>(null);
   const working = busy || phase !== null;
@@ -363,14 +375,56 @@ export default function Landing({
           Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
           ingen har tittat på papperet efteråt — och det är precis de sex sakerna vi rättar.
         </p>
-        <dl>
-          {FAULTS.map(([term, body]) => (
-            <div key={term}>
-              <dt>{term}</dt>
-              <dd>{body}</dd>
+        <div className="pitfalls-body">
+          <figure className="specimen">
+            <div className="specimen-img">
+              <img
+                src="/solglantan.webp"
+                width={900}
+                height={990}
+                loading="lazy"
+                alt="Foto av ett utskrivet skolschema för klass 3B: tidsaxel från 06:00 till 17:30 där mer än hälften är grått, lektioner i mättade färger märkta med förkortningar som SO, MA och KRN, och små klockslag på rutornas kanter."
+              />
+              {/* Decorative: the numbers in the list carry the meaning, and a
+                  screen reader would otherwise hear "1 2 3 4 5 6" first. */}
+              {FAULTS.map((f, i) => (
+                <span
+                  key={f.term}
+                  className={`pin ${pointing === i ? "on" : ""}`}
+                  style={{ left: `${f.at[0]}%`, top: `${f.at[1]}%` }}
+                  aria-hidden
+                  onMouseEnter={() => setPointing(i)}
+                  onMouseLeave={() => setPointing(null)}
+                >
+                  {i + 1}
+                </span>
+              ))}
             </div>
-          ))}
-        </dl>
+            <figcaption>
+              Samma vecka som exemplet högst upp, så som den kom hem från skolan. Skola och lärare
+              är anonymiserade.
+            </figcaption>
+          </figure>
+
+          <ol className="faults">
+            {FAULTS.map((f, i) => (
+              <li
+                key={f.term}
+                className={pointing === i ? "on" : undefined}
+                onMouseEnter={() => setPointing(i)}
+                onMouseLeave={() => setPointing(null)}
+              >
+                <h3>
+                  <span className="faultno" aria-hidden>
+                    {i + 1}
+                  </span>
+                  {f.term}
+                </h3>
+                <p>{f.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <footer className="landing-foot">

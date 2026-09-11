@@ -2,30 +2,32 @@ import type { Schedule } from "@/types/schedule";
 
 // The sheet on the front page.
 //
-// Invented, down to the school and the teachers. The only real timetables this
-// app has ever seen belong to somebody's children, and putting one on a public
-// page is precisely the thing the rest of this product goes out of its way not
-// to do — it is not stored on a server, not written to disk, not logged. A
-// sample would be a strange place to break that.
+// A real week, anonymised by the parent it belongs to: the school, the town
+// and every teacher code are invented, the times are not. Real times are the
+// point. Further down the page the same week appears as the school printed
+// it — a photograph of the sheet, public/solglantan.webp — and a before and
+// after only proves anything if it is the same week twice. An invented tidy
+// week next to somebody's real untidy one would be comparing two different
+// things and calling the difference design.
 //
-// Written to look like a real lower-secondary week rather than a tidy one:
-// lessons that don't start on the hour, a 30-minute class council, a lunch that
-// moves by ten minutes on Thursday. A demo where everything lines up neatly
-// would be showing off a schedule nobody has.
+// It is also what a real F-6 week looks like, which an invented one never
+// quite manages: a 25-minute Swedish lesson squeezed in on Tuesday, sport
+// starting at 08:05, two groups side by side on Friday afternoon, two
+// teachers sharing slöjd.
 
 const lesson = (
   id: string,
   start: string,
   end: string,
   subject: string,
-  room?: string,
   teacher?: string,
+  room?: string,
 ) => ({ id, start, end, subject, room, teacher });
 
 export const SAMPLE_SCHEDULE: Schedule = {
   heading: "Elins schema",
   title: "3B",
-  subtitle: "Solskolan · Höstterminen 2026",
+  subtitle: "Solgläntanskolan F-6 · Höstterminen 2026",
   notes: [],
   weeks: [
     {
@@ -36,59 +38,79 @@ export const SAMPLE_SCHEDULE: Schedule = {
           id: "d1",
           name: "Måndag",
           lessons: [
-            lesson("m1", "08:10", "09:00", "Sv", "12", "AnLi"),
-            lesson("m2", "09:10", "10:00", "Ma", "12", "AnLi"),
-            lesson("m3", "10:15", "11:00", "Idh", "Idrottshallen", "PeNo"),
-            lesson("m4", "11:00", "11:40", "Lunch"),
-            lesson("m5", "11:40", "12:30", "NO", "12", "AnLi"),
-            lesson("m6", "12:40", "13:30", "Bd", "Bildsalen", "MaSj"),
+            lesson("m1", "08:00", "09:20", "SO", "KRN"),
+            lesson("m2", "09:45", "11:10", "MA", "MTP"),
+            lesson("m3", "11:15", "11:45", "Rast"),
+            lesson("m4", "11:45", "12:15", "Lunch"),
+            lesson("m5", "12:20", "12:50", "SV", "KRN"),
+            lesson("m6", "13:05", "13:40", "IDH", "VSL", "Sporthallen"),
           ],
         },
         {
           id: "d2",
           name: "Tisdag",
           lessons: [
-            lesson("t1", "08:10", "09:20", "Ma", "12", "AnLi"),
-            lesson("t2", "09:30", "10:20", "Sv", "12", "AnLi"),
-            lesson("t3", "10:30", "11:00", "Mu", "Musiksalen", "KaBe"),
-            lesson("t4", "11:00", "11:40", "Lunch"),
-            lesson("t5", "11:40", "13:00", "Sl", "Slöjdsalen", "ToWi"),
+            lesson("t1", "08:00", "09:20", "MA", "MTP"),
+            lesson("t2", "09:45", "10:10", "SV", "KRN"),
+            lesson("t3", "10:15", "11:10", "EN", "KRN"),
+            lesson("t4", "11:15", "11:45", "Rast"),
+            lesson("t5", "11:45", "12:15", "Lunch"),
+            lesson("t6", "12:20", "13:30", "SV", "KRN"),
           ],
         },
         {
           id: "d3",
           name: "Onsdag",
           lessons: [
-            lesson("o1", "08:10", "09:40", "Sv", "12", "AnLi"),
-            lesson("o2", "09:50", "10:40", "En", "12", "AnLi"),
-            lesson("o3", "11:00", "11:40", "Lunch"),
-            lesson("o4", "11:40", "12:30", "SO", "12", "AnLi"),
-            lesson("o5", "12:40", "13:30", "Ma", "12", "AnLi"),
+            lesson("o1", "08:00", "09:20", "SV", "KRN"),
+            lesson("o2", "09:45", "11:10", "SL", "FRD,HNX"),
+            lesson("o3", "11:15", "11:45", "Rast"),
+            lesson("o4", "11:45", "12:15", "Lunch"),
+            lesson("o5", "12:20", "13:45", "NO", "MTP"),
           ],
         },
         {
           id: "d4",
           name: "Torsdag",
           lessons: [
-            lesson("to1", "08:10", "09:00", "NO", "12", "AnLi"),
-            lesson("to2", "09:10", "10:30", "Bd", "Bildsalen", "MaSj"),
-            lesson("to3", "10:40", "11:20", "Sv", "12", "AnLi"),
-            lesson("to4", "11:20", "12:00", "Lunch"),
-            lesson("to5", "12:00", "13:20", "Idh", "Idrottshallen", "PeNo"),
+            lesson("to1", "08:05", "08:55", "IDH", "VSL", "Sporthallen"),
+            lesson("to2", "09:15", "10:10", "MA", "MTP"),
+            lesson("to3", "10:10", "11:10", "SV", "KRN"),
+            lesson("to4", "11:15", "11:45", "Rast"),
+            lesson("to5", "11:45", "12:15", "Lunch"),
+            lesson("to6", "12:20", "13:05", "MU", "QRP"),
+            lesson("to7", "13:15", "14:00", "SO", "KRN"),
           ],
         },
         {
           id: "d5",
           name: "Fredag",
           lessons: [
-            lesson("f1", "08:10", "09:30", "Ma", "12", "AnLi"),
-            lesson("f2", "09:40", "10:30", "En", "12", "AnLi"),
-            lesson("f3", "10:40", "11:10", "Klassråd", "12", "AnLi"),
-            lesson("f4", "11:10", "11:50", "Lunch"),
-            lesson("f5", "11:50", "13:00", "Sv", "12", "AnLi"),
+            lesson("f1", "08:00", "09:20", "SV", "KRN"),
+            lesson("f2", "09:45", "10:15", "TK", "MTP"),
+            lesson("f3", "10:15", "11:10", "MA", "MTP"),
+            lesson("f4", "11:15", "11:45", "Rast"),
+            lesson("f5", "11:45", "12:15", "Lunch"),
+            // Half the class in each, at the same time — the sheet prints them
+            // side by side, and so does this one.
+            lesson("f6", "12:20", "13:30", "BL", "MTP"),
+            lesson("f7", "12:20", "13:30", "SV", "KRN"),
           ],
         },
       ],
     },
   ],
+};
+
+/**
+ * The names a parent would type in once. Without them the sample would show
+ * "KRN" in every box, and the first fault the page lists is exactly that.
+ */
+export const SAMPLE_TEACHERS: Record<string, string> = {
+  KRN: "Karin",
+  MTP: "Mattias",
+  VSL: "Viktor",
+  FRD: "Frida",
+  HNX: "Hanna",
+  QRP: "Rasmus",
 };

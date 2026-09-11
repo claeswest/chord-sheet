@@ -132,7 +132,7 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 | --- | --- |
 | `app/page.tsx` | All app state: schedule, glossary, theme, ink, icons, paper, mode |
 | `app/api/read/route.ts` | The only route. Model call, limits, no storage |
-| `components/Landing.tsx` | Front page. Hero is a real sheet from `lib/sample.ts` |
+| `components/Landing.tsx` | Front page. Hero is a real sheet from `lib/sample.ts`; the faults section pins six numbered faults on the same week as the school printed it |
 | `components/ScheduleSheet.tsx` | The sheet, plus `useFitCards` |
 | `components/PrintFit.tsx` | Whole-sheet measurement → print `zoom` |
 | `components/FitToWidth.tsx` | Screen-only scaling, `transform`, never print |
@@ -144,9 +144,15 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 ### House rules that bite
 
 - **This repository is public.** No customer names, addresses, revenue or
-  `.env`. The two sample photographs are real children's timetables and live in
-  `apps/schedulemaker/samples/`, which is gitignored. They must never move to
+  `.env`. The sample photographs in `apps/schedulemaker/samples/` are real
+  children's timetables, and that folder is gitignored. They must never move to
   `public/` — Next serves that over HTTP.
+  - The one exception is `public/solglantan.webp`, the "before" photo in the
+    faults section of the front page. The parent it belongs to rebuilt it with
+    an invented school, town and teacher codes before it came here; only the
+    times are real, and they have to be, because `lib/sample.ts` is the same
+    week and the page compares the two. Any replacement needs the same
+    treatment, by the person whose child it is — not a blur added afterwards.
 - **Read `node_modules/next/dist/docs/` before writing Next code.** This is
   Next 16.2.2 and it is not the Next you remember.
 - **`npx tsc --noEmit` and a production build before pushing.** `master` deploys
