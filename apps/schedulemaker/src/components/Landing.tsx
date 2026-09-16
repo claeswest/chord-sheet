@@ -308,7 +308,11 @@ export default function Landing({
                 {working ? (
                   <>
                     <span className="spinner" aria-hidden />
-                    {phase === "shrink" ? "Förminskar bilden" : "Läser av schemat"}
+                    {/* Not "Förminskar bilden": the step does shrink the photo
+                        before it is sent, but on a page about printing a
+                        schedule, "shrinking" reads as the schedule coming out
+                        smaller. The step is preparation; the label says so. */}
+                    {phase === "shrink" ? "Förbereder bilden" : "Läser av schemat"}
                   </>
                 ) : (
                   "Ladda upp en bild"
