@@ -196,10 +196,16 @@ face has loaded. What is still open before this can go live:
   and presumably Lexend and Caveat) as Type 3 fonts. Fine for a home printer;
   many print vendors reject Type 3, so check the vendor's spec before relying
   on those styles for a press.
-- **Touch is unverified.** The sheet scrolls sideways below 640px at a legible
-  size, but the preview pane's phone emulation delivers no taps at all. Test on
-  a real phone: photo, choose a language group, print.
-- No Vercel project or domain yet.
+- **Touch verified on a real iPhone** on 16 Sep 2026, against the deployed app:
+  a photographed högstadieschema read correctly, the week swipes sideways, a
+  tapped lesson opens its editor, and choosing a language group works. (The
+  preview pane's phone emulation delivers no taps at all, so a real phone is
+  the only test of this.) Printing from the phone was not tried.
+- **Deployed** to Vercel as its own project, root `apps/schedulemaker`, with
+  `GEMINI_API_KEY` as its only environment variable — nothing else in the
+  repo's `.env.example` is read by this app. Live at
+  https://schedulemaker-sigma.vercel.app/; every push to `master` deploys it.
+  No custom domain yet.
 
 ---
 
