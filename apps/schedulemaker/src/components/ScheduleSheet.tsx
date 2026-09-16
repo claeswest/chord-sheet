@@ -846,6 +846,14 @@ export default function ScheduleSheet({
           )}
         </div>
       )}
+
+      {/* The one line on the sheet that isn't the child's. A timetable on a
+          fridge is seen by every family that comes round, and this is how one
+          of them finds where it came from. Kept to the bottom margin, set
+          small and quiet, and absolutely positioned so it takes nothing from
+          the schedule — no fill, no shrink, no reflow. Shown on screen too, so
+          what the editor shows is still what prints. */}
+      <p className="sheet-credit">Gjort med fixaschemat.se</p>
     </div>
   );
 }

@@ -97,6 +97,18 @@ body {
   color: var(--ink);
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 16px 48px rgb(0 0 0 / 0.10);
   transform-origin: top center;
+  position: relative; /* for .sheet-credit */
+}
+
+/* In the 12mm bottom margin, clear of everything the page fill puts above it.
+   6mm up rather than nearer the edge: home printers can't reach the last 3–5mm
+   of the paper, and a credit the printer clips is just a smudge. Right-aligned
+   with the grid's edge, muted, and small enough to read at arm's length and
+   vanish from across the kitchen. */
+.sheet-credit {
+  position: absolute; right: 14mm; bottom: 6mm; margin: 0;
+  font-size: 8.5px; letter-spacing: 0.02em; color: var(--muted);
+  pointer-events: none;
 }
 
 /* One title block, centred as a whole. Who it is for, which class, which
