@@ -453,12 +453,18 @@ kbd {
 }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; gap: 40px; margin-bottom: 64px; }
+  /* minmax(0, …), not 1fr. A bare 1fr track may not shrink below its
+     content's min-content width, and the sample sheet's is 297mm — it is
+     scaled down with a transform, which layout never sees. The one column
+     came out 1125px wide in a 688px window and the whole page scrolled
+     sideways, which is also what made every narrow-screen measurement of
+     this page report a width of 1145. */
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; margin-bottom: 64px; }
   /* One column, and the copy keeps its source order. The sample sheet used to
      be pulled above it, back when the way in was a loose button in the middle
      of a paragraph; now it is a titled panel, and putting a 297mm sheet
      scaled to a phone's width in front of it buries the one thing to do. */
-  .steps, .benefits dl, .pitfalls-body, .faults { grid-template-columns: 1fr; gap: 26px; }
+  .steps, .benefits dl, .pitfalls-body, .faults { grid-template-columns: minmax(0, 1fr); gap: 26px; }
   /* Stacked, the list is below the photo whatever happens, so holding the
      photo in place would only cover the list with it. */
   .specimen { position: static; max-width: 520px; }
