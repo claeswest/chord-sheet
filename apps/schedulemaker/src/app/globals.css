@@ -830,12 +830,26 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
   .stepper-no { width: 22px; height: 22px; font-size: 12px; }
 }
 
+/* Stepper on the left, "Börja om" on the right; on a phone the button wraps
+   under the steps rather than squeezing them. */
+.flowbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 6px 16px; margin: 0 0 16px;
+}
+/* min-width: 0, or the stepper can't shrink below its natural width — lines at
+   their full 56px — and at 375px it pushed the page 42px wide. */
+.flowbar .stepper { margin: 0; min-width: 0; }
+
 .toolbar { margin: 0 0 20px; }
-.toolbar .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.toolbar > * + * { margin-top: 12px; }
+/* Back left, onwards right — the direction the steps run. */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.actions .onward { margin-left: auto; }
+button.with-icon { display: inline-flex; align-items: center; gap: 8px; }
 
 .settings {
   display: flex; flex-wrap: wrap; align-items: center;
-  margin-top: 12px; padding: 9px 4px;
+  padding: 9px 4px;
   background: #fff; border: 1px solid #e6e6ec; border-radius: 12px;
 }
 .setgroup { display: flex; align-items: center; gap: 9px; padding: 3px 16px; }
@@ -849,7 +863,7 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 .swatches { display: flex; gap: 5px; }
 
 /* Quiet by default and loud only once it is armed. */
-.quiet { border: 0; background: none; color: #6b6b6b; margin-left: auto; }
+.quiet { border: 0; background: none; color: #6b6b6b; margin-left: auto; padding-left: 8px; padding-right: 8px; }
 .quiet:hover { color: #1a1a1a; text-decoration: underline; }
 .confirm {
   display: flex; align-items: center; gap: 8px; margin-left: auto;
@@ -858,8 +872,11 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 .confirm .quiet { margin-left: 0; }
 
 @media (max-width: 700px) {
-  .setgroup { padding: 3px 10px; }
+  .setgroup { padding: 3px 10px; flex-wrap: wrap; }
   .setgroup + .setgroup { border-left: 0; }
+  /* Eight swatches and the style's name are wider than a 375px phone; the name
+     gives up its reserved width and wraps under the dots if it has to. */
+  .setvalue { min-width: 0; }
 }
 
 /* Landing controls are grouped separately from the printable sheet. */

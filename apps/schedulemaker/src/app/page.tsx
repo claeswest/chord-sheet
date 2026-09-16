@@ -18,6 +18,7 @@ import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
+import { PrintIcon, RestartIcon } from "@/components/UiIcon";
 import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
@@ -353,77 +354,52 @@ export default function Home() {
 
       {schedule && (
         <>
-          <Stepper
-            current={editing ? 2 : 3}
-            onGo={(step) => setMode(step === 3 ? "view" : "edit")}
-            blocked={
-              openChoices > 0
-                ? {
-                    step: 3,
-                    reason:
-                      openChoices === 1
-                        ? "Välj först vilka lektioner som gäller i 1 ruta"
-                        : `Välj först vilka lektioner som gäller i ${openChoices} rutor`,
-                  }
-                : undefined
-            }
-          />
-
-          {/* Two rows, because there are two kinds of thing here. What you do
-              — print, go back, start over — sat in one flat line with what the
-              sheet is: eight anonymous dots, two checkboxes and a paper menu.
-              Interleaved like that nothing tells the eye where one group ends
-              and the next begins. */}
-          <div className="toolbar no-print">
-            <div className="bar">
-              {editing ? (
-                <>
-                  {/* The one way onwards, and it is refused while a choice is
-                      open. Disabling it with a reason beside it beats letting
-                      someone print a sheet that offers five languages at once. */}
-                  <button
-                    className="primary"
-                    onClick={() => setMode("view")}
-                    disabled={openChoices > 0}
-                  >
-                    Nästa: Skriv ut →
-                  </button>
-                  {openChoices > 0 && (
-                    <span className="hint">
-                      {openChoices === 1
-                        ? "Välj vilka lektioner som gäller i 1 ruta."
-                        : `Välj vilka lektioner som gäller i ${openChoices} rutor.`}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <button className="primary" onClick={() => window.print()}>
-                    Skriv ut
-                  </button>
-                  <button onClick={() => setMode("edit")}>← Redigera</button>
-                </>
-              )}
-
-              {/* One click used to throw away the schedule, and naming a set of
-                  teacher codes is an afternoon. It asks now. */}
-              {resetting ? (
-                <span className="confirm">
-                  Ta bort det sparade schemat och börja om?
-                  <button className="danger" onClick={startOver}>
-                    Ja, ta bort
-                  </button>
-                  <button className="quiet" onClick={() => setResetting(false)}>
-                    Avbryt
-                  </button>
-                </span>
-              ) : (
-                <button className="quiet" onClick={() => setResetting(true)}>
-                  Börja om
+          {/* Where you are in the job, and the way out of it. "Börja om" sat
+              among print and back, which are moves within the job; it throws
+              the schedule away and takes you to step one, so it lives on the
+              row that shows step one. */}
+          <div className="flowbar no-print">
+            <Stepper
+              current={editing ? 2 : 3}
+              onGo={(step) => setMode(step === 3 ? "view" : "edit")}
+              blocked={
+                openChoices > 0
+                  ? {
+                      step: 3,
+                      reason:
+                        openChoices === 1
+                          ? "Välj först vilka lektioner som gäller i 1 ruta"
+                          : `Välj först vilka lektioner som gäller i ${openChoices} rutor`,
+                    }
+                  : undefined
+              }
+            />
+            {/* One click used to throw away the schedule, and naming a set of
+                teacher codes is an afternoon. It asks now. */}
+            {resetting ? (
+              <span className="confirm">
+                Ta bort det sparade schemat och börja om?
+                <button className="danger" onClick={startOver}>
+                  Ja, ta bort
                 </button>
-              )}
-            </div>
+                <button className="quiet" onClick={() => setResetting(false)}>
+                  Avbryt
+                </button>
+              </span>
+            ) : (
+              <button className="quiet with-icon" onClick={() => setResetting(true)}>
+                <RestartIcon />
+                Börja om
+              </button>
+            )}
+          </div>
 
+          {/* In the order the job is done: what the sheet looks like first,
+              then the buttons. Print used to sit above the settings, which is
+              pressing the button before choosing what it prints. Back is on
+              the left and onwards on the right, the direction the steps run,
+              and onwards is in the same place on steps two and three. */}
+          <div className="toolbar no-print">
             {!editing && (
               <div className="settings">
                 <div className="setgroup" role="group" aria-label="Stil">
@@ -441,8 +417,7 @@ export default function Home() {
                       />
                     ))}
                   </div>
-                  {/* Named, because eight dots cannot say which is which — and
-                      three of these are brown. */}
+                  {/* Named, because eight dots cannot say which is which. */}
                   <span className="setvalue">{THEMES.find((t) => t.id === theme)?.name}</span>
                 </div>
 
@@ -471,6 +446,38 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            <div className="actions">
+              {editing ? (
+                <>
+                  {openChoices > 0 && (
+                    <span className="hint">
+                      {openChoices === 1
+                        ? "Välj vilka lektioner som gäller i 1 ruta."
+                        : `Välj vilka lektioner som gäller i ${openChoices} rutor.`}
+                    </span>
+                  )}
+                  {/* The one way onwards, and it is refused while a choice is
+                      open. Disabling it with a reason beside it beats letting
+                      someone print a sheet that offers five languages at once. */}
+                  <button
+                    className="primary onward"
+                    onClick={() => setMode("view")}
+                    disabled={openChoices > 0}
+                  >
+                    Nästa: Skriv ut →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setMode("edit")}>← Redigera</button>
+                  <button className="primary onward with-icon" onClick={() => window.print()}>
+                    <PrintIcon />
+                    Skriv ut
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {fit < 0.995 && (
