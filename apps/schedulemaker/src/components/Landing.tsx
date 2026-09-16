@@ -47,16 +47,15 @@ const BENEFITS: [string, string][] = [
   ["Ett schema med personlig stil", "Välj bland stilar med olika typsnitt och färger, lägg till ämnessymboler och sätt barnets namn överst."],
 ];
 
-// Written against real printouts rather than against an idea of what school
-// schedules are like, and shown against one of them: the photograph beside
-// this list is the same week as the sample sheet at the top of the page, as
-// the school printed it. Every fault is pinned to the place on that sheet
-// where it happens, so the list is a caption for a picture rather than a set
-// of claims to take on trust.
+// What a school's printout does, and what this app does instead — shown against
+// a real one: the photograph beside this list is the same week as the sample
+// sheet at the top of the page, as the school printed it. Each entry is pinned
+// to the place on that sheet it talks about, so the list is a caption for a
+// picture rather than a set of claims to take on trust.
 //
-// None of it is phrased as a complaint about schools. It is what a
-// timetabling system prints when nobody has looked at the paper — and the
-// reader did not make this sheet either, so it is not about theirs.
+// The copy is plain and practical on purpose: say what is hard to read and
+// what happens here instead, not what is wrong with the school's sheet. The
+// reader did not make that sheet and cannot change it.
 //
 // `at` is the pin's position on public/solglantan.webp, in percent of its
 // width and height. It is set beside the thing rather than on it, so the
@@ -66,12 +65,10 @@ type Fault = { term: string; body: React.ReactNode; at: [number, number] };
 const FAULTS: Fault[] = [
   {
     term: "Koder i stället för ord",
-    // Subjects as well as teachers: TK is not obviously teknik to everyone,
-    // and a parent who didn't go to a Swedish school has no way in at all.
-    // The closing example is Friday's TK with MTP, which the sample above
-    // prints as Teknik and Mattias — both halves of the fault in one box.
-    // SO and NO are left as codes on purpose (see KNOWN_SUBJECTS), so this
-    // doesn't claim every code becomes a word.
+    // Subjects as well as teachers. The examples are Friday's TK with MTP,
+    // which the sample above prints as Teknik and Mattias. "Vanliga
+    // ämneskoder", not all of them: SO and NO are left as codes on purpose
+    // (see KNOWN_SUBJECTS).
     //
     // The pin is under Monday's "IDH VSL Sporthallen" rather than at Friday's
     // TK: that box is too narrow to hold a pin without covering the code it
@@ -86,11 +83,10 @@ const FAULTS: Fault[] = [
     at: [18.9, 73.2],
   },
   {
-    // The grey belongs to this fault rather than a seventh: it is printed on
-    // exactly the empty half, so it is the same waste seen twice — the most
-    // ink where there is least to say. 60% is measured, not guessed: pixels
-    // of low saturation and mid lightness inside the day columns of the
-    // photo, 06:00 to 17:30, came to 59.1%.
+    // The pin sits in the grey below the day: the hours the axis prints and
+    // the school day never uses. If the grey fill itself is ever mentioned
+    // again, it has been measured — low-saturation, mid-lightness pixels in the
+    // photo's day columns, 06:00 to 17:30, came to 59.1%.
     term: "Mer plats åt skoldagen",
     body: "Här visas tider från 06:00 till 17:30, trots att skoldagen är kortare. Schemat anpassar tidsaxeln efter lektionerna. Välj bläcksnål utskrift om du vill ta bort bakgrundsfärgerna också.",
     at: [49.7, 82.8],
@@ -129,8 +125,8 @@ const MORE_FAULTS: Fault[] = [
     at: [19.8, 24.2],
   },
   {
-    // Ink-saving is also colourless, which is why the last sentence is there:
-    // the fault is not the absence of colour but that nobody chose it.
+    // Offers both rather than calling a colourless sheet wrong: ink-saving is
+    // colourless too, and it is a reasonable thing to want.
     term: "Färg eller svartvitt – du väljer",
     body: "Med en färg per ämne blir det lättare att följa exempelvis matten genom veckan. Föredrar du svartvitt? Slå på bläcksnål utskrift. Ämnesnamn och tider finns kvar i båda lägena.",
     at: [35.9, 49.0],
@@ -448,10 +444,9 @@ export default function Landing({
       </section>
 
       <section className="pitfalls" aria-labelledby="pitfalls-heading">
-        {/* Not "arket du fått hem". Second person turns an observation about
-            what timetabling software prints into an accusation about the
-            reader's own child's sheet, which they did not choose and cannot
-            help. The faults are general; the fix is ours. */}
+        {/* About the printout, not the reader. An earlier heading said "arket
+            du fått hem", which pointed at their own child's sheet — something
+            they did not choose and cannot help. */}
         <h2 id="pitfalls-heading">Från skolans utskrift till ett tydligare schema</h2>
         <p className="lead">
           Här är två exempel på skolscheman och hur de kan bli lättare att läsa hemma.

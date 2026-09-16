@@ -162,14 +162,26 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 - Plain CSS on purpose. Print wants millimetres, `@page` and control over what
   breaks where; a utility framework built for screens fights all three.
 
-### In flight
+### Before launch
 
-At the time of writing, the working tree has uncommitted work adding three
-styles (Skolbok, Klassisk, Lekfull) that use self-hosted Google fonts via
-`next/font/google`, with `document.fonts` listeners added to both `PrintFit` and
-`useFitCards` so cards refit once a face has loaded. That refit is the right
-instinct: web fonts and a measured layout only coexist if the measurement runs
-again afterwards.
+The three web-font styles (Skolbok, Klassisk, Lekfull) are committed; the
+`document.fonts` listeners in `PrintFit` and `useFitCards` refit cards once a
+face has loaded. What is still open before this can go live:
+
+- **The Gemini key's plan is unverified.** Locally this app shares its key with
+  RecipeMaker — not with ChordSheetMaker, which has a different one. On
+  Google's unpaid tier, submitted content may be used to improve Google's
+  products, which cannot be squared with sending a child's schedule. Confirm
+  the key's project has billing enabled before deploying, and set a spending
+  cap: `rateLimit` is an in-memory map, so on Vercel it is per instance — a
+  brake, not a ceiling.
+- **Print has not been re-verified** since the dashed half-hour rule, the
+  per-card ink colour, the web-font styles and the `.fit-size` box. One real
+  print to PDF per paper size.
+- **Touch is unverified.** The sheet scrolls sideways below 640px at a legible
+  size, but the preview pane's phone emulation delivers no taps at all. Test on
+  a real phone: photo, choose a language group, print.
+- No Vercel project or domain yet.
 
 ---
 
