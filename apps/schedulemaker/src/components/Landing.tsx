@@ -319,7 +319,10 @@ export default function Landing({
                   waiting
                 ) : (
                   <>
-                    Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                    <span className="on-mouse">
+                      Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                    </span>
+                    <span className="on-touch">Fota schemat eller välj en bild du redan har.</span>
                   </>
                 )}
               </p>

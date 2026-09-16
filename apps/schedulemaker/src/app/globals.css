@@ -493,12 +493,29 @@ kbd {
 /* Screen-only scaling of the sheet — see FitToWidth.tsx. The wrapper owns the
  * height because a transform doesn't change layout. */
 .fit-outer { overflow: hidden; }
+/* A phone: the week scrolls sideways at a legible size. Contained, so a swipe
+   that reaches the end of the week doesn't carry on into the browser's own
+   back gesture. */
+.fit-outer.scrolls { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.fit-size { overflow: hidden; }
 .fit-inner { transform-origin: top left; width: max-content; }
+.fit-hint { margin: 0 0 8px; }
 
 @media print {
-  /* The page is the page again: no scaling, no clipping, no imposed height. */
-  .fit-outer { height: auto !important; overflow: visible; }
+  /* The page is the page again: no scaling, no clipping, no imposed size. */
+  .fit-outer { height: auto !important; overflow: visible !important; }
+  .fit-size { width: auto !important; height: auto !important; overflow: visible; }
   .fit-inner { transform: none !important; width: auto; }
+}
+
+/* Copy that depends on what you are holding. "Dra bilden hit" and Ctrl + V
+   mean nothing on a phone, and nobody clicks a touchscreen. Coarse pointer
+   with no hover is a finger; everything else, a laptop with a touchscreen
+   included, keeps the mouse wording. */
+.on-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .on-touch { display: inline; }
+  .on-mouse { display: none; }
 }
 
 /* ── Editing (never printed) ───────────────────────────────────────────── */

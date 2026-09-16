@@ -471,9 +471,14 @@ export default function Home() {
           )}
 
           <p className="hint no-print" style={{ marginTop: -8 }}>
-            {editing
-              ? "Klicka på titeln, en dag eller ett pass för att ändra det."
-              : "Så här kommer det ut. Kontrollera mot originalet innan du skriver ut."}
+            {editing ? (
+              <>
+                <span className="on-mouse">Klicka</span>
+                <span className="on-touch">Tryck</span> på titeln, en dag eller ett pass för att ändra det.
+              </>
+            ) : (
+              "Så här kommer det ut. Kontrollera mot originalet innan du skriver ut."
+            )}
           </p>
 
           {error && <p className="error no-print">{error}</p>}
@@ -499,7 +504,7 @@ export default function Home() {
             onFit={setFit}
           />
 
-          <FitToWidth>
+          <FitToWidth readable scrollHint="Svep i sidled för att se hela veckan.">
             <ScheduleSheet
               schedule={schedule}
               glossary={glossary}
