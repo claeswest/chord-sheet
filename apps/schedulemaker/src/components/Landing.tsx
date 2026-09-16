@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
 import Check from "./Check";
+import { LogoMark, SITE_NAME } from "./Logo";
 import { SAMPLE_SCHEDULE, SAMPLE_TEACHERS } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
 import { THEMES } from "@/lib/themes";
@@ -267,8 +268,8 @@ export default function Landing({
       onDrop={drop}
     >
       <header className="masthead">
-        <span className="mark" aria-hidden />
-        <span className="wordmark">Schemat</span>
+        <LogoMark size={30} />
+        <span className="wordmark">{SITE_NAME}</span>
       </header>
 
       <section className="hero">

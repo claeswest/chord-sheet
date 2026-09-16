@@ -236,19 +236,13 @@ textarea { width: 100%; font: inherit; padding: 12px; border: 1px solid #d6d6de;
 .landing { position: relative; padding-bottom: 24px; }
 
 /* A pair of lessons in a column, at 20px. */
-.masthead { display: flex; align-items: center; gap: 9px; margin-bottom: 44px; }
-.mark {
-  position: relative; width: 20px; height: 20px; border-radius: 6px;
-  background: var(--accent-soft); border: 1px solid #d7e0fb; flex: 0 0 auto;
-}
-.mark::before, .mark::after {
-  content: ""; position: absolute; left: 4px; border-radius: 1.5px; background: var(--accent);
-}
-.mark::before { top: 4px; width: 12px; height: 5px; }
-.mark::after { top: 11px; width: 8px; height: 5px; opacity: 0.55; }
+.masthead { display: flex; align-items: center; gap: 10px; margin-bottom: 44px; }
+.logo-mark { display: block; flex: 0 0 auto; }
+/* Two ordinary words, so it is set like a phrase: tightened rather than
+   letterspaced, which suited one word and pulls two apart. */
 .wordmark {
-  font-family: var(--font-display); font-weight: 700; font-size: 16px;
-  letter-spacing: 0.02em;
+  font-family: var(--font-display); font-weight: 700; font-size: 17px;
+  letter-spacing: -0.01em;
 }
 
 /* Top-aligned, not centred: the left column grows by 200px when the text box

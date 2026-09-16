@@ -16,6 +16,15 @@ laid out on a proportional time grid and printed on one page. It is the third
 app in this monorepo, after ChordSheetMaker and RecipeBookMaker, and the only
 one that is **paper first**.
 
+### Name
+
+Public name **Fixa schemat** (Schedule Maker is the repo's name for it). The
+intended domain is `fixaschemat.se` — not bought as of 16 Sep 2026.
+`skolschemat.se` was ruled out on purpose: `skolschema.se` is a live service for
+the same audience, one letter away. The mark (`components/Logo.tsx`, and the
+same drawing as `app/icon.svg`) is a school day as the sheet draws it: morning
+lessons ending at different times, a lunch band, afternoon lessons.
+
 ### Status
 
 Working end to end, and **not deployed anywhere**. It runs locally on port 3002
