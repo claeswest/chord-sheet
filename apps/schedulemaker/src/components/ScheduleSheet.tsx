@@ -344,7 +344,7 @@ function MergedCard({
               spare space — it is the next lesson. */}
           {choosing && (
             <span className="ask no-print">
-              <span className="ask-hint">klicka det som gäller</span>
+              <span className="ask-hint">välj det som gäller</span>
               <button className="pick" onClick={onKeepAll}>
                 {keepAll(lessons.length)}
               </button>
@@ -703,7 +703,7 @@ export default function ScheduleSheet({
                           className="add-lesson no-print"
                           onClick={() => onAddLesson?.(week.id, day.id)}
                         >
-                          + pass
+                          + Lektion / paus
                         </button>
                       )}
                     </div>

@@ -51,7 +51,7 @@ export default function GlossaryPanel({
       </summary>
 
       <p className="hint" style={{ margin: "10px 0 14px" }}>
-        Lämna tomt så står koden kvar precis som på originalet.
+        Fyll i namn som ska visas i hela schemat. Lämna ett fält tomt för att behålla originalets text. Här kan du också ändra ämnesfärgerna.
       </p>
 
       {teachers.length > 0 && (
@@ -67,7 +67,7 @@ export default function GlossaryPanel({
                   // Not a name. A placeholder that reads as a real name, in a
                   // list where the box two along genuinely says Denise, makes
                   // it impossible to see what is filled in.
-                  placeholder="skriv namnet…"
+                  placeholder="Lärarens namn"
                   aria-label={`Namn för ${code}`}
                 />
               </label>
@@ -86,7 +86,7 @@ export default function GlossaryPanel({
                 <input
                   value={glossary.subjects?.[code] ?? ""}
                   onChange={(e) => set("subjects", code, e.target.value)}
-                  placeholder="skriv ämnet…"
+                  placeholder="Ämnets namn"
                   aria-label={`Namn för ${code}`}
                 />
                 <input

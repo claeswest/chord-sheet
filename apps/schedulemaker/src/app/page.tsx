@@ -136,7 +136,7 @@ export default function Home() {
       const read = codesIn(data.schedule).subjects;
       setGlossary(withDefaultColors(withKnownNames(EMPTY_GLOSSARY, read), read));
     } catch {
-      setError("Kunde inte nå servern.");
+      setError("Kunde inte ansluta. Kontrollera internetanslutningen och försök igen.");
     } finally {
       setBusy(false);
       setPhase(null);
@@ -163,7 +163,7 @@ export default function Home() {
       setSource(small);
       await read({ image: small });
     } catch {
-      setError("Kunde inte läsa filen.");
+      setError("Kunde inte öppna bilden. Prova en JPG- eller PNG-bild.");
       setPhase(null);
     }
   }
@@ -359,13 +359,13 @@ export default function Home() {
                     onClick={() => setMode("view")}
                     disabled={openChoices > 0}
                   >
-                    Se färdigt schema →
+                    Förhandsgranska →
                   </button>
                   {openChoices > 0 && (
                     <span className="hint">
                       {openChoices === 1
-                        ? "1 val kvar att bestämma i schemat"
-                        : `${openChoices} val kvar att bestämma i schemat`}
+                        ? "Välj vilka lektioner som gäller i 1 ruta."
+                        : `Välj vilka lektioner som gäller i ${openChoices} rutor.`}
                     </span>
                   )}
                 </>
@@ -374,7 +374,7 @@ export default function Home() {
                   <button className="primary" onClick={() => window.print()}>
                     Skriv ut
                   </button>
-                  <button onClick={() => setMode("edit")}>← Ändra</button>
+                  <button onClick={() => setMode("edit")}>← Redigera</button>
                 </>
               )}
 
@@ -382,7 +382,7 @@ export default function Home() {
                   teacher codes is an afternoon. It asks now. */}
               {resetting ? (
                 <span className="confirm">
-                  Ta bort schemat?
+                  Ta bort det sparade schemat och börja om?
                   <button className="danger" onClick={startOver}>
                     Ja, ta bort
                   </button>
@@ -438,8 +438,8 @@ export default function Home() {
                 <div className="setgroup">
                   {/* Beside the styles, not among them: they apply to whichever
                       one is chosen. */}
-                  <Check label="Bläcksnål" on={ink} onChange={setInk} />
-                  <Check label="Symboler" on={icons} onChange={setIcons} />
+                  <Check label="Bläcksnål utskrift" on={ink} onChange={setInk} />
+                  <Check label="Ämnessymboler" on={icons} onChange={setIcons} />
                 </div>
               </div>
             )}
@@ -474,10 +474,10 @@ export default function Home() {
             {editing ? (
               <>
                 <span className="on-mouse">Klicka</span>
-                <span className="on-touch">Tryck</span> på titeln, en dag eller ett pass för att ändra det.
+                <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att redigera. Kontrollera AI-avläsningen mot originalet.
               </>
             ) : (
-              "Så här kommer det ut. Kontrollera mot originalet innan du skriver ut."
+              "Kontrollera tider och lektioner mot originalet. Välj sedan Skriv ut för att skriva ut eller spara som PDF."
             )}
           </p>
 
@@ -491,7 +491,7 @@ export default function Home() {
             <details className="panel no-print">
               <summary>
                 <span className="panel-title">Originalet</span>
-                <span className="hint"> — jämför utan att leta rätt på papperet</span>
+                <span className="hint"> — jämför tider och lektioner</span>
               </summary>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={source} alt="Det fotograferade schemat" className="source-photo" />

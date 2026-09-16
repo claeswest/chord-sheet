@@ -78,10 +78,9 @@ const FAULTS: Fault[] = [
     // points at, and IDH VSL is the same fault with grey space beneath it.
     body: (
       <>
-        TK, IDH och BL för ämnena, KRN, MTP och QRP för lärarna — och ingen förklaring någonstans.
-        Alla vet inte att TK är teknik, eller att ”SL TX” är textilslöjd. Ett ark vi tittat på har
-        till och med en avkodningstabell längst ner: utskriften erkänner själv att den inte går att
-        läsa. Vi skriver så alla lättare förstår: <strong>Teknik</strong>, och <strong>Mattias</strong>.
+        Förkortningar som TK och MTP kan vara svåra att förstå. Vanliga ämneskoder blir
+        namn automatiskt, till exempel <strong>Teknik</strong>. Lärarens namn, som
+        <strong> Mattias</strong>, fyller du i en gång för hela schemat.
       </>
     ),
     at: [18.9, 73.2],
@@ -92,30 +91,30 @@ const FAULTS: Fault[] = [
     // ink where there is least to say. 60% is measured, not guessed: pixels
     // of low saturation and mid lightness inside the day columns of the
     // photo, 06:00 to 17:30, came to 59.1%.
-    term: "Halva pappret är tomt — och grått",
-    body: "Tidsaxeln börjar 06:00 och slutar 17:30, för att programmet skriver ut hela institutionens dygn. Skoldagen är sex timmar av det. Resten är inte ens tomt, utan tryckt i grått: knappt 60 procent av rutnätet är grå färg. Mest bläck där det står minst, och ett ark som ser tungt och trist ut. Vår axel börjar när första lektionen börjar, och standardstilen lämnar det tomma vitt. Bläcksnålt läge tar bort alla fyllningar, i vilken stil som helst.",
+    term: "Mer plats åt skoldagen",
+    body: "Här visas tider från 06:00 till 17:30, trots att skoldagen är kortare. Schemat anpassar tidsaxeln efter lektionerna. Välj bläcksnål utskrift om du vill ta bort bakgrundsfärgerna också.",
     at: [49.7, 82.8],
   },
   {
-    term: "Allt är lika viktigt",
-    body: "Ämne och lärare sätts i samma grad och samma vikt — ”SO KRN” — så ögat har inget att fästa vid. Hos oss är ämnet störst, och lärare och sal står dämpat intill.",
+    term: "Ämnet syns först",
+    body: "När all text ser likadan ut är det svårt att snabbt hitta rätt. Här får ämnet en tydlig rubrik, med tid, lärare och sal i mindre text intill.",
     at: [64.5, 74.1],
   },
   {
-    term: "Färg som slåss med texten",
-    body: "Svart text på mättat rött och olivgrönt. Färgen finns där för att hjälpa och gör tvärtom. Våra toner är bleka nog att texten ligger stilla ovanpå, och varje ämne får en nyans som inte går att förväxla med grannens.",
+    term: "Färger som hjälper dig hitta",
+    body: "Starka bakgrundsfärger kan göra texten svårläst. Här börjar du med ljusa ämnesfärger och kan byta dem själv. Textfärgen anpassas efter rutans bakgrund.",
     at: [48.8, 47.3],
   },
   {
-    term: "Klockslagen ligger i vägen",
-    body: "Tiderna är småetiketter klistrade på rutornas kanter, tvärs över linjerna, i en grad som knappt går att läsa. Hos oss står tiden en gång, inne i rutan, med siffror som linjerar rakt ner.",
+    term: "Tider på en tydlig plats",
+    body: "I originalet ligger små klockslag längs rutornas kanter. Här står start- och sluttid tillsammans inne i varje lektionsruta.",
     at: [20.3, 45.0],
   },
   {
     // Not "rasten syns inte": on this sheet it does — white on the grey.
     // Lunch is the one that hides, as a box among the lessons.
-    term: "Lunchen ser ut som en lektion",
-    body: "Rasten får en vit ruta och syns. Lunchen gör det inte: den är en brun ruta med samma sorts text som lektionerna, i nästan samma färg som idrotten. Men lunchen är dagens fasta punkt — ”före lunch” och ”efter lunch” är hur ett barn beskriver sin dag. Hos oss är den ett eget band med kniv och gaffel.",
+    term: "Lunch och rast får egen plats",
+    body: "Lunchen är lätt att blanda ihop med lektionerna i originalet. Här får lunch och rast egna markerade rutor, så att dagens pauser blir lätta att hitta.",
     at: [36.8, 60.0],
   },
 ];
@@ -125,15 +124,15 @@ const FAULTS: Fault[] = [
 // and saying it twice would make the list longer without making it truer.
 const MORE_FAULTS: Fault[] = [
   {
-    term: "Alla språkval i samma ruta",
-    body: "Måndag 08:10: engelska, franska, spanska i två grupper och tyska, med lärare och sal för varje — fem rader i en text som kräver förstoringsglas. Samma ruta igen på onsdag. Barnet läser ett av språken. Hos oss pekar du ut vilket, och de andra fyra försvinner från arket.",
+    term: "Välj rätt språkgrupp",
+    body: "Här samsas fem språkgrupper i samma ruta. Välj den som gäller för ditt barn, så döljs de andra. Du kan ändra valet senare eller behålla flera alternativ om det behövs.",
     at: [19.8, 24.2],
   },
   {
     // Ink-saving is also colourless, which is why the last sentence is there:
     // the fault is not the absence of colour but that nobody chose it.
-    term: "Ingen färg alls",
-    body: "Varje lektion är en likadan vit ruta. För att hitta veckans alla mattelektioner får man läsa varenda en, och lunchen ser ut precis som matten. Färg är det snabbaste sättet att hitta i en vecka, och här finns ingen. Hos oss får varje ämne en egen blek ton och lunchen ett eget band. Svartvitt är ett val du gör för din skrivare, inte något arket bestämt åt dig.",
+    term: "Färg eller svartvitt – du väljer",
+    body: "Med en färg per ämne blir det lättare att följa exempelvis matten genom veckan. Föredrar du svartvitt? Slå på bläcksnål utskrift. Ämnesnamn och tider finns kvar i båda lägena.",
     at: [35.9, 49.0],
   },
 ];
@@ -224,10 +223,10 @@ export default function Landing({
 
   const waiting =
     elapsed < 12
-      ? "Schemat analyseras — dagar, tider, ämnen och lärarkoder läses av. Det brukar ta ett tiotal sekunder."
+      ? "Vi läser av dagar, tider och lektioner. Vänta kvar en stund."
       // Measured, not guessed: a photographed 7A högstadieschema with 43
       // lessons took 36 seconds. "Half a minute" was already wrong for it.
-      : "Det tar längre än vanligt. Ett tätt schema kan behöva en minut.";
+      : "Vi läser fortfarande. Ett schema med många lektioner kan ta upp till en minut.";
 
   // A screenshot of the school's PDF is already on the clipboard by the time
   // most people get here, and asking them to save it to disk first so they can
@@ -353,7 +352,7 @@ export default function Landing({
                     disabled={working || text.trim().length < 20}
                     onClick={() => onText(text)}
                   >
-                    Läs schemat
+                    Läs av schemat
                   </button>
                   <button className="linky" onClick={() => setTyping(false)}>
                     Avbryt
@@ -373,7 +372,7 @@ export default function Landing({
               at the foot of the page, and making it twice reads as protesting.
               What belongs beside the button is only what you need before you
               press it. */}
-          <p className="fineprint">Inget konto. Ingenting sparas hos oss.</p>
+          <p className="fineprint">Inget konto behövs. Bild eller text skickas till Google för AI-avläsning.</p>
         </div>
 
         {/* The label is visible text inside the figure, so it is the figure's
@@ -453,10 +452,10 @@ export default function Landing({
             what timetabling software prints into an accusation about the
             reader's own child's sheet, which they did not choose and cannot
             help. The faults are general; the fix is ours. */}
-        <h2 id="pitfalls-heading">Vanliga fel med de scheman som barnen får med sig hem</h2>
+        <h2 id="pitfalls-heading">Från skolans utskrift till ett tydligare schema</h2>
         <p className="lead">
-          Ingenting av det här är skolans fel. Det är vad ett schemaläggningsprogram skriver ut när
-          ingen har tittat på papperet efteråt — och det är precis de sakerna vi rättar.
+          Här är två exempel på skolscheman och hur de kan bli lättare att läsa hemma.
+          Jämför alltid tider och lektioner med originalet efter avläsningen.
         </p>
         {SPECIMENS.map((s, si) => {
           // Numbered straight through, so the second sheet's faults read as
@@ -509,12 +508,12 @@ export default function Landing({
       </section>
 
       <footer className="landing-foot">
-        <h2>Inget konto behövs</h2>
+        <h2>Ditt schema sparas i din webbläsare</h2>
         <p>
-          Ett barns schema är namn, klass, skola och var de befinner sig varje timme på dygnet. Det
-          billigaste sättet att ta hand om sådant är att inte ha det: fotot skickas till Google för
-          avläsning och sparas inte av oss, och schemat du gjort ligger kvar i den här webbläsaren.
-          Ingen databas, ingenting på en server.
+          Bilden eller texten skickas till Google för AI-avläsning. Vi sparar inte underlaget
+          eller ditt schema på våra servrar. Schemat och dina ändringar sparas lokalt när
+          webbläsaren tillåter det. Använd samma webbläsare för att fortsätta senare.
+          Rensar du webbplatsens data försvinner det sparade schemat.
         </p>
       </footer>
 

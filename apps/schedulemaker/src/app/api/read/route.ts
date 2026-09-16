@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   // anyone pointing a script at it.
   if (!rateLimit(`read:${clientIp(req)}`, 6, 900_000)) {
     return NextResponse.json(
-      { error: "That's a few in a row. Give it a minute." },
+      { error: "Du har gjort flera avläsningar på kort tid. Vänta upp till 15 minuter och försök igen." },
       { status: 429 },
     );
   }
@@ -32,30 +32,30 @@ export async function POST(req: NextRequest) {
   const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
 
   if (image && !match) {
-    return NextResponse.json({ error: "That file isn't an image." }, { status: 400 });
+    return NextResponse.json({ error: "Filen kunde inte läsas som en bild. Välj ett foto eller en skärmbild." }, { status: 400 });
   }
   if (match && match[2].length > MAX_IMAGE_CHARS) {
     return NextResponse.json(
-      { error: "That picture is very large. Try a smaller one." },
+      { error: "Bilden är för stor. Prova en mindre bild eller beskär den till själva schemat." },
       { status: 400 },
     );
   }
   if (!match) {
     if (text.length < 20) {
       return NextResponse.json(
-        { error: "Photograph the timetable, or paste it as text." },
+        { error: "Ladda upp en bild eller klistra in minst 20 tecken med dagar, tider och ämnen." },
         { status: 400 },
       );
     }
     if (text.length > MAX_CHARS) {
-      return NextResponse.json({ error: "That's very long — one timetable at a time." }, { status: 400 });
+      return NextResponse.json({ error: "Texten är för lång. Klistra in ett schema i taget, högst 20 000 tecken." }, { status: 400 });
     }
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Reading isn't configured on this server (GEMINI_API_KEY is unset)." },
+      { error: "Avläsningen är inte tillgänglig just nu. Försök igen senare." },
       { status: 503 },
     );
   }
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       const detail = await res.text().catch(() => "");
       console.error(`[api/read] Gemini ${res.status} using ${GEMINI_TEXT_MODEL}:`, detail.slice(0, 400));
       return NextResponse.json(
-        { error: "The reader is having trouble right now. Try again in a moment." },
+        { error: "Avläsningen misslyckades. Vänta en stund och försök igen." },
         { status: 502 },
       );
     }
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     console.error(`[api/read] request failed: ${String(e)} | cause: ${why}`);
     return timedOut
       ? NextResponse.json(
-          { error: "The reader timed out. Try again, or crop the photo to the grid." },
+          { error: "Avläsningen tog för lång tid. Försök igen. Om du använder en bild kan du beskära den till själva schemat." },
           { status: 504 },
         )
       : NextResponse.json(
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ schedule: parseSchedule(raw, match ? "photo" : "text") });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof ReadError ? e.message : "Couldn't read that as a timetable." },
+      { error: e instanceof ReadError ? e.message : "Kunde inte läsa underlaget som ett schema. Kontrollera att dagar, tider och ämnen finns med." },
       { status: 422 },
     );
   }

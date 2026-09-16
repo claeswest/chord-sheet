@@ -7,8 +7,8 @@ const lora = Lora({ subsets: ["latin"], variable: "--font-lora", display: "swap"
 const caveat = Caveat({ subsets: ["latin"], variable: "--font-caveat", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Schedule Maker",
-  description: "Photograph a timetable and get one worth putting on the fridge.",
+  title: "Schemat – gör skolschemat tydligt och personligt",
+  description: "Ladda upp skolans schema, anpassa namn och färger och skriv ut på A4 eller A3. Inget konto behövs.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -17,12 +17,12 @@
 export type Theme = { id: string; name: string; dot: string; note: string };
 
 export const THEMES: Theme[] = [
-  { id: "", name: "Papper", dot: "#3b5bdb", note: "Vitt och blått, rundad stil. Standard." },
-  { id: "chalk", name: "Krita", dot: "#c08a5e", note: "Varmt papper, dämpade toner, antikva." },
-  { id: "dusk", name: "Skymning", dot: "#7c8cff", note: "Mörkt papper, ljus text, humanistisk stil." },
-  { id: "meadow", name: "Äng", dot: "#2f7d46", note: "Grönt och lugnt, humanistisk stil." },
-  { id: "candy", name: "Godis", dot: "#d6336c", note: "Rosa och rundat, för den som vill." },
-  { id: "schoolbook", name: "Skolbok", dot: "#245e85", note: "Ljust blått med tydliga ämnesrubriker i Lexend." },
-  { id: "classic", name: "Klassisk", dot: "#79502e", note: "Varmt elfenben med rubriker i Lora och lättlästa tider." },
-  { id: "playful", name: "Lekfull", dot: "#87522b", note: "Solgult med handskriven huvudrubrik i Caveat." },
+  { id: "", name: "Papper", dot: "#3b5bdb", note: "Vit bakgrund, blå detaljer och rundade bokstäver." },
+  { id: "chalk", name: "Krita", dot: "#c08a5e", note: "Varm bakgrund och klassiska bokstäver." },
+  { id: "dusk", name: "Skymning", dot: "#7c8cff", note: "Mörk bakgrund med ljusa lektionsrutor." },
+  { id: "meadow", name: "Äng", dot: "#2f7d46", note: "Mjuka gröna toner och rena bokstäver." },
+  { id: "candy", name: "Godis", dot: "#d6336c", note: "Rosa detaljer och mjuka, rundade bokstäver." },
+  { id: "schoolbook", name: "Skolbok", dot: "#245e85", note: "Ljusblå toner och tydliga ämnesrubriker." },
+  { id: "classic", name: "Klassisk", dot: "#79502e", note: "Elfenbensvit bakgrund och klassiska rubriker." },
+  { id: "playful", name: "Lekfull", dot: "#87522b", note: "Solgul bakgrund och en rubrik i handskriven stil." },
 ];

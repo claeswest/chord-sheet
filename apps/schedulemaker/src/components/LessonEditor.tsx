@@ -31,21 +31,21 @@ export default function LessonEditor({
   return (
     <div className="overlay no-print" onClick={onClose}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <p className="panel-title">Ändra pass</p>
+        <p className="panel-title">Ändra lektion eller paus</p>
 
         <div className="row">
           <label>
-            <span>Från</span>
+            <span>Starttid</span>
             <input value={draft.start} onChange={(e) => set({ start: e.target.value })} placeholder="08:20" />
           </label>
           <label>
-            <span>Till</span>
+            <span>Sluttid</span>
             <input value={draft.end} onChange={(e) => set({ end: e.target.value })} placeholder="09:00" />
           </label>
         </div>
 
         <label className="full">
-          <span>Ämne</span>
+          <span>Ämne eller aktivitet</span>
           <input value={draft.subject} onChange={(e) => set({ subject: e.target.value })} placeholder="MA" />
         </label>
 
@@ -78,11 +78,11 @@ export default function LessonEditor({
         </label>
 
         <p className="hint" style={{ margin: "12px 0 0" }}>
-          Skriv koden här — namnen sätts en gång under &ldquo;Skriv ut namnen i klartext&rdquo;.
+          Använd samma ämnes- och lärarkoder som i originalet. Under &ldquo;Namn och färger&rdquo; kan du ge dem namn som visas i hela schemat.
         </p>
 
         <div className="controls" style={{ marginTop: 16, marginBottom: 0 }}>
-          <button className="primary" onClick={() => onSave(draft)}>Spara</button>
+          <button className="primary" onClick={() => onSave(draft)}>Spara ändringar</button>
           <button onClick={onClose}>Avbryt</button>
           <button className="danger" onClick={onDelete} style={{ marginLeft: "auto" }}>
             Ta bort
