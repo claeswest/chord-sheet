@@ -177,8 +177,13 @@ face has loaded. What is still open before this can go live:
   (`gen-lang-client-0130998856`), Tier 1, postpay, same billing account. Working
   alone would have proved nothing, since the unpaid tier answers the same way;
   whatever key goes into Vercel must be checked in AI Studio too.
-- **Spending needs a watch.** `rateLimit` is an in-memory map, so on Vercel it
-  is per instance — a brake, not a ceiling. Set a budget alert on the project.
+- **Spending is watched, not capped.** `rateLimit` is an in-memory map, so on
+  Vercel it is per instance — a brake, not a ceiling. The billing account
+  already has a 200 kr/month budget with alerts at 50/90/100/150%, covering every
+  project on it, this one included. Google Cloud also offers spend caps that
+  pause a project when reached; a Schedule Maker-only cap (around 100 kr) was
+  considered on 16 Sep 2026 and deliberately deferred. Revisit if the alerts
+  ever fire, or if the read route is abused.
 - **Print has not been re-verified** since the dashed half-hour rule, the
   per-card ink colour, the web-font styles and the `.fit-size` box. One real
   print to PDF per paper size.
