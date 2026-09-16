@@ -80,6 +80,18 @@ const COMPACT_PX = 34;
 const TIGHT_PX = 22;
 
 /**
+ * The white between two lessons that follow each other with no break.
+ *
+ * A card fills its slot, and a slot is exactly its minutes, so NO ending at
+ * 11:00 and lunch starting at 11:00 met with nothing between them; three in a
+ * row — lunch, a 15-minute Veckoplanering, Svenska — read as one block. The gap
+ * is taken from the end of each card, never the start, so a card's top still
+ * sits on its start time and on the hour rule. Matched by the slot's
+ * padding-bottom in globals.css; the card's own space is the slot less this.
+ */
+const SLOT_GAP_PX = (0.7 * 96) / 25.4;
+
+/**
  * Type sized so a box of options fits the minutes it actually occupies.
  *
  * Wednesday's language block runs 09:50–10:45 and holds five of them. Set in
@@ -616,6 +628,8 @@ export default function ScheduleSheet({
     // does, and the set-aside options come back the moment it's clicked.
     const kept = slot.filter((l) => !l.hidden);
     const asking = choice && !decided && editable;
+    // What the card actually gets: the slot less the gap under it.
+    const room = height === null ? null : height - SLOT_GAP_PX;
 
     // Every option set aside would mean a slot that decided on nothing. It
     // can't be reached from the UI, but drawing an empty box beats crashing.
@@ -634,7 +648,7 @@ export default function ScheduleSheet({
             choosing={asking}
             // An open question keeps its full size and floats over the grid;
             // it has buttons to hit, and it stops existing once answered.
-            fit={asking ? undefined : optionFit(kept.length, height)}
+            fit={asking ? undefined : optionFit(kept.length, room)}
             onKeepAll={() => onPickOption?.(week.id, day.id, null, slot[0].start)}
             onEditLesson={(l) =>
               // Undecided: the row is the answer to the question the box is
@@ -647,8 +661,8 @@ export default function ScheduleSheet({
             lesson={kept[0]}
             glossary={glossary}
             editable={editable}
-            compact={height !== null && height < COMPACT_PX}
-            tight={height !== null && height < TIGHT_PX}
+            compact={room !== null && room < COMPACT_PX}
+            tight={room !== null && room < TIGHT_PX}
             icons={icons}
             onEdit={() => onEditLesson?.(week.id, day.id, kept[0])}
           />

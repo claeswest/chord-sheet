@@ -615,7 +615,10 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
    the card fills it so the coloured block itself reads as the length of the
    lesson. Never clipped — this sheet gets checked against the original, and
    text that has quietly gone missing is the one failure nobody would spot. */
-.col > .slot { position: absolute; margin: 0; padding: 0 1.5mm 0 2mm; border: 0; }
+/* padding-bottom is the gap between back-to-back lessons: taken from the end of
+   the card so its top stays on the start time. SLOT_GAP_PX in ScheduleSheet
+   must match it. */
+.col > .slot { position: absolute; margin: 0; padding: 0 1.5mm 0.7mm 2mm; border: 0; }
 .col > .slot > .lesson { min-height: 100%; margin: 0; }
 /* "ändra val" rides in the top corner rather than under the box: below, it
    would push into the next lesson's minutes, and lower down it would sit on
