@@ -850,9 +850,54 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
    under both buttons instead of squeezing into a column. */
 .actions-hint { flex: 1 1 0; min-width: 0; margin: 0; text-align: center; line-height: 1.45; }
 .actions-hint strong { color: #1a1a1a; font-weight: 650; }
+/* On step two there is no back button, so the hint starts the row. */
+.actions-hint-lead { text-align: left; }
 @media (max-width: 760px) {
   .actions-hint { order: 3; flex-basis: 100%; text-align: left; }
 }
+
+/* ── Choices: the decisions step two waits on ─────────────────────────────
+   A tinted panel, because it is the one thing on the page that has to be done
+   before anything else can be. Options are real buttons, large enough to hit,
+   with the subject first and room and teacher quieter beside it. */
+.choices {
+  margin: 0 0 18px; padding: 16px 18px 18px;
+  background: #f5f7ff; border: 1px solid #cdd6f6; border-radius: 14px;
+}
+.choices-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.choices h2 { margin: 0; font-size: 17px; letter-spacing: -0.01em; color: #1a1a1a; }
+.choices-count {
+  font-size: 12px; font-weight: 700; color: #fff; background: #3b5bdb;
+  padding: 3px 9px; border-radius: 999px; font-variant-numeric: tabular-nums;
+}
+.choices-intro { margin: 6px 0 14px; font-size: 13.5px; line-height: 1.5; color: #4a4a55; max-width: 72ch; }
+.choice-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; }
+.choice-card { background: #fff; border: 1px solid #e4e4ea; border-radius: 12px; padding: 12px 14px 14px; }
+.choice-when { margin: 0; font-size: 14px; font-weight: 650; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+.choice-note { margin: 2px 0 0; font-size: 12.5px; color: #6b6b6b; }
+.choice-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.choice-opt, .choice-keep {
+  display: inline-flex; align-items: baseline; gap: 7px; text-align: left;
+  padding: 8px 12px; border-radius: 10px; font-size: 14px;
+}
+.choice-opt:hover { border-color: #1a1a1a; }
+.choice-opt:focus-visible, .choice-keep:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 2px; }
+.choice-dot {
+  align-self: center; width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.choice-subject { font-weight: 650; }
+.choice-detail { font-weight: 500; font-size: 12.5px; color: #6b6b6b; }
+.choice-keep { background: transparent; border: 1px dashed #b9b9c6; color: #45454f; font-weight: 600; }
+.choice-keep:hover { border-style: solid; border-color: #1a1a1a; color: #1a1a1a; }
+
+/* Names and the original side by side while closed; an open one gets the full
+   row, since both hold content that needs the width. */
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; align-items: start; margin: 0 0 22px; }
+.panels.single { grid-template-columns: 1fr; }
+.panels > .panel { margin: 0; }
+.panels > .panel[open] { grid-column: 1 / -1; }
+@media (max-width: 900px) { .panels { grid-template-columns: 1fr; } }
 button.with-icon { display: inline-flex; align-items: center; gap: 8px; }
 
 .settings {

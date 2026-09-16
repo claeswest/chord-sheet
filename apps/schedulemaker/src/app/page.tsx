@@ -19,6 +19,7 @@ import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
 import { PrintIcon, RestartIcon } from "@/components/UiIcon";
+import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
 import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
@@ -305,6 +306,36 @@ export default function Home() {
     });
   }
 
+  /**
+   * Several slots decided at once, in one change.
+   *
+   * The choices panel answers a question for every slot that asks it — Monday's
+   * language block and Wednesday's together. pickOption can't be called twice
+   * in a row for that: both calls start from the same schedule, and the second
+   * writes over the first.
+   */
+  function decide(decisions: Decision[]) {
+    if (!schedule || decisions.length === 0) return;
+    setSchedule({
+      ...schedule,
+      weeks: schedule.weeks.map((w) => ({
+        ...w,
+        days: w.days.map((d) => {
+          const mine = decisions.filter((x) => x.weekId === w.id && x.dayId === d.id);
+          if (mine.length === 0) return d;
+          return {
+            ...d,
+            lessons: d.lessons.map((l) => {
+              const hit = mine.find((x) => x.start !== "" && x.start === l.start);
+              if (!hit) return l;
+              return { ...l, resolved: true, hidden: hit.keepId ? l.id !== hit.keepId : false };
+            }),
+          };
+        }),
+      })),
+    });
+  }
+
   /** Put a decided slot back to being a question. */
   function reopenChoice(weekId: string, dayId: string, slotStart: string) {
     if (!schedule) return;
@@ -482,13 +513,20 @@ export default function Home() {
             <div className="actions">
               {editing ? (
                 <>
-                  {openChoices > 0 && (
-                    <span className="hint">
-                      {openChoices === 1
-                        ? "Välj vilka lektioner som gäller i 1 ruta."
-                        : `Välj vilka lektioner som gäller i ${openChoices} rutor.`}
-                    </span>
-                  )}
+                  {/* One line, in the row, instead of two stacked under it: the
+                      step's instruction when nothing is blocking, and while
+                      something is, a pointer to the panel that says what. */}
+                  <p className="hint actions-hint actions-hint-lead">
+                    {openChoices > 0 ? (
+                      "Gör valen nedan först, sedan kan du gå vidare."
+                    ) : (
+                      <>
+                        <span className="on-mouse">Klicka</span>
+                        <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att
+                        redigera. Kontrollera AI-avläsningen mot originalet.
+                      </>
+                    )}
+                  </p>
                   {/* The one way onwards, and it is refused while a choice is
                       open. Disabling it with a reason beside it beats letting
                       someone print a sheet that offers five languages at once. */}
@@ -545,28 +583,27 @@ export default function Home() {
             </p>
           )}
 
-          {editing && (
-            <p className="hint no-print" style={{ marginTop: -8 }}>
-              <span className="on-mouse">Klicka</span>
-              <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att redigera. Kontrollera AI-avläsningen mot originalet.
-            </p>
-          )}
-
           {error && <p className="error no-print">{error}</p>}
 
-          {editing && (
-            <GlossaryPanel schedule={schedule} glossary={glossary} onChange={setGlossary} />
-          )}
+          {editing && <ChoicesPanel schedule={schedule} glossary={glossary} onDecide={decide} />}
 
-          {editing && source && (
-            <details className="panel no-print">
-              <summary>
-                <span className="panel-title">Originalet</span>
-                <span className="hint"> — jämför tider och lektioner</span>
-              </summary>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={source} alt="Det fotograferade schemat" className="source-photo" />
-            </details>
+          {/* Side by side while closed — two rows of page for two one-line
+              summaries was most of a screen before the sheet on a laptop. An
+              open one takes the full width (see .panels). */}
+          {editing && (
+            <div className={`panels no-print ${source ? "" : "single"}`}>
+              <GlossaryPanel schedule={schedule} glossary={glossary} onChange={setGlossary} />
+              {source && (
+                <details className="panel no-print">
+                  <summary>
+                    <span className="panel-title">Originalet</span>
+                    <span className="hint"> — jämför tider och lektioner</span>
+                  </summary>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={source} alt="Det fotograferade schemat" className="source-photo" />
+                </details>
+              )}
+            </div>
           )}
 
           <PrintFit
