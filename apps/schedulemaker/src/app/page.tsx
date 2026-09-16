@@ -471,6 +471,14 @@ export default function Home() {
               ) : (
                 <>
                   <button onClick={() => setMode("edit")}>← Redigera</button>
+                  {/* Between the two buttons it is about, rather than a line of
+                      its own under them: the same words, one row less. On a
+                      narrow screen there is no room between them, and it wraps
+                      to its own line below (see .actions-hint). */}
+                  <p className="hint actions-hint">
+                    Kontrollera tider och lektioner mot originalet. Välj sedan <strong>Skriv ut</strong> för
+                    att skriva ut eller spara som PDF.
+                  </p>
                   <button className="primary onward with-icon" onClick={() => window.print()}>
                     <PrintIcon />
                     Skriv ut
@@ -505,16 +513,12 @@ export default function Home() {
             </p>
           )}
 
-          <p className="hint no-print" style={{ marginTop: -8 }}>
-            {editing ? (
-              <>
-                <span className="on-mouse">Klicka</span>
-                <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att redigera. Kontrollera AI-avläsningen mot originalet.
-              </>
-            ) : (
-              "Kontrollera tider och lektioner mot originalet. Välj sedan Skriv ut för att skriva ut eller spara som PDF."
-            )}
-          </p>
+          {editing && (
+            <p className="hint no-print" style={{ marginTop: -8 }}>
+              <span className="on-mouse">Klicka</span>
+              <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att redigera. Kontrollera AI-avläsningen mot originalet.
+            </p>
+          )}
 
           {error && <p className="error no-print">{error}</p>}
 

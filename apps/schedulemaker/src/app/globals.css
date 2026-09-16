@@ -845,6 +845,14 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 /* Back left, onwards right — the direction the steps run. */
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .actions .onward { margin-left: auto; }
+/* The step's hint, centred in the space between back and onwards. When that
+   space is too narrow for it to read as a sentence, it takes a line of its own
+   under both buttons instead of squeezing into a column. */
+.actions-hint { flex: 1 1 0; min-width: 0; margin: 0; text-align: center; line-height: 1.45; }
+.actions-hint strong { color: #1a1a1a; font-weight: 650; }
+@media (max-width: 760px) {
+  .actions-hint { order: 3; flex-basis: 100%; text-align: left; }
+}
 button.with-icon { display: inline-flex; align-items: center; gap: 8px; }
 
 .settings {
