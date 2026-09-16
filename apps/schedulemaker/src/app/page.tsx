@@ -51,16 +51,30 @@ type Stored = {
   illustration?: boolean;
 };
 
+/**
+ * What a fresh start looks like. One place, read both when the page first loads
+ * and when "Börja om" is confirmed — they used to be written out twice, and
+ * "Börja om" only knew about half of them: the style, paper and switches
+ * survived it, so starting over kept Skymning until the page was reloaded.
+ */
+const DEFAULTS = {
+  theme: "",
+  paper: "a4-landscape",
+  ink: false,
+  icons: true,
+  illustration: true,
+} as const;
+
 export default function Home() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [glossary, setGlossary] = useState<Glossary>(EMPTY_GLOSSARY);
-  const [theme, setTheme] = useState("");
-  const [paper, setPaper] = useState("a4-landscape");
+  const [theme, setTheme] = useState<string>(DEFAULTS.theme);
+  const [paper, setPaper] = useState<string>(DEFAULTS.paper);
   /** Print without fills, whatever the style. A fact about the printer. */
-  const [ink, setInk] = useState(false);
+  const [ink, setInk] = useState<boolean>(DEFAULTS.ink);
   /** Little subject drawings. Fun, and findable by a child who cannot read yet. */
-  const [icons, setIcons] = useState(true);
-  const [illustration, setIllustration] = useState(true);
+  const [icons, setIcons] = useState<boolean>(DEFAULTS.icons);
+  const [illustration, setIllustration] = useState<boolean>(DEFAULTS.illustration);
   /** "Börja om" is armed before it fires. See the toolbar. */
   const [resetting, setResetting] = useState(false);
   // The original photograph, for checking against while editing. Held in
@@ -104,11 +118,11 @@ export default function Home() {
           );
           // "plain" was the ink-saving style before it became a switch.
           // Restoring it as a style id would leave the setting silently off.
-          setTheme(s.theme === "plain" ? "" : s.theme ?? "");
+          setTheme(s.theme === "plain" ? DEFAULTS.theme : s.theme ?? DEFAULTS.theme);
           setInk(s.ink ?? s.theme === "plain");
-          setIcons(s.icons ?? true);
-          setIllustration(s.illustration ?? true);
-          setPaper(s.paper ?? "a4-landscape");
+          setIcons(s.icons ?? DEFAULTS.icons);
+          setIllustration(s.illustration ?? DEFAULTS.illustration);
+          setPaper(s.paper ?? DEFAULTS.paper);
         }
       }
     } catch {
@@ -181,12 +195,30 @@ export default function Home() {
     }
   }
 
+  /**
+   * Everything back to how a first visit finds it — not just the schedule.
+   * What someone confirms with "Ja, ta bort" is starting over, and a front page
+   * still in last time's style, or still showing last time's error, is not
+   * that. The front page's own state (the text box) resets by itself: it is
+   * unmounted while a schedule is open.
+   */
   function startOver() {
     setSchedule(null);
     setSource(null);
     setGlossary(EMPTY_GLOSSARY);
+    setTheme(DEFAULTS.theme);
+    setPaper(DEFAULTS.paper);
+    setInk(DEFAULTS.ink);
+    setIcons(DEFAULTS.icons);
+    setIllustration(DEFAULTS.illustration);
     setMode("edit");
+    setOpenLesson(null);
+    setError(null);
+    setFit(1);
+    pendingSlotStart.current = null;
     setResetting(false);
+    // The front page starts at its top, not wherever the editor was scrolled.
+    window.scrollTo({ top: 0 });
   }
 
   function saveLesson(next: Lesson) {
