@@ -184,9 +184,18 @@ face has loaded. What is still open before this can go live:
   pause a project when reached; a Schedule Maker-only cap (around 100 kr) was
   considered on 16 Sep 2026 and deliberately deferred. Revisit if the alerts
   ever fire, or if the read route is abused.
-- **Print has not been re-verified** since the dashed half-hour rule, the
-  per-card ink colour, the web-font styles and the `.fit-size` box. One real
-  print to PDF per paper size.
+- **Print re-verified for A4 landscape** on 16 Sep 2026 (Chrome, Papper and
+  Klassisk): one page each, 297 × 210 mm, all text present, dashed half-hour
+  rules visible. It found one fault, now fixed: a short F-6 day left the bottom
+  49 mm of the page blank, because the minute had a fixed height sized for a
+  longer day. `usePageFill` now stretches the minute to fill the page (floor
+  1.08 px, ceiling 2.5); measured after, the same week fills 99% of the page
+  and a 07–17 day still prints at the floor, shrunk to 82% by PrintFit.
+  Portrait and A3 are not re-verified.
+- **For print-on-demand, later:** Chrome embeds the variable web fonts (Lora,
+  and presumably Lexend and Caveat) as Type 3 fonts. Fine for a home printer;
+  many print vendors reject Type 3, so check the vendor's spec before relying
+  on those styles for a press.
 - **Touch is unverified.** The sheet scrolls sideways below 640px at a legible
   size, but the preview pane's phone emulation delivers no taps at all. Test on
   a real phone: photo, choose a language group, print.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
 import { inkOn, isBreak, say, type Glossary } from "@/lib/glossary";
@@ -38,8 +38,23 @@ import EditableText from "./EditableText";
  * common case has room to spare and prints at full size. Anything taller —
  * a longer day, a note or two underneath — is shrunk to fit by PrintFit, and
  * still comes out larger than it did at 0.95.
+ *
+ * That is the floor now, not the scale. A fixed minute fits one length of day,
+ * and an F-6 day is shorter: 08:00 to 14:00 printed with its grid ending 49mm
+ * above the bottom of an A4 landscape page, a quarter of the sheet blank —
+ * on the app whose front page criticises school printouts for wasting paper.
+ * usePageFill stretches the minute until the page is full; a long day stays
+ * at this floor and is shrunk by PrintFit as before.
  */
 const PX_PER_MIN = 1.08;
+
+/**
+ * The ceiling. A two-hour schedule stretched to a whole page would be two
+ * cards a hand tall with a line of text at the top of each, which reads as
+ * broken rather than as generous. 2.5 still fills the page for anything from
+ * about four hours up.
+ */
+const MAX_PX_PER_MIN = 2.5;
 
 /**
  * Nothing may be shorter than this, or a very short slot is unreadable.
@@ -97,7 +112,11 @@ type Placed = { slot: Lesson[]; top: number; height: number; left: number; width
  * would be invisible, which is the worst kind on a sheet whose job is to be
  * checked against the original.
  */
-function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed: Lesson[][] } {
+function placeDay(
+  slots: Lesson[][],
+  from: number,
+  pxPerMin: number,
+): { placed: Placed[]; untimed: Lesson[][] } {
   const timed: { slot: Lesson[]; from: number; to: number }[] = [];
   const untimed: Lesson[][] = [];
 
@@ -128,8 +147,8 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
     cluster.forEach((s, i) => {
       placed.push({
         slot: s.slot,
-        top: (s.from - from) * PX_PER_MIN,
-        height: Math.max(MIN_SLOT_PX, (s.to - s.from) * PX_PER_MIN),
+        top: (s.from - from) * pxPerMin,
+        height: Math.max(MIN_SLOT_PX, (s.to - s.from) * pxPerMin),
         left: laneOf[i] * width,
         width,
       });
@@ -146,6 +165,66 @@ function placeDay(slots: Lesson[][], from: number): { placed: Placed[]; untimed:
   flush();
 
   return { placed, untimed };
+}
+
+/**
+ * How tall a minute has to be for the sheet to fill its page.
+ *
+ * Measured, not estimated: everything on the sheet that isn't the time axis —
+ * banner, day names, the untimed strip, notes — is whatever height its type
+ * and content make it, and none of it grows with the minute. So one reading
+ * gives the answer and the next render confirms it; the threshold below stops
+ * the confirmation from setting state again.
+ *
+ * The page is the sheet's own min-height (border-box, so padding included),
+ * which the paper setting writes — portrait and A3 get their own answer.
+ * Blocks that are on screen only (an empty notes area, the "+ Lektion" strip)
+ * are left out, so the edit view and the printout agree. A strip that prints
+ * because it holds an untimed lesson still carries its add buttons on screen,
+ * so that one case prints a few pixels short of full rather than a few over.
+ *
+ * 0.99 of the page, because PrintFit shrinks anything over 0.995 of it.
+ */
+function usePageFill(ref: React.RefObject<HTMLDivElement | null>, minutes: number): number {
+  const [pxPerMin, setPxPerMin] = useState(PX_PER_MIN);
+  // Only its setter is used: bumping it re-renders, and the effect above has
+  // no dependency list, so it measures again.
+  const [, setFontsSettled] = useState(0);
+
+  useLayoutEffect(() => {
+    const sheet = ref.current;
+    if (!sheet || minutes <= 0) return;
+    const page = parseFloat(getComputedStyle(sheet).minHeight);
+    if (!page) return;
+
+    const held = sheet.style.minHeight;
+    sheet.style.minHeight = "0";
+    const natural = sheet.offsetHeight;
+    sheet.style.minHeight = held;
+
+    let axis = 0;
+    sheet.querySelectorAll<HTMLElement>(".tbody").forEach((t) => (axis += t.offsetHeight));
+    let screenOnly = 0;
+    sheet.querySelectorAll<HTMLElement>(".notes.no-print, .tfoot.no-print").forEach((el) => {
+      const cs = getComputedStyle(el);
+      screenOnly += el.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+    });
+
+    const fixed = natural - axis - screenOnly;
+    const wanted = (page * 0.99 - fixed) / minutes;
+    const next = Math.min(MAX_PX_PER_MIN, Math.max(PX_PER_MIN, wanted));
+    if (Math.abs(next - pxPerMin) > 0.002) setPxPerMin(next);
+  });
+
+  // A heading in a web font is a different height before and after the face
+  // arrives, and the minute is sized against it.
+  useEffect(() => {
+    const settle = () => setFontsSettled((n) => n + 1);
+    document.fonts.addEventListener("loadingdone", settle);
+    return () => document.fonts.removeEventListener("loadingdone", settle);
+  }, []);
+
+  return pxPerMin;
 }
 
 /**
@@ -492,6 +571,11 @@ export default function ScheduleSheet({
 }) {
   const sheetRef = useRef<HTMLDivElement>(null);
   useFitCards(sheetRef);
+  const minutes = schedule.weeks.reduce((n, w) => {
+    const s = weekSpan(w, editable);
+    return n + (s ? s.to - s.from : 0);
+  }, 0);
+  const pxPerMin = usePageFill(sheetRef, minutes);
 
   const patch = (next: Partial<Schedule>) => onChange?.({ ...schedule, ...next });
 
@@ -609,7 +693,7 @@ export default function ScheduleSheet({
         const span = weekSpan(week, editable);
         const days = week.days.map((day) => ({
           day,
-          ...placeDay(slotsOf(day, editable), span?.from ?? 0),
+          ...placeDay(slotsOf(day, editable), span?.from ?? 0, pxPerMin),
         }));
         const anyUntimed = days.some((d) => d.untimed.length > 0);
 
@@ -618,7 +702,7 @@ export default function ScheduleSheet({
         // 90-minute box legible as 90 minutes rather than just "tall".
         const marks: number[] = [];
         if (span) for (let m = span.from; m <= span.to; m += 30) marks.push(m);
-        const y = (m: number) => (m - (span?.from ?? 0)) * PX_PER_MIN;
+        const y = (m: number) => (m - (span?.from ?? 0)) * pxPerMin;
 
         return (
           <section key={week.id}>
@@ -651,7 +735,7 @@ export default function ScheduleSheet({
               </div>
 
               {span && (
-                <div className="tbody" style={{ height: (span.to - span.from) * PX_PER_MIN }}>
+                <div className="tbody" style={{ height: (span.to - span.from) * pxPerMin }}>
                   <div className="gutter">
                     {marks.map((m) =>
                       m % 60 === 0 ? (
