@@ -19,6 +19,7 @@ import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
 import Check from "./Check";
 import { LogoMark, SITE_NAME } from "./Logo";
+import Stepper from "./Stepper";
 import { SAMPLE_SCHEDULE, SAMPLE_TEACHERS } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
 import { THEMES } from "@/lib/themes";
@@ -287,6 +288,8 @@ export default function Landing({
           </p>
 
           <div className="upload-panel">
+            {/* The whole job, before it starts: this is step one of three. */}
+            <Stepper current={1} />
             <h2>Börja med ditt schema</h2>
             <p className="upload-hint">Ett tydligt foto eller en skärmbild räcker.</p>
             <div className="start">

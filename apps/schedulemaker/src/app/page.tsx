@@ -17,6 +17,7 @@ import GlossaryPanel from "@/components/GlossaryPanel";
 import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
+import Stepper from "@/components/Stepper";
 import Landing from "@/components/Landing";
 import {
   EMPTY_GLOSSARY,
@@ -355,6 +356,22 @@ export default function Home() {
 
       {schedule && (
         <>
+          <Stepper
+            current={editing ? 2 : 3}
+            onGo={(step) => setMode(step === 3 ? "view" : "edit")}
+            blocked={
+              openChoices > 0
+                ? {
+                    step: 3,
+                    reason:
+                      openChoices === 1
+                        ? "Välj först vilka lektioner som gäller i 1 ruta"
+                        : `Välj först vilka lektioner som gäller i ${openChoices} rutor`,
+                  }
+                : undefined
+            }
+          />
+
           {/* Two rows, because there are two kinds of thing here. What you do
               — print, go back, start over — sat in one flat line with what the
               sheet is: eight anonymous dots, two checkboxes and a paper menu.
@@ -372,7 +389,7 @@ export default function Home() {
                     onClick={() => setMode("view")}
                     disabled={openChoices > 0}
                   >
-                    Förhandsgranska →
+                    Nästa: Skriv ut →
                   </button>
                   {openChoices > 0 && (
                     <span className="hint">
