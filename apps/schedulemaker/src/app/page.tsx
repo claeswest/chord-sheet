@@ -321,16 +321,13 @@ export default function Home() {
   const sheetPaper = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
   const openChoices = schedule ? unresolvedChoices(schedule) : 0;
 
-  // The style belongs to the sheet, and only while the sheet is what the page
-  // is. On the front page it is set on the preview instead: themed up here,
-  // picking a dark paper also repainted the landing's own body text in a colour
-  // meant to sit on a dark sheet.
+  // The style belongs to the sheet, not the page. It used to be set up here
+  // once a schedule existed, and everything in the app that reads the style's
+  // variables took its colours: on Skymning the editor's hint lines came out
+  // lilac on light grey, a colour meant for dark paper. It is set on a box
+  // around the sheet now, as the front page already did for its preview.
   return (
-    <main
-      className="app"
-      data-theme={schedule ? theme || undefined : undefined}
-      data-ink={schedule && ink ? "save" : undefined}
-    >
+    <main className="app">
       {/* @page can't be set from a class, so the chosen size is injected.
           Without it the browser prints A4 whatever the sheet is laid out for,
           and an A3 schedule comes out cropped. */}
@@ -536,19 +533,24 @@ export default function Home() {
           />
 
           <FitToWidth readable scrollHint="Svep i sidled för att se hela veckan.">
-            <ScheduleSheet
-              schedule={schedule}
-              glossary={glossary}
-              editable={editing}
-              icons={icons}
-              theme={theme}
-              illustration={illustration}
-              onChange={setSchedule}
-              onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
-              onAddLesson={addLesson}
-              onPickOption={pickOption}
-              onReopenChoice={reopenChoice}
-            />
+            {/* Inside the scaler, so its own hint above stays in the app's
+                colours. A plain block, not display: contents — FitToWidth
+                measures its first child, and a contents box measures zero. */}
+            <div className="sheet-theme" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
+              <ScheduleSheet
+                schedule={schedule}
+                glossary={glossary}
+                editable={editing}
+                icons={icons}
+                theme={theme}
+                illustration={illustration}
+                onChange={setSchedule}
+                onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
+                onAddLesson={addLesson}
+                onPickOption={pickOption}
+                onReopenChoice={reopenChoice}
+              />
+            </div>
           </FitToWidth>
 
           {openLesson && (

@@ -786,8 +786,14 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
 .stepper { margin: 0 0 16px; }
 .stepper ol { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; }
 .stepper-step { display: flex; align-items: center; min-width: 0; }
+/* Long enough to read as the path between steps. It read as a hyphen —
+   "Ladda upp - Redigera" — and not because 36px was short: it was never 36px.
+   An empty pseudo-element with only a flex-basis adds nothing to its step's
+   natural width, so the step was sized without it and the line shrank straight
+   to its 12px minimum. A real width counts; flex-shrink still lets it give way
+   on a narrow screen. */
 .stepper-step + .stepper-step::before {
-  content: ""; flex: 0 1 36px; min-width: 12px; height: 2px; margin: 0 10px;
+  content: ""; flex: 0 1 auto; width: 56px; min-width: 12px; height: 2px; margin: 0 12px;
   background: #d6d6de; border-radius: 1px;
 }
 .stepper-step.done + .stepper-step::before { background: #1a1a1a; }
