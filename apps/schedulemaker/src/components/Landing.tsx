@@ -178,6 +178,8 @@ export default function Landing({
   onInk,
   icons,
   onIcons,
+  illustration,
+  onIllustration,
 }: {
   busy: boolean;
   phase: null | "shrink" | "read";
@@ -190,6 +192,8 @@ export default function Landing({
   onInk: (on: boolean) => void;
   icons: boolean;
   onIcons: (on: boolean) => void;
+  illustration: boolean;
+  onIllustration: (on: boolean) => void;
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -382,7 +386,13 @@ export default function Landing({
           <p className="preview-label">Exempel på ett färdigt schema</p>
           <div className="paper" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
             <FitToWidth>
-              <ScheduleSheet schedule={SAMPLE_SCHEDULE} glossary={SAMPLE_GLOSSARY} icons={icons} />
+              <ScheduleSheet
+                schedule={SAMPLE_SCHEDULE}
+                glossary={SAMPLE_GLOSSARY}
+                icons={icons}
+                theme={theme}
+                illustration={illustration}
+              />
             </FitToWidth>
           </div>
 
@@ -409,6 +419,12 @@ export default function Landing({
             <div className="inkrow">
               <Check label="Bläcksnål utskrift" hint="svart på vitt, utan färgfyllningar" on={ink} onChange={onInk} />
               <Check label="Ämnessymboler" hint="visa en ikon vid ämnet" on={icons} onChange={onIcons} />
+              <Check
+                label="Illustration"
+                hint="en liten bild som hör till stilen"
+                on={illustration}
+                onChange={onIllustration}
+              />
             </div>
             <p className="style-note" aria-live="polite">
               {ink

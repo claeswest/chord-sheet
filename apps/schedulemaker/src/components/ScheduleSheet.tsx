@@ -5,6 +5,7 @@ import type { Day, Lesson, Schedule, Week } from "@/types/schedule";
 import { slotSpan, slotsOf, weekSpan } from "@/types/schedule";
 import { inkOn, isBreak, say, type Glossary } from "@/lib/glossary";
 import SubjectIcon from "./SubjectIcon";
+import ThemeIllustration from "./ThemeIllustration";
 import EditableText from "./EditableText";
 
 // The printable sheet: a clock down the margin, a column per day, and every
@@ -545,6 +546,8 @@ export default function ScheduleSheet({
   glossary,
   editable = false,
   icons = true,
+  theme = "",
+  illustration = true,
   onChange,
   onEditLesson,
   onAddLesson,
@@ -556,6 +559,11 @@ export default function ScheduleSheet({
   editable?: boolean;
   /** Little subject drawings on the cards. */
   icons?: boolean;
+  /** The style's id, for its drawing. The colours come from the data-theme
+   *  attribute above this component; which picture to draw can't. */
+  theme?: string;
+  /** The style's small drawing in the header corner. */
+  illustration?: boolean;
   onChange?: (next: Schedule) => void;
   onEditLesson?: (weekId: string, dayId: string, lesson: Lesson) => void;
   onAddLesson?: (weekId: string, dayId: string) => void;
@@ -854,6 +862,7 @@ export default function ScheduleSheet({
           the schedule — no fill, no shrink, no reflow. Shown on screen too, so
           what the editor shows is still what prints. */}
       <p className="sheet-credit">Gjort med fixaschemat.se</p>
+      {illustration && <ThemeIllustration theme={theme} />}
     </div>
   );
 }

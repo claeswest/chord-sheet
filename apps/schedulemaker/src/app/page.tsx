@@ -39,7 +39,15 @@ const PAPERS = [
   { id: "a3-portrait", name: "A3 stående", css: "A3 portrait", w: "297mm", h: "420mm" },
 ];
 
-type Stored = { schedule: Schedule; glossary: Glossary; theme: string; paper?: string; ink?: boolean; icons?: boolean };
+type Stored = {
+  schedule: Schedule;
+  glossary: Glossary;
+  theme: string;
+  paper?: string;
+  ink?: boolean;
+  icons?: boolean;
+  illustration?: boolean;
+};
 
 export default function Home() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
@@ -50,6 +58,7 @@ export default function Home() {
   const [ink, setInk] = useState(false);
   /** Little subject drawings. Fun, and findable by a child who cannot read yet. */
   const [icons, setIcons] = useState(true);
+  const [illustration, setIllustration] = useState(true);
   /** "Börja om" is armed before it fires. See the toolbar. */
   const [resetting, setResetting] = useState(false);
   // The original photograph, for checking against while editing. Held in
@@ -96,6 +105,7 @@ export default function Home() {
           setTheme(s.theme === "plain" ? "" : s.theme ?? "");
           setInk(s.ink ?? s.theme === "plain");
           setIcons(s.icons ?? true);
+          setIllustration(s.illustration ?? true);
           setPaper(s.paper ?? "a4-landscape");
         }
       }
@@ -108,12 +118,13 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     try {
-      if (schedule) localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink, icons }));
+      if (schedule)
+        localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration }));
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme, paper, ink, icons]);
+  }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration]);
 
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
@@ -337,6 +348,8 @@ export default function Home() {
           onInk={setInk}
           icons={icons}
           onIcons={setIcons}
+          illustration={illustration}
+          onIllustration={setIllustration}
         />
       )}
 
@@ -440,6 +453,7 @@ export default function Home() {
                       one is chosen. */}
                   <Check label="Bläcksnål utskrift" on={ink} onChange={setInk} />
                   <Check label="Ämnessymboler" on={icons} onChange={setIcons} />
+                  <Check label="Illustration" on={illustration} onChange={setIllustration} />
                 </div>
               </div>
             )}
@@ -500,7 +514,7 @@ export default function Home() {
 
           <PrintFit
             pageHeightMm={parseInt(sheetPaper.h, 10)}
-            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}|${icons}`}
+            deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}|${icons}|${illustration}`}
             onFit={setFit}
           />
 
@@ -510,6 +524,8 @@ export default function Home() {
               glossary={glossary}
               editable={editing}
               icons={icons}
+              theme={theme}
+              illustration={illustration}
               onChange={setSchedule}
               onEditLesson={(weekId, dayId, lesson) => setOpenLesson({ weekId, dayId, lesson })}
               onAddLesson={addLesson}

@@ -118,6 +118,12 @@ taste:
   combination that makes no sense. The style's letterform survives it.
 - **Subject icons** are a fact about the reader's age. On for a seven-year-old,
   probably off for a sixteen-year-old.
+- **Illustration** is a small drawing that belongs to the style, in the
+  header's top-right corner (`ThemeIllustration.tsx`): a paper plane, a slate,
+  a moon, a daisy, a sweet, a book, a quill, a sun. On by default, switched off
+  like the icons, and stored with them. Drawn in the style's own accent colours
+  through CSS classes, so ink-saving turns each into a black outline.
+  Absolutely positioned: switching it changes nothing else on the sheet.
 
 Both are checkboxes (`Check.tsx`), not pills, because a setting that looks like
 a command gets read as one.
@@ -139,7 +145,7 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 
 | File | What it holds |
 | --- | --- |
-| `app/page.tsx` | All app state: schedule, glossary, theme, ink, icons, paper, mode |
+| `app/page.tsx` | All app state: schedule, glossary, theme, ink, icons, illustration, paper, mode |
 | `app/api/read/route.ts` | The only route. Model call, limits, no storage |
 | `components/Landing.tsx` | Front page. Hero is a real sheet from `lib/sample.ts`; the faults section pins six numbered faults on the same week as the school printed it |
 | `components/ScheduleSheet.tsx` | The sheet, plus `useFitCards` |

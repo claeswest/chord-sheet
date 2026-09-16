@@ -111,6 +111,32 @@ body {
   pointer-events: none;
 }
 
+/* The style's drawing, in the header's top-right corner: level with the
+   banner, clear of the day names below it, and right-aligned with the grid
+   like the credit at the bottom. Absolute, so switching it on or off moves
+   nothing. The order of these rules matters: .l sets no fill, and the fill
+   classes after it put one back on shapes that have both. */
+.sheet-illo {
+  position: absolute; top: 9mm; right: 14mm; width: 20mm; height: 20mm;
+  overflow: visible; pointer-events: none;
+}
+.sheet-illo .l {
+  fill: none; stroke: var(--accent); stroke-width: 2.2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.sheet-illo .f { fill: var(--accent-soft); }
+.sheet-illo .p { fill: var(--pop); }
+.sheet-illo .w { fill: #ffffff; }
+.sheet-illo .w-line { fill: none; stroke: #ffffff; stroke-width: 2.6; stroke-linecap: round; }
+.sheet-illo .ink { fill: var(--ink); }
+.sheet-illo .dash { stroke-dasharray: 3 4; }
+/* Ink-saving: a black outline. Fills become paper rather than nothing, so a
+   shape in front still hides what is behind it. */
+[data-ink="save"] .sheet-illo .f,
+[data-ink="save"] .sheet-illo .p,
+[data-ink="save"] .sheet-illo .w { fill: var(--paper); }
+[data-ink="save"] .sheet-illo .w-line { stroke: none; }
+
 /* One title block, centred as a whole. Who it is for, which class, which
    school — three lines that answer one question, so they share an axis. The
    banner alone was centred over two left-aligned lines, which reads as an
