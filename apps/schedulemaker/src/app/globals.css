@@ -116,20 +116,29 @@ body {
    like the credit at the bottom. Absolute, so switching it on or off moves
    nothing. The order of these rules matters: .l sets no fill, and the fill
    classes after it put one back on shapes that have both. */
+/* 16mm, down from 20: at 20 it competed with the banner for the first look,
+   and it is the one thing on the sheet nobody needs to read. */
 .sheet-illo {
-  position: absolute; top: 9mm; right: 14mm; width: 20mm; height: 20mm;
+  position: absolute; top: 9mm; right: 14mm; width: 16mm; height: 16mm;
   overflow: visible; pointer-events: none;
 }
-/* 2.8 on the 64 grid: heavy enough to hold at 20mm and at 40px on screen. */
+/* Softened to sit in the same register as the lesson cards' pale tints: the
+   line is the accent blended 72% into the paper, the drawing's own colour 55%
+   into white. Tried at 60/50 first, which washed out the quill and the sweet.
+   The plain declaration before each color-mix is the fallback for a browser
+   without it. 2.8 on the 64 grid holds at 16mm and at 40px on screen. */
 .sheet-illo .l {
-  fill: none; stroke: var(--accent); stroke-width: 2.8;
-  stroke-linecap: round; stroke-linejoin: round;
+  fill: none; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round;
+  stroke: var(--accent);
+  stroke: color-mix(in srgb, var(--accent) 72%, var(--paper));
 }
 .sheet-illo .f { fill: var(--accent-soft); }
-.sheet-illo .p { fill: var(--pop); }
+.sheet-illo .p { fill: var(--pop); fill: color-mix(in srgb, var(--pop) 55%, #ffffff); }
 .sheet-illo .w { fill: #ffffff; }
-/* Ink-saving: a black outline. Fills become paper rather than nothing, so a
-   shape in front still hides what is behind it. */
+/* Ink-saving: a black outline, not a softened grey one — a thin grey line is
+   what a mono laser dithers into a ragged one. Fills become paper rather than
+   nothing, so a shape in front still hides what is behind it. */
+[data-ink="save"] .sheet-illo .l { stroke: #000000; }
 [data-ink="save"] .sheet-illo .f,
 [data-ink="save"] .sheet-illo .p,
 [data-ink="save"] .sheet-illo .w { fill: var(--paper); }
