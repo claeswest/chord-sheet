@@ -478,6 +478,7 @@ kbd {
 .landing-foot { padding: 24px 28px; border: 1px solid #e3e0ec; border-radius: 16px; background: #eeecf5; }
 .landing-foot h2 { margin: 0 0 6px; font-size: 15px; font-weight: 650; color: #302b3f; }
 .landing-foot p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); max-width: 68ch; }
+.landing-foot p + p { margin-top: 8px; }
 
 /* Dropping an image anywhere on the page works, so the page says so. */
 .landing.dropping::after {

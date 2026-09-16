@@ -66,14 +66,14 @@ export default function ChoicesPanel({
   return (
     <section className="choices no-print" aria-labelledby="choices-heading">
       <div className="choices-head">
-        <h2 id="choices-heading">Välj vilka lektioner som gäller</h2>
+        <h2 id="choices-heading">Välj det som gäller ditt barn</h2>
         <span className="choices-count">
           {questions.length === 1 ? "1 val kvar" : `${questions.length} val kvar`}
         </span>
       </div>
       <p className="choices-intro">
-        Skolan har skrivit flera alternativ på samma tid. Välj det som gäller för ditt barn — eller behåll
-        alla, till exempel när lektionerna växlar varannan vecka.
+        På några ställen har skolan skrivit flera alternativ på samma tid, till exempel språk eller
+        slöjd. Tryck på det ditt barn går på. Växlar det varannan vecka? Då behåller du alla.
       </p>
 
       <div className="choice-list">
@@ -92,7 +92,10 @@ export default function ChoicesPanel({
             <div className="choice-card" key={key} role="group" aria-label={slots.map((s) => s.when).join(" och ")}>
               <p className="choice-when">{slots.map((s) => s.when).join(" och ")}</p>
               {slots.length > 1 && (
-                <p className="choice-note">Samma alternativ {slots.length === 2 ? "båda gångerna" : `alla ${slots.length} gångerna`} — valet gäller alla.</p>
+                <p className="choice-note">
+                  Samma alternativ {slots.length === 2 ? "båda gångerna" : `alla ${slots.length} gångerna`} – ett
+                  klick räcker.
+                </p>
               )}
               <div className="choice-options">
                 {options.map((o) => {

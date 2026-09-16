@@ -31,7 +31,7 @@ export default function LessonEditor({
   return (
     <div className="overlay no-print" onClick={onClose}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <p className="panel-title">Ändra lektion eller paus</p>
+        <p className="panel-title">Ändra lektion eller rast</p>
 
         <div className="row">
           <label>
@@ -78,11 +78,12 @@ export default function LessonEditor({
         </label>
 
         <p className="hint" style={{ margin: "12px 0 0" }}>
-          Använd samma ämnes- och lärarkoder som i originalet. Under &ldquo;Namn och färger&rdquo; kan du ge dem namn som visas i hela schemat.
+          Skriv koderna som på originalet, till exempel MA eller KRN. Namnen fixar du under &ldquo;Namn och
+          färger&rdquo; – då gäller de i hela schemat på en gång.
         </p>
 
         <div className="controls" style={{ marginTop: 16, marginBottom: 0 }}>
-          <button className="primary" onClick={() => onSave(draft)}>Spara ändringar</button>
+          <button className="primary" onClick={() => onSave(draft)}>Spara</button>
           <button onClick={onClose}>Avbryt</button>
           <button className="danger" onClick={onDelete} style={{ marginLeft: "auto" }}>
             Ta bort

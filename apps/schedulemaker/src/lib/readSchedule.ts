@@ -102,16 +102,16 @@ export function parseSchedule(
   try {
     data = JSON.parse(stripFence(raw));
   } catch {
-    throw new ReadError("Kunde inte läsa av schemat. Försök igen med en tydligare bild eller text med dagar, tider och ämnen.");
+    throw new ReadError("Vi kunde inte läsa av schemat. Prova en skarpare bild, eller klistra in texten.");
   }
-  if (!data || typeof data !== "object") throw new ReadError("Kunde inte hitta ett schema i underlaget. Kontrollera att dagar, tider och ämnen finns med.");
+  if (!data || typeof data !== "object") throw new ReadError("Vi hittade inget schema. Se till att dagar, tider och ämnen syns.");
   const d = data as Record<string, unknown>;
 
   if (d.error === "no_schedule") {
     throw new ReadError(
       from === "photo"
-        ? "Kunde inte hitta ett schema i bilden. Ta ett tydligt foto rakt framifrån, med hela schemat i bild."
-        : "Kunde inte hitta ett schema i texten. Ta med dagar, tider och ämnen.",
+        ? "Vi hittade inget schema på bilden. Fota rakt framifrån så att hela schemat syns."
+        : "Vi hittade inget schema i texten. Ta med dagar, tider och ämnen.",
     );
   }
 
@@ -149,7 +149,7 @@ export function parseSchedule(
     .filter((w) => w.days.length > 0);
 
   if (weeks.length === 0) {
-    throw new ReadError("Kunde inte hitta några dagar eller lektioner. Prova en tydligare bild eller text med dagar, tider och ämnen.");
+    throw new ReadError("Vi hittade inga dagar eller lektioner. Prova en tydligare bild, eller klistra in texten.");
   }
 
   return {

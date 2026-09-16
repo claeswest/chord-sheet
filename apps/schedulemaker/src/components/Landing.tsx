@@ -30,23 +30,29 @@ const SAMPLE_GLOSSARY = withDefaultColors(
   SAMPLE_SUBJECTS,
 );
 
+// The voice, everywhere on this page: one parent to another. Short sentences,
+// everyday words, a concrete morning rather than an abstract benefit — the
+// fridge, a Tuesday, "MA blir Matematik". Light, but never cute at the cost of
+// being clear, and never a promise the app doesn't keep: the AI reading, where
+// the photo goes and where the schedule is kept are all still said plainly.
+
 const STEPS: [string, string, string][] = [
-  ["01", "Ladda upp ditt schema", "Ta ett tydligt foto, dra in en bild eller klistra in schemat som text."],
-  ["02", "Gör det till ditt", "Kontrollera tiderna, skriv ut lärarnas namn och välj rätt lektioner. Anpassa färger och stil efter smak."],
-  ["03", "Skriv ut", "Välj A4 eller A3, stående eller liggande. Skriv ut i färg eller välj bläcksnålt läge."],
+  ["01", "Fota schemat", "Ta en bild med mobilen, dra in en skärmbild eller klistra in texten. Lite snett eller skrynkligt går bra."],
+  ["02", "Gör det till ert", "Skriv in lärarnas namn en gång, välj rätt språk och slöjd, och kolla att tiderna stämmer."],
+  ["03", "Upp på kylskåpet", "Välj färger och stil, och skriv ut på A4 eller A3 – eller spara som PDF."],
 ];
 
 const BENEFITS: [string, string][] = [
-  ["Begripliga namn", "Vanliga ämnesförkortningar skrivs ut automatiskt. Lärarnas namn fyller du i en gång."],
-  ["Skoldagen i rätt proportioner", "Långa lektioner får större rutor och mellanrummen visar dagens pauser."],
-  ["Det viktigaste syns först", "Ämnet står tydligt, med tid, lärare och sal intill."],
-  ["En färg för varje ämne", "Följ ämnena genom veckan med färger du själv kan ändra."],
+  ["Namn i stället för koder", "MA blir Matematik och KRN blir Karin. Lärarnas namn skriver du in en gång – sen står de överallt."],
+  ["Hela dagen i rätt proportioner", "En lång lektion blir en stor ruta. Du ser direkt när det är rast och när skoldagen slutar."],
+  ["Det viktiga först", "Ämnet syns tydligast. Tid, lärare och sal står i mindre text bredvid."],
+  ["En färg per ämne", "Matten har alltid samma färg, så den är lätt att hitta hela veckan. Byt färger om ni vill."],
   // Not "jämna och udda veckor kan hållas isär": they are deliberately not
   // held apart. Two grids are folded into one week and the lesson that only
   // applies every other week carries the label — which is what the sheet a
   // school prints on one grid does anyway.
-  ["Bara de lektioner som gäller", "Välj rätt alternativ vid exempelvis språkval. Gäller en lektion bara varannan vecka står det i rutan."],
-  ["Ett schema med personlig stil", "Välj bland stilar med olika typsnitt och färger, lägg till ämnessymboler och sätt barnets namn överst."],
+  ["Bara det som gäller ditt barn", "Fem språk i samma ruta? Välj det ditt barn läser, så försvinner resten. Lektioner varannan vecka står tydligt i rutan."],
+  ["Ert alldeles egna schema", "Välj stil, sätt barnets namn överst och lägg till små symboler som hjälper den som inte läser än."],
 ];
 
 // What a school's printout does, and what this app does instead — shown against
@@ -77,9 +83,9 @@ const FAULTS: Fault[] = [
     // points at, and IDH VSL is the same fault with grey space beneath it.
     body: (
       <>
-        Förkortningar som TK och MTP kan vara svåra att förstå. Vanliga ämneskoder blir
-        namn automatiskt, till exempel <strong>Teknik</strong>. Lärarens namn, som
-        <strong> Mattias</strong>, fyller du i en gång för hela schemat.
+        TK? MTP? Inte helt självklart en stressig tisdagsmorgon. Vanliga ämnen får sina riktiga
+        namn direkt, som <strong>Teknik</strong>, och lärarnas namn, som
+        <strong> Mattias</strong>, skriver du in en gång.
       </>
     ),
     at: [18.9, 73.2],
@@ -89,30 +95,30 @@ const FAULTS: Fault[] = [
     // the school day never uses. If the grey fill itself is ever mentioned
     // again, it has been measured — low-saturation, mid-lightness pixels in the
     // photo's day columns, 06:00 to 17:30, came to 59.1%.
-    term: "Mer plats åt skoldagen",
-    body: "Här visas tider från 06:00 till 17:30, trots att skoldagen är kortare. Schemat anpassar tidsaxeln efter lektionerna. Välj bläcksnål utskrift om du vill ta bort bakgrundsfärgerna också.",
+    term: "Mer plats för själva dagen",
+    body: "Originalet visar tider från 06:00 till 17:30, fast skoldagen är mycket kortare. Här följer schemat skoldagen, så lektionerna får gott om plats att synas.",
     at: [49.7, 82.8],
   },
   {
     term: "Ämnet syns först",
-    body: "När all text ser likadan ut är det svårt att snabbt hitta rätt. Här får ämnet en tydlig rubrik, med tid, lärare och sal i mindre text intill.",
+    body: "När allt står i samma lilla text får man leta. Här är ämnet störst, och tid, lärare och sal står i mindre text bredvid.",
     at: [64.5, 74.1],
   },
   {
-    term: "Färger som hjälper dig hitta",
-    body: "Starka bakgrundsfärger kan göra texten svårläst. Här börjar du med ljusa ämnesfärger och kan byta dem själv. Textfärgen anpassas efter rutans bakgrund.",
+    term: "Färger som hjälper",
+    body: "Starka färger kan göra texten svår att läsa. Här får varje ämne en mjuk färg, och texten anpassar sig så att den alltid syns.",
     at: [48.8, 47.3],
   },
   {
-    term: "Tider på en tydlig plats",
-    body: "I originalet ligger små klockslag längs rutornas kanter. Här står start- och sluttid tillsammans inne i varje lektionsruta.",
+    term: "Tiden på ett ställe",
+    body: "Små klockslag utspridda längs kanterna blir en tydlig start- och sluttid inne i varje ruta.",
     at: [20.3, 45.0],
   },
   {
     // Not "rasten syns inte": on this sheet it does — white on the grey.
     // Lunch is the one that hides, as a box among the lessons.
-    term: "Lunch och rast får egen plats",
-    body: "Lunchen är lätt att blanda ihop med lektionerna i originalet. Här får lunch och rast egna markerade rutor, så att dagens pauser blir lätta att hitta.",
+    term: "Lunchen syns",
+    body: "I originalet ser lunchen nästan ut som en lektion. Här får rast och lunch en egen stil – med kniv och gaffel – så dagens pauser är lätta att hitta.",
     at: [36.8, 60.0],
   },
 ];
@@ -122,15 +128,15 @@ const FAULTS: Fault[] = [
 // and saying it twice would make the list longer without making it truer.
 const MORE_FAULTS: Fault[] = [
   {
-    term: "Välj rätt språkgrupp",
-    body: "Här samsas fem språkgrupper i samma ruta. Välj den som gäller för ditt barn, så döljs de andra. Du kan ändra valet senare eller behålla flera alternativ om det behövs.",
+    term: "Rätt språk, inte fem",
+    body: "Fem språkgrupper i samma lilla ruta. Välj den ditt barn går i, så döljs resten – och du kan ändra dig när du vill.",
     at: [19.8, 24.2],
   },
   {
     // Offers both rather than calling a colourless sheet wrong: ink-saving is
     // colourless too, and it is a reasonable thing to want.
-    term: "Färg eller svartvitt – du väljer",
-    body: "Med en färg per ämne blir det lättare att följa exempelvis matten genom veckan. Föredrar du svartvitt? Slå på bläcksnål utskrift. Ämnesnamn och tider finns kvar i båda lägena.",
+    term: "Färg eller svartvitt – ni väljer",
+    body: "En färg per ämne gör det lätt att följa matten genom veckan. Vill du spara bläck? Slå på bläcksnål utskrift – allt viktigt står kvar.",
     at: [35.9, 49.0],
   },
 ];
@@ -155,14 +161,14 @@ const SPECIMENS: {
     size: [900, 990],
     alt: "Foto av ett utskrivet skolschema för klass 3B: tidsaxel från 06:00 till 17:30 där mer än hälften är grått, lektioner i mättade färger märkta med förkortningar som SO, MA och KRN, och små klockslag på rutornas kanter.",
     caption:
-      "Samma vecka som exemplet högst upp, så som den kom hem från skolan. Skola och lärare är anonymiserade.",
+      "Samma vecka som exemplet högst upp – så här kom den hem från skolan. (Skola och lärare är anonymiserade.)",
     faults: FAULTS,
   },
   {
     src: "/manskensskolan.webp",
     size: [900, 994],
     alt: "Foto av ett utskrivet högstadieschema för klass 7B, helt i svartvitt: vita lektionsrutor på grå botten, förkortningar som NO, HeLo och Sl tx, och en måndagsruta med fem språkval i mycket liten text.",
-    caption: "Ett högstadieschema från en annan skola. Skola och lärare är anonymiserade.",
+    caption: "Ett högstadieschema från en annan skola. (Skola och lärare är anonymiserade.)",
     faults: MORE_FAULTS,
   },
 ];
@@ -225,10 +231,10 @@ export default function Landing({
 
   const waiting =
     elapsed < 12
-      ? "Vi läser av dagar, tider och lektioner. Vänta kvar en stund."
+      ? "Vi läser av dagar, tider och lektioner – det brukar gå på en liten stund."
       // Measured, not guessed: a photographed 7A högstadieschema with 43
       // lessons took 36 seconds. "Half a minute" was already wrong for it.
-      : "Vi läser fortfarande. Ett schema med många lektioner kan ta upp till en minut.";
+      : "Ett späckat schema tar lite längre tid. Oftast är det klart inom en minut.";
 
   // A screenshot of the school's PDF is already on the clipboard by the time
   // most people get here, and asking them to save it to disk first so they can
@@ -279,19 +285,17 @@ export default function Landing({
 
       <section className="hero">
         <div className="hero-copy">
-          <h1>
-            Gör skolschemat tydligt och personligt
-          </h1>
+          <h1>Ett skolschema som barnen faktiskt kan läsa</h1>
           <p className="lead">
-            Ladda upp skolans schema, välj en stil och kontrollera innehållet.
-            Skriv sedan ut det till kylskåpet, skrivbordet eller skolväskan.
+            Fota schemat som kom hem från skolan. Efter några minuter har du ett tydligt,
+            färgglatt schema med riktiga namn i stället för koder – redo för kylskåpet.
           </p>
 
           <div className="upload-panel">
             {/* The whole job, before it starts: this is step one of three. */}
             <Stepper current={1} />
-            <h2>Börja med ditt schema</h2>
-            <p className="upload-hint">Ett tydligt foto eller en skärmbild räcker.</p>
+            <h2>Börja här</h2>
+            <p className="upload-hint">Ett vanligt mobilfoto funkar fint – lite snett är helt okej.</p>
             <div className="start">
               {/* The input is transparent and laid over the label rather than
                   hidden. `hidden` takes it out of the tab order too, which left
@@ -318,7 +322,7 @@ export default function Landing({
                     {phase === "shrink" ? "Förbereder bilden" : "Läser av schemat"}
                   </>
                 ) : (
-                  "Ladda upp en bild"
+                  "Ladda upp schemat"
                 )}
               </label>
               <p className="or" role="status">
@@ -327,9 +331,9 @@ export default function Landing({
                 ) : (
                   <>
                     <span className="on-mouse">
-                      Dra bilden hit eller klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                      …eller dra in bilden hit. Har du en skärmbild? Klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
                     </span>
-                    <span className="on-touch">Fota schemat eller välj en bild du redan har.</span>
+                    <span className="on-touch">Fota schemat direkt eller välj en bild du redan har.</span>
                   </>
                 )}
               </p>
@@ -337,11 +341,11 @@ export default function Landing({
 
             {!typing ? (
               <button className="linky" onClick={() => setTyping(true)}>
-                Klistra in schema som text →
+                Har du schemat som text? Klistra in det här →
               </button>
             ) : (
               <div className="typein">
-                <label htmlFor="paste">Skriv eller klistra in schemat</label>
+                <label htmlFor="paste">Klistra in eller skriv av schemat</label>
                 <textarea
                   id="paste"
                   ref={area}
@@ -376,7 +380,7 @@ export default function Landing({
               at the foot of the page, and making it twice reads as protesting.
               What belongs beside the button is only what you need before you
               press it. */}
-          <p className="fineprint">Inget konto behövs. Bild eller text skickas till Google för AI-avläsning.</p>
+          <p className="fineprint">Gratis och utan konto. Schemat läses av med AI hos Google och sparas inte hos oss.</p>
         </div>
 
         {/* The label is visible text inside the figure, so it is the figure's
@@ -386,7 +390,7 @@ export default function Landing({
           {/* The style is applied to this figure, so the swatches below change
               the actual sheet rather than a picture of one — and the choice is
               lifted to the app, so it is still yours after you upload. */}
-          <p className="preview-label">Exempel på ett färdigt schema</p>
+          <p className="preview-label">Så här kan ert schema se ut</p>
           <div className="paper" data-theme={theme || undefined} data-ink={ink ? "save" : undefined}>
             <FitToWidth>
               <ScheduleSheet
@@ -400,8 +404,8 @@ export default function Landing({
           </div>
 
           <div className="style-panel">
-            <h2>Välj din stil</h2>
-            <p className="style-intro">Prova på exemplet. Dina val följer med när du laddar upp.</p>
+            <h2>Hitta er stil</h2>
+            <p className="style-intro">Klicka runt och prova på exemplet – det du väljer följer med till ert eget schema.</p>
             <div className="styles" role="group" aria-label="Stil på schemat">
               {THEMES.map((t) => (
                 <button
@@ -420,18 +424,18 @@ export default function Landing({
                 them: it applies to whichever style is chosen, and it is a
                 question about your printer rather than your taste. */}
             <div className="inkrow">
-              <Check label="Bläcksnål utskrift" hint="svart på vitt, utan färgfyllningar" on={ink} onChange={onInk} />
-              <Check label="Ämnessymboler" hint="visa en ikon vid ämnet" on={icons} onChange={onIcons} />
+              <Check label="Bläcksnål utskrift" hint="svart på vitt – snällt mot skrivaren" on={ink} onChange={onInk} />
+              <Check label="Ämnessymboler" hint="små bilder för den som inte läser än" on={icons} onChange={onIcons} />
               <Check
                 label="Illustration"
-                hint="en liten bild som hör till stilen"
+                hint="en liten bild som passar stilen"
                 on={illustration}
                 onChange={onIllustration}
               />
             </div>
             <p className="style-note" aria-live="polite">
               {ink
-                ? "Svart text på vitt, utan färgfyllningar. Typsnittet behålls."
+                ? "Svart på vitt utan färgfyllningar – snällt mot bläckpatronen. Typsnittet är kvar."
                 : THEMES.find((t) => t.id === theme)?.note}
             </p>
           </div>
@@ -449,9 +453,10 @@ export default function Landing({
       </section>
 
       <section className="benefits" aria-labelledby="benefits-heading">
-        <h2 id="benefits-heading">Lättare att läsa. Enklare att använda.</h2>
+        <h2 id="benefits-heading">Gjort för stressiga morgnar</h2>
         <p className="lead">
-          Ett tydligt schema hjälper hela familjen att få koll på skolveckan.
+          När alla ska ut genom dörren samtidigt ska ingen behöva tolka koder. Så här hjälper
+          schemat hela familjen att ha koll på veckan.
         </p>
         <dl>
           {BENEFITS.map(([term, body]) => (
@@ -467,10 +472,10 @@ export default function Landing({
         {/* About the printout, not the reader. An earlier heading said "arket
             du fått hem", which pointed at their own child's sheet — something
             they did not choose and cannot help. */}
-        <h2 id="pitfalls-heading">Från skolans utskrift till ett tydligare schema</h2>
+        <h2 id="pitfalls-heading">Känner du igen det här?</h2>
         <p className="lead">
-          Här är två exempel på skolscheman och hur de kan bli lättare att läsa hemma.
-          Jämför alltid tider och lektioner med originalet efter avläsningen.
+          Så här ser många scheman ut när de kommer hem: koder, grått och pyttesmå siffror. Och
+          så här fixar vi det. (AI:n läser bra, men kolla gärna tiderna mot originalet.)
         </p>
         {SPECIMENS.map((s, si) => {
           // Numbered straight through, so the second sheet's faults read as
@@ -523,12 +528,14 @@ export default function Landing({
       </section>
 
       <footer className="landing-foot">
-        <h2>Ditt schema sparas i din webbläsare</h2>
+        <h2>Ert schema stannar hos er</h2>
         <p>
-          Bilden eller texten skickas till Google för AI-avläsning. Vi sparar inte underlaget
-          eller ditt schema på våra servrar. Schemat och dina ändringar sparas lokalt när
-          webbläsaren tillåter det. Använd samma webbläsare för att fortsätta senare.
-          Rensar du webbplatsens data försvinner det sparade schemat.
+          Inget konto och ingen inloggning. Bilden eller texten läses av med AI hos Google, och vi
+          sparar varken den eller ert schema. Schemat sparas bara här i webbläsaren – använd samma
+          webbläsare om du vill fortsätta senare. (Rensar du webbläsarens data försvinner det.)
+        </p>
+        <p>
+          Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
         </p>
       </footer>
 

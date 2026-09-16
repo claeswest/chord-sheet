@@ -155,7 +155,7 @@ export default function Home() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Något gick fel. Försök igen.");
+        setError(data.error ?? "Något gick snett. Försök igen.");
         return;
       }
       setSchedule(data.schedule);
@@ -164,7 +164,7 @@ export default function Home() {
       const read = codesIn(data.schedule).subjects;
       setGlossary(withDefaultColors(withKnownNames(EMPTY_GLOSSARY, read), read));
     } catch {
-      setError("Kunde inte ansluta. Kontrollera internetanslutningen och försök igen.");
+      setError("Vi når inte fram just nu. Kolla internetuppkopplingen och försök igen.");
     } finally {
       setBusy(false);
       setPhase(null);
@@ -191,7 +191,7 @@ export default function Home() {
       setSource(small);
       await read({ image: small });
     } catch {
-      setError("Kunde inte öppna bilden. Prova en JPG- eller PNG-bild.");
+      setError("Den bilden gick inte att öppna. Prova ett vanligt foto eller en skärmbild (JPG eller PNG).");
       setPhase(null);
     }
   }
@@ -441,7 +441,7 @@ export default function Home() {
                 teacher codes is an afternoon. It asks now. */}
             {resetting ? (
               <span className="confirm">
-                Ta bort det sparade schemat och börja om?
+                Ta bort det här schemat och börja om?
                 <button className="danger" onClick={startOver}>
                   Ja, ta bort
                 </button>
@@ -518,12 +518,12 @@ export default function Home() {
                       something is, a pointer to the panel that says what. */}
                   <p className="hint actions-hint actions-hint-lead">
                     {openChoices > 0 ? (
-                      "Gör valen nedan först, sedan kan du gå vidare."
+                      "Gör valen här nedanför först – sen är du nästan klar."
                     ) : (
                       <>
                         <span className="on-mouse">Klicka</span>
-                        <span className="on-touch">Tryck</span> på en rubrik, dag eller lektionsruta för att
-                        redigera. Kontrollera AI-avläsningen mot originalet.
+                        <span className="on-touch">Tryck</span> på det som behöver ändras – en rubrik, en dag
+                        eller en lektion. Jämför gärna med originalet, AI:n kan läsa fel ibland.
                       </>
                     )}
                   </p>
@@ -546,8 +546,8 @@ export default function Home() {
                       narrow screen there is no room between them, and it wraps
                       to its own line below (see .actions-hint). */}
                   <p className="hint actions-hint">
-                    Kontrollera tider och lektioner mot originalet. Välj sedan <strong>Skriv ut</strong> för
-                    att skriva ut eller spara som PDF.
+                    Snyggt! Kolla tiderna en sista gång, sen är det bara att trycka på{" "}
+                    <strong>Skriv ut</strong> – eller spara som PDF.
                   </p>
                   <button className="primary onward with-icon" onClick={() => window.print()}>
                     <PrintIcon />
@@ -560,8 +560,8 @@ export default function Home() {
 
           {fit < 0.995 && (
             <p className="hint no-print" style={{ marginTop: -8 }}>
-              Schemat är högre än en sida och krymps till {Math.round(fit * 100)} % vid utskrift,
-              så att allt får plats på ett ark.{" "}
+              Schemat är lite för långt för en sida, så det krymps till {Math.round(fit * 100)} % när
+              du skriver ut – då får allt plats på ett ark.{" "}
               {/* Below three quarters the type is getting genuinely small — a
                   two-week schedule lands around 66% on A4. A3 is the same
                   document on bigger paper and measured 93% for that case, so
@@ -570,7 +570,7 @@ export default function Home() {
                   otherwise. */}
               {fit < 0.75 && paper.startsWith("a4") && (
                 <>
-                  På A3 blir texten tydligare — samma ark, större papper.{" "}
+                  På A3 blir texten större – samma schema, större papper.{" "}
                   <button
                     className="linky"
                     style={{ marginTop: 0 }}
@@ -612,7 +612,7 @@ export default function Home() {
             onFit={setFit}
           />
 
-          <FitToWidth readable scrollHint="Svep i sidled för att se hela veckan.">
+          <FitToWidth readable scrollHint="Svep åt sidan för att se hela veckan.">
             {/* Inside the scaler, so its own hint above stays in the app's
                 colours. A plain block, not display: contents — FitToWidth
                 measures its first child, and a contents box measures zero. */}

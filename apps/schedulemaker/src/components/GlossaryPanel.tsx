@@ -47,11 +47,12 @@ export default function GlossaryPanel({
     >
       <summary>
         <span className="panel-title">Namn och färger</span>
-        <span className="hint"> — {done} av {total} namngivna</span>
+        <span className="hint"> — {done} av {total} har namn</span>
       </summary>
 
       <p className="hint" style={{ margin: "10px 0 14px" }}>
-        Fyll i namn som ska visas i hela schemat. Lämna ett fält tomt för att behålla originalets text. Här kan du också ändra ämnesfärgerna.
+        Skriv namnen så som ditt barn säger dem – Karin, inte KRN. Du gör det bara en gång, sen står de i
+        hela schemat. Lämna tomt för att behålla koden, och klicka på färgrutan för att byta färg på ett ämne.
       </p>
 
       {teachers.length > 0 && (

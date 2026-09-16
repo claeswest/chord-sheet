@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   // anyone pointing a script at it.
   if (!rateLimit(`read:${clientIp(req)}`, 6, 900_000)) {
     return NextResponse.json(
-      { error: "Du har gjort flera avläsningar på kort tid. Vänta upp till 15 minuter och försök igen." },
+      { error: "Oj, det blev många avläsningar på kort tid! Vänta en stund (högst 15 minuter) och försök igen." },
       { status: 429 },
     );
   }
@@ -45,30 +45,30 @@ export async function POST(req: NextRequest) {
   const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
 
   if (image && !match) {
-    return NextResponse.json({ error: "Filen kunde inte läsas som en bild. Välj ett foto eller en skärmbild." }, { status: 400 });
+    return NextResponse.json({ error: "Den filen kunde vi inte läsa som en bild. Prova ett foto eller en skärmbild." }, { status: 400 });
   }
   if (match && match[2].length > MAX_IMAGE_CHARS) {
     return NextResponse.json(
-      { error: "Bilden är för stor. Prova en mindre bild eller beskär den till själva schemat." },
+      { error: "Bilden är lite för stor. Prova en mindre – eller beskär den så att bara schemat syns." },
       { status: 400 },
     );
   }
   if (!match) {
     if (text.length < 20) {
       return NextResponse.json(
-        { error: "Ladda upp en bild eller klistra in minst 20 tecken med dagar, tider och ämnen." },
+        { error: "Lite för lite att gå på! Ladda upp en bild, eller klistra in text med dagar, tider och ämnen." },
         { status: 400 },
       );
     }
     if (text.length > MAX_CHARS) {
-      return NextResponse.json({ error: "Texten är för lång. Klistra in ett schema i taget, högst 20 000 tecken." }, { status: 400 });
+      return NextResponse.json({ error: "Det var mycket text. Klistra in ett schema i taget (högst 20 000 tecken)." }, { status: 400 });
     }
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Avläsningen är inte tillgänglig just nu. Försök igen senare." },
+      { error: "Avläsningen fungerar inte just nu. Försök igen om en stund." },
       { status: 503 },
     );
   }
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       const detail = await res.text().catch(() => "");
       console.error(`[api/read] Gemini ${res.status} using ${GEMINI_TEXT_MODEL}:`, detail.slice(0, 400));
       return NextResponse.json(
-        { error: "Avläsningen misslyckades. Vänta en stund och försök igen." },
+        { error: "Avläsningen strulade till sig. Vänta en liten stund och försök igen." },
         { status: 502 },
       );
     }
@@ -119,11 +119,11 @@ export async function POST(req: NextRequest) {
     console.error(`[api/read] request failed: ${String(e)} | cause: ${why}`);
     return timedOut
       ? NextResponse.json(
-          { error: "Avläsningen tog för lång tid. Försök igen. Om du använder en bild kan du beskära den till själva schemat." },
+          { error: "Det tog för lång tid. Försök igen – det hjälper ofta att beskära bilden så att bara schemat syns." },
           { status: 504 },
         )
       : NextResponse.json(
-          { error: "Kunde inte nå avläsningen just nu. Försök igen om en stund." },
+          { error: "Vi når inte avläsningen just nu. Försök igen om en liten stund." },
           { status: 502 },
         );
   }
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ schedule: parseSchedule(raw, match ? "photo" : "text") });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof ReadError ? e.message : "Kunde inte läsa underlaget som ett schema. Kontrollera att dagar, tider och ämnen finns med." },
+      { error: e instanceof ReadError ? e.message : "Vi hittade inget schema här. Se till att dagar, tider och ämnen syns tydligt." },
       { status: 422 },
     );
   }
