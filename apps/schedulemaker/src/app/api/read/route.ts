@@ -15,6 +15,19 @@ import { READ_PROMPT, ReadError, parseSchedule } from "@/lib/readSchedule";
 const MAX_IMAGE_CHARS = 4_000_000;
 const MAX_CHARS = 20_000;
 
+/**
+ * How long the platform lets this run, said out loud rather than left to
+ * whatever a new Vercel project defaults to.
+ *
+ * A photographed 7A sheet with 43 lessons took 36 seconds to read. If the
+ * platform's limit came first, the function would be killed mid-read and the
+ * parent would get the host's bare 504 instead of the message below that tells
+ * them what to try. So the model call gives up first (READ_TIMEOUT_MS) and
+ * the function outlives it by enough to send that answer.
+ */
+export const maxDuration = 60;
+const READ_TIMEOUT_MS = 50_000;
+
 export async function POST(req: NextRequest) {
   // No account behind this, so the model is the thing to protect. Six a
   // quarter-hour is generous for a parent with three children and useless to
@@ -78,7 +91,7 @@ export async function POST(req: NextRequest) {
         generationConfig: { temperature: 0, responseMimeType: "application/json" },
       },
       // Reading a dense grid takes longer than reading prose.
-      { timeoutMs: 60_000 },
+      { timeoutMs: READ_TIMEOUT_MS },
     );
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
