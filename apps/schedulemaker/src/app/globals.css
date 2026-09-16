@@ -599,10 +599,22 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
   --paper: #ffffff; --ink: #000000; --muted: #444444; --rule: #b8b8b8;
   --accent: #000000; --accent-soft: transparent;
 }
-[data-ink="save"] .lesson { border: 1px solid var(--rule); background: transparent !important; }
-/* A break keeps its capitals but not its band. The caps alone still say it
-   isn't a lesson. */
-[data-ink="save"] .lesson.pause { background: transparent !important; }
+/* White, not transparent. White costs no ink, and transparent let every hour
+   rule and dashed half-hour run straight through the lessons' text — Hemkunskap
+   crossed out at 14:00. The outline is a step darker than the grid's rules, so
+   the lessons stand in front of the grid rather than being drawn in the same
+   grey as it.
+   The colour is forced back to ink as well: a subject tint carries its own
+   text colour, and a tint someone picked dark gives light text — which, with
+   the tint removed, was near-white text on white paper. */
+[data-ink="save"] .lesson {
+  border: 1px solid #7a7a7a; background: var(--paper) !important;
+  color: var(--ink) !important; --card-muted: var(--muted) !important;
+}
+/* A break keeps its capitals but not its band, and gets a dashed outline: a
+   shape of its own, still distinct from a lesson, for no ink at all. Without
+   one, "LUNCH" floated on the grid with the rules running through it. */
+[data-ink="save"] .lesson.pause { background: var(--paper) !important; border: 1px dashed #7a7a7a; }
 [data-ink="save"] .week-label { color: #000; }
 /* The colour dots down a merged box are ink too, and there is nothing left for
    them to key against once the fills are gone. */
