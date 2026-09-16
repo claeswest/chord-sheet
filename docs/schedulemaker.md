@@ -173,9 +173,10 @@ face has loaded. What is still open before this can go live:
   with sending a child's schedule. Since 16 Sep 2026 this app has its own key in
   its own project (it used to borrow RecipeMaker's, which is Tier 1 postpay).
   The new key works — a text read through `/api/read` returned 200 in 3.9 s —
-  but working proves nothing about the tier: the unpaid tier answers the same
-  way. The key's row in AI Studio must say Tier 1, and whatever key goes into
-  Vercel must be checked the same way.
+  and its tier is confirmed in AI Studio: project "Schedule Maker"
+  (`gen-lang-client-0130998856`), Tier 1, postpay, same billing account. Working
+  alone would have proved nothing, since the unpaid tier answers the same way;
+  whatever key goes into Vercel must be checked in AI Studio too.
 - **Spending needs a watch.** `rateLimit` is an in-memory map, so on Vercel it
   is per instance — a brake, not a ceiling. Set a budget alert on the project.
 - **Print has not been re-verified** since the dashed half-hour rule, the
