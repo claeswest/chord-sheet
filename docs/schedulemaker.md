@@ -168,14 +168,14 @@ The three web-font styles (Skolbok, Klassisk, Lekfull) are committed; the
 `document.fonts` listeners in `PrintFit` and `useFitCards` refit cards once a
 face has loaded. What is still open before this can go live:
 
-- **The Gemini key is paid, but borrowed.** Locally this app uses RecipeMaker's
-  key — project "Recipe Book Maker", checked 16 Sep 2026: Tier 1, postpay, on a
-  billing account. Paid matters: on Google's unpaid tier, submitted content may
-  be used to improve Google's products, which cannot be squared with sending a
-  child's schedule. Borrowed matters less, but give this app its own key in its
-  own project before launch, on the same billing account: its cost is then
-  visible on its own, and it can be capped or revoked without touching
-  RecipeMaker. Whatever key production uses must be checked the same way.
+- **The Gemini key must be on a paid tier.** On Google's unpaid tier, submitted
+  content may be used to improve Google's products, which cannot be squared
+  with sending a child's schedule. Since 16 Sep 2026 this app has its own key in
+  its own project (it used to borrow RecipeMaker's, which is Tier 1 postpay).
+  The new key works — a text read through `/api/read` returned 200 in 3.9 s —
+  but working proves nothing about the tier: the unpaid tier answers the same
+  way. The key's row in AI Studio must say Tier 1, and whatever key goes into
+  Vercel must be checked the same way.
 - **Spending needs a watch.** `rateLimit` is an in-memory map, so on Vercel it
   is per instance — a brake, not a ceiling. Set a budget alert on the project.
 - **Print has not been re-verified** since the dashed half-hour rule, the
