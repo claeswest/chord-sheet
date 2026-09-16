@@ -12,31 +12,34 @@
 // front has to go on hiding what is behind it, or a daisy's petals show
 // straight through its centre.
 //
-// Every one was rendered on its own style's paper and in ink-saving, at full
-// size and at 40px, before it was kept. Two were redrawn after that: the
-// chalk had crossed an easel leg, and the daisy's leaves ran into its petals.
+// Two rounds went into these. A second set was drawn elsewhere from the same
+// brief, and both were rendered side by side on every style's paper and in
+// ink-saving, at print size and at 40px. The plane, slate, sweet and sun came
+// from that set — the slate reads as a school chalkboard where the first read
+// as a screen, and the sweet keeps its stripes in black and white. The moon,
+// daisy, book and quill stayed: that set's daisy had four petals and read as a
+// clover, its quill had no nib and read as a leaf. What the second set got
+// right everywhere was weight, so all eight share its heavier stroke now
+// (2.8, in the stylesheet); mixed weights would not have looked like a family.
 //
 // The markup is static and written here, never built from input, which is why
 // it is set as HTML rather than spelled out as JSX.
 
 const DRAWINGS: Record<string, { svg: string; pop: string }> = {
-  // Papper — a paper plane.
+  // Papper — a paper plane with its flight trail.
   "": {
     pop: "#ffffff",
-    svg: `<path class="l dash" d="M6 58 C 10 48, 4 42, 14 40 S 22 34, 20 30"/>
-      <path class="l f" d="M22 30 L58 10 L32 52 L29 38 Z"/>
-      <path class="l p" d="M22 30 L58 10 L29 38 Z"/>
-      <path class="l" d="M29 38 L58 10"/>`,
+    svg: `<path class="l f" d="M17 13 54 28 34 34 26 51 17 13Z"/>
+      <path class="l" d="m17 13 17 21"/>
+      <path class="l" stroke-dasharray="3 6" d="M27 44C17 50 7 46 8 36c.7-6 6-9 11-7"/>`,
   },
-  // Krita — a slate on an easel, chalk on the ledge.
+  // Krita — a chalkboard on an easel, a tick on the board, chalk on the ledge.
   chalk: {
-    pop: "#ffffff",
-    svg: `<rect class="l f" x="7" y="8" width="50" height="36" rx="5"/>
-      <path class="l" d="M15 28 c3 -7 6 7 9 0 s6 7 9 0 s6 7 9 0"/>
-      <path class="l" d="M15 18 h10"/>
-      <path class="l" d="M4 50 H 60"/>
-      <rect class="l p" x="38" y="44.5" width="14" height="5.5" rx="2"/>
-      <path class="l" d="M20 50 l-5 10 M44 50 l5 10"/>`,
+    pop: "#79b58a",
+    svg: `<path class="l p" d="M14 12h36v29H14z"/>
+      <path class="l" d="M19 41 13 55m32-14 6 14M26 41l-3 14m15-14 3 14M11 45h42"/>
+      <path class="l f" d="M37 41h10v4H37z"/>
+      <path class="l" d="m22 24 6 5 13-10"/>`,
   },
   // Skymning — a crescent moon and stars.
   dusk: {
@@ -63,15 +66,12 @@ const DRAWINGS: Record<string, { svg: string; pop: string }> = {
       <circle class="l p" cx="32" cy="24" r="6"/>
       <path class="l" d="M10 61 l2 -6 l2 6 M50 61 l2 -7 l2 7"/>`,
   },
-  // Godis — a wrapped sweet.
+  // Godis — a wrapped sweet with stripes.
   candy: {
-    pop: "#ff8fb8",
-    svg: `<g transform="rotate(-25 32 32)">
-        <path class="l f" d="M22 32 L7 21 L11 32 L7 43 Z"/>
-        <path class="l f" d="M42 32 L57 21 L53 32 L57 43 Z"/>
-        <circle class="l p" cx="32" cy="32" r="12"/>
-        <path class="w-line" d="M25 23 C 30 30, 30 36, 26 42 M34 21 C 39 28, 40 36, 36 43"/>
-      </g>`,
+    pop: "#e98fa7",
+    svg: `<path class="l f" d="m18 25-10-7 2 11-2 11 10-5m28-10 10-7-2 11 2 11-10-5"/>
+      <rect class="l p" x="17" y="20" width="30" height="18" rx="7"/>
+      <path class="l" d="m25 23-4 12m12-12-4 12m12-12-4 12"/>`,
   },
   // Skolbok — an open book with a ribbon.
   schoolbook: {
@@ -90,14 +90,13 @@ const DRAWINGS: Record<string, { svg: string; pop: string }> = {
       <path class="l" d="M42 19 l-8 -1 M36 26 l-9 0 M30 33 l-8 1 M44 22 l1 8 M38 29 l2 9"/>
       <path class="l" d="M6 60 c3 -1 6 -4 7 -8"/>`,
   },
-  // Lekfull — a smiling sun.
+  // Lekfull — a smiling sun. The eyes are zero-length strokes: round caps
+  // turn them into dots, and they stay dots in ink-saving.
   playful: {
-    pop: "#ffd54a",
-    svg: `<path class="l" d="M32 3 v7 M32 54 v7 M3 32 h7 M54 32 h7 M11.5 11.5 l5 5 M47.5 47.5 l5 5 M52.5 11.5 l-5 5 M16.5 47.5 l-5 5"/>
-      <circle class="l p" cx="32" cy="32" r="15"/>
-      <circle class="ink" cx="26.5" cy="29" r="1.8"/>
-      <circle class="ink" cx="37.5" cy="29" r="1.8"/>
-      <path class="l" d="M25 36 c3 4 11 4 14 0"/>`,
+    pop: "#f2c866",
+    svg: `<path class="l" d="M32 5v6m0 42v6M5 32h6m42 0h6M13 13l5 5m28 28 5 5m0-38-5 5M18 46l-5 5"/>
+      <circle class="l p" cx="32" cy="32" r="16"/>
+      <path class="l" d="M25 28h.1M39 28h.1M24 36c4 6 12 6 16 0"/>`,
   },
 };
 
