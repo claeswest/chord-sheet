@@ -55,3 +55,11 @@ next-env.d.ts
 # schedules — school, class, teachers, times. This repository is public, and
 # `public/` is also served over HTTP, so they live here and go nowhere.
 apps/schedulemaker/samples/
+
+# Neon's agent skills, installed per machine with
+#   npx neon@latest skills -s neon -s neon-postgres -y
+# They are Neon's own public docs for the coding agent, not part of any app,
+# and the command reinstalls them, so they aren't kept in the repo.
+.claude/skills/neon/
+.claude/skills/neon-postgres/
+skills-lock.json
