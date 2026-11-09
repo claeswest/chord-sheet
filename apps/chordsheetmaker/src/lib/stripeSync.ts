@@ -1,5 +1,6 @@
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { pendingCancellationAt } from "@clavos/core/billing";
 
 // Self-healing subscription sync.
 //
@@ -22,6 +23,10 @@ export interface SyncedFields {
   stripePriceId: string | null;
   stripeSubscriptionStatus: string | null;
   stripeCurrentPeriodEnd: Date | null;
+  /** Kept in step too, or a sync after a missed webhook would refresh the
+   *  renewal date and leave a cancellation unknown — exactly what the account
+   *  page then has to show. Same derivation as the webhook. */
+  stripeCancelAt: Date | null;
 }
 
 /**
@@ -52,6 +57,7 @@ export async function syncStaleSubscription(user: SyncableUser): Promise<SyncedF
         stripePriceId: null,
         stripeSubscriptionStatus: null,
         stripeCurrentPeriodEnd: null,
+        stripeCancelAt: null,
       };
       await prisma.user.update({ where: { id: user.id }, data: cleared });
       return cleared;
@@ -63,6 +69,7 @@ export async function syncStaleSubscription(user: SyncableUser): Promise<SyncedF
       stripePriceId: priceId,
       stripeSubscriptionStatus: sub.status,
       stripeCurrentPeriodEnd: new Date(item.current_period_end * 1000),
+      stripeCancelAt: pendingCancellationAt(sub),
     };
     await prisma.user.update({ where: { id: user.id }, data: fresh });
     return fresh;
@@ -75,6 +82,7 @@ export async function syncStaleSubscription(user: SyncableUser): Promise<SyncedF
         stripePriceId: null,
         stripeSubscriptionStatus: null,
         stripeCurrentPeriodEnd: null,
+        stripeCancelAt: null,
       };
       await prisma.user.update({ where: { id: user.id }, data: cleared }).catch(() => {});
       return cleared;

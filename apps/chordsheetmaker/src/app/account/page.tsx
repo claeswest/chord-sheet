@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
 import { syncStaleSubscription } from "@/lib/stripeSync";
+import { cancellationPending } from "@clavos/core/billing";
 import BuildStamp from "@clavos/core/build-stamp";
 import UserMenu from "@/components/ui/UserMenu";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
@@ -26,7 +27,7 @@ export default async function AccountPage() {
       select: {
         id: true, name: true, email: true, image: true, plan: true,
         stripeSubscriptionId: true, stripeCurrentPeriodEnd: true,
-        stripeSubscriptionStatus: true, createdAt: true,
+        stripeSubscriptionStatus: true, stripeCancelAt: true, createdAt: true,
       },
     }),
     prisma.song.count({ where: { userId: session.user.id } }),
@@ -52,6 +53,17 @@ export default async function AccountPage() {
 
   const renewsOn = user.stripeCurrentPeriodEnd
     ? new Date(user.stripeCurrentPeriodEnd).toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric",
+      })
+    : null;
+
+  // Cancelled but still inside the paid-up period. Stripe keeps the status
+  // "active" (or "trialing") and the plan unchanged until the end, so neither
+  // says it — only stripeCancelAt does. This page used to ignore it and told a
+  // cancelled subscriber "Next renewal: Nov 29" and offered them an upgrade.
+  const leaving = isPaid && cancellationPending(user.stripeCancelAt);
+  const endsOn = leaving
+    ? new Date(user.stripeCancelAt!).toLocaleDateString("en-US", {
         year: "numeric", month: "short", day: "numeric",
       })
     : null;
@@ -147,7 +159,7 @@ export default async function AccountPage() {
               {planConfig.name}
             </div>
             <div className="text-xs text-indigo-200 mt-2 font-medium">
-              {isPaid ? `$${planConfig.price}/mo` : "Free plan"}
+              {leaving ? `Ends ${endsOn}` : isPaid ? `$${planConfig.price}/mo` : "Free plan"}
             </div>
           </div>
         </div>
@@ -161,7 +173,12 @@ export default async function AccountPage() {
           <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Your plan</h2>
             <div className="flex items-center gap-2">
-              {onTrial && (
+              {leaving && (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-50 text-red-600">
+                  Cancelled
+                </span>
+              )}
+              {onTrial && !leaving && (
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-700">
                   Trial — {daysLeft}d left
                 </span>
@@ -174,8 +191,26 @@ export default async function AccountPage() {
             </div>
           </div>
 
+          {/* Cancellation notice — replaces the trial notice, whose "cancel
+              anytime" would read as an invitation to do what's already done. */}
+          {leaving && (
+            <div className="mx-6 mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex items-start gap-3">
+              <span className="text-lg">👋</span>
+              <div>
+                <p className="text-sm font-semibold text-red-800">
+                  Your subscription is cancelled
+                </p>
+                <p className="text-xs text-red-700/80 mt-0.5">
+                  You keep everything in {planConfig.name} until {endsOn}, and you won&apos;t be charged
+                  again. After that your account moves to the Free plan. Changed your mind? You can
+                  resume it under Manage subscription.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Trial notice */}
-          {onTrial && (
+          {onTrial && !leaving && (
             <div className="mx-6 mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-3">
               <span className="text-lg">⏳</span>
               <div>
@@ -223,14 +258,20 @@ export default async function AccountPage() {
                   {onTrial ? "Free during trial" : `$${planConfig.price}${plan === "monthly" ? "/mo" : "/yr"}`}
                 </span>
               </div>
-              {renewsOn && (
+              {leaving ? (
+                <div className="flex justify-between text-zinc-500">
+                  <span>Access ends</span>
+                  <span className="font-semibold text-red-600">{endsOn}</span>
+                </div>
+              ) : renewsOn && (
                 <div className="flex justify-between text-zinc-500">
                   <span>{onTrial ? "Trial ends" : "Next renewal"}</span>
                   <span className="font-semibold text-zinc-900">{renewsOn}</span>
                 </div>
               )}
-              {/* Upgrade to yearly upsell for monthly subscribers */}
-              {plan === "monthly" && !onTrial && (
+              {/* Upgrade to yearly upsell for monthly subscribers — not for
+                  someone who has just cancelled. */}
+              {plan === "monthly" && !onTrial && !leaving && (
                 <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
                   <p className="text-xs text-zinc-500 leading-snug">
                     Save 27% and get priority support with the yearly plan.
@@ -246,7 +287,9 @@ export default async function AccountPage() {
               {/* Manage / cancel */}
               <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
                 <p className="text-xs text-zinc-400 leading-snug">
-                  Update payment method, view invoices or cancel your subscription.
+                  {leaving
+                    ? "Resume your subscription, update payment method or view invoices."
+                    : "Update payment method, view invoices or cancel your subscription."}
                 </p>
                 <ManageSubscriptionButton />
               </div>
