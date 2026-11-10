@@ -11,13 +11,17 @@ export async function GET(req: NextRequest) {
   }
 
   const sp = new URL(req.url).searchParams;
-  const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10));
+  // "|| 1": Math.max(1, NaN) is NaN, and "?page=abc" then reached Prisma as
+  // `skip` and answered with a 500.
+  const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1);
   const limit = 50;
   const type = sp.get("type")?.trim();
   const userId = sp.get("userId")?.trim();
   const q = sp.get("q")?.trim();
-  const from = sp.get("from")?.trim();
-  const to = sp.get("to")?.trim();
+  // A date that doesn't parse is dropped rather than passed on as Invalid Date.
+  const validDay = (v: string | undefined) => (v && !Number.isNaN(new Date(v).getTime()) ? v : undefined);
+  const from = validDay(sp.get("from")?.trim());
+  const to = validDay(sp.get("to")?.trim());
 
   const where: Prisma.ActivityLogWhereInput = {};
   // The admin's own test activity is noise — excluded unless ?admins=1.
@@ -28,6 +32,9 @@ export async function GET(req: NextRequest) {
   }
   if (type) where.type = type;
   if (userId) where.userId = userId;
+  // Anonymous visitors try the editor without an account and can fill most of
+  // a page. ?guests=0 leaves only events that belong to an account.
+  else if (sp.get("guests") === "0") where.userId = { not: null };
   if (from || to) {
     where.createdAt = {};
     if (from) where.createdAt.gte = new Date(from);
@@ -53,7 +60,7 @@ export async function GET(req: NextRequest) {
     ];
   }
 
-  const [total, items] = await Promise.all([
+  const [total, items, filterUser] = await Promise.all([
     prisma.activityLog.count({ where }),
     prisma.activityLog.findMany({
       where,
@@ -62,7 +69,13 @@ export async function GET(req: NextRequest) {
       take: limit,
       include: { user: { select: { id: true, name: true, email: true, image: true } } },
     }),
+    // Who the feed is filtered to, so a link that carries only the id (from
+    // the users list) can still say whose activity this is — also when that
+    // person has no events at all.
+    userId
+      ? prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } })
+      : null,
   ]);
 
-  return NextResponse.json({ items, total, page, pages: Math.ceil(total / limit) });
+  return NextResponse.json({ items, total, page, pages: Math.ceil(total / limit), filterUser });
 }

@@ -2,6 +2,7 @@
 
 import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import SongViewer from "@/components/editor/SongViewer";
 import PlanBadge, { relativeTime } from "@/components/admin/PlanBadge";
 import type { SongLine } from "@/types/song";
@@ -210,7 +211,7 @@ function AdminUsersInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
+  const currentPage = parseInt(searchParams.get("page") ?? "1", 10) || 1;
   const currentQ = searchParams.get("q") ?? "";
   const currentFilter = parseUserFilter(searchParams.get("filter"));
 
@@ -288,6 +289,12 @@ function AdminUsersInner() {
   useEffect(() => {
     load(currentPage, currentQ, currentFilter);
   }, [currentPage, currentQ, currentFilter, load]);
+
+  // The box follows the URL. It only read it once, so after Back or Forward it
+  // went on showing the search you had just left.
+  useEffect(() => {
+    setSearch(currentQ);
+  }, [currentQ]);
 
   // The tab lives in the URL like the search and page, so a filtered list can
   // be bookmarked, reloaded and gone back to.
@@ -510,6 +517,15 @@ function AdminUsersInner() {
                               const seen = lastActiveIso(user);
                               return <span className="text-zinc-300">{seen ? relativeTime(seen) : "—"}</span>;
                             })()}
+                            <span className="mx-2 text-zinc-700">·</span>
+                            {/* What this person actually did — the question a
+                                row with "0 songs" raises and can't answer. */}
+                            <Link
+                              href={`/admin/activity?userId=${encodeURIComponent(user.id)}`}
+                              className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                            >
+                              View activity →
+                            </Link>
                           </p>
 
                           {/* Marketing emails — drip tracker + send controls */}

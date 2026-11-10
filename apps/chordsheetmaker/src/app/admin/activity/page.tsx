@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { relativeTime } from "@/components/admin/PlanBadge";
 
 interface Item {
@@ -16,6 +17,23 @@ interface Feed {
   total: number;
   page: number;
   pages: number;
+  /** The account the feed is filtered to, when it is. */
+  filterUser: { id: string; name: string | null; email: string | null } | null;
+}
+
+/**
+ * The badge for one event. A scheduled cancellation is logged as sub_changed,
+ * and so wore the green "Subscription changed" badge — the same one as a trial
+ * converting to paid — with the bad news only in the small print beside it.
+ */
+function badgeFor(item: Item): { label: string; cls: string } {
+  if (item.type === "sub_changed" && item.meta?.event === "cancel_scheduled") {
+    return { label: "Cancellation scheduled", cls: "bg-red-900/40 text-red-300" };
+  }
+  if (item.type === "sub_changed" && item.meta?.event === "cancel_reverted") {
+    return { label: "Cancellation reversed", cls: "bg-emerald-900/40 text-emerald-300" };
+  }
+  return TYPES[item.type] ?? { label: item.type, cls: "bg-zinc-800 text-zinc-400" };
 }
 
 // Friendly label + badge color per event type (also drives the filter dropdown).
@@ -54,12 +72,11 @@ function metaSummary(item: Item): string {
   const m = item.meta ?? {};
   const parts: string[] = [];
   if (typeof m.title === "string" && m.title) parts.push(`"${m.title}"`);
-  // Subscription lifecycle: say what actually happened, not just the plan
-  if (m.event === "cancel_scheduled") {
-    const until = typeof m.cancelAt === "string" ? new Date(m.cancelAt).toLocaleDateString("sv-SE") : null;
-    parts.push(`⚠️ cancelled${until ? ` — access until ${until}` : ""}`);
-  } else if (m.event === "cancel_reverted") {
-    parts.push("🎉 cancellation reversed");
+  // The badge says a cancellation was scheduled; this adds until when. Same
+  // date format as the plan badges elsewhere in the admin.
+  if (m.event === "cancel_scheduled" && typeof m.cancelAt === "string") {
+    const until = new Date(m.cancelAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    parts.push(`access until ${until}`);
   }
   if (typeof m.plan === "string") parts.push(m.plan + (typeof m.status === "string" ? ` (${m.status})` : ""));
   if (typeof m.source === "string") parts.push(`via ${ORIGIN_LABELS[m.source] ?? m.source}`);
@@ -68,15 +85,20 @@ function metaSummary(item: Item): string {
   return parts.join(" · ");
 }
 
-export default function AdminActivityPage() {
+function AdminActivityInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [data, setData] = useState<Feed | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filters
+  // Filters. The user filter lives in the URL (?userId=…), so the users list
+  // can link straight to one person's activity and a reload keeps it. Only the
+  // id is in the address; the name comes back from the API.
+  const userId = searchParams.get("userId") ?? "";
   const [type, setType] = useState("");
-  const [userId, setUserId] = useState("");
-  const [userLabel, setUserLabel] = useState("");
+  const [hideGuests, setHideGuests] = useState(false);
   const [q, setQ] = useState("");
   const [qInput, setQInput] = useState("");
   const [from, setFrom] = useState("");
@@ -96,17 +118,25 @@ export default function AdminActivityPage() {
     if (from) p.set("from", from);
     if (to) p.set("to", to);
     if (includeAdmins) p.set("admins", "1");
+    if (hideGuests) p.set("guests", "0");
     p.set("page", String(page));
     fetch(`/api/admin/activity?${p}`)
       .then((r) => { if (!r.ok) throw new Error("Failed to load activity"); return r.json(); })
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [type, userId, q, from, to, page, includeAdmins]);
+  }, [type, userId, q, from, to, page, includeAdmins, hideGuests]);
 
   useEffect(() => { load(); }, [load]);
 
-  const hasFilters = type || userId || q || from || to;
+  function selectUser(id: string) {
+    setPage(1);
+    router.replace(id ? `/admin/activity?userId=${encodeURIComponent(id)}` : "/admin/activity");
+  }
+  const filterUser = data?.filterUser && data.filterUser.id === userId ? data.filterUser : null;
+  const userLabel = filterUser ? (filterUser.name ?? filterUser.email ?? "User") : "";
+
+  const hasFilters = type || userId || q || from || to || hideGuests;
   const inputCls = "bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500";
 
   return (
@@ -122,8 +152,16 @@ export default function AdminActivityPage() {
           <option value="">All events</option>
           {Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} className={inputCls} title="From" />
-        <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} className={inputCls} title="To" />
+        {/* Labelled: two bare "yyyy-mm-dd" boxes side by side don't say which
+            is the start and which the end. */}
+        <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+          From
+          <input type="date" value={from} max={to || undefined} onChange={(e) => { setFrom(e.target.value); setPage(1); }} className={inputCls} />
+        </label>
+        <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+          To
+          <input type="date" value={to} min={from || undefined} onChange={(e) => { setTo(e.target.value); setPage(1); }} className={inputCls} />
+        </label>
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); setQ(qInput); setPage(1); }}>
           <input value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder="Search user or song…" className={`${inputCls} w-48`} />
           <button type="submit" className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">Search</button>
@@ -137,15 +175,27 @@ export default function AdminActivityPage() {
           />
           Include my activity
         </label>
+        {/* Pointless while one account is selected — that already excludes guests. */}
+        {!userId && (
+          <label className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 px-1 cursor-pointer select-none transition-colors">
+            <input
+              type="checkbox"
+              checked={hideGuests}
+              onChange={(e) => { setHideGuests(e.target.checked); setPage(1); }}
+              className="w-3.5 h-3.5 accent-indigo-500"
+            />
+            Hide guests
+          </label>
+        )}
         {userId && (
           <span className="inline-flex items-center gap-1.5 text-xs bg-indigo-900/40 text-indigo-300 px-2.5 py-1.5 rounded-full">
             {userLabel || "User"}
-            <button onClick={() => { setUserId(""); setUserLabel(""); setPage(1); }} className="hover:text-white">×</button>
+            <button onClick={() => selectUser("")} className="hover:text-white" aria-label="Show everyone's activity">×</button>
           </span>
         )}
         {hasFilters && (
           <button
-            onClick={() => { setType(""); setUserId(""); setUserLabel(""); setQ(""); setQInput(""); setFrom(""); setTo(""); setPage(1); }}
+            onClick={() => { setType(""); setHideGuests(false); setQ(""); setQInput(""); setFrom(""); setTo(""); selectUser(""); }}
             className="text-xs text-zinc-400 hover:text-white transition-colors px-2 py-1.5"
           >Clear all</button>
         )}
@@ -158,10 +208,14 @@ export default function AdminActivityPage() {
         <>
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden divide-y divide-zinc-800/60">
             {data.items.length === 0 && (
-              <p className="px-5 py-10 text-center text-zinc-500 text-sm">No events match these filters.</p>
+              <p className="px-5 py-10 text-center text-zinc-500 text-sm">
+                {userId && !type && !q && !from && !to
+                  ? `${userLabel || "This user"} has no recorded activity.`
+                  : "No events match these filters."}
+              </p>
             )}
             {data.items.map((item) => {
-              const t = TYPES[item.type] ?? { label: item.type, cls: "bg-zinc-800 text-zinc-400" };
+              const t = badgeFor(item);
               // Anonymous visitors carry a per-browser id in meta.guest
               const guestId = !item.user && typeof item.meta?.guest === "string" ? item.meta.guest : null;
               const who = item.user?.name ?? item.user?.email ?? (guestId ? `Guest ${guestId}` : "Deleted user");
@@ -174,7 +228,7 @@ export default function AdminActivityPage() {
                 <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5">
                   {/* User (click = filter) */}
                   <button
-                    onClick={() => { if (item.user) { setUserId(item.user.id); setUserLabel(who); setPage(1); } }}
+                    onClick={() => { if (item.user) selectUser(item.user.id); }}
                     disabled={!item.user}
                     className="flex items-center gap-2.5 w-40 sm:w-52 shrink-0 text-left group disabled:cursor-default"
                     title={item.user ? `Filter by ${who}` : undefined}
@@ -243,5 +297,14 @@ export default function AdminActivityPage() {
         </>
       )}
     </div>
+  );
+}
+
+// useSearchParams needs a Suspense boundary above it.
+export default function AdminActivityPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-zinc-400">Loading…</div>}>
+      <AdminActivityInner />
+    </Suspense>
   );
 }

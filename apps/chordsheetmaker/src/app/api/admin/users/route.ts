@@ -83,7 +83,9 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+  // "|| 1": parseInt gives NaN for "?page=abc", and Math.max(1, NaN) is NaN —
+  // which went to Prisma as `skip` and answered with a 500.
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const limit = 20;
   const search = searchParams.get("q")?.trim() ?? "";
   const filter = parseUserFilter(searchParams.get("filter"));

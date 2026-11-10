@@ -28,7 +28,7 @@ interface Stats {
     plan: string | null;
     stripeSubscriptionStatus: string | null;
     stripeCurrentPeriodEnd: string | null;
-  stripeCancelAt: string | null;
+    stripeCancelAt: string | null;
     createdAt: string;
     _count: { songs: number };
   }[];
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-zinc-400 text-sm mt-1">Overview of ChordSheet Creator</p>
+        <p className="text-zinc-400 text-sm mt-1">Overview of ChordSheetMaker</p>
       </div>
 
       {loading && (
@@ -245,9 +245,14 @@ export default function AdminDashboard() {
                             {(user.name ?? user.email ?? "?")[0].toUpperCase()}
                           </div>
                         )}
-                        <span className="font-medium text-white truncate max-w-[120px]">
+                        {/* A new signup's name opens what they did since. */}
+                        <Link
+                          href={`/admin/activity?userId=${encodeURIComponent(user.id)}`}
+                          title="View activity"
+                          className="font-medium text-white hover:text-indigo-300 transition-colors truncate max-w-[120px]"
+                        >
                           {user.name ?? "—"}
-                        </span>
+                        </Link>
                       </div>
                     </td>
                     <td className="px-5 py-3 text-zinc-400 hidden md:table-cell truncate max-w-[180px]">
