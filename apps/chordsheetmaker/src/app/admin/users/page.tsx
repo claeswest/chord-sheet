@@ -16,6 +16,12 @@ import {
   type Audience,
   type MarketingTemplate,
 } from "@/lib/marketingRules";
+import {
+  USER_FILTERS,
+  USER_FILTER_LABELS,
+  parseUserFilter,
+  type UserFilter,
+} from "@/lib/adminUserFilters";
 
 interface Song {
   id: string;
@@ -68,9 +74,20 @@ function lastActiveIso(user: User): string | null {
 interface UsersResponse {
   users: User[];
   total: number;
+  /** How many users each tab holds, within the current search. */
+  counts: Record<UserFilter, number>;
+  filter: UserFilter;
   page: number;
   pages: number;
 }
+
+/** What an empty tab says — "No users found" reads as broken on a tab that is merely quiet. */
+const EMPTY_TEXT: Record<UserFilter, string> = {
+  all: "No users found",
+  paying: "No paying customers",
+  trial: "Nobody is on a trial right now",
+  cancelling: "Nobody has a cancellation pending",
+};
 
 interface EmailHistoryItem {
   id: string;
@@ -195,6 +212,7 @@ function AdminUsersInner() {
 
   const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
   const currentQ = searchParams.get("q") ?? "";
+  const currentFilter = parseUserFilter(searchParams.get("filter"));
 
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -248,11 +266,12 @@ function AdminUsersInner() {
   }
 
   const load = useCallback(
-    (page: number, q: string) => {
+    (page: number, q: string, filter: UserFilter) => {
       setLoading(true);
       setError("");
       const params = new URLSearchParams();
       if (q) params.set("q", q);
+      if (filter !== "all") params.set("filter", filter);
       params.set("page", String(page));
       fetch(`/api/admin/users?${params}`)
         .then((r) => {
@@ -267,12 +286,15 @@ function AdminUsersInner() {
   );
 
   useEffect(() => {
-    load(currentPage, currentQ);
-  }, [currentPage, currentQ, load]);
+    load(currentPage, currentQ, currentFilter);
+  }, [currentPage, currentQ, currentFilter, load]);
 
-  function navigate(page: number, q: string) {
+  // The tab lives in the URL like the search and page, so a filtered list can
+  // be bookmarked, reloaded and gone back to.
+  function navigate(page: number, q: string, filter: UserFilter = currentFilter) {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
+    if (filter !== "all") params.set("filter", filter);
     if (page > 1) params.set("page", String(page));
     router.push(`/admin/users?${params}`);
   }
@@ -289,7 +311,9 @@ function AdminUsersInner() {
           <h1 className="text-2xl font-bold text-white">Users</h1>
           {data && (
             <p className="text-zinc-400 text-sm mt-1">
-              {data.total} user{data.total !== 1 ? "s" : ""} total
+              {data.filter === "all"
+                ? `${data.total} user${data.total !== 1 ? "s" : ""} total`
+                : `${data.total} ${USER_FILTER_LABELS[data.filter].toLowerCase()}`}
             </p>
           )}
         </div>
@@ -322,6 +346,36 @@ function AdminUsersInner() {
             </button>
           )}
         </form>
+      </div>
+
+      {/* Tabs. Counts come with each response, so they stay right while the
+          list loads; until the first one arrives the tabs show without them. */}
+      <div role="tablist" aria-label="Filter users" className="flex flex-wrap gap-2 mb-5">
+        {USER_FILTERS.map((f) => {
+          const active = f === currentFilter;
+          const count = data?.counts?.[f];
+          const tone =
+            f === "paying" ? "text-emerald-300" : f === "trial" ? "text-amber-300" : f === "cancelling" ? "text-red-300" : "text-zinc-300";
+          return (
+            <button
+              key={f}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => navigate(1, currentQ, f)}
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
+                active
+                  ? "bg-zinc-100 text-zinc-900 border-zinc-100 font-semibold"
+                  : "bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600"
+              }`}
+            >
+              {USER_FILTER_LABELS[f]}
+              {count !== undefined && (
+                <span className={`tabular-nums text-xs ${active ? "text-zinc-500" : tone}`}>{count}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {loading && (
@@ -636,7 +690,9 @@ function AdminUsersInner() {
             </table>
 
             {data.users.length === 0 && (
-              <div className="px-5 py-12 text-center text-zinc-500">No users found</div>
+              <div className="px-5 py-12 text-center text-zinc-500">
+                {currentQ ? "No users found" : EMPTY_TEXT[data.filter]}
+              </div>
             )}
           </div>
 
