@@ -13,9 +13,12 @@ interface Stats {
   subscriptions: {
     paying: number;
     trialing: number;
+    /** Cancelled, still inside the paid-up period. Not in paying or mrr. */
+    cancelling: number;
     free: number;
     mrr: number;
     trialMrr: number;
+    cancellingMrr: number;
   };
   recentUsers: {
     id: string;
@@ -36,18 +39,31 @@ function StatCard({
   value,
   sub,
   color,
+  href,
 }: {
   label: string;
   value: number | string;
   sub?: string;
   color: string;
+  /** Where the number comes from: the matching tab on the users list. */
+  href?: string;
 }) {
-  return (
-    <div className={`rounded-xl p-5 border ${color}`}>
+  const body = (
+    <>
       <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-1">{label}</p>
       <p className="text-3xl font-bold text-white">{value}</p>
       {sub && <p className="text-xs text-zinc-500 mt-1">{sub}</p>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link
+      href={href}
+      className={`block rounded-xl p-5 border ${color} hover:brightness-125 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400`}
+    >
+      {body}
+    </Link>
+  ) : (
+    <div className={`rounded-xl p-5 border ${color}`}>{body}</div>
   );
 }
 
@@ -97,8 +113,9 @@ export default function AdminDashboard() {
 
       {stats && (
         <>
-          {/* Revenue / subscriptions — the numbers that matter most */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* Revenue / subscriptions — the numbers that matter most. Paying,
+              On trial and Cancelling are disjoint, and each opens its tab. */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <StatCard
               label="MRR"
               value={`$${stats.subscriptions.mrr}`}
@@ -114,12 +131,29 @@ export default function AdminDashboard() {
               value={stats.subscriptions.paying}
               sub="active subscriptions"
               color="bg-emerald-950/40 border-emerald-900/50"
+              href="/admin/users?filter=paying"
             />
             <StatCard
               label="On trial"
               value={stats.subscriptions.trialing}
               sub="converting soon"
               color="bg-amber-950/40 border-amber-900/50"
+              href="/admin/users?filter=trial"
+            />
+            <StatCard
+              label="Cancelling"
+              value={stats.subscriptions.cancelling}
+              sub={
+                stats.subscriptions.cancellingMrr > 0
+                  ? `−$${stats.subscriptions.cancellingMrr}/mo ending`
+                  : "access until period ends"
+              }
+              color={
+                stats.subscriptions.cancelling > 0
+                  ? "bg-red-950/40 border-red-900/50"
+                  : "bg-zinc-900 border-zinc-800"
+              }
+              href="/admin/users?filter=cancelling"
             />
             <StatCard
               label="Free users"
