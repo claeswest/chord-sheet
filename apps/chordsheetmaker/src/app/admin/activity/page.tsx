@@ -81,6 +81,7 @@ function metaSummary(item: Item): string {
   if (typeof m.plan === "string") parts.push(m.plan + (typeof m.status === "string" ? ` (${m.status})` : ""));
   if (typeof m.source === "string") parts.push(`via ${ORIGIN_LABELS[m.source] ?? m.source}`);
   if (typeof m.origin === "string") parts.push(`via ${ORIGIN_LABELS[m.origin] ?? m.origin}`);
+  if (m.via === "banner") parts.push("from the one-click banner");
   if (typeof m.email === "string" && !item.user) parts.push(m.email);
   return parts.join(" · ");
 }

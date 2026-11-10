@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@clavos/core/image";
+import { generateBackground } from "@/lib/generateBackground";
 
 interface Props {
   style: SongStyle;
@@ -196,29 +197,15 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
     setBgLoading(true);
     setBgError("");
     setBgPrompt("");
-    try {
-      const res = await fetch("/api/ai/background", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: songTitle, artist: songArtist, lyrics: lyricsText, bgStyle }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setBgError(body.error ?? "Image generation failed");
-        return;
-      }
-      const data = await res.json();
-      if (!data.image) { setBgError(data.error ?? "No image returned"); return; }
-      const compressed = await compressImage(data.image);
-      onChange({ ...style, backgroundImage: compressed, backgroundSource: "ai", overlayOpacity: style.overlayOpacity ?? 0.5 });
-      setImageSource("ai");
-      setBgPrompt(data.prompt ?? "");
-      setShowBgPopup(true);
-    } catch (e: any) {
-      setBgError(e?.message ?? "Network error");
-    } finally {
-      setBgLoading(false);
-    }
+    const result = await generateBackground({
+      title: songTitle ?? "", artist: songArtist ?? "", lyrics: lyricsText ?? "", bgStyle,
+    });
+    setBgLoading(false);
+    if (!result.ok) { setBgError(result.error); return; }
+    onChange({ ...style, backgroundImage: result.image, backgroundSource: "ai", overlayOpacity: style.overlayOpacity ?? 0.5 });
+    setImageSource("ai");
+    setBgPrompt(result.prompt);
+    setShowBgPopup(true);
   };
 
   const removeBackground = () => { onChange({ ...style, backgroundImage: undefined, backgroundSource: undefined }); setBgPrompt(""); setImageSource(null); };

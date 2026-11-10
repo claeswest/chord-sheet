@@ -37,12 +37,18 @@ import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { getSongLimit } from "@/lib/plans";
 import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
+import { generateBackground } from "@/lib/generateBackground";
 import {
   trackEditorOpened, trackStartChoice, trackFirstChord, trackSongSaved,
   trackDemoStarted, trackFirstEdit, trackSignupNudge, trackKeepModal, trackStunningTip, activityBeacon,
 } from "@/lib/analytics";
 
 const genId = () => Math.random().toString(36).slice(2, 10);
+
+/** localStorage: the background banner has done its job, or been closed. */
+const BG_TIP_DONE_KEY = "bgTipDone";
+/** Lyric lines before the banner offers a background — enough to paint from. */
+const BG_TIP_MIN_LINES = 4;
 
 const DEMO_SONG = {
   title: "Demo Song",
@@ -164,9 +170,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // One-time "keep your song" modal for guests — fired at a moment of pride
   // (leaving play mode) or at an idle pause, never twice per device.
   const [showKeepModal, setShowKeepModal] = useState(false);
+  // The background banner is retired for good once a background has actually
+  // been made from it, or it has been closed — not on a mere click. Its old
+  // key ("stunningTipDismissed") was set by "Try it" whether or not anything
+  // was generated, so a failed attempt used the banner up; a new key gives
+  // everyone the one-click version once.
   const [stunningTipDismissed, setStunningTipDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem("stunningTipDismissed") === "1"
+    () => typeof window !== "undefined" && localStorage.getItem(BG_TIP_DONE_KEY) === "1"
   );
+  // idle → working → done (kept on screen with Remove / Change look) or error.
+  const [bgTip, setBgTip] = useState<"idle" | "working" | "done" | "error">("idle");
+  const [bgTipError, setBgTipError] = useState("");
   const guestLimitNotified = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
   const [artist, setArtist] = useState(isDemo ? DEMO_SONG.artist : (initialSong?.artist ?? ""));
@@ -794,14 +808,63 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const showGuestSaveReminder =
     !isLoggedIn && !showDemoBanner && guestHasContent && (!isDemo || guestEdited);
 
-  // "Make it stunning" callout — most users never discover that the AI reads
-  // the song and designs for it. Shown while a song with content is still on
-  // the plain default look; disappears forever once styled or dismissed.
+  // The background banner — most users never discover that the AI paints a
+  // picture from the song. On a snapshot of real accounts, 34 people had a
+  // song, 5 had touched any styling and 1 had generated a background: the
+  // feature sits on the second tab of a side panel, and the old banner's
+  // button only opened that tab. This one generates on the click, with the
+  // song still in view, so the first thing that happens is the result.
+  //
+  // Offered once the song has real lyrics — the picture is painted from them,
+  // and a title alone gives a generic one — while it is still on the plain
+  // white page. Signed-in only: a guest's background isn't saved.
   const looksUnstyled =
     !songStyle.backgroundImage && (songStyle.background ?? "#ffffff").toLowerCase() === "#ffffff";
-  const showStunningTip =
-    !stunningTipDismissed && looksUnstyled && guestHasContent &&
+  const lyricLineCount = lines.filter((l) => l.type === "lyric" && l.text.trim()).length;
+  const bgTipOffer =
+    isLoggedIn && !stunningTipDismissed && looksUnstyled && lyricLineCount >= BG_TIP_MIN_LINES &&
     !showGuestSaveReminder && !showDemoBanner;
+  // Once started it stays until it has said how it went.
+  const showStunningTip = bgTipOffer || bgTip !== "idle";
+
+  function retireBgTip() {
+    setStunningTipDismissed(true);
+    try { localStorage.setItem(BG_TIP_DONE_KEY, "1"); } catch { /* private mode */ }
+  }
+
+  async function createBackgroundFromTip() {
+    trackStunningTip("clicked");
+    setBgTip("working");
+    setBgTipError("");
+    const result = await generateBackground({
+      title,
+      artist,
+      lyrics: lines.filter((l) => l.type === "lyric").map((l) => (l.type === "lyric" ? l.text : "")).filter(Boolean).join("\n"),
+      bgStyle: "abstract",
+      via: "banner",
+    });
+    if (!result.ok) {
+      // Not retired: the offer comes back, here and on the next visit.
+      setBgTipError(result.error);
+      setBgTip("error");
+      return;
+    }
+    activityBeacon("style_changed", { songId, title });
+    // The existing backgroundImage effect saves it at once.
+    setSongStyle((prev) => ({
+      ...prev,
+      backgroundImage: result.image,
+      backgroundSource: "ai",
+      overlayOpacity: prev.overlayOpacity ?? 0.5,
+    }));
+    retireBgTip();
+    setBgTip("done");
+  }
+
+  function removeTipBackground() {
+    setSongStyle((prev) => ({ ...prev, backgroundImage: undefined, backgroundSource: undefined }));
+    setBgTip("idle");
+  }
   const stunningTipShownFired = useRef(false);
   useEffect(() => {
     if (showStunningTip && !stunningTipShownFired.current) {
@@ -1190,43 +1253,81 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
       )}
 
-      {/* "Make it stunning" callout — surfaces the AI styling nobody finds */}
+      {/* The background banner: offer → painting → result, all in this strip,
+          so the song stays in view and the picture arrives behind it. */}
       {showStunningTip && (
         <div
+          role="status"
           className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 text-white shrink-0"
           style={{ background: "linear-gradient(90deg, #4338ca 0%, #7c3aed 60%, #a21caf 100%)" }}
         >
           <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
-            <span className="shrink-0">✨</span>
-            <span>
-              <strong className="font-semibold">Make it stunning.</strong>
-              <span className="text-white/80"> The AI reads your song and designs a background &amp; matching style for it.</span>
-            </span>
+            <span className="shrink-0" aria-hidden>{bgTip === "error" ? "⚠️" : "✨"}</span>
+            {bgTip === "working" ? (
+              <span>
+                <strong className="font-semibold">Painting your background…</strong>
+                <span className="text-white/80"> The AI is reading your lyrics. About ten seconds.</span>
+              </span>
+            ) : bgTip === "done" ? (
+              <span>
+                <strong className="font-semibold">There it is.</strong>
+                <span className="text-white/80"> Painted from your lyrics, and saved with the song.</span>
+              </span>
+            ) : bgTip === "error" ? (
+              <span>
+                <strong className="font-semibold">That didn&apos;t work.</strong>
+                <span className="text-white/80"> {bgTipError}</span>
+              </span>
+            ) : (
+              <span>
+                <strong className="font-semibold">Give this song a background.</strong>
+                <span className="text-white/80"> The AI reads your lyrics and paints a picture for it. One click — remove it if you don&apos;t like it.</span>
+              </span>
+            )}
           </span>
           <span className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => {
-                trackStunningTip("clicked");
-                setStunningTipDismissed(true);
-                localStorage.setItem("stunningTipDismissed", "1");
-                setRightPanel("background");
-                setShowRightPanel(true);
-              }}
-              className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors"
-            >
-              Try it
-            </button>
-            <button
-              onClick={() => {
-                trackStunningTip("dismissed");
-                setStunningTipDismissed(true);
-                localStorage.setItem("stunningTipDismissed", "1");
-              }}
-              aria-label="Dismiss"
-              className="text-white/60 hover:text-white px-1.5 py-1 transition-colors"
-            >
-              ✕
-            </button>
+            {bgTip === "working" ? (
+              <svg className="w-4 h-4 animate-spin mr-2" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            ) : bgTip === "done" ? (
+              <>
+                <button
+                  onClick={() => { setBgTip("idle"); setRightPanel("background"); setShowRightPanel(true); }}
+                  className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors whitespace-nowrap"
+                >
+                  Change the look
+                </button>
+                <button
+                  onClick={removeTipBackground}
+                  className="text-white/85 hover:text-white underline underline-offset-2 text-xs sm:text-sm px-1.5 py-1 whitespace-nowrap"
+                >
+                  Remove
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={createBackgroundFromTip}
+                className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors whitespace-nowrap"
+              >
+                {bgTip === "error" ? "Try again" : "Create background"}
+              </button>
+            )}
+            {bgTip !== "working" && (
+              <button
+                onClick={() => {
+                  // Closing the offer (or a failure) is a "no thanks"; closing
+                  // the result just puts the strip away.
+                  if (bgTip !== "done") { trackStunningTip("dismissed"); retireBgTip(); }
+                  setBgTip("idle");
+                }}
+                aria-label={bgTip === "done" ? "Close" : "Dismiss"}
+                className="text-white/60 hover:text-white px-1.5 py-1 transition-colors"
+              >
+                ✕
+              </button>
+            )}
           </span>
         </div>
       )}
