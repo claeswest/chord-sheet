@@ -22,6 +22,15 @@ export interface SongStyle {
   sectionDivider?: boolean;
   /** Render chords in jazz lead-sheet ("Real Book") style with superscript extensions. */
   jazzChords?: boolean;
+  /**
+   * Provenance, for the admin's song stats — never read by the editor or the
+   * viewer. Set by the style panel from 10 Nov 2026; songs styled before that
+   * simply don't carry them, which the admin reports as "not recorded" rather
+   * than guessing. aiStyled is the text style; the background's own origin is
+   * backgroundSource, cleared together with the image.
+   */
+  aiStyled?: boolean;
+  backgroundSource?: "ai" | "upload";
 }
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";

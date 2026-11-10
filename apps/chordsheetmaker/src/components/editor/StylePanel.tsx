@@ -145,7 +145,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
   const applyUploadedImage = async (dataUrl: string) => {
     const compressed = await compressImage(dataUrl);
-    onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
+    onChange({ ...style, backgroundImage: compressed, backgroundSource: "upload", overlayOpacity: style.overlayOpacity ?? 0.5 });
     setImageSource("upload");
   };
 
@@ -182,7 +182,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         const font = ALL_FONTS.find(f => f.stack === s.fontFamily);
         if (font) loadGoogleFont(font.url);
       });
-      onChange({ ...style, ...data.style });
+      onChange({ ...style, ...data.style, aiStyled: true });
       setTheme(data.theme ?? "");
       setShowStylePopup(true);
     } catch {
@@ -210,7 +210,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
       const data = await res.json();
       if (!data.image) { setBgError(data.error ?? "No image returned"); return; }
       const compressed = await compressImage(data.image);
-      onChange({ ...style, backgroundImage: compressed, overlayOpacity: style.overlayOpacity ?? 0.5 });
+      onChange({ ...style, backgroundImage: compressed, backgroundSource: "ai", overlayOpacity: style.overlayOpacity ?? 0.5 });
       setImageSource("ai");
       setBgPrompt(data.prompt ?? "");
       setShowBgPopup(true);
@@ -221,7 +221,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
     }
   };
 
-  const removeBackground = () => { onChange({ ...style, backgroundImage: undefined }); setBgPrompt(""); setImageSource(null); };
+  const removeBackground = () => { onChange({ ...style, backgroundImage: undefined, backgroundSource: undefined }); setBgPrompt(""); setImageSource(null); };
   const reset = () => { onChange(DEFAULT_STYLE); setTheme(""); setBgPrompt(""); };
 
   const bg = style.background ?? "#ffffff";
