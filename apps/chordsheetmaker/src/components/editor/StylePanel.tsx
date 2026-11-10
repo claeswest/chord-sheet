@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
+import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, DEFAULT_BG_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@clavos/core/image";
 import { generateBackground } from "@/lib/generateBackground";
@@ -136,7 +136,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
   const [bgError, setBgError] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
   const [showBgPopup, setShowBgPopup] = useState(false);
-  const [bgStyle, setBgStyle] = useState<BgStyleId>("abstract");
+  const [bgStyle, setBgStyle] = useState<BgStyleId>(DEFAULT_BG_STYLE);
   const [showStylePicker, setShowStylePicker] = useState(false);
   const [editingElement, setEditingElement] = useState<"title"|"artist"|"lyrics"|"chords"|"sections"|null>(null);
   const [imageSource, setImageSource] = useState<"ai"|"upload"|null>(null);

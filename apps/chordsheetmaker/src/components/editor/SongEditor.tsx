@@ -35,7 +35,7 @@ import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { getSongLimit } from "@/lib/plans";
-import { DEFAULT_STYLE, backgroundStyle } from "@/lib/songStyle";
+import { DEFAULT_STYLE, DEFAULT_BG_STYLE, backgroundStyle } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import { generateBackground } from "@/lib/generateBackground";
 import {
@@ -840,7 +840,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       title,
       artist,
       lyrics: lines.filter((l) => l.type === "lyric").map((l) => (l.type === "lyric" ? l.text : "")).filter(Boolean).join("\n"),
-      bgStyle: "abstract",
+      bgStyle: DEFAULT_BG_STYLE,
       via: "banner",
     });
     if (!result.ok) {

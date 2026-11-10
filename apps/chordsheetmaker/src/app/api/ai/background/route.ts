@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 import { auth } from "@/lib/auth";
+import { DEFAULT_BG_STYLE } from "@/lib/songStyle";
 import { logActivity } from "@/lib/activity";
 
 const STYLE_PROMPTS: Record<string, string> = {
@@ -129,7 +130,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, artist, lyrics, bgStyle = "abstract" } = body;
+  const { title, artist, lyrics, bgStyle = DEFAULT_BG_STYLE } = body;
   // Started from the editor's one-click banner rather than the style panel —
   // recorded so the activity feed can show whether the banner earns its place.
   const viaBanner = body.via === "banner";
@@ -142,7 +143,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const promptSystem = STYLE_PROMPTS[bgStyle] ?? STYLE_PROMPTS.abstract;
+  const promptSystem = STYLE_PROMPTS[bgStyle] ?? STYLE_PROMPTS[DEFAULT_BG_STYLE];
 
   const songContent = [
     title  ? `Title: ${title}`   : "",

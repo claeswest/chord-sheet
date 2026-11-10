@@ -33,6 +33,14 @@ export interface SongStyle {
   backgroundSource?: "ai" | "upload";
 }
 
+/**
+ * The look an AI background gets when nobody has chosen one: the one-click
+ * banner, the style panel before a pick, and the API's fallback. A photograph
+ * of a real place is the safest first impression — "abstract" was the first
+ * entry in the list, not a decision.
+ */
+export const DEFAULT_BG_STYLE = "photoreal";
+
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 export const DEFAULT_STYLE: SongStyle = {
