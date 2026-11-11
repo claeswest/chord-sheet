@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining } from "@/lib/plans";
+import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining, yearlySavingPercent } from "@/lib/plans";
 import { syncStaleSubscription } from "@/lib/stripeSync";
 import { cancellationPending } from "@clavos/core/billing";
 import BuildStamp from "@clavos/core/build-stamp";
@@ -274,7 +274,7 @@ export default async function AccountPage() {
               {plan === "monthly" && !onTrial && !leaving && (
                 <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
                   <p className="text-xs text-zinc-500 leading-snug">
-                    Save 27% and get priority support with the yearly plan.
+                    Save {yearlySavingPercent()}% and get priority support with the yearly plan.
                   </p>
                   <Link
                     href="/pricing"

@@ -47,7 +47,7 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f0efff 0%, #f8f7ff 100%)" }}>
+    <section id="faq" className="px-5 sm:px-6 py-14 sm:py-20 scroll-mt-16" style={{ background: "linear-gradient(180deg, #f0efff 0%, #f8f7ff 100%)" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="max-w-2xl mx-auto">
         <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">FAQ</span>

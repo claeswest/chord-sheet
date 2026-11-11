@@ -82,6 +82,16 @@ export const PLANS: Record<Plan, PlanConfig> = {
   },
 };
 
+/** What a year on the yearly plan saves against twelve monthly payments, in whole percent. */
+export function yearlySavingPercent(): number {
+  return Math.round((1 - PLANS.yearly.price / (PLANS.monthly.price * 12)) * 100);
+}
+
+/** The yearly price spread over twelve months, e.g. "6.58". */
+export function yearlyPerMonth(): string {
+  return (PLANS.yearly.price / 12).toFixed(2);
+}
+
 export function canUseFeature(plan: Plan, feature: Feature): boolean {
   const value = PLANS[plan].features[feature];
   return value === true || (typeof value === "number" && value > 0);

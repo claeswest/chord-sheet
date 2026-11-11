@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PLANS, Plan } from "@/lib/plans";
+import { PLANS, Plan, yearlySavingPercent } from "@/lib/plans";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackTrialStarted } from "@/lib/analytics";
 
@@ -165,7 +165,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                             <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
                           </div>
                           {planKey === "yearly" && (
-                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save 27%</span>
+                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save {yearlySavingPercent()}%</span>
                           )}
                         </>
                       )}
@@ -232,7 +232,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                         </button>
                         {(currentPlan === "free" || currentPlan === null) && (
                           <p className="text-center text-[11px] text-zinc-400">
-                            7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
+                            7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime
                           </p>
                         )}
                       </>

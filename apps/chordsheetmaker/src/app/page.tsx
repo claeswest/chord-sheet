@@ -10,7 +10,7 @@ import HeroDemo from "@/components/ui/HeroDemo";
 import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
-import { PLANS, type Plan } from "@/lib/plans";
+import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
@@ -188,8 +188,9 @@ export default async function HomePage() {
             <span className="gradient-text">stunning chord chart</span>
           </h1>
 
-          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-lg text-zinc-300 max-w-xl mb-6 leading-relaxed">
-            Every chord in the right place — then press play and perform it hands-free.
+          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-lg text-zinc-300 max-w-xl mb-6 leading-relaxed text-balance">
+            Every chord in the right place — then press play and perform it{" "}
+            <span className="whitespace-nowrap">hands-free.</span>
           </p>
 
           <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 w-full sm:w-auto max-w-xs sm:max-w-none">
@@ -268,7 +269,7 @@ export default async function HomePage() {
 
           {/* How it works — 3 numbered steps ("See how it works" lands here) */}
           <div id="how" className="relative w-full max-w-4xl mx-auto scroll-mt-24">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-200 mb-5">How it works</span>
+            <h2 className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-200 mb-5">How it works</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
                 { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
@@ -341,7 +342,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
-        <section id="pricing" className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
+        <section id="pricing" className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden scroll-mt-16" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
           {/* Radial glow */}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
@@ -377,7 +378,7 @@ export default async function HomePage() {
                     )}
 
                     <div className="px-6 pt-6 pb-4 text-center sm:text-left">
-                      <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
+                      <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h3>
 
                       {/* Price row — fixed height */}
                       <div className="h-11 flex items-end gap-2 justify-center sm:justify-start">
@@ -390,7 +391,7 @@ export default async function HomePage() {
                               <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
                             </div>
                             {planKey === "yearly" && (
-                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save 27%</span>
+                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save {yearlySavingPercent()}%</span>
                             )}
                           </>
                         )}
@@ -399,7 +400,7 @@ export default async function HomePage() {
                       {/* Description — fixed height, single line */}
                       <div className="h-6 flex items-center mt-1 justify-center sm:justify-start">
                         <p className="text-xs text-zinc-400">
-                          {planKey === "yearly" ? "≈ $6.60/month, billed yearly" : plan.description}
+                          {planKey === "yearly" ? `≈ $${yearlyPerMonth()}/month, billed yearly` : plan.description}
                         </p>
                       </div>
                     </div>
@@ -445,7 +446,7 @@ export default async function HomePage() {
                       </Link>
                       {!isFree && (
                         <p className="text-center text-[11px] text-zinc-400">
-                          7 days free · then {planKey === "monthly" ? "$9/mo" : "$79/yr"} · cancel anytime
+                          7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime
                         </p>
                       )}
                     </div>
@@ -453,18 +454,19 @@ export default async function HomePage() {
                 );
               })}
             </div>
-            <p className="text-center text-xs text-white/30 mt-8">
+            <p className="text-center text-xs text-white/60 mt-8">
               Secure payments via Stripe · Cancel anytime · No hidden fees
             </p>
           </div>
         </section>
 
-        {/* ── CTA ──────────────────────────────────────────────────────────── */}
         <div style={{ background: "rgba(99,102,241,0.25)", height: 1 }} />
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
         <FaqSection />
 
+        {/* ── Closing CTA — the sticky phone CTA steps aside when this shows ── */}
         <section
+          id="get-started"
           className="relative px-5 sm:px-6 py-16 sm:py-28 text-center overflow-hidden"
           style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
         >
@@ -496,9 +498,9 @@ export default async function HomePage() {
 
           <div className="relative max-w-2xl mx-auto">
             <span className="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 border border-indigo-500/30">
-              Free to use
+              Free to start
             </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
               Your songs deserve<br />a better home.
             </h2>
             <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
@@ -519,13 +521,13 @@ export default async function HomePage() {
                 </svg>
               </CtaLink>
               {!session && (
-                <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
+                <Link href="/pricing" className="text-sm text-white/70 hover:text-white transition-colors">
                   See pricing
                 </Link>
               )}
             </div>
             {!session && (
-              <p className="mt-4 text-xs text-white/30">Free to start · No credit card · Works on any device</p>
+              <p className="mt-4 text-xs text-white/60">Free to start · No credit card · Works on any device</p>
             )}
           </div>
         </section>
@@ -537,14 +539,16 @@ export default async function HomePage() {
           <span className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-400">Maker</span>
           </span>
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/30">
-            <Link href="#features" className="hover:text-white/60 transition-colors">Features</Link>
-            <Link href="#pricing"  className="hover:text-white/60 transition-colors">Pricing</Link>
-            <Link href="/songs"    className="hover:text-white/60 transition-colors">App</Link>
-            <Link href="/terms"    className="hover:text-white/60 transition-colors">Terms</Link>
-            <a href="mailto:claes@clavos.se" className="hover:text-white/60 transition-colors">Contact</a>
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
+            <Link href="#examples" className="hover:text-white transition-colors">Examples</Link>
+            <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+            <Link href="#pricing"  className="hover:text-white transition-colors">Pricing</Link>
+            <Link href="#faq"      className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/songs"    className="hover:text-white transition-colors">My songs</Link>
+            <Link href="/terms"    className="hover:text-white transition-colors">Terms</Link>
+            <a href="mailto:claes@clavos.se" className="hover:text-white transition-colors">Contact</a>
           </nav>
-          <p className="text-xs text-white/20">
+          <p className="text-xs text-white/50">
             © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
           </p>
         </div>

@@ -6,13 +6,20 @@ import CtaLink from "./CtaLink";
 /**
  * Mobile-only "Try it free" pill that slides in after the visitor scrolls
  * past the hero — the landing page is ~10 screens tall on a phone with no
- * CTA between the hero and pricing. Rendered only for logged-out visitors.
+ * CTA between the hero and pricing. Rendered only for logged-out visitors,
+ * and hidden again at the closing CTA (#get-started on the landing page).
  */
 export default function StickyMobileCta() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 700);
+    // Step aside once the closing CTA is on screen: there the pill only
+    // repeated the button above it and sat on top of the footer.
+    const closing = document.getElementById("get-started");
+    const onScroll = () => {
+      const closingInView = closing ? closing.getBoundingClientRect().top < window.innerHeight - 120 : false;
+      setShow(window.scrollY > 700 && !closingInView);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
