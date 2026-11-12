@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import CtaLink from "./CtaLink";
 
 // Live examples — each card opens a real public share where visitors can hit
 // play and feel the auto-scroll. The previews are actual screenshots of those
@@ -86,6 +86,7 @@ export default function ExamplesSection() {
                 <div className="flex flex-1 flex-col items-start gap-3 px-4 py-4 bg-white">
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-zinc-800 leading-snug break-words">{ex.title}</p>
+                    <p className="text-xs text-zinc-500">{ex.artist}</p>
                     <p className="mt-1 text-xs text-zinc-600 leading-relaxed">{ex.vibe}</p>
                   </div>
                   <span className="mt-auto text-xs font-semibold text-indigo-600 group-hover:translate-x-0.5 transition-transform">Open &amp; play →</span>
@@ -96,9 +97,9 @@ export default function ExamplesSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/songs" className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-colors shadow-md shadow-indigo-200">
+          <CtaLink from="home-examples" href="/songs" className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-colors shadow-md shadow-indigo-200">
             Create yours for free →
-          </Link>
+          </CtaLink>
         </div>
       </div>
     </section>

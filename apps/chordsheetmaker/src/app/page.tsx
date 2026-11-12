@@ -115,9 +115,9 @@ export default async function HomePage() {
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
         <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 max-w-6xl mx-auto w-full">
-          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
+          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-600">Maker</span>
-          </span>
+          </Link>
           <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
             <Link href="#examples" className="hover:text-zinc-900 transition-colors hidden sm:block">Examples</Link>
             <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
@@ -128,7 +128,7 @@ export default async function HomePage() {
               </Link>
             ) : (
               <>
-                <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap">Sign in</Link>
+                <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap py-2">Sign in</Link>
                 <CtaLink from="home-header" href="/editor/new?start=demo"
                   className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
                   style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
@@ -178,7 +178,7 @@ export default async function HomePage() {
             <span className="chord-chip text-base" style={{ top: "58%", right: "11%", ["--chip-tilt" as never]: "4deg", animationDelay: "4s" }}>F♯m7</span>
           </div>
 
-          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 border border-indigo-500/30 text-center max-w-xs sm:max-w-none">
+          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 border border-indigo-500/30 text-center text-balance max-w-xs sm:max-w-none">
             For every musician — from sofa to stage
           </span>
 
@@ -416,12 +416,13 @@ export default async function HomePage() {
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
                           return (
-                            <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-300"}`}>
-                              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
-                                active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-300"
+                            <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-400"}`}>
+                              <span aria-hidden className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
+                                active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-400"
                               }`}>
                                 {active ? "✓" : "—"}
                               </span>
+                              {!active && <span className="sr-only">Not included: </span>}
                               {key === "songLimit"
                                 ? val === true ? "Unlimited songs" : `Up to ${val} songs`
                                 : label}
@@ -432,18 +433,28 @@ export default async function HomePage() {
                     </div>
 
                     <div className="px-6 pb-6 pt-4 border-t border-zinc-100 space-y-2">
-                      <Link
-                        href={isFree ? "/songs" : "/pricing"}
-                        className={`block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors ${
-                          isPopular
-                            ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                            : isFree
-                            ? "border border-zinc-200 text-zinc-500 hover:bg-zinc-50"
-                            : "bg-zinc-900 text-white hover:bg-zinc-700"
-                        }`}
-                      >
-                        {isFree ? "Try it free" : "Start 7-day free trial →"}
-                      </Link>
+                      {/* Only the free button feeds the cta_try_free funnel step;
+                          the paid ones lead to checkout, a different journey. */}
+                      {isFree ? (
+                        <CtaLink
+                          from="home-pricing-free"
+                          href="/songs"
+                          className="block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                        >
+                          Try it free
+                        </CtaLink>
+                      ) : (
+                        <Link
+                          href="/pricing"
+                          className={`block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                            isPopular
+                              ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
+                              : "bg-zinc-900 text-white hover:bg-zinc-700"
+                          }`}
+                        >
+                          Start 7-day free trial →
+                        </Link>
+                      )}
                       {!isFree && (
                         <p className="text-center text-[11px] text-zinc-400">
                           7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime
@@ -521,7 +532,7 @@ export default async function HomePage() {
                 </svg>
               </CtaLink>
               {!session && (
-                <Link href="/pricing" className="text-sm text-white/70 hover:text-white transition-colors">
+                <Link href="/pricing" className="text-sm text-white/70 hover:text-white transition-colors px-3 py-2">
                   See pricing
                 </Link>
               )}
@@ -539,7 +550,7 @@ export default async function HomePage() {
           <span className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-400">Maker</span>
           </span>
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 text-xs text-white/60 [&>a]:py-2">
             <Link href="#examples" className="hover:text-white transition-colors">Examples</Link>
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="#pricing"  className="hover:text-white transition-colors">Pricing</Link>

@@ -1,5 +1,9 @@
 // FAQ — native <details> accordion (no JS) + FAQPage JSON-LD for rich results.
 
+import { getSongLimit } from "@/lib/plans";
+
+const FREE_SONGS = getSongLimit("free");
+
 const FAQS = [
   {
     q: "Do I need an account to try it?",
@@ -7,7 +11,7 @@ const FAQS = [
   },
   {
     q: "What happens after the 7-day free trial?",
-    a: "The trial converts to your chosen plan unless you cancel — and you can cancel anytime during the trial with one click, at no charge. If you drop back to the free plan you keep your five most recent songs.",
+    a: `The trial converts to your chosen plan unless you cancel — and you can cancel anytime during the trial with one click, at no charge. If you drop back to the free plan you keep your ${FREE_SONGS} most recent songs.`,
   },
   {
     q: "Does it work on stage, on a tablet or phone?",

@@ -45,21 +45,14 @@ export const metadata: Metadata = {
     title: "ChordSheetMaker — AI Chord Sheets for Musicians",
     description:
       "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll hands-free, export to PDF.",
-    images: [
-      {
-        url: "/hero-photo.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Guitarist using ChordSheetMaker on a laptop",
-      },
-    ],
+    // The image comes from opengraph-image.tsx (and twitter-image.tsx, which
+    // re-exports it). Listing one here as well would only be overridden.
   },
   twitter: {
     card: "summary_large_image",
     title: "ChordSheetMaker — AI Chord Sheets for Musicians",
     description:
       "Search any song with AI and get a ready-to-play chord sheet in seconds. Drag chords over lyrics, auto-scroll hands-free, export to PDF.",
-    images: ["/hero-photo.jpg"],
   },
   robots: {
     index: true,

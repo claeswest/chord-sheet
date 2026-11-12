@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import CtaLink from "./CtaLink";
 
 const IMAGES = [
-  { src: "/BurningGold.jpeg", label: "BEFORE" },
-  { src: "/BurningGold_CSM.png", label: "AFTER" },
+  { src: "/BurningGold.jpeg", label: "BEFORE", alt: "Handwritten chord sheet for Burning Gold on a notepad" },
+  { src: "/BurningGold_CSM.png", label: "AFTER", alt: "Burning Gold chord sheet styled in ChordSheetMaker with AI background" },
 ];
 
 export default function TransformationSection() {
@@ -24,6 +24,15 @@ export default function TransformationSection() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [lightboxIndex]);
+
+  // The page behind must not scroll away under the open image.
+  const open = lightboxIndex !== null;
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [open]);
 
   return (
     <section className="relative px-4 sm:px-6 py-14 sm:py-20 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
@@ -101,20 +110,25 @@ export default function TransformationSection() {
         </div>
 
         <div className="mt-10 text-center">
-          <Link href="/songs" className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-colors shadow-md shadow-indigo-200">
+          {/* Straight to the import dialog — the button promises exactly that. */}
+          <CtaLink from="home-photo" href="/editor/new?start=import" className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-colors shadow-md shadow-indigo-200">
             Try it with your own sheet →
-          </Link>
+          </CtaLink>
         </div>
       </div>
 
       {/* Lightbox */}
       {lightbox && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${lightbox.label === "BEFORE" ? "Before" : "After"}: enlarged image`}
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-16 cursor-zoom-out"
           onClick={() => setLightboxIndex(null)}
         >
           {/* Close */}
           <button
+            autoFocus
             onClick={() => setLightboxIndex(null)}
             className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             aria-label="Close"
@@ -136,12 +150,18 @@ export default function TransformationSection() {
           </button>
 
           {/* Image + label */}
-          <div className="flex flex-col items-center gap-3 max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={lightbox.src}
-              alt="Zoomed view"
-              className="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain"
-            />
+          {/* A click anywhere closes — the image box is wider than the picture in it. */}
+          <div className="flex flex-col items-center gap-3 w-full max-h-full">
+            {/* Optimised by next/image: the AFTER original is a 1.3 MB PNG. */}
+            <div className="relative w-full max-w-5xl h-[80vh]">
+              <Image
+                src={lightbox.src}
+                alt={lightbox.alt}
+                fill
+                sizes="(max-width: 1100px) 100vw, 1024px"
+                className="object-contain drop-shadow-2xl"
+              />
+            </div>
             <span className="text-xs font-bold tracking-widest text-white/50 uppercase">{lightbox.label}</span>
           </div>
 

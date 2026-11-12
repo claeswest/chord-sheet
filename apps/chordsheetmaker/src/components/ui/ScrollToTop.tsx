@@ -7,7 +7,8 @@ export default function ScrollToTop({ raised = false }: { raised?: boolean }) {
   const [visible, setVisible] = useState(false);
 
   const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" });
   }, []);
 
   useEffect(() => {

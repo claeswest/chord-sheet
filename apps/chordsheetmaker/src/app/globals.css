@@ -14,8 +14,10 @@
   font-display: swap;
 }
 
-html {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Songs library — smooth list refresh */
