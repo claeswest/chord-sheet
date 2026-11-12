@@ -99,3 +99,58 @@ export function suggestNextTemplate(sent: Set<string>, a: Audience): MarketingTe
   }
   return pick(EMAIL_SEQUENCE) ?? "winback";
 }
+
+// ── The automatic part of the drip ──────────────────────────────────────────
+//
+// The first steps of the sequence go out by themselves, from a daily job
+// (lib/autoDrip.ts, /api/cron/drip). They were being sent by hand, which in
+// practice meant late or not at all. Everything after them stays manual: an
+// upgrade pitch or a request for feedback is worth a person deciding on.
+
+/** How many steps of EMAIL_SEQUENCE send themselves. */
+export const AUTO_DRIP_STEPS = 3;
+export const AUTO_DRIP_TEMPLATES: MarketingTemplate[] = EMAIL_SEQUENCE.slice(0, AUTO_DRIP_STEPS);
+
+/**
+ * Only accounts younger than this are picked up. The whole automatic run takes
+ * about a week, so this is slack, not a schedule — its real job is keeping the
+ * job away from old accounts: "Welcome!" three months after signing up is
+ * worse than no email. Those stay with the founder.
+ */
+export const AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS = 30;
+
+/** Not on top of the sign-in email that created the account. */
+export const AUTO_DRIP_MIN_ACCOUNT_AGE_HOURS = 1;
+
+/**
+ * The cooldown as the daily job sees it: two hours short of the real one.
+ *
+ * Vercel Cron on the Hobby plan fires anywhere inside its hour. Measured
+ * against a full 72 hours, a run at 14:40 followed three days later by one at
+ * 14:05 finds the cooldown 35 minutes from over and waits a whole extra day.
+ * The same slack, for the same reason, as RecipeBookMaker's trial emails.
+ */
+export const AUTO_DRIP_COOLDOWN_MS = EMAIL_COOLDOWN_DAYS * 86_400_000 - 2 * 3_600_000;
+
+/**
+ * The email the daily job owes this person next, or null when it owes none.
+ *
+ * `sent` is every marketing template they have had, by hand or by the job, so
+ * the two never duplicate each other.
+ */
+export function nextAutoTemplate(sent: Set<string>, a: Audience): MarketingTemplate | null {
+  // On their way out: that conversation belongs to a person. The admin page
+  // already puts "ask why" first for them, and a cheerful tip email arriving
+  // in the same week reads as a machine that hasn't noticed.
+  if (isLeaving(a)) return null;
+
+  const allowed = new Set(allowedTemplates(a));
+  return (
+    AUTO_DRIP_TEMPLATES.find((t) => {
+      if (!allowed.has(t) || sent.has(t)) return false;
+      // A welcome is only a welcome when it comes first.
+      if (t === "welcome_tips" && sent.size > 0) return false;
+      return true;
+    }) ?? null
+  );
+}

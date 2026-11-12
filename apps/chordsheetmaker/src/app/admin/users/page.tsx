@@ -6,10 +6,13 @@ import Link from "next/link";
 import SongPreviewModal from "@/components/admin/SongPreviewModal";
 import PlanBadge, { relativeTime } from "@/components/admin/PlanBadge";
 import {
+  AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS,
+  AUTO_DRIP_TEMPLATES,
   EMAIL_COOLDOWN_DAYS,
   EMAIL_SEQUENCE,
   allowedTemplates,
   isLeaving,
+  nextAutoTemplate,
   suggestNextTemplate,
   templateBlockReason,
   type Audience,
@@ -80,6 +83,8 @@ interface EmailHistoryItem {
   id: string;
   sentAt: string;
   template: string;
+  /** Sent by the daily job rather than from this page. */
+  auto?: boolean;
 }
 
 // Labels for the marketing-email templates (mirror MARKETING_TEMPLATES)
@@ -437,7 +442,18 @@ function AdminUsersInner() {
                             const history = userEmails[user.id] ?? [];
                             const sentByTemplate = new Map<string, string>(); // template → latest sentAt
                             history.forEach((e) => { if (!sentByTemplate.has(e.template)) sentByTemplate.set(e.template, e.sentAt); });
+                            const sentByJob = new Set(history.filter((e) => e.auto).map((e) => e.template));
                             const audience = audienceOf(user);
+                            // What the daily job will send this person next, if anything. Same
+                            // rules as the job itself (lib/autoDrip.ts) — the age limit included.
+                            // Nothing is claimed until the history has arrived: with an empty
+                            // one, everybody looks like they are owed the welcome.
+                            const historyLoaded = user.id in userEmails;
+                            const tooOld = (Date.now() - new Date(user.createdAt).getTime()) / 86400000 > AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS;
+                            const autoNext =
+                              !historyLoaded || user.marketingOptOut || tooOld
+                                ? null
+                                : nextAutoTemplate(new Set(history.map((e) => e.template)), audience);
                             const allowed = new Set(allowedTemplates(audience));
                             const suggested = suggestNextTemplate(new Set(sentByTemplate.keys()), audience);
                             const selected = emailTemplate[user.id] ?? suggested;
@@ -450,6 +466,20 @@ function AdminUsersInner() {
                               <div className="mb-4">
                                 {/* Sequence tracker: ✓ sent · ● suggested next · rest pending */}
                                 <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Email sequence</p>
+                                {/* What the daily job is going to do, so nobody sends by hand what
+                                    is about to send itself. Silent for opt-outs — the line below
+                                    already says why nothing goes out. */}
+                                {historyLoaded && !user.marketingOptOut && (
+                                  <p className="text-[11px] text-zinc-500 mb-2">
+                                    {autoNext
+                                      ? <>⚙ <span className="text-zinc-300">{TEMPLATE_LABELS[autoNext] ?? autoNext}</span> goes out by itself at the next daily run{coolingDown ? " after the cooldown" : ""} — you get a copy.</>
+                                      : isLeaving(audience)
+                                      ? <>Nothing is sent automatically to someone who is cancelling.</>
+                                      : tooOld
+                                      ? <>Account is older than {AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS} days — nothing is sent automatically. Sending is up to you.</>
+                                      : <>The automatic part ({AUTO_DRIP_TEMPLATES.length} emails) is done. The rest are up to you.</>}
+                                  </p>
+                                )}
                                 {isLeaving(audience) && (
                                   <p className="text-[11px] text-amber-300/90 mb-2">
                                     ⚠ Cancelling — asking why beats pitching. Templates that assume they&apos;re
@@ -470,11 +500,11 @@ function AdminUsersInner() {
                                             ? "bg-indigo-900/40 border-indigo-500 text-indigo-200 font-semibold"
                                             : "bg-zinc-800/50 border-zinc-800 text-zinc-500"
                                         }`}
-                                        title={sentAt ? `Sent ${formatDate(sentAt)}` : isNext ? "Suggested next" : "Not sent yet"}
+                                        title={sentAt ? `Sent ${formatDate(sentAt)}${sentByJob.has(t) ? " — automatically" : ""}` : t === autoNext ? "Next — sent automatically" : isNext ? "Suggested next" : "Not sent yet"}
                                       >
                                         {sentAt ? "✓ " : isNext ? "● " : ""}{TEMPLATE_LABELS[t] ?? t}
-                                        {sentAt && <span className="text-emerald-500/70"> · {formatDate(sentAt)}</span>}
-                                        {isNext && !sentAt && <span className="text-indigo-400"> · next</span>}
+                                        {sentAt && <span className="text-emerald-500/70"> · {formatDate(sentAt)}{sentByJob.has(t) ? " · auto" : ""}</span>}
+                                        {isNext && !sentAt && <span className="text-indigo-400"> · {t === autoNext ? "next, auto" : "next"}</span>}
                                       </span>
                                     );
                                   })}

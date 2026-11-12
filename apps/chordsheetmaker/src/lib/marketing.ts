@@ -9,8 +9,7 @@ import { adminRecipients } from "./notify";
 import { PLANS } from "./plans";
 import { templateBlockReason, type Audience } from "./marketingRules";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
+const FROM =process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
 const BASE_URL = "https://chordsheetmaker.ai";
 
 // Both live in @clavos/core now, unchanged — same secret, same digest, so
@@ -31,7 +30,7 @@ export {
   EMAIL_SEQUENCE,
   type MarketingTemplate,
 } from "./marketingRules";
-import { EMAIL_COOLDOWN_DAYS, type MarketingTemplate } from "./marketingRules";
+import { AUTO_DRIP_COOLDOWN_MS, EMAIL_COOLDOWN_DAYS, type MarketingTemplate } from "./marketingRules";
 
 type EmailContent = {
   subject: string;
@@ -187,10 +186,21 @@ function buildContent(
   };
 }
 
-/** Sends one marketing email to one user. Skips opt-outs and anyone
- *  emailed within the last 7 days (shared across templates). */
-export async function sendMarketingEmail(userId: string, template: MarketingTemplate): Promise<SendResult> {
+/** Sends one marketing email to one user. Skips opt-outs and anyone still
+ *  inside the cooldown (shared across templates).
+ *
+ *  `auto` marks a send made by the daily job rather than from the admin page:
+ *  it is recorded as such in the activity log, and measures the cooldown with
+ *  the job's own slack (see AUTO_DRIP_COOLDOWN_MS). */
+export async function sendMarketingEmail(
+  userId: string,
+  template: MarketingTemplate,
+  opts: { auto?: boolean } = {},
+): Promise<SendResult> {
+  // Read at call time, not module load — see @clavos/core/notify.
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) return "failed";
+  const cooldownMs = opts.auto ? AUTO_DRIP_COOLDOWN_MS : EMAIL_COOLDOWN_DAYS * 24 * 3600_000;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -202,7 +212,7 @@ export async function sendMarketingEmail(userId: string, template: MarketingTemp
   });
   if (!user?.email) return "failed";
   if (user.marketingOptOut) return "skipped_optout";
-  if (user.lastMarketingEmailAt && Date.now() - user.lastMarketingEmailAt.getTime() < EMAIL_COOLDOWN_DAYS * 24 * 3600_000) {
+  if (user.lastMarketingEmailAt && Date.now() - user.lastMarketingEmailAt.getTime() < cooldownMs) {
     return "skipped_recent";
   }
 
@@ -268,6 +278,6 @@ export async function sendMarketingEmail(userId: string, template: MarketingTemp
   if (!res.ok) return "failed";
 
   await prisma.user.update({ where: { id: user.id }, data: { lastMarketingEmailAt: new Date() } });
-  await logActivity("marketing_email", user.id, { template });
+  await logActivity("marketing_email", user.id, opts.auto ? { template, auto: true } : { template });
   return "sent";
 }

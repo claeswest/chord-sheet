@@ -93,6 +93,7 @@ you're using. Same idea for GitHub.
 | `RESEND_API_KEY` | magic-link + marketing email | without it email sign-in and admin emails are disabled |
 | `EMAIL_FROM` | email sender | e.g. `ChordSheetMaker <hello@chordsheetmaker.ai>`; falls back to Resend's shared sender, which only delivers to the Resend account owner |
 | `ADMIN_EMAILS` | `/admin` access | comma-separated; also the BCC/notification recipients and the "exclude my own activity" filter |
+| `CRON_SECRET` | the daily email job (`/api/cron/drip`) | any long random string, set in Vercel — Vercel Cron sends it by itself. **Without it the job answers 503 and no automatic email goes out.** Locally the job only ever does a dry run |
 | `STRIPE_SECRET_KEY` | checkout | |
 | `STRIPE_WEBHOOK_SECRET` | subscription status | |
 | `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_YEARLY` / `STRIPE_PRICE_LIFETIME` | plans | price ids |

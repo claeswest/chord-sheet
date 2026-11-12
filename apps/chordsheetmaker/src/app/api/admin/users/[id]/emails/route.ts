@@ -28,6 +28,8 @@ export async function GET(
       typeof (r.meta as Record<string, unknown> | null)?.template === "string"
         ? ((r.meta as Record<string, unknown>).template as string)
         : "unknown",
+    // Sent by the daily job (/api/cron/drip) rather than from the admin page.
+    auto: (r.meta as Record<string, unknown> | null)?.auto === true,
   }));
 
   return NextResponse.json({ emails });

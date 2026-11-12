@@ -1,6 +1,6 @@
 # Project status — pick-up notes
 
-*Last updated: 9 September 2026*
+*Last updated: 12 November 2026*
 
 Read this first when starting work on a new machine or in a fresh session. It
 covers what the code can't tell you: what was learned, what was decided and why,
@@ -131,8 +131,9 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
 - **Categories discovery tip** — appears at 3+ songs with no folders yet.
 - **Share pages became a growth loop** — logged-out viewers get a
   "Make your own — free" CTA; bandmates are the warmest leads.
-- **Admin email drip** — 7 manual templates with a suggested sequence, a 3-day
-  cooldown, per-user send history, and signed one-click unsubscribe.
+- **Admin email drip** — 7 templates with a suggested sequence, a 3-day
+  cooldown, per-user send history, and signed one-click unsubscribe. The first
+  three have sent themselves since 12 Nov 2026 — see Decisions.
 - **Landing page overhaul** — proof moved above the fold, real screenshots of
   live share pages instead of CSS mock-ups, a real how-it-works section, honest
   secondary CTA, trust microcopy.
@@ -151,7 +152,7 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
 | **Product 2 is RecipeBookMaker, at recipebookmaker.com** (5 Aug 2026) | Descriptive names are what make this family rank — the best-performing ad keywords for ChordSheetMaker were literally "chord chart maker". "CookbookMaker" was rejected: cookbookmaker.com is a funnel domain for Morris Press Cookbooks, an established US keepsake-cookbook printer, so the name was unwinnable in the default TLD. The workspace folder is still `apps/recipemaker`. |
 | **Setlists & collections are free** | Organising is what makes someone come back and accumulate songs — it feeds the 5-song limit rather than competing with it. The API never gated it; the pricing table was the thing that was wrong. |
 | **Guests are first-class** | The whole editor works with no account. The demo path *is* the funnel; asking for signup before value is what loses people. |
-| **Emails stay manual for now** | Deliberate: the founder reads the replies. Automation is the obvious next step, and `suggestNextTemplate()` + the cooldown already encode the logic. |
+| **The first three drip emails send themselves; the rest stay manual** (12 Nov 2026) | Sending by hand meant, in practice, late or not at all. A daily cron (`/api/cron/drip`, 14:00 UTC) sends welcome tips, AI magic and photo rescue, a cooldown apart, to accounts under 30 days old — an older account getting "Welcome!" is worse than silence. It calls the same `sendMarketingEmail()` as the admin page, so opt-out, unsubscribe and the copy to the founder are identical, and a step sent by hand is never sent again by the job. Nothing goes automatically to someone who is cancelling. The upgrade pitch and the feedback ask are still a person's decision. Rules: `nextAutoTemplate()` in `marketingRules.ts`. |
 | **Share links are detached snapshots** | A link keeps working after the song changes — but there's no owner recorded, so shares can't be listed or revoked. Adding `userId` would fix that. |
 | **RecipeBookMaker prices in USD** (Aug 2026) | Matches ChordSheetMaker, which also settles in SEK behind the scenes. A price's currency is fixed once created in Stripe, so this is not a decision that can be revisited cheaply. |
 | **The trial "ending" email ignores marketing opt-out** (Aug 2026) | It states a date and an amount for a subscription someone entered into, which makes it a service message, not a pitch. It carries no unsubscribe link for the same reason. The tips email is marketing and obeys the opt-out normally. |
@@ -199,12 +200,11 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
 8. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
    in play mode, which doesn't exist yet), or PWA install so the app lives on
    the tablet home screen.
-9. **Automate ChordSheetMaker's lifecycle emails** — a day-0 welcome, and a
-   nudge when someone hits the free limit. Deliberately demoted on 21 August
-   2026: this sat at number one for a month on the assumption that the people
-   existed to email. Eleven accounts in 28 days is not where the leverage is,
-   and the machinery to send them now exists in `@clavos/core` whenever the
-   numbers justify it. Fix the ask before automating the follow-up.
+9. ~~**Automate ChordSheetMaker's lifecycle emails**~~ — the first three of
+   the drip do, since 12 Nov 2026 (see Decisions). Not because the numbers
+   changed, but because they were not being sent at all. Still by hand: the
+   upgrade nudge, band sharing, the feedback ask and win-back. A nudge at the
+   moment someone hits the free limit does not exist, and nobody has hit it.
 
 **Done, but read the caveat:**
 
@@ -233,12 +233,20 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
   a `[slug]` landing page, so nobody passes a CTA that appends `?welcome=1`.
   Check the ads' Final URL to settle it. Harmless either way now that the
   action is Secondary, but the same mechanism could hide a real problem.
-- **RecipeBookMaker's cron refuses to run without `CRON_SECRET`.** That is
-  deliberate — an unauthenticated endpoint that emails customers is a spam
-  cannon with your own domain on it — but it means a missing variable looks
-  exactly like a job that simply never fires. `/api/cron/lifecycle` answers
-  503 when the variable is absent and 401 when it is present and you didn't
-  bring it, which is how to tell the two apart from outside.
+- **Both crons refuse to run without `CRON_SECRET`** — RecipeBookMaker's
+  `/api/cron/lifecycle` and ChordSheetMaker's `/api/cron/drip`, each with a
+  secret in its own Vercel project. That is deliberate — an unauthenticated
+  endpoint that emails customers is a spam cannon with your own domain on it —
+  but it means a missing variable looks exactly like a job that simply never
+  fires. Either endpoint answers 503 when the variable is absent and 401 when
+  it is present and you didn't bring it, which is how to tell the two apart
+  from outside.
+- **ChordSheetMaker's drip job only sends from production.** Anywhere else it
+  reports what it would have sent and stops (`?dry=1` asks for the same report
+  in production). The dev database is a snapshot of real customers and Resend
+  is the real service, so a "test run" on a laptop would otherwise be a real
+  mailing. To turn the job off, remove the entry from
+  `apps/chordsheetmaker/vercel.json`.
 - **The dev databases drift, and it will mislead you.** They are Neon branches
   of production; reset one with **Reset from parent** on the branch rather than
   deleting and recreating it, which keeps the connection string and so needs no
@@ -293,4 +301,5 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
 | Poster naming & regeneration | [`docs/posters.md`](posters.md) |
 | RecipeBookMaker's visual language | [`apps/recipemaker/design/`](../apps/recipemaker/design/) — tokens, canvas spec, component patterns |
 | What the trial emails say and when | [`apps/recipemaker/src/lib/trialEmails.ts`](../apps/recipemaker/src/lib/trialEmails.ts) — copy and timing, no database |
+| Which ChordSheetMaker emails send themselves, and to whom | [`apps/chordsheetmaker/src/lib/marketingRules.ts`](../apps/chordsheetmaker/src/lib/marketingRules.ts) — the rules; `autoDrip.ts` beside it finds the people |
 | Live numbers, users, activity | `/admin`, on either site — and the build stamp in the admin nav says which commit you are looking at |
