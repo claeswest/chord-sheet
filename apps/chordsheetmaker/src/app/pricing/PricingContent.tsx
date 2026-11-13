@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PLANS, Plan, yearlySavingPercent } from "@/lib/plans";
+import { PLANS, Plan, yearlySavingPercent, yearlyPerMonth } from "@/lib/plans";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackTrialStarted } from "@/lib/analytics";
+import { LANDING_FONTS } from "@/components/landing/fonts";
+import { BTN_INK, BTN_LINE, Eyebrow } from "@/components/landing/kit";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 
@@ -60,214 +62,171 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const onFreePlan = currentPlan === "free" || currentPlan === null;
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#f0f0f5" }}>
+    <div className={`${LANDING_FONTS} min-h-screen flex flex-col bg-paper text-ink`}>
 
       {/* Header */}
-      <header className="bg-[#302b63] border-b border-white/10 px-6 h-14 flex items-center gap-4 shrink-0">
-        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
-        </Link>
-        <div className="hidden sm:block w-px h-5 bg-white/20" />
-        <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors">
-          ← Songs
-        </Link>
-        <div className="flex-1" />
-        {userName && <UserMenu userName={userName} userImage={userImage} />}
+      <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
+        <div className="flex items-center gap-4 sm:gap-6 px-5 sm:px-8 h-[61px] max-w-6xl mx-auto w-full">
+          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-chord">Maker</span>
+          </Link>
+          <div className="flex-1" />
+          <Link href="/songs" className="text-sm text-stone-600 hover:text-ink transition-colors whitespace-nowrap py-2">
+            {userName ? "← Songs" : "Try it free"}
+          </Link>
+          {userName
+            ? <UserMenu userName={userName} userImage={userImage} tone="paper" />
+            : <Link href="/login?next=/pricing" className="text-sm text-stone-600 hover:text-ink transition-colors whitespace-nowrap py-2">Sign in</Link>}
+        </div>
       </header>
 
-      {/* Hero — extra bottom padding so cards overlap nicely */}
-      <div
-        className="relative py-10 sm:py-14 pb-16 sm:pb-20 text-center px-6"
-        style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
-      >
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
-        }} />
-        <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30">
-          Pricing
-        </span>
-        <h1 className="relative text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
-          Plans & pricing
+      <main className="flex-1 max-w-6xl mx-auto w-full px-5 sm:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24">
+        <Eyebrow className="mb-4">Pricing</Eyebrow>
+        <h1 className="font-display font-medium text-[2.6rem] sm:text-6xl leading-[1.05] tracking-[-0.02em] text-ink mb-4">
+          Plans &amp; pricing
         </h1>
-        <p className="relative text-zinc-400 text-lg max-w-md mx-auto">
-          Start free. Upgrade when you're ready.
+        <p className="text-lg sm:text-xl text-stone-600 mb-2">
+          Start free. Upgrade when you&apos;re ready.
+        </p>
+        <p className="text-sm text-stone-500 max-w-xl">
+          Every plan includes AI song search, photo import, AI backgrounds &amp; fonts, and setlists &amp; collections.
         </p>
 
         {success && (
-          <div className="relative max-w-md mx-auto mt-8 bg-white/10 border border-white/20 rounded-2xl p-6 text-center backdrop-blur-sm">
-            <div className="text-3xl mb-3">🎉</div>
-            <h2 className="text-xl font-bold text-white mb-1">You&apos;re all set!</h2>
-            <p className="text-white/60 text-sm mb-5">Your subscription is active. It may take a few seconds to reflect.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/account" className="bg-indigo-500 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-indigo-400 transition-colors">
-                View my account
+          <div role="status" className="mt-8 max-w-xl rounded-xl border-2 border-ink bg-white p-6">
+            <h2 className="font-display text-2xl text-ink mb-1">You&apos;re all set.</h2>
+            <p className="text-stone-600 text-[15px] mb-5">Your subscription is active. It may take a few seconds to reflect.</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link href="/songs" className={`${BTN_INK} px-5 py-2.5 text-sm`}>
+                Go to my songs <span aria-hidden>→</span>
               </Link>
-              <Link href="/songs" className="bg-white/10 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-white/20 transition-colors border border-white/20">
-                Go to my songs
+              <Link href="/account" className={`${BTN_LINE} px-5 py-2.5 text-sm`}>
+                View my account
               </Link>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Cards */}
-      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 md:px-6 -mt-6 sm:-mt-10 pb-16 sm:pb-12">
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-6 text-center">{error}</p>
+          <p role="alert" className="mt-8 max-w-xl text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3 rounded-lg">{error}</p>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 max-w-xs sm:max-w-sm mx-auto md:max-w-none">
+        {/* Cards */}
+        <div className="mt-10 sm:mt-14 grid grid-cols-1 md:grid-cols-3 gap-5 max-w-md md:max-w-none">
           {PLAN_ORDER.map((planKey) => {
             const plan = PLANS[planKey];
             const isPopular = planKey === "yearly";
             const isCurrent = planKey === currentPlan;
             const isFree = planKey === "free";
+            // One label per card at most: where you are beats what is popular.
+            const label = isCurrent ? "Your current plan" : isPopular ? "Most popular" : null;
 
             return (
               <div
                 key={planKey}
-                className={`relative bg-white rounded-2xl flex flex-col overflow-hidden transition-all ${
+                className={`relative flex flex-col rounded-xl bg-white ${
                   // On mobile lead with the recommended plan: Yearly ("Most
                   // popular") first, Free drops to the bottom. Desktop unchanged.
                   isFree ? "order-last md:order-none " : isPopular ? "order-first md:order-none " : ""
                 }${
-                  isPopular
-                    ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-100"
-                    : isCurrent
-                    ? "ring-2 ring-emerald-400 shadow-md md:mt-4 md:mb-4"
-                    : "border border-zinc-200 shadow-sm md:mt-4 md:mb-4"
+                  isCurrent
+                    ? "border-2 border-emerald-600"
+                    : isPopular
+                    ? "border-2 border-ink"
+                    : "border border-rule"
                 }`}
               >
-                  {/* Top banner */}
-                  {isCurrent ? (
-                    <div className="bg-emerald-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
-                      Your current plan
-                    </div>
-                  ) : isPopular ? (
-                    <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
-                      Most popular
-                    </div>
-                  ) : (
-                    <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
-                  )}
+                {label && (
+                  <span className={`absolute -top-3 left-6 font-mono text-[10px] font-medium uppercase tracking-[0.14em] px-2.5 py-1 rounded text-white ${isCurrent ? "bg-emerald-700" : "bg-ink"}`}>
+                    {label}
+                  </span>
+                )}
 
-                  <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4">
-                    <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h2>
+                <div className="px-6 pt-8 pb-6">
+                  <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 mb-4">{plan.name}</h2>
 
-                    <div className="h-11 flex items-end gap-2">
-                      {isFree ? (
-                        <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">Free</span>
-                      ) : (
-                        <>
-                          <div className="flex items-end gap-1">
-                            <span className="text-3xl sm:text-4xl font-extrabold text-zinc-900">${plan.price}</span>
-                            <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
-                          </div>
-                          {planKey === "yearly" && (
-                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save {yearlySavingPercent()}%</span>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    <div className="h-6 flex items-center mt-1">
-                      <p className="text-xs text-zinc-400">{plan.description}</p>
-                    </div>
-                  </div>
-
-                  {/* Features — all plans show all 6 rows for visual consistency */}
-                  <div className="px-4 sm:px-6 py-4 border-t border-zinc-100 flex-1">
-                    <ul className="space-y-2.5">
-                      {FEATURES.map(({ key, label }) => {
-                        const val = plan.features[key as keyof typeof plan.features];
-                        const active = val !== false && val !== 0;
-                        return (
-                          <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-300"}`}>
-                            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
-                              active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-300"
-                            }`}>
-                              {active ? "✓" : "—"}
-                            </span>
-                            {key === "songLimit"
-                              ? val === true ? "Unlimited songs" : `Up to ${val} songs`
-                              : label}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-
-                  <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-4 border-t border-zinc-100 space-y-2">
-                    {isCurrent ? (
-                      <Link
-                        href="/account"
-                        className="block w-full text-center py-2.5 rounded-full text-sm font-medium border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
-                      >
-                        Manage plan
-                      </Link>
-                    ) : isFree ? (
-                      <Link
-                        href="/songs"
-                        className="block w-full text-center py-2.5 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 transition-colors"
-                      >
-                        Get started free
-                      </Link>
+                  <div className="flex items-baseline gap-2">
+                    {isFree ? (
+                      <span className="font-display text-5xl leading-none text-ink">Free</span>
                     ) : (
                       <>
-                        <button
-                          onClick={() => handleUpgrade(planKey)}
-                          disabled={loading === planKey}
-                          className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors disabled:opacity-50 ${
-                            isPopular
-                              ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                              : "bg-zinc-900 text-white hover:bg-zinc-700"
-                          }`}
-                        >
-                          {loading === planKey
-                            ? "Redirecting…"
-                            : (currentPlan !== "free" && currentPlan !== null)
-                            ? `Upgrade to ${planKey} →`
-                            : "Start 7-day free trial →"}
-                        </button>
-                        {(currentPlan === "free" || currentPlan === null) && (
-                          <p className="text-center text-[11px] text-zinc-400">
-                            7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime
-                          </p>
+                        <span className="font-display text-5xl leading-none text-ink">${plan.price}</span>
+                        <span className="text-stone-500 text-sm">{planKey === "monthly" ? "/mo" : "/yr"}</span>
+                        {planKey === "yearly" && (
+                          <span className="ml-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">Save {yearlySavingPercent()}%</span>
                         )}
                       </>
                     )}
                   </div>
+
+                  <p className="mt-3 text-sm text-stone-500 min-h-5">
+                    {planKey === "yearly" ? `≈ $${yearlyPerMonth()}/month, billed yearly` : plan.description}
+                  </p>
                 </div>
-              );
-            })}
+
+                {/* Features — all plans show all 6 rows for visual consistency */}
+                <div className="px-6 py-6 border-t border-rule flex-1">
+                  <ul className="space-y-3">
+                    {FEATURES.map(({ key, label: featureLabel }) => {
+                      const val = plan.features[key as keyof typeof plan.features];
+                      const active = val !== false && val !== 0;
+                      return (
+                        <li key={key} className={`flex items-baseline gap-3 text-[15px] ${active ? "text-ink" : "text-stone-400"}`}>
+                          <span aria-hidden className={`w-3 shrink-0 text-center font-semibold ${active ? "text-chord" : "text-stone-300"}`}>
+                            {active ? "✓" : "–"}
+                          </span>
+                          {!active && <span className="sr-only">Not included: </span>}
+                          {key === "songLimit"
+                            ? val === true ? "Unlimited songs" : `Up to ${val} songs`
+                            : featureLabel}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                <div className="px-6 pb-6 space-y-2.5">
+                  {isCurrent ? (
+                    <Link href="/account" className={`${BTN_LINE} w-full py-3 text-sm`}>
+                      Manage plan
+                    </Link>
+                  ) : isFree ? (
+                    <Link href="/songs" className={`${BTN_LINE} w-full py-3 text-sm`}>
+                      Get started free
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgrade(planKey)}
+                      disabled={loading === planKey}
+                      className={`${isPopular ? BTN_INK : BTN_LINE} w-full py-3 text-sm disabled:opacity-50 cursor-pointer disabled:cursor-wait`}
+                    >
+                      {loading === planKey
+                        ? "Redirecting…"
+                        : !onFreePlan
+                        ? `Upgrade to ${planKey} →`
+                        : "Start 7-day free trial →"}
+                    </button>
+                  )}
+                  {/* Always rendered on desktop so the three buttons sit on one line. */}
+                  <p className={`text-center text-xs text-stone-500 ${!isCurrent && !isFree && onFreePlan ? "" : "hidden md:block md:invisible"}`}>
+                    {!isCurrent && !isFree && onFreePlan
+                      ? <>7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime</>
+                      : "\u00a0"}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Trust line */}
-        <div className="mt-8 sm:mt-10 text-sm text-zinc-500 text-center">
-          {/* Mobile: stacked */}
-          <div className="flex flex-col items-center gap-1.5 sm:hidden">
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-              Secure payments via Stripe
-            </span>
-            <span>Cancel anytime · No hidden fees</span>
-          </div>
-          {/* Tablet+: inline */}
-          <div className="hidden sm:flex items-center justify-center gap-2">
-            <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            <span>Secure payments via Stripe</span>
-            <span className="text-zinc-300">·</span>
-            <span>Cancel anytime</span>
-            <span className="text-zinc-300">·</span>
-            <span>No hidden fees</span>
-          </div>
-        </div>
-      </div>
+        <p className="mt-8 sm:mt-10 text-sm text-stone-500">
+          Secure payments via Stripe · Cancel anytime · No hidden fees
+        </p>
+      </main>
     </div>
   );
 }

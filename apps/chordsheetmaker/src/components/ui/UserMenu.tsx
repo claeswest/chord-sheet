@@ -6,9 +6,12 @@ import Link from "next/link";
 interface UserMenuProps {
   userName?: string | null;
   userImage?: string | null;
+  /** The header it sits in: the app's dark bar, or a paper-coloured one. */
+  tone?: "dark" | "paper";
 }
 
-export default function UserMenu({ userName, userImage }: UserMenuProps) {
+export default function UserMenu({ userName, userImage, tone = "dark" }: UserMenuProps) {
+  const paper = tone === "paper";
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -17,14 +20,16 @@ export default function UserMenu({ userName, userImage }: UserMenuProps) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-lg px-2 py-0.5 hover:bg-white/10 transition-colors"
+        aria-label="Account menu"
+        aria-expanded={open}
+        className={`flex items-center gap-2 rounded-lg px-2 py-0.5 transition-colors ${paper ? "hover:bg-ink/5" : "hover:bg-white/10"}`}
       >
         {userImage && !imgError
-          ? <img src={userImage} alt={userName ?? ""} referrerPolicy="no-referrer" onError={() => setImgError(true)} className="w-7 h-7 rounded-full ring-1 ring-white/20" />
-          : <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">{userName?.[0]}</div>
+          ? <img src={userImage} alt={userName ?? ""} referrerPolicy="no-referrer" onError={() => setImgError(true)} className={`w-7 h-7 rounded-full ring-1 ${paper ? "ring-ink/15" : "ring-white/20"}`} />
+          : <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${paper ? "bg-ink" : "bg-indigo-500"}`}>{userName?.[0]}</div>
         }
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-          className={`w-3.5 h-3.5 text-white/40 transition-transform ${open ? "rotate-180" : ""}`}>
+          className={`w-3.5 h-3.5 transition-transform ${paper ? "text-stone-500" : "text-white/40"} ${open ? "rotate-180" : ""}`}>
           <path d="M12 16l-6-6h12l-6 6Z"/>
         </svg>
       </button>
