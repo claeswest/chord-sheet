@@ -1,6 +1,4 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { Newsreader, Geist_Mono } from "next/font/google";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
 import FaqSection from "@/components/ui/FaqSection";
@@ -11,22 +9,8 @@ import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
 import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
-
-// The landing page's own two faces, loaded here rather than in the root layout
-// so the editor and the library don't preload type they never set a word in.
-// Newsreader carries the headings; Geist Mono the small labels and the chords.
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-  display: "swap",
-});
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
+import { LANDING_FONTS } from "@/components/landing/fonts";
+import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, EYEBROW, H2 } from "@/components/landing/kit";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
@@ -83,40 +67,11 @@ const steps = [
   { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — then file it into a setlist or collection for next time." },
 ];
 
-/**
- * A word with its chord over it — the page's one ornament, and the product's
- * own idiom. Decorative: the chord is hidden from assistive tech, so the
- * heading still reads as the plain sentence it is.
- */
-function Chorded({ chord, children }: { chord: string; children: ReactNode }) {
-  return (
-    <span className="relative inline-block">
-      <span aria-hidden className="chord-mark">{chord}</span>
-      {children}
-    </span>
-  );
-}
-
-/** The small label over each section's heading. */
-function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return (
-    <p className={`font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord ${className}`}>
-      {children}
-    </p>
-  );
-}
-
-// One set of buttons for the whole page: ink for the thing we want pressed,
-// a hairline for everything else.
-const BTN = "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors whitespace-nowrap";
-const BTN_INK = `${BTN} bg-ink text-paper hover:bg-stone-700`;
-const BTN_LINE = `${BTN} border border-ink/20 text-ink hover:border-ink/60`;
-
 export default async function HomePage() {
   const session = await auth();
 
   return (
-    <div className={`${newsreader.variable} ${geistMono.variable} flex flex-col min-h-full bg-paper text-ink`}>
+    <div className={`${LANDING_FONTS} flex flex-col min-h-full bg-paper text-ink`}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
@@ -156,7 +111,7 @@ export default async function HomePage() {
 
               {/* Set like a line on a chart: the chords are the page's ornament.
                   The tall leading is the room they sit in. */}
-              <h1 className="hero-reveal hero-reveal-2 font-display font-medium text-[2.6rem] sm:text-6xl lg:text-[4.25rem] leading-[1.42] tracking-[-0.02em] text-ink mb-5 sm:mb-6">
+              <h1 className={`hero-reveal hero-reveal-2 font-display font-medium text-[2.6rem] sm:text-6xl lg:text-[4.25rem] ${CHART_LEADING} tracking-[-0.02em] text-ink mb-5 sm:mb-6`}>
                 <Chorded chord="G">Turn</Chorded> any <Chorded chord="D">song</Chorded> into a{" "}
                 <Chorded chord="Em"><em>stunning</em></Chorded>{" "}
                 <span className="whitespace-nowrap">chord <Chorded chord="C">chart</Chorded></span>
@@ -201,7 +156,7 @@ export default async function HomePage() {
         {/* ── How it works — three steps ("See how it works" lands here) ───── */}
         <section id="how" className="scroll-mt-20 border-b border-rule">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
-            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-8 sm:mb-10">How it works</h2>
+            <h2 className={`${EYEBROW} mb-8 sm:mb-10`}>How it works</h2>
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
               {steps.map((h) => (
                 <li key={h.n} className="flex md:block gap-5 border-t border-ink pt-5">
@@ -226,7 +181,7 @@ export default async function HomePage() {
         <section id="features" className="scroll-mt-16 border-t border-rule">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
             <Eyebrow className="mb-4">Features</Eyebrow>
-            <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">
+            <h2 className={`${H2} mb-3`}>
               Everything you need to play
             </h2>
             <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl">
@@ -271,7 +226,7 @@ export default async function HomePage() {
         <section id="pricing" className="scroll-mt-16">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
             <Eyebrow className="mb-4">Pricing</Eyebrow>
-            <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">Plans &amp; pricing</h2>
+            <h2 className={`${H2} mb-3`}>Plans &amp; pricing</h2>
             <p className="text-lg text-stone-600 mb-2">Start free. Upgrade when you&apos;re ready.</p>
             <p className="text-sm text-stone-500 mb-10 sm:mb-14 max-w-xl">
               Every plan includes AI song search, photo import, AI backgrounds &amp; fonts, and setlists &amp; collections.
@@ -379,7 +334,7 @@ export default async function HomePage() {
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-indigo-300 mb-6 sm:mb-8">
               Free to start
             </p>
-            <h2 className="font-display font-medium text-[2.5rem] sm:text-6xl lg:text-7xl leading-[1.42] tracking-[-0.02em] mb-6">
+            <h2 className={`font-display font-medium text-[2.5rem] sm:text-6xl lg:text-7xl ${CHART_LEADING} tracking-[-0.02em] mb-6`}>
               <Chorded chord="Am">Your</Chorded> songs <Chorded chord="F">deserve</Chorded>
               <br className="hidden sm:block" />{" "}
               a <Chorded chord="C"><em>better</em></Chorded> <Chorded chord="G">home.</Chorded>
@@ -391,7 +346,7 @@ export default async function HomePage() {
               <CtaLink
                 from="home-bottom"
                 href={session ? "/songs" : "/editor/new?start=demo"}
-                className={`${BTN} bg-paper text-ink hover:bg-white px-8 py-4 text-base`}
+                className={`${BTN_PAPER} px-8 py-4 text-base`}
               >
                 {session ? "Go to my songs" : "Create your first chart free"} <span aria-hidden>→</span>
               </CtaLink>

@@ -34,8 +34,17 @@
    shimmers; the only movement is the sheet scrolling, which is the product. */
 
 /* A chord sitting over the syllable it belongs to, as on a chart. Sized and
-   placed in ems of the line it annotates, so it follows the headline. */
-.chord-mark {
+   placed in ems of the line it annotates, so it follows the headline.
+   Generated content rather than text in the page: see Chorded in
+   components/landing/kit.tsx. The second `content` gives it an empty
+   spoken alternative where that syntax is understood. */
+.chorded {
+  position: relative;
+  display: inline-block;
+}
+.chorded::before {
+  content: attr(data-chord);
+  content: attr(data-chord) / "";
   position: absolute;
   left: 0.02em;
   bottom: calc(100% - 0.36em);
@@ -49,7 +58,7 @@
   pointer-events: none;
   user-select: none;
 }
-.on-ink .chord-mark { color: #a5b4fc; }
+.on-ink .chorded::before { color: #a5b4fc; }
 
 /* Staggered hero entrance */
 @keyframes hero-rise {

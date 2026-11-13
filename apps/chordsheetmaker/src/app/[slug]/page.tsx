@@ -4,6 +4,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
+import HeroDemo from "@/components/ui/HeroDemo";
+import { LANDING_FONTS } from "@/components/landing/fonts";
+import { BTN_INK, BTN_PAPER, CHART_LEADING, ChordedLine, Eyebrow, H2 } from "@/components/landing/kit";
 import { LANDING_PAGES, LANDING_SLUGS, getLandingPage } from "@/data/landingPages";
 
 const BASE_URL = "https://chordsheetmaker.ai";
@@ -70,32 +73,24 @@ export default async function LandingPage({ params }: Props) {
   ];
 
   return (
-    <div className="flex flex-col min-h-full bg-white">
+    <div className={`${LANDING_FONTS} flex flex-col min-h-full bg-paper text-ink`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-600">Maker</span>
+      <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
+        <div className="flex items-center justify-between gap-3 px-5 sm:px-8 py-4 max-w-6xl mx-auto w-full">
+          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-chord">Maker</span>
           </Link>
-          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
-            <Link href="/#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
-            <Link href="/pricing" className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
-            <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap">Sign in</Link>
-            <CtaLink
-              from={page.slug}
-              href="/songs?welcome=1"
-              className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
-            >
-              <span className="relative">Try it free</span>
-              <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-              </svg>
+          <nav className="flex items-center gap-4 sm:gap-7 text-sm text-stone-600">
+            <Link href="/#features" className="hover:text-ink transition-colors hidden sm:block">Features</Link>
+            <Link href="/pricing" className="hover:text-ink transition-colors hidden sm:block">Pricing</Link>
+            <Link href="/login" className="hover:text-ink transition-colors whitespace-nowrap py-2">Sign in</Link>
+            <CtaLink from={page.slug} href="/songs?welcome=1" className={`${BTN_INK} px-4 py-2 text-sm`}>
+              Try it free <span aria-hidden>→</span>
             </CtaLink>
           </nav>
         </div>
@@ -103,129 +98,95 @@ export default async function LandingPage({ params }: Props) {
 
       <main className="flex-1">
 
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <section
-          className="relative flex flex-col items-center text-center px-5 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-24 overflow-hidden"
-          style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #1a1640 100%)" }}
-        >
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
-          }} />
+        {/* ── Hero — the promise on the left, a real chart playing on the right ── */}
+        <section className="border-b border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-16 lg:pt-20 pb-12 sm:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10 lg:gap-16 items-center">
+            <div>
+              <Eyebrow className="mb-6 sm:mb-8">{page.eyebrow}</Eyebrow>
 
-          <span className="relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-5 border border-indigo-500/30">
-            {page.eyebrow}
-          </span>
+              {/* Two phrases, set like two lines on a chart. */}
+              <h1 className={`font-display font-medium text-[2.4rem] sm:text-[3.25rem] lg:text-[3.6rem] ${CHART_LEADING} tracking-[-0.02em] text-ink mb-5 sm:mb-6`}>
+                <ChordedLine text={page.h1} chords={["G", "D"]} />{" "}
+                <em><ChordedLine text={page.h1Accent} chords={["Em", "C"]} /></em>
+              </h1>
 
-          <h1 className="relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-5 max-w-4xl">
-            {page.h1}{" "}
-            <span className="text-indigo-400">{page.h1Accent}</span>
-          </h1>
+              <p className="text-lg sm:text-xl text-stone-600 max-w-xl mb-8 leading-relaxed">
+                {page.intro}
+              </p>
 
-          <p className="relative text-base sm:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed">
-            {page.intro}
-          </p>
+              <CtaLink from={page.slug} href="/songs?welcome=1" className={`${BTN_INK} px-7 py-3.5 text-base w-full sm:w-auto`}>
+                Try it free <span aria-hidden>→</span>
+              </CtaLink>
+              <p className="mt-4 text-sm text-stone-500">No credit card required · Free forever plan available</p>
 
-          <CtaLink
-            from={page.slug}
-            href="/songs?welcome=1"
-            className="relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-indigo-900/60 hover:shadow-indigo-500/40 hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
-          >
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-            <span className="relative flex items-center justify-center gap-2">
-              Try it free
-              <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-              </svg>
-            </span>
-          </CtaLink>
-          <p className="relative mt-4 text-xs text-white/30">No credit card required · Free forever plan available</p>
-
-          {/* Trust signals */}
-          <div className="relative mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-white/55">
-            {["AI finds the chords", "Works on any device", "Export to PDF", "Free forever plan"].map((t) => (
-              <span key={t} className="inline-flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {t}
-              </span>
-            ))}
-          </div>
-
-          {/* Product screenshot — a real chord sheet made with the app */}
-          <div className="relative mt-12 w-full max-w-3xl">
-            <div className="absolute -inset-4 rounded-3xl blur-2xl opacity-60 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse at center, rgba(99,102,241,0.35) 0%, transparent 70%)" }} />
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/50">
-              <div className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-                <span className="flex-1 mx-3 text-center text-[10px] text-white/25 font-mono truncate tracking-wide">chordsheetmaker.ai</span>
-              </div>
-              <div className="relative w-full" style={{ aspectRatio: "16 / 10" }}>
-                <Image
-                  src="/example1.png"
-                  alt="Example chord sheet made with ChordSheetMaker — chords aligned above the lyrics"
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 768px"
-                  className="object-cover object-top"
-                />
-              </div>
+              {/* Trust signals */}
+              <ul className="mt-8 pt-6 border-t border-rule grid grid-cols-2 gap-x-6 gap-y-2.5 max-w-md text-sm text-stone-600">
+                {["AI finds the chords", "Works on any device", "Export to PDF", "Free forever plan"].map((t) => (
+                  <li key={t} className="flex items-baseline gap-2.5">
+                    <span aria-hidden className="font-semibold text-chord">✓</span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
             </div>
+
+            <figure className="w-full max-w-md mx-auto lg:max-w-none">
+              <HeroDemo />
+              <figcaption className="mt-3 font-mono text-[11px] leading-relaxed text-stone-500">
+                A real chart in play mode — it scrolls by itself while you play
+              </figcaption>
+            </figure>
           </div>
         </section>
 
         {/* ── Examples ─────────────────────────────────────────────────────── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
-          <div className="max-w-5xl mx-auto">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-3">Examples</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-zinc-900 mb-3 tracking-tight">See what you can create</h2>
-            <p className="text-center text-zinc-500 mb-12 max-w-xl mx-auto leading-relaxed">
+        <section className="bg-paper-deep border-b border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            <Eyebrow className="mb-4">Examples</Eyebrow>
+            <h2 className={`${H2} mb-3`}>See what you can create</h2>
+            <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl leading-relaxed">
               Real chord sheets made with ChordSheetMaker — backgrounds, fonts and colours all customised with AI.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8">
               {[
                 { src: "/example1.png", title: "Hotel California", artist: "Eagles" },
                 { src: "/example2.png", title: "Perfect", artist: "Ed Sheeran" },
               ].map((ex) => (
-                <div key={ex.title} className="relative rounded-2xl overflow-hidden border border-indigo-100 shadow-xl shadow-indigo-200/50">
-                  <div className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-                  </div>
-                  <div className="relative overflow-hidden" style={{ aspectRatio: "16 / 10" }}>
+                <figure key={ex.title}>
+                  <div
+                    className="relative overflow-hidden rounded-lg border border-ink/15 bg-stone-100"
+                    style={{ aspectRatio: "16 / 10", boxShadow: "0 22px 40px -26px rgba(28,25,23,0.45)" }}
+                  >
                     <Image
                       src={ex.src}
                       alt={`${ex.title} by ${ex.artist} — example chord sheet`}
                       fill
-                      sizes="(max-width: 768px) 100vw, 520px"
+                      sizes="(max-width: 768px) 100vw, 560px"
                       className="object-cover object-top"
                     />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-5 py-4">
-                    <p className="text-white font-bold text-sm leading-tight">{ex.title}</p>
-                    <p className="text-white/55 text-xs">{ex.artist}</p>
-                  </div>
-                </div>
+                  <figcaption className="pt-4">
+                    <p className="font-display text-xl leading-snug text-ink">{ex.title}</p>
+                    <p className="text-sm text-stone-600">{ex.artist}</p>
+                  </figcaption>
+                </figure>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── Sections ─────────────────────────────────────────────────────── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
-          <div className="max-w-3xl mx-auto space-y-10 sm:space-y-12">
-            {page.sections.map((sec) => (
-              <div key={sec.heading}>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-3 tracking-tight">
+        {/* ── Sections — heading in the margin, the text beside it ─────────── */}
+        <section>
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            {page.sections.map((sec, i) => (
+              <div
+                key={sec.heading}
+                className={`grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-3 lg:gap-16 border-t border-rule py-8 sm:py-10 ${i === 0 ? "border-t-ink" : ""}`}
+              >
+                <h2 className="font-display font-medium text-2xl sm:text-3xl tracking-[-0.01em] leading-tight text-ink text-balance">
                   {sec.heading}
                 </h2>
-                <p className="text-zinc-600 leading-relaxed text-base sm:text-lg">
+                <p className="text-stone-600 leading-relaxed text-base sm:text-lg">
                   {sec.body}
                 </p>
               </div>
@@ -234,26 +195,27 @@ export default async function LandingPage({ params }: Props) {
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-8 sm:mb-10 tracking-tight text-center">
-              Frequently asked questions
-            </h2>
-            <div className="divide-y divide-zinc-100 border-y border-zinc-100">
+        <section className="bg-paper-deep border-y border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24 grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-8 lg:gap-16">
+            <div>
+              <Eyebrow className="mb-4">FAQ</Eyebrow>
+              <h2 className={H2}>Frequently asked questions</h2>
+            </div>
+            <div className="border-b border-ink/15">
               {page.faqs.map((f) => (
-                <details key={f.q} className="group py-5">
-                  <summary className="flex items-center justify-between cursor-pointer list-none">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 pr-6">
+                <details key={f.q} className="group border-t border-ink/15">
+                  <summary className="flex items-center justify-between gap-4 py-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                    <h3 className="text-base sm:text-lg font-semibold text-ink">
                       {f.q}
                     </h3>
                     <svg
-                      className="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200 group-open:rotate-180"
-                      fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"
+                      className="w-4 h-4 shrink-0 text-stone-500 transition-transform duration-200 group-open:rotate-180"
+                      fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
                     </svg>
                   </summary>
-                  <p className="text-zinc-600 leading-relaxed text-base mt-3 pr-8">
+                  <p className="pb-6 -mt-1 pr-8 text-[15px] sm:text-base text-stone-600 leading-relaxed">
                     {f.a}
                   </p>
                 </details>
@@ -263,29 +225,22 @@ export default async function LandingPage({ params }: Props) {
         </section>
 
         {/* ── Related pages ────────────────────────────────────────────────── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20" style={{ background: "linear-gradient(180deg, #f0efff 0%, #f8f7ff 100%)" }}>
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-8 sm:mb-10 tracking-tight text-center">
+        <section>
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            <h2 className={`${H2} mb-10 sm:mb-14 max-w-2xl text-balance`}>
               Explore more ways to use ChordSheetMaker
             </h2>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-8 sm:gap-10 sm:grid-cols-3">
               {relatedPages.map((p) => (
-                <Link
-                  key={p.slug}
-                  href={`/${p.slug}`}
-                  className="group block rounded-2xl bg-white border border-zinc-100 p-6 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                <Link key={p.slug} href={`/${p.slug}`} className="group flex flex-col border-t border-ink pt-5">
+                  <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord">
                     {p.eyebrow}
                   </span>
-                  <p className="mt-2 font-bold text-zinc-900 leading-snug">
-                    {p.h1} <span className="text-indigo-500">{p.h1Accent}</span>
+                  <p className="mt-3 font-display text-2xl leading-snug text-ink">
+                    {p.h1} <em>{p.h1Accent}</em>
                   </p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 group-hover:gap-2 transition-all">
-                    Learn more
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-                    </svg>
+                  <span className="mt-4 text-sm font-semibold text-ink underline underline-offset-4 decoration-ink/25 group-hover:decoration-ink transition-colors self-start">
+                    Learn more →
                   </span>
                 </Link>
               ))}
@@ -294,36 +249,20 @@ export default async function LandingPage({ params }: Props) {
         </section>
 
         {/* ── CTA ──────────────────────────────────────────────────────────── */}
-        <section
-          className="relative px-5 sm:px-6 py-16 sm:py-24 text-center overflow-hidden"
-          style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
-        >
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(ellipse 70% 50% at 50% 80%, rgba(99,102,241,0.3) 0%, transparent 70%)",
-          }} />
-          <div className="relative max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-5 tracking-tight leading-tight">
-              {page.ctaHeading}
+        <section className="on-ink bg-ink text-paper">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28">
+            <h2 className={`font-display font-medium text-[2.4rem] sm:text-6xl ${CHART_LEADING} tracking-[-0.02em] mb-6 max-w-3xl`}>
+              <ChordedLine text={page.ctaHeading} chords={["Am", "F"]} />
             </h2>
-            <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
+            <p className="text-lg text-stone-300 mb-10 max-w-md leading-relaxed">
               {page.ctaBody}
             </p>
-            <CtaLink
-              from={page.slug}
-              href="/songs?welcome=1"
-              className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
-            >
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-              <span className="relative">Try it free</span>
-              <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-              </svg>
-            </CtaLink>
-            <div className="mt-8">
-              <Link href="/pricing" className="text-sm text-white/50 hover:text-white/80 transition-colors">
-                See pricing →
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+              <CtaLink from={page.slug} href="/songs?welcome=1" className={`${BTN_PAPER} px-8 py-4 text-base`}>
+                Try it free <span aria-hidden>→</span>
+              </CtaLink>
+              <Link href="/pricing" className="text-sm text-stone-300 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors px-1 py-2 self-start sm:self-auto">
+                See pricing
               </Link>
             </div>
           </div>
@@ -331,26 +270,26 @@ export default async function LandingPage({ params }: Props) {
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer style={{ background: "#0f0c29" }} className="border-t border-white/5 px-6 py-10">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <Link href="/" className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-400">Maker</span>
+      <footer className="bg-ink border-t border-white/10 px-5 sm:px-8 py-10">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
+          <Link href="/" className="text-sm font-extrabold tracking-tight text-white/80" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-indigo-300">Maker</span>
           </Link>
-          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/30">
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 text-xs text-stone-400 [&>a]:py-2">
             {LANDING_PAGES.map((p) => (
-              <Link key={p.slug} href={`/${p.slug}`} className="hover:text-white/60 transition-colors">
+              <Link key={p.slug} href={`/${p.slug}`} className="hover:text-white transition-colors">
                 {p.eyebrow}
               </Link>
             ))}
-            <Link href="/pricing" className="hover:text-white/60 transition-colors">Pricing</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
           </nav>
-          <p className="text-xs text-white/20">
+          <p className="text-xs text-stone-400 whitespace-nowrap">
             © {new Date().getFullYear()} ChordSheetMaker.ai
           </p>
         </div>
       </footer>
 
-      <ScrollToTop />
+      <ScrollToTop tone="ink" />
     </div>
   );
 }
