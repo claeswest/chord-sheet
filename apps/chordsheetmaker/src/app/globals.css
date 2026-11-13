@@ -29,69 +29,39 @@
   animation: fadeInUp 0.18s ease both;
 }
 
-/* ── Landing hero effects ─────────────────────────────────────────────────────
-   All decorative: gated behind prefers-reduced-motion, cheap transforms only. */
+/* ── Landing page ─────────────────────────────────────────────────────────────
+   Paper, ink and one colour — the chords'. Nothing here glows, drifts or
+   shimmers; the only movement is the sheet scrolling, which is the product. */
 
-/* Slow-drifting aurora blobs behind the hero */
-@keyframes aurora-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(60px, 40px) scale(1.15); }
-}
-@keyframes aurora-b {
-  0%, 100% { transform: translate(0, 0) scale(1.1); }
-  50%      { transform: translate(-70px, -30px) scale(0.95); }
-}
-.aurora {
+/* A chord sitting over the syllable it belongs to, as on a chart. Sized and
+   placed in ems of the line it annotates, so it follows the headline. */
+.chord-mark {
   position: absolute;
-  border-radius: 9999px;
-  filter: blur(90px);
-  pointer-events: none;
-  will-change: transform;
-}
-
-/* Animated gradient headline */
-@keyframes gradient-slide {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
-}
-.gradient-text {
-  background: linear-gradient(90deg, #818cf8 0%, #c084fc 30%, #f472b6 55%, #818cf8 100%);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Floating chord chips */
-@keyframes chip-float {
-  0%, 100% { transform: translateY(0) rotate(var(--chip-tilt, 0deg)); }
-  50%      { transform: translateY(-14px) rotate(var(--chip-tilt, 0deg)); }
-}
-.chord-chip {
-  position: absolute;
+  left: 0.02em;
+  bottom: calc(100% - 0.36em);
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.27em;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--color-chord);
   pointer-events: none;
   user-select: none;
-  font-weight: 700;
-  color: rgba(199, 210, 254, 0.5);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
-  padding: 6px 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
 }
+.on-ink .chord-mark { color: #a5b4fc; }
 
 /* Staggered hero entrance */
 @keyframes hero-rise {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.hero-reveal   { animation: hero-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.hero-reveal-1 { animation-delay: 0.05s; }
-.hero-reveal-2 { animation-delay: 0.15s; }
-.hero-reveal-3 { animation-delay: 0.25s; }
-.hero-reveal-4 { animation-delay: 0.35s; }
-.hero-reveal-5 { animation-delay: 0.5s; }
+.hero-reveal   { animation: hero-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-reveal-1 { animation-delay: 0.03s; }
+.hero-reveal-2 { animation-delay: 0.09s; }
+.hero-reveal-3 { animation-delay: 0.15s; }
+.hero-reveal-4 { animation-delay: 0.21s; }
+.hero-reveal-5 { animation-delay: 0.3s; }
 
 /* Hero demo — endless auto-scroll (content duplicated, so -50% loops clean) */
 @keyframes hero-sheet-scroll {
@@ -100,18 +70,7 @@
 }
 .hero-scroll { will-change: transform; }
 
-/* Pulsing glow behind the primary CTA */
-@keyframes cta-glow {
-  0%, 100% { box-shadow: 0 0 24px 2px rgba(99, 102, 241, 0.45), 0 8px 32px rgba(0, 0, 0, 0.35); }
-  50%      { box-shadow: 0 0 44px 8px rgba(139, 92, 246, 0.55), 0 8px 32px rgba(0, 0, 0, 0.35); }
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .aurora-a       { animation: aurora-a 14s ease-in-out infinite; }
-  .aurora-b       { animation: aurora-b 18s ease-in-out infinite; }
-  .gradient-text  { animation: gradient-slide 6s ease-in-out infinite; }
-  .chord-chip     { animation: chip-float 7s ease-in-out infinite; }
-  .cta-glow       { animation: cta-glow 3.2s ease-in-out infinite; }
   .hero-scroll    { animation: hero-sheet-scroll 84s linear infinite; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -127,7 +86,14 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Landing page: the serif the headings are set in, and its five colours. */
+  --font-display: var(--font-newsreader), ui-serif, Georgia, "Times New Roman", serif;
+  --color-paper: #faf6ee;
+  --color-paper-deep: #f2ecdf;
+  --color-ink: #1c1917;
+  --color-rule: #e0d7c6;
+  --color-chord: #4338ca;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -51,29 +51,31 @@ export default function FaqSection() {
   };
 
   return (
-    <section id="faq" className="px-5 sm:px-6 py-14 sm:py-20 scroll-mt-16" style={{ background: "linear-gradient(180deg, #f0efff 0%, #f8f7ff 100%)" }}>
+    <section id="faq" className="bg-paper-deep border-t border-rule scroll-mt-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="max-w-2xl mx-auto">
-        <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">FAQ</span>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-10 tracking-tight">
-          Common questions
-        </h2>
-        <div className="space-y-3">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24 grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-8 lg:gap-16">
+        <div>
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-4">FAQ</p>
+          <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink">
+            Common questions
+          </h2>
+        </div>
+        <div className="border-b border-ink/15">
           {FAQS.map((f) => (
             <details
               key={f.q}
-              className="group rounded-2xl border border-indigo-100 bg-white shadow-sm open:shadow-md open:shadow-indigo-100 transition-shadow"
+              className="group border-t border-ink/15"
             >
-              <summary className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer list-none text-sm sm:text-base font-semibold text-zinc-800 [&::-webkit-details-marker]:hidden">
+              <summary className="flex items-center justify-between gap-4 py-5 cursor-pointer list-none text-base sm:text-lg font-semibold text-ink [&::-webkit-details-marker]:hidden">
                 {f.q}
                 <svg
-                  className="w-4 h-4 shrink-0 text-indigo-400 transition-transform duration-200 group-open:rotate-180"
-                  fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"
+                  className="w-4 h-4 shrink-0 text-stone-500 transition-transform duration-200 group-open:rotate-180"
+                  fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
                 </svg>
               </summary>
-              <p className="px-5 pb-4 -mt-1 text-sm text-zinc-500 leading-relaxed">{f.a}</p>
+              <p className="pb-6 -mt-1 pr-8 text-[15px] text-stone-600 leading-relaxed">{f.a}</p>
             </details>
           ))}
         </div>

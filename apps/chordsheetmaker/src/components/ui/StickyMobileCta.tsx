@@ -35,13 +35,10 @@ export default function StickyMobileCta() {
       <CtaLink
         from="home-sticky"
         href="/editor/new?start=demo"
-        className="flex items-center gap-2 text-white text-sm font-semibold px-6 py-3 rounded-full shadow-xl shadow-indigo-900/40"
-        style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+        className="flex items-center gap-2 bg-ink text-paper text-sm font-semibold px-6 py-3 rounded-lg whitespace-nowrap ring-1 ring-white/15"
+        style={{ boxShadow: "0 14px 30px -10px rgba(28,25,23,0.6)" }}
       >
-        Build a chart free
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-        </svg>
+        Build a chart free <span aria-hidden>→</span>
       </CtaLink>
     </div>
   );

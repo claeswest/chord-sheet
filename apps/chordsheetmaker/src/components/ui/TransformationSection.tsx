@@ -35,26 +35,25 @@ export default function TransformationSection() {
   }, [open]);
 
   return (
-    <section className="relative px-4 sm:px-6 py-14 sm:py-20 overflow-hidden" style={{ background: "linear-gradient(180deg, #f0efff 0%, #eae8ff 100%)" }}>
-      <div className="relative max-w-4xl mx-auto">
-        <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Photo import</span>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">
+    <section>
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-4">Photo import</p>
+        <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">
           Go from this to this — in 30 seconds
         </h2>
-        <p className="text-center text-zinc-500 mb-10 sm:mb-14 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
+        <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl leading-relaxed">
           Snap a photo of any handwritten chord sheet. AI reads it and turns it into a polished, play-ready version.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
           {/* Before */}
           <div className="flex-1 w-full flex flex-col gap-2">
             <button
               onClick={() => setLightboxIndex(0)}
-              className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xl cursor-zoom-in group w-full text-left"
+              className="relative rounded-lg overflow-hidden border border-ink/15 cursor-zoom-in group w-full text-left"
             >
-              <span className="absolute top-3 left-3 z-10 text-xs font-bold bg-black/60 text-white px-3 py-1 rounded-full backdrop-blur-sm tracking-wide">BEFORE</span>
               <span className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="flex items-center gap-1 text-[10px] font-semibold bg-black/60 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1 text-[10px] font-semibold bg-ink/80 text-white px-2 py-1 rounded">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l1 1"/><path strokeLinecap="round" strokeLinejoin="round" d="M11 8v6M8 11h6"/></svg>
                   Zoom
                 </span>
@@ -65,32 +64,29 @@ export default function TransformationSection() {
                   alt="Handwritten chord sheet for Burning Gold on a notepad"
                   fill
                   sizes="(max-width: 640px) 100vw, 430px"
-                  className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </div>
             </button>
-            <p className="text-center text-xs text-zinc-400 font-medium">Your photo</p>
+            <p className="font-mono text-[11px] text-stone-500"><span className="uppercase tracking-[0.18em] text-ink">Before</span> — your photo</p>
           </div>
 
           {/* Arrow */}
-          <div className="flex items-center justify-center shrink-0 mb-5">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-200">
-              <svg className="w-6 h-6 text-white rotate-90 sm:rotate-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-            </div>
+          <div className="flex items-center justify-center shrink-0 sm:mb-6">
+            <svg aria-hidden className="w-8 h-8 text-ink rotate-90 sm:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
           </div>
 
           {/* After */}
           <div className="flex-1 w-full flex flex-col gap-2">
             <button
               onClick={() => setLightboxIndex(1)}
-              className="relative rounded-2xl overflow-hidden border border-indigo-300 shadow-xl cursor-zoom-in group w-full text-left"
-              style={{ boxShadow: "0 0 0 1px rgba(99,102,241,0.3), 0 20px 40px -8px rgba(99,102,241,0.35)" }}
+              className="relative rounded-lg overflow-hidden border border-ink/15 cursor-zoom-in group w-full text-left"
+              style={{ boxShadow: "0 26px 46px -28px rgba(28,25,23,0.5)" }}
             >
-              <span className="absolute top-3 left-3 z-10 text-xs font-bold bg-indigo-600/90 text-white px-3 py-1 rounded-full backdrop-blur-sm tracking-wide">AFTER</span>
               <span className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="flex items-center gap-1 text-[10px] font-semibold bg-indigo-600/80 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1 text-[10px] font-semibold bg-ink/80 text-white px-2 py-1 rounded">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l1 1"/><path strokeLinecap="round" strokeLinejoin="round" d="M11 8v6M8 11h6"/></svg>
                   Zoom
                 </span>
@@ -101,18 +97,18 @@ export default function TransformationSection() {
                   alt="Burning Gold chord sheet styled in ChordSheetMaker with AI background"
                   fill
                   sizes="(max-width: 640px) 100vw, 430px"
-                  className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </div>
             </button>
-            <p className="text-center text-xs text-indigo-500 font-medium">ChordSheetMaker output</p>
+            <p className="font-mono text-[11px] text-stone-500"><span className="uppercase tracking-[0.18em] text-chord">After</span> — ChordSheetMaker output</p>
           </div>
         </div>
 
-        <div className="mt-10 text-center">
+        <div className="mt-10 sm:mt-12">
           {/* Straight to the import dialog — the button promises exactly that. */}
-          <CtaLink from="home-photo" href="/editor/new?start=import" className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-colors shadow-md shadow-indigo-200">
-            Try it with your own sheet →
+          <CtaLink from="home-photo" href="/editor/new?start=import" className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink text-paper hover:bg-stone-700 px-7 py-3.5 text-[15px] font-semibold transition-colors">
+            Try it with your own sheet <span aria-hidden>→</span>
           </CtaLink>
         </div>
       </div>

@@ -1,16 +1,32 @@
 import Link from "next/link";
-import Image from "next/image";
+import type { ReactNode } from "react";
+import { Newsreader, Geist_Mono } from "next/font/google";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
 import FaqSection from "@/components/ui/FaqSection";
 import StickyMobileCta from "@/components/ui/StickyMobileCta";
 import BuildStamp from "@clavos/core/build-stamp";
-import FeatureCard from "@/components/ui/FeatureCard";
 import HeroDemo from "@/components/ui/HeroDemo";
 import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
 import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
+
+// The landing page's own two faces, loaded here rather than in the root layout
+// so the editor and the library don't preload type they never set a word in.
+// Newsreader carries the headings; Geist Mono the small labels and the chords.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
@@ -24,121 +40,103 @@ const FEATURE_LABELS: Record<string, string> = {
 
 const features = [
   {
-    icon: "✦",
     title: "Find any song with AI",
     description: "Type a song name and artist — AI returns a clean chord chart with the chords sitting right above the lyrics, in seconds.",
-    hex: "#6366f1",
-    iconBg: "rgba(99,102,241,0.12)",
-    cardBg: "rgba(99,102,241,0.04)",
-    glow: "rgba(99,102,241,0.18)",
   },
   {
-    icon: "📷",
     title: "Snap a photo",
     description: "Photograph a handwritten or printed chord sheet — AI reads it and turns it into a fully editable chart. Old notebooks welcome.",
-    hex: "#14b8a6",
-    iconBg: "rgba(20,184,166,0.12)",
-    cardBg: "rgba(20,184,166,0.04)",
-    glow: "rgba(20,184,166,0.18)",
   },
   {
-    icon: "📋",
     title: "Paste from any site",
     description: "Copy lyrics and chords from anywhere on the web and paste them in — AI cleans up the formatting into a proper chart automatically.",
-    hex: "#06b6d4",
-    iconBg: "rgba(6,182,212,0.12)",
-    cardBg: "rgba(6,182,212,0.04)",
-    glow: "rgba(6,182,212,0.18)",
   },
   {
-    icon: "🎸",
     title: "Fix alignment by dragging",
     description: "Grab any chord and drop it above the exact syllable where the change lands. What you build is what you play — no fiddly spacing.",
-    hex: "#3b82f6",
-    iconBg: "rgba(59,130,246,0.12)",
-    cardBg: "rgba(59,130,246,0.04)",
-    glow: "rgba(59,130,246,0.18)",
   },
   {
-    icon: "🎚️",
     title: "Transpose to your key",
     description: "Move the whole chart up or down with one tap to fit your singer's range. Every chord updates instantly — no capo math.",
-    hex: "#8b5cf6",
-    iconBg: "rgba(139,92,246,0.12)",
-    cardBg: "rgba(139,92,246,0.04)",
-    glow: "rgba(139,92,246,0.18)",
   },
   {
-    icon: "▶️",
     title: "Hands-free auto-scroll",
     description: "Hit play and the chart scrolls at your pace — large, readable text on phone, tablet or laptop. On the sofa or mid-gig, keep both hands on your instrument.",
-    hex: "#10b981",
-    iconBg: "rgba(16,185,129,0.12)",
-    cardBg: "rgba(16,185,129,0.04)",
-    glow: "rgba(16,185,129,0.18)",
   },
   {
-    icon: "🗂️",
     title: "Setlists & collections",
     description: "Group songs into setlists for gigs, or collections for practicing at home — drag them into the order you want to play.",
-    hex: "#f59e0b",
-    iconBg: "rgba(245,158,11,0.12)",
-    cardBg: "rgba(245,158,11,0.04)",
-    glow: "rgba(245,158,11,0.18)",
   },
   {
-    icon: "📄",
     title: "One-tap PDF export",
     description: "Export a clean, print-ready PDF with every chord still perfectly aligned — for the music stand, the folder, or the rest of the band.",
-    hex: "#f43f5e",
-    iconBg: "rgba(244,63,94,0.12)",
-    cardBg: "rgba(244,63,94,0.04)",
-    glow: "rgba(244,63,94,0.18)",
   },
   {
-    icon: "🔗",
     title: "Share & sync",
     description: "Send a link anyone can open and play, auto-scroll included — no account needed. Your own library stays synced across all your devices.",
-    hex: "#ec4899",
-    iconBg: "rgba(236,72,153,0.12)",
-    cardBg: "rgba(236,72,153,0.04)",
-    glow: "rgba(236,72,153,0.18)",
   },
 ];
+
+const steps = [
+  { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
+  { n: 2, title: "Make it yours",            body: "Style it with AI backgrounds and fonts, drag chords into place, transpose to your key." },
+  { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — then file it into a setlist or collection for next time." },
+];
+
+/**
+ * A word with its chord over it — the page's one ornament, and the product's
+ * own idiom. Decorative: the chord is hidden from assistive tech, so the
+ * heading still reads as the plain sentence it is.
+ */
+function Chorded({ chord, children }: { chord: string; children: ReactNode }) {
+  return (
+    <span className="relative inline-block">
+      <span aria-hidden className="chord-mark">{chord}</span>
+      {children}
+    </span>
+  );
+}
+
+/** The small label over each section's heading. */
+function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <p className={`font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord ${className}`}>
+      {children}
+    </p>
+  );
+}
+
+// One set of buttons for the whole page: ink for the thing we want pressed,
+// a hairline for everything else.
+const BTN = "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors whitespace-nowrap";
+const BTN_INK = `${BTN} bg-ink text-paper hover:bg-stone-700`;
+const BTN_LINE = `${BTN} border border-ink/20 text-ink hover:border-ink/60`;
 
 export default async function HomePage() {
   const session = await auth();
 
   return (
-    <div className="flex flex-col min-h-full bg-white">
+    <div className={`${newsreader.variable} ${geistMono.variable} flex flex-col min-h-full bg-paper text-ink`}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-zinc-100">
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-600">Maker</span>
+      <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
+        <div className="flex items-center justify-between gap-3 px-5 sm:px-8 py-4 max-w-6xl mx-auto w-full">
+          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-chord">Maker</span>
           </Link>
-          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-zinc-600">
-            <Link href="#examples" className="hover:text-zinc-900 transition-colors hidden sm:block">Examples</Link>
-            <Link href="#features" className="hover:text-zinc-900 transition-colors hidden sm:block">Features</Link>
-            <Link href="#pricing"  className="hover:text-zinc-900 transition-colors hidden sm:block">Pricing</Link>
+          <nav className="flex items-center gap-4 sm:gap-7 text-sm text-stone-600">
+            <Link href="#examples" className="hover:text-ink transition-colors hidden sm:block">Examples</Link>
+            <Link href="#features" className="hover:text-ink transition-colors hidden sm:block">Features</Link>
+            <Link href="#pricing"  className="hover:text-ink transition-colors hidden sm:block">Pricing</Link>
             {session ? (
-              <Link href="/songs" className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap">
+              <Link href="/songs" className={`${BTN_INK} px-4 py-2 text-sm`}>
                 Songs
               </Link>
             ) : (
               <>
-                <Link href="/login" className="hover:text-zinc-900 transition-colors whitespace-nowrap py-2">Sign in</Link>
-                <CtaLink from="home-header" href="/editor/new?start=demo"
-                  className="relative overflow-hidden group inline-flex items-center gap-1.5 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-md shadow-indigo-900/40 hover:shadow-indigo-500/40 hover:scale-[1.03] whitespace-nowrap"
-                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
-                >
-                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                  <span className="relative">Try it free</span>
-                  <svg className="relative w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-                  </svg>
+                <Link href="/login" className="hover:text-ink transition-colors whitespace-nowrap py-2">Sign in</Link>
+                <CtaLink from="home-header" href="/editor/new?start=demo" className={`${BTN_INK} px-4 py-2 text-sm`}>
+                  Try it free <span aria-hidden>→</span>
                 </CtaLink>
               </>
             )}
@@ -148,145 +146,73 @@ export default async function HomePage() {
 
       <main className="flex-1">
 
-        {/* ── Hero + Highlights (one dark section, zero seam) ──────────────── */}
-        <section
-          className="relative flex flex-col items-center text-center px-5 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-16 overflow-hidden"
-          style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #1a1640 100%)" }}
-        >
-          {/* Radial glow */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)",
-          }} />
+        {/* ── Hero — the sentence on the left, the product on the right ────── */}
+        <section className="border-b border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-16 lg:pt-20 pb-12 sm:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10 lg:gap-16 items-center">
+            <div>
+              <Eyebrow className="hero-reveal hero-reveal-1 mb-6 sm:mb-8">
+                For every musician — from sofa to stage
+              </Eyebrow>
 
-          {/* Drifting aurora blobs */}
-          <div className="aurora aurora-a hidden sm:block" style={{
-            width: 480, height: 480, top: -140, left: "8%",
-            background: "radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)",
-          }} />
-          <div className="aurora aurora-b hidden sm:block" style={{
-            width: 520, height: 520, top: 60, right: "4%",
-            background: "radial-gradient(circle, rgba(192,132,252,0.28) 0%, transparent 70%)",
-          }} />
+              {/* Set like a line on a chart: the chords are the page's ornament.
+                  The tall leading is the room they sit in. */}
+              <h1 className="hero-reveal hero-reveal-2 font-display font-medium text-[2.6rem] sm:text-6xl lg:text-[4.25rem] leading-[1.42] tracking-[-0.02em] text-ink mb-5 sm:mb-6">
+                <Chorded chord="G">Turn</Chorded> any <Chorded chord="D">song</Chorded> into a{" "}
+                <Chorded chord="Em"><em>stunning</em></Chorded>{" "}
+                <span className="whitespace-nowrap">chord <Chorded chord="C">chart</Chorded></span>
+              </h1>
 
-          {/* Floating chord chips — desktop only, purely decorative */}
-          <div aria-hidden className="hidden lg:block absolute inset-0 pointer-events-none">
-            <span className="chord-chip text-sm" style={{ top: "16%", left: "10%", ["--chip-tilt" as never]: "-8deg", animationDelay: "0s" }}>Am7</span>
-            <span className="chord-chip text-base" style={{ top: "34%", left: "5%", ["--chip-tilt" as never]: "5deg", animationDelay: "1.6s" }}>G</span>
-            <span className="chord-chip text-sm" style={{ top: "55%", left: "12%", ["--chip-tilt" as never]: "-4deg", animationDelay: "3.1s" }}>Dsus4</span>
-            <span className="chord-chip text-base" style={{ top: "18%", right: "9%", ["--chip-tilt" as never]: "7deg", animationDelay: "0.9s" }}>Cmaj7</span>
-            <span className="chord-chip text-sm" style={{ top: "38%", right: "5%", ["--chip-tilt" as never]: "-6deg", animationDelay: "2.4s" }}>Em</span>
-            <span className="chord-chip text-base" style={{ top: "58%", right: "11%", ["--chip-tilt" as never]: "4deg", animationDelay: "4s" }}>F♯m7</span>
-          </div>
+              <p className="hero-reveal hero-reveal-3 text-lg sm:text-xl text-stone-600 max-w-md mb-8 leading-relaxed text-balance">
+                Every chord in the right place — then press play and perform it{" "}
+                <span className="whitespace-nowrap">hands-free.</span>
+              </p>
 
-          <span className="hero-reveal hero-reveal-1 relative inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 border border-indigo-500/30 text-center text-balance max-w-xs sm:max-w-none">
-            For every musician — from sofa to stage
-          </span>
-
-          {/* Two lines at every width — a third line pushes the product below the fold */}
-          <h1 className="hero-reveal hero-reveal-2 relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-4 max-w-3xl">
-            Turn any song into a{" "}
-            <span className="gradient-text">stunning chord chart</span>
-          </h1>
-
-          <p className="hero-reveal hero-reveal-3 relative text-base sm:text-lg text-zinc-300 max-w-xl mb-6 leading-relaxed text-balance">
-            Every chord in the right place — then press play and perform it{" "}
-            <span className="whitespace-nowrap">hands-free.</span>
-          </p>
-
-          <div className="hero-reveal hero-reveal-4 relative flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 w-full sm:w-auto max-w-xs sm:max-w-none">
-            <CtaLink
-              from="home-hero"
-              href={session ? "/editor/new" : "/editor/new?start=demo"}
-              className="cta-glow relative overflow-hidden group text-white px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-all duration-300 hover:scale-[1.03] text-center"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)", backgroundSize: "200% 100%" }}
-            >
-              {/* shimmer sweep */}
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)", backgroundSize: "200% 100%" }} />
-              <span className="relative flex items-center justify-center gap-2">
-                {session ? "Create a chord chart" : "Build a chart free"}
-                <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-                </svg>
-              </span>
-            </CtaLink>
-            {/* Secondary CTA must lead somewhere else — it used to point at the
-                same demo editor as the primary button, so the choice was fake. */}
-            <CtaLink
-              from="home-see-how"
-              href="#how"
-              className="border border-white/20 text-white/80 hover:text-white hover:border-white/40 px-8 py-3.5 sm:py-4 rounded-full text-base font-semibold transition-colors backdrop-blur-sm text-center"
-            >
-              See how it works
-            </CtaLink>
-          </div>
-
-          {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
-          <p className="hero-reveal hero-reveal-4 relative text-xs text-white/80 mb-7 sm:mb-9">
-            Free to start · No credit card · Ready in 30 seconds
-          </p>
-
-          {/* Hero composite — musician scene with the live demo card floating over it */}
-          <div className="hero-reveal hero-reveal-5 relative w-full max-w-3xl md:max-w-4xl mx-auto mb-4">
-            {/* Glow halo */}
-            <div className="absolute -inset-4 rounded-3xl pointer-events-none" style={{
-              background: "radial-gradient(ellipse 60% 55% at 50% 40%, rgba(129,140,248,0.35) 0%, transparent 70%)",
-              filter: "blur(24px)",
-            }} />
-
-            {/* Photo backdrop — the human context, desktop only */}
-            <div className="hidden md:block relative ml-auto w-[76%] rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
-              <Image
-                src="/hero-photo.jpg"
-                alt="Guitarist playing along with ChordSheetMaker"
-                width={1536}
-                height={1024}
-                priority
-                sizes="(max-width: 768px) 0px, 700px"
-                className="w-full object-cover"
-                style={{ objectPosition: "center 20%" }}
-              />
-              {/* Dim + blend: darker on the left (under the card), fade into section bg below */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                background: "linear-gradient(90deg, rgba(15,12,41,0.6) 0%, rgba(15,12,41,0.12) 55%, rgba(15,12,41,0.25) 100%), linear-gradient(to top, rgba(26,22,64,0.7) 0%, transparent 35%)",
-              }} />
-            </div>
-
-            {/* Demo card — floats over the scene on desktop, stands alone on mobile */}
-            <div className="relative md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-[48%] w-full">
-              <div className="relative rounded-2xl p-[1.5px] shadow-2xl shadow-black/50" style={{
-                background: "linear-gradient(135deg, rgba(129,140,248,0.7) 0%, rgba(192,132,252,0.5) 50%, rgba(244,114,182,0.35) 100%)",
-              }}>
-                <HeroDemo />
+              <div className="hero-reveal hero-reveal-4 flex flex-col sm:flex-row gap-3 mb-4">
+                <CtaLink
+                  from="home-hero"
+                  href={session ? "/editor/new" : "/editor/new?start=demo"}
+                  className={`${BTN_INK} px-7 py-3.5 text-base`}
+                >
+                  {session ? "Create a chord chart" : "Build a chart free"} <span aria-hidden>→</span>
+                </CtaLink>
+                {/* Secondary CTA must lead somewhere else — it used to point at the
+                    same demo editor as the primary button, so the choice was fake. */}
+                <CtaLink from="home-see-how" href="#how" className={`${BTN_LINE} px-7 py-3.5 text-base`}>
+                  See how it works
+                </CtaLink>
               </div>
+
+              {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
+              <p className="hero-reveal hero-reveal-4 text-sm text-stone-500">
+                Free to start · No credit card · Ready in 30 seconds
+              </p>
             </div>
+
+            {/* The product, doing the thing it is for: a real chart, scrolling. */}
+            <figure className="hero-reveal hero-reveal-5 w-full max-w-md mx-auto lg:max-w-none">
+              <HeroDemo />
+              <figcaption className="mt-3 font-mono text-[11px] leading-relaxed text-stone-500">
+                Auto-scroll in action — hands-free play mode, exactly as it looks when you play
+              </figcaption>
+            </figure>
           </div>
+        </section>
 
-          {/* Caption */}
-          <p className="relative text-xs text-white/80 mb-8 sm:mb-12">
-            Auto-scroll in action — hands-free play mode, exactly as it looks when you play
-          </p>
-
-          {/* How it works — 3 numbered steps ("See how it works" lands here) */}
-          <div id="how" className="relative w-full max-w-4xl mx-auto scroll-mt-24">
-            <h2 className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-200 mb-5">How it works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
-                { n: 2, title: "Make it yours",            body: "Style it with AI backgrounds and fonts, drag chords into place, transpose to your key." },
-                { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — then file it into a setlist or collection for next time." },
-              ].map((h) => (
-                <div key={h.n}
-                  className="group flex flex-row md:flex-col items-center gap-4 md:gap-0 text-left md:text-center px-4 md:px-6 py-4 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 hover:shadow-lg hover:shadow-indigo-900/40"
-                  style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <span className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-indigo-500/25 border border-indigo-400/40 text-indigo-200 font-extrabold text-base md:text-lg shrink-0 md:mb-4 md:mx-auto">{h.n}</span>
+        {/* ── How it works — three steps ("See how it works" lands here) ───── */}
+        <section id="how" className="scroll-mt-20 border-b border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
+            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-8 sm:mb-10">How it works</h2>
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+              {steps.map((h) => (
+                <li key={h.n} className="flex md:block gap-5 border-t border-ink pt-5">
+                  <span aria-hidden className="font-display text-5xl md:text-6xl leading-none text-ink md:block md:mb-5 shrink-0 w-10 md:w-auto">{h.n}</span>
                   <div>
-                    <h3 className="font-bold text-white mb-1 md:mb-2 text-sm md:text-base">{h.title}</h3>
-                    <p className="text-xs md:text-sm text-white/80 leading-relaxed">{h.body}</p>
+                    <h3 className="text-lg font-semibold text-ink mb-1.5">{h.title}</h3>
+                    <p className="text-[15px] text-stone-600 leading-relaxed">{h.body}</p>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </section>
 
@@ -296,65 +222,61 @@ export default async function HomePage() {
         {/* Photo import: show the before/after result before listing features. */}
         <TransformationSection />
 
-        {/* ── Features — heading + cards in one section ────────────────────── */}
-        <section id="features" className="px-4 sm:px-6 pt-12 sm:pt-16 pb-10 sm:pb-12 scroll-mt-16" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #f0efff 100%)" }}>
-          <div className="max-w-6xl mx-auto">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-zinc-800 mb-3 tracking-tight">
+        {/* ── Features ─────────────────────────────────────────────────────── */}
+        <section id="features" className="scroll-mt-16 border-t border-rule">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            <Eyebrow className="mb-4">Features</Eyebrow>
+            <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">
               Everything you need to play
             </h2>
-            <p className="text-center text-zinc-500 mb-10 sm:mb-12 max-w-xl mx-auto text-base sm:text-lg">
+            <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl">
               Focus on the music, not the formatting.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {features.map((f) => (
-                <FeatureCard key={f.title} {...f} />
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 sm:gap-y-10">
+              {features.map((f, i) => (
+                <li key={f.title} className="border-t border-rule pt-5">
+                  <span aria-hidden className="block font-mono text-[11px] text-chord mb-3">{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className="text-lg font-semibold text-ink mb-1.5">{f.title}</h3>
+                  <p className="text-[15px] text-stone-600 leading-relaxed">{f.description}</p>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 
         {/* ── Testimonial — reassurance right before the pricing decision ──── */}
-        <section className="px-5 sm:px-6 py-14 sm:py-20 bg-white">
-          <figure className="relative max-w-2xl mx-auto text-center">
-            <span aria-hidden className="block text-6xl leading-none text-indigo-200 font-serif mb-2">&ldquo;</span>
-            <blockquote className="text-lg sm:text-xl text-zinc-700 leading-relaxed">
-              ChordSheetMaker has made playing at home much easier for me. I have loads of
-              little songs in old notebooks, and now I can just take a photo and turn them
-              into chord sheets instead of typing everything out.
-              <span className="block mt-4 text-base text-zinc-500">
+        <section className="bg-paper-deep border-y border-rule">
+          <figure className="max-w-3xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            <blockquote className="font-display text-2xl sm:text-[2rem] leading-[1.35] tracking-[-0.01em] text-ink">
+              <p>
+                &ldquo;ChordSheetMaker has made playing at home much easier for me. I have loads of
+                little songs in old notebooks, and now I can just take a photo and turn them
+                into chord sheets instead of typing everything out.&rdquo;
+              </p>
+              <p className="mt-5 font-sans text-base sm:text-[17px] leading-relaxed tracking-normal text-stone-600">
                 My handwriting is a bit messy so I sometimes need to fix a few things, but
                 it&apos;s still way quicker. I also like adding backgrounds and fonts, probably
                 more than I should. Then I put it on my tablet, change the key if needed,
                 and just play.
-              </span>
+              </p>
             </blockquote>
-            <figcaption className="mt-6 flex items-center justify-center gap-3">
-              <span className="flex w-10 h-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-sm font-bold shadow-md shadow-indigo-200">
-                EL
-              </span>
-              <span className="text-left">
-                <span className="block text-sm font-bold text-zinc-800">Emma Larson</span>
-                <span className="block text-xs text-zinc-400">Hobby guitarist · Liverpool</span>
-              </span>
+            <figcaption className="mt-7 text-sm">
+              <span className="font-semibold text-ink">Emma Larson</span>
+              <span className="text-stone-500"> — Hobby guitarist · Liverpool</span>
             </figcaption>
           </figure>
         </section>
 
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
-        <section id="pricing" className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden scroll-mt-16" style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}>
-          {/* Radial glow */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)",
-          }} />
-          <div className="relative max-w-5xl mx-auto">
-            <span className="block text-center text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Pricing</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-3 tracking-tight">Plans &amp; pricing</h2>
-            <p className="text-center text-zinc-400 mb-2">Start free. Upgrade when you&apos;re ready.</p>
-            <p className="text-center text-xs text-indigo-300/70 mb-8 sm:mb-12">
+        <section id="pricing" className="scroll-mt-16">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            <Eyebrow className="mb-4">Pricing</Eyebrow>
+            <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">Plans &amp; pricing</h2>
+            <p className="text-lg text-stone-600 mb-2">Start free. Upgrade when you&apos;re ready.</p>
+            <p className="text-sm text-stone-500 mb-10 sm:mb-14 max-w-xl">
               Every plan includes AI song search, photo import, AI backgrounds &amp; fonts, and setlists &amp; collections.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
               {PLAN_ORDER.map((planKey) => {
                 const plan = PLANS[planKey];
                 const isPopular = planKey === "yearly";
@@ -362,51 +284,40 @@ export default async function HomePage() {
                 return (
                   <div
                     key={planKey}
-                    className={`relative bg-white rounded-2xl flex flex-col overflow-hidden shadow-sm sm:min-h-[480px] ${
-                      isPopular
-                        ? "ring-2 ring-indigo-500 shadow-indigo-100 shadow-md"
-                        : "border border-zinc-200"
+                    className={`relative flex flex-col rounded-xl bg-white ${
+                      isPopular ? "border-2 border-ink" : "border border-rule"
                     }`}
                   >
-                    {/* Top banner — always rendered so content aligns across all cards */}
-                    {isPopular ? (
-                      <div className="bg-indigo-500 text-white text-xs font-bold tracking-wide text-center py-1.5 uppercase">
+                    {isPopular && (
+                      <span className="absolute -top-3 left-6 bg-ink text-paper font-mono text-[10px] font-medium uppercase tracking-[0.14em] px-2.5 py-1 rounded">
                         Most popular
-                      </div>
-                    ) : (
-                      <div className="text-xs font-bold tracking-wide text-center py-1.5 uppercase invisible" aria-hidden>&nbsp;</div>
+                      </span>
                     )}
 
-                    <div className="px-6 pt-6 pb-4 text-center sm:text-left">
-                      <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">{plan.name}</h3>
+                    <div className="px-6 pt-8 pb-6">
+                      <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 mb-4">{plan.name}</h3>
 
-                      {/* Price row — fixed height */}
-                      <div className="h-11 flex items-end gap-2 justify-center sm:justify-start">
+                      <div className="flex items-baseline gap-2">
                         {isFree ? (
-                          <span className="text-4xl font-extrabold text-zinc-900">Free</span>
+                          <span className="font-display text-5xl leading-none text-ink">Free</span>
                         ) : (
                           <>
-                            <div className="flex items-end gap-1">
-                              <span className="text-4xl font-extrabold text-zinc-900">${plan.price}</span>
-                              <span className="text-zinc-400 text-sm mb-1">{planKey === "monthly" ? "/mo" : "/yr"}</span>
-                            </div>
+                            <span className="font-display text-5xl leading-none text-ink">${plan.price}</span>
+                            <span className="text-stone-500 text-sm">{planKey === "monthly" ? "/mo" : "/yr"}</span>
                             {planKey === "yearly" && (
-                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full whitespace-nowrap mb-1">Save {yearlySavingPercent()}%</span>
+                              <span className="ml-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">Save {yearlySavingPercent()}%</span>
                             )}
                           </>
                         )}
                       </div>
 
-                      {/* Description — fixed height, single line */}
-                      <div className="h-6 flex items-center mt-1 justify-center sm:justify-start">
-                        <p className="text-xs text-zinc-400">
-                          {planKey === "yearly" ? `≈ $${yearlyPerMonth()}/month, billed yearly` : plan.description}
-                        </p>
-                      </div>
+                      <p className="mt-3 text-sm text-stone-500 min-h-5">
+                        {planKey === "yearly" ? `≈ $${yearlyPerMonth()}/month, billed yearly` : plan.description}
+                      </p>
                     </div>
 
-                    <div className="px-6 py-4 border-t border-zinc-100 flex-1 flex flex-col items-center sm:items-start">
-                      <ul className="space-y-2.5 w-full max-w-[240px] sm:max-w-none">
+                    <div className="px-6 py-6 border-t border-rule flex-1">
+                      <ul className="space-y-3">
                         {Object.keys(FEATURE_LABELS).filter((key) => {
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
@@ -416,11 +327,9 @@ export default async function HomePage() {
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
                           return (
-                            <li key={key} className={`flex items-center gap-2.5 text-sm ${active ? "text-zinc-700" : "text-zinc-400"}`}>
-                              <span aria-hidden className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold ${
-                                active ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-400"
-                              }`}>
-                                {active ? "✓" : "—"}
+                            <li key={key} className={`flex items-baseline gap-3 text-[15px] ${active ? "text-ink" : "text-stone-400"}`}>
+                              <span aria-hidden className={`w-3 shrink-0 text-center font-semibold ${active ? "text-chord" : "text-stone-300"}`}>
+                                {active ? "✓" : "–"}
                               </span>
                               {!active && <span className="sr-only">Not included: </span>}
                               {key === "songLimit"
@@ -432,125 +341,80 @@ export default async function HomePage() {
                       </ul>
                     </div>
 
-                    <div className="px-6 pb-6 pt-4 border-t border-zinc-100 space-y-2">
+                    <div className="px-6 pb-6 space-y-2.5">
                       {/* Only the free button feeds the cta_try_free funnel step;
                           the paid ones lead to checkout, a different journey. */}
                       {isFree ? (
-                        <CtaLink
-                          from="home-pricing-free"
-                          href="/songs"
-                          className="block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
-                        >
+                        <CtaLink from="home-pricing-free" href="/songs" className={`${BTN_LINE} w-full py-3 text-sm`}>
                           Try it free
                         </CtaLink>
                       ) : (
-                        <Link
-                          href="/pricing"
-                          className={`block w-full text-center py-2.5 rounded-full text-sm font-semibold transition-colors ${
-                            isPopular
-                              ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                              : "bg-zinc-900 text-white hover:bg-zinc-700"
-                          }`}
-                        >
-                          Start 7-day free trial →
+                        <Link href="/pricing" className={`${isPopular ? BTN_INK : BTN_LINE} w-full py-3 text-sm`}>
+                          Start 7-day free trial <span aria-hidden>→</span>
                         </Link>
                       )}
-                      {!isFree && (
-                        <p className="text-center text-[11px] text-zinc-400">
-                          7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime
-                        </p>
-                      )}
+                      {/* Always rendered so the three buttons sit on one line. */}
+                      <p className={`text-center text-xs text-stone-500 ${isFree ? "invisible" : ""}`} aria-hidden={isFree}>
+                        {isFree
+                          ? " "
+                          : <>7 days free · then ${plan.price}{planKey === "monthly" ? "/mo" : "/yr"} · cancel anytime</>}
+                      </p>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <p className="text-center text-xs text-white/60 mt-8">
+            <p className="text-sm text-stone-500 mt-8">
               Secure payments via Stripe · Cancel anytime · No hidden fees
             </p>
           </div>
         </section>
 
-        <div style={{ background: "rgba(99,102,241,0.25)", height: 1 }} />
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
         <FaqSection />
 
         {/* ── Closing CTA — the sticky phone CTA steps aside when this shows ── */}
-        <section
-          id="get-started"
-          className="relative px-5 sm:px-6 py-16 sm:py-28 text-center overflow-hidden"
-          style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f0c29 100%)" }}
-        >
-          {/* Radial glow */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(ellipse 70% 50% at 50% 80%, rgba(99,102,241,0.3) 0%, transparent 70%)",
-          }} />
-
-          {/* Floating decorative notes */}
-          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
-            {[
-              { ch: "♩", top: "22%", left: "7%",   size: 52, opacity: 0.12 },
-              { ch: "♫", top: "58%", left: "4%",   size: 68, opacity: 0.09 },
-              { ch: "♪", top: "35%", right: "6%",  size: 46, opacity: 0.10 },
-              { ch: "♬", top: "68%", right: "8%",  size: 64, opacity: 0.09 },
-              { ch: "♩", top: "15%", right: "20%", size: 36, opacity: 0.07 },
-              { ch: "♫", top: "78%", left: "18%",  size: 40, opacity: 0.07 },
-            ].map((n, i) => (
-              <span key={i} className="absolute text-white" style={{
-                top: n.top,
-                left: "left" in n ? n.left : undefined,
-                right: "right" in n ? n.right : undefined,
-                fontSize: n.size,
-                opacity: n.opacity,
-                transform: `rotate(${i % 2 === 0 ? -15 : 12}deg)`,
-              }}>{n.ch}</span>
-            ))}
-          </div>
-
-          <div className="relative max-w-2xl mx-auto">
-            <span className="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6 border border-indigo-500/30">
+        <section id="get-started" className="on-ink bg-ink text-paper">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-indigo-300 mb-6 sm:mb-8">
               Free to start
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
-              Your songs deserve<br />a better home.
+            </p>
+            <h2 className="font-display font-medium text-[2.5rem] sm:text-6xl lg:text-7xl leading-[1.42] tracking-[-0.02em] mb-6">
+              <Chorded chord="Am">Your</Chorded> songs <Chorded chord="F">deserve</Chorded>
+              <br className="hidden sm:block" />{" "}
+              a <Chorded chord="C"><em>better</em></Chorded> <Chorded chord="G">home.</Chorded>
             </h2>
-            <p className="text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
+            <p className="text-lg text-stone-300 mb-10 max-w-md leading-relaxed">
               Build, transpose and play your chord charts — on any device, at home or on stage.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <CtaLink
                 from="home-bottom"
                 href={session ? "/songs" : "/editor/new?start=demo"}
-                className="relative overflow-hidden group inline-flex items-center gap-2 text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-300 shadow-xl shadow-indigo-900/60 hover:shadow-indigo-500/50 hover:scale-[1.03]"
-                style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%)" }}
+                className={`${BTN} bg-paper text-ink hover:bg-white px-8 py-4 text-base`}
               >
-                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                <span className="relative">{session ? "Go to my songs" : "Create your first chart free"}</span>
-                <svg className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-                </svg>
+                {session ? "Go to my songs" : "Create your first chart free"} <span aria-hidden>→</span>
               </CtaLink>
               {!session && (
-                <Link href="/pricing" className="text-sm text-white/70 hover:text-white transition-colors px-3 py-2">
+                <Link href="/pricing" className="text-sm text-stone-300 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors px-1 py-2 self-start sm:self-auto">
                   See pricing
                 </Link>
               )}
             </div>
             {!session && (
-              <p className="mt-4 text-xs text-white/60">Free to start · No credit card · Works on any device</p>
+              <p className="mt-5 text-sm text-stone-400">Free to start · No credit card · Works on any device</p>
             )}
           </div>
         </section>
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer style={{ background: "#0f0c29" }} className="border-t border-white/5 px-6 py-10">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <span className="text-sm font-extrabold tracking-tight text-white/70" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-400">Maker</span>
+      <footer className="bg-ink border-t border-white/10 px-5 sm:px-8 py-10">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <span className="text-sm font-extrabold tracking-tight text-white/80" style={{ fontFamily: "var(--font-nunito)" }}>
+            ChordSheet<span className="text-indigo-300">Maker</span>
           </span>
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 text-xs text-white/60 [&>a]:py-2">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 text-xs text-stone-400 [&>a]:py-2">
             <Link href="#examples" className="hover:text-white transition-colors">Examples</Link>
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="#pricing"  className="hover:text-white transition-colors">Pricing</Link>
@@ -559,18 +423,18 @@ export default async function HomePage() {
             <Link href="/terms"    className="hover:text-white transition-colors">Terms</Link>
             <a href="mailto:claes@clavos.se" className="hover:text-white transition-colors">Contact</a>
           </nav>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-stone-400">
             © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
           </p>
         </div>
-        <div className="max-w-5xl mx-auto mt-4 text-center sm:text-right">
+        <div className="max-w-6xl mx-auto mt-4 text-center sm:text-right">
           <BuildStamp className="text-[10px] text-white/15 font-mono" />
         </div>
       </footer>
 
       {!session && <StickyMobileCta />}
       {/* Guests get the sticky CTA on phones — lift the button clear of it */}
-      <ScrollToTop raised={!session} />
+      <ScrollToTop raised={!session} tone="ink" />
     </div>
   );
 }

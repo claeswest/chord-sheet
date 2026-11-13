@@ -40,9 +40,12 @@ function Sheet() {
 
 export default function HeroDemo() {
   return (
-    <div className="relative rounded-2xl overflow-hidden" style={{ background: SHEET_TOP }}>
+    <div
+      className="relative rounded-xl overflow-hidden border border-ink/15"
+      style={{ background: SHEET_TOP, boxShadow: "0 1px 0 rgba(28,25,23,0.04), 0 28px 50px -28px rgba(28,25,23,0.45)" }}
+    >
       {/* Auto-scrolling sheet (duplicated so the -50% loop is seamless) */}
-      <div className="relative h-[260px] sm:h-[340px] overflow-hidden" aria-hidden>
+      <div className="relative h-[300px] sm:h-[400px] lg:h-[470px] overflow-hidden" aria-hidden>
         <div className="hero-scroll">
           <Sheet />
           <Sheet />
@@ -59,20 +62,20 @@ export default function HeroDemo() {
       </div>
 
       {/* Play-mode control bar — mirrors the real viewer's dark bar over the sheet */}
-      <div className="relative z-10 flex items-center justify-center gap-3 px-4 py-3 bg-black/45 backdrop-blur-sm">
-        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500 text-white shadow-lg shadow-indigo-900/50">
+      <div className="relative z-10 flex items-center justify-center gap-3 px-4 py-3 bg-ink">
+        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-paper text-ink">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <rect x="5" y="4" width="3" height="12" rx="1" /><rect x="12" y="4" width="3" height="12" rx="1" />
           </svg>
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/50">Slow</span>
+          <span className="text-[10px] text-white/60">Slow</span>
           <span className="relative w-24 h-1 rounded-full bg-white/20">
-            <span className="absolute left-[22%] -top-1 w-3 h-3 rounded-full bg-indigo-400 shadow" />
+            <span className="absolute left-[22%] -top-1 w-3 h-3 rounded-full bg-paper" />
           </span>
-          <span className="text-[10px] text-white/50">Fast</span>
+          <span className="text-[10px] text-white/60">Fast</span>
         </div>
-        <span className="text-[10px] text-white/50 font-mono hidden sm:inline">auto-scroll</span>
+        <span className="text-[10px] text-white/60 font-mono hidden sm:inline">auto-scroll</span>
       </div>
     </div>
   );
