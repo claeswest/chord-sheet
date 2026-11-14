@@ -10,7 +10,7 @@ import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
 import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
 import { LANDING_FONTS } from "@/components/landing/fonts";
-import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, EYEBROW, H2 } from "@/components/landing/kit";
+import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, EYEBROW, H2, Wordmark } from "@/components/landing/kit";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
@@ -76,9 +76,7 @@ export default async function HomePage() {
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
         <div className="flex items-center justify-between gap-3 px-5 sm:px-8 py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-chord">Maker</span>
-          </Link>
+          <Link href="/" aria-label="ChordSheetMaker — home"><Wordmark className="text-[1.15rem] sm:text-2xl" /></Link>
           <nav className="flex items-center gap-4 sm:gap-7 text-sm text-stone-600">
             <Link href="#examples" className="hover:text-ink transition-colors hidden sm:block">Examples</Link>
             <Link href="#features" className="hover:text-ink transition-colors hidden sm:block">Features</Link>
@@ -331,7 +329,7 @@ export default async function HomePage() {
         {/* ── Closing CTA — the sticky phone CTA steps aside when this shows ── */}
         <section id="get-started" className="on-ink bg-ink text-paper">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28">
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-indigo-300 mb-6 sm:mb-8">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord-light mb-6 sm:mb-8">
               Free to start
             </p>
             <h2 className={`font-display font-medium text-[2.5rem] sm:text-6xl lg:text-7xl ${CHART_LEADING} tracking-[-0.02em] mb-6`}>
@@ -366,9 +364,7 @@ export default async function HomePage() {
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="bg-ink border-t border-white/10 px-5 sm:px-8 py-10">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <span className="text-sm font-extrabold tracking-tight text-white/80" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-300">Maker</span>
-          </span>
+          <span><Wordmark onInk className="text-lg" /></span>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 text-xs text-stone-400 [&>a]:py-2">
             <Link href="#examples" className="hover:text-white transition-colors">Examples</Link>
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>

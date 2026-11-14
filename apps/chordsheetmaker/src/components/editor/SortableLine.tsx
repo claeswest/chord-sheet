@@ -33,7 +33,7 @@ export default function SortableLine({ id, children }: Props) {
       <button
         {...attributes}
         {...listeners}
-        className="opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing text-[#302b63]/50 hover:text-[#302b63] transition-opacity shrink-0 touch-none rounded-md bg-[#302b63]/10 shadow-sm border border-[#302b63]/20 p-1"
+        className="opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing text-ink/50 hover:text-ink transition-opacity shrink-0 touch-none rounded-md bg-ink/10 shadow-sm border border-ink/20 p-1"
         tabIndex={-1}
         aria-label="Drag to reorder"
       >

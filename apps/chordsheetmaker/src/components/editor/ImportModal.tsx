@@ -54,7 +54,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
         if (line.type === "section") {
           return (
             <div key={line.id} className="pt-6 pb-1 first:pt-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">
+              <span className="text-xs font-bold uppercase tracking-widest text-chord">
                 {line.label}
               </span>
             </div>
@@ -66,7 +66,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
         return (
           <div key={line.id} className="relative mb-0.5" style={{ paddingTop: hasChords ? "1.4em" : 0 }}>
             {hasChords && (
-              <div className="absolute top-0 left-0 text-xs font-semibold text-indigo-400 tracking-wide whitespace-nowrap">
+              <div className="absolute top-0 left-0 text-xs font-semibold text-chord tracking-wide whitespace-nowrap">
                 {line.chords.map((c) => c.chord).join("  ")}
               </div>
             )}
@@ -288,19 +288,19 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "linear-gradient(160deg, #0f0c29e6 0%, #302b63e6 55%, #1a1640e6 100%)", backdropFilter: "blur(4px)" }}
+      style={{ background: "rgba(28, 25, 23, 0.6)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl shadow-black/60 w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-xl border border-rule shadow-2xl shadow-black/40 w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden">
 
-        {/* Header — dark navy, matches songs page top bar */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ background: "#302b63" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 bg-paper-deep border-b border-rule">
           {!showReview ? (
             <div>
-              <h2 className="text-base font-semibold text-white">
+              <h2 className="text-base font-semibold text-ink">
                 {searchOnly ? "Find a song" : "Import from web or photo"}
               </h2>
-              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <p className="text-xs mt-0.5 text-stone-600">
                 {searchOnly
                   ? "Type artist and song below — AI does the rest."
                   : "Paste chords from a website or upload a photo."}
@@ -308,13 +308,14 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-400/20 text-emerald-300 text-xs font-bold shrink-0">✓</span>
-              <span className="text-sm font-medium text-white/80">Chords found</span>
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold shrink-0">✓</span>
+              <span className="text-sm font-semibold text-ink">Chords found</span>
             </div>
           )}
           <button
             onClick={() => onClose()}
-            className="text-white/40 hover:text-white transition-colors text-lg leading-none px-1 ml-auto"
+            aria-label="Close"
+            className="text-stone-500 hover:text-ink transition-colors text-lg leading-none px-1 ml-auto"
           >
             ✕
           </button>
@@ -328,7 +329,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                 key={t}
                 onClick={() => setTab(t)}
                 className={`text-sm font-medium px-1 py-3 mr-6 border-b-2 transition-colors ${
-                  tab === t ? "border-indigo-600 text-indigo-600" : "border-transparent text-zinc-400 hover:text-zinc-600"
+                  tab === t ? "border-ink text-ink" : "border-transparent text-stone-500 hover:text-ink"
                 }`}
               >
                 {t === "text"  && "📋 Paste text"}
@@ -371,12 +372,12 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                     onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                     placeholder="e.g. Oasis Wonderwall"
                     spellCheck={false}
-                    className="flex-1 border border-zinc-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-indigo-400 transition-colors"
+                    className="flex-1 border border-zinc-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-ink transition-colors"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={!query.trim() || searchLoading}
-                    className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    className="flex items-center gap-1.5 text-sm font-medium bg-ink hover:bg-stone-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                   >
                     {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
                   </button>
@@ -417,7 +418,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                         onChange={(e) => { setText(e.target.value); setMeta({}); setCleaned(false); }}
                         onPaste={() => { pendingAutoClean.current = true; }}
                         spellCheck={false}
-                        className="absolute inset-0 w-full h-full text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-300 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-400 resize-none leading-relaxed"
+                        className="absolute inset-0 w-full h-full text-sm font-mono text-zinc-700 bg-zinc-50 border border-zinc-300 rounded-lg px-3 py-2.5 outline-none focus:border-ink resize-none leading-relaxed"
                       />
                       {!text && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
@@ -446,9 +447,9 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   className={`flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors min-h-[240px] ${
-                    dragOver ? "border-indigo-400 bg-indigo-50"
+                    dragOver ? "border-ink bg-paper"
                     : imageSrc ? "border-zinc-300 bg-zinc-50 cursor-default"
-                    : "border-zinc-300 bg-zinc-50 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer"
+                    : "border-zinc-300 bg-zinc-50 hover:border-ink/40 hover:bg-paper cursor-pointer"
                   }`}
                 >
                   {imageSrc ? (
@@ -478,7 +479,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
                 <button
                   onClick={handleOcrRead}
                   disabled={!imageSrc || ocrLoading}
-                  className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-ink hover:bg-stone-700 text-white px-4 py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {ocrLoading ? <><Spinner size={4} /> Scanning with AI…</> : <>🪄 Scan with AI</>}
                 </button>
@@ -492,7 +493,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
           <div className="flex items-center justify-end px-6 py-4 border-t border-zinc-100 bg-white">
             <button
               onClick={handleImport}
-              className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium bg-ink hover:bg-stone-700 text-white px-5 py-3 rounded-lg transition-colors"
             >
               <span className="text-base leading-none">♪</span> Import
             </button>

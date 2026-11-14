@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LANDING_FONTS } from "@/components/landing/fonts";
+import { Eyebrow, Wordmark } from "@/components/landing/kit";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -11,36 +13,35 @@ const UPDATED = "July 3, 2026";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-bold text-zinc-900 mb-2">{title}</h2>
-      <div className="text-sm text-zinc-600 leading-relaxed space-y-2">{children}</div>
+      <h2 className="text-lg font-semibold text-ink mb-2">{title}</h2>
+      <div className="text-[15px] text-stone-600 leading-relaxed space-y-2">{children}</div>
     </section>
   );
 }
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#f0f0f5" }}>
-      {/* Header */}
-      <div
-        className="py-10 sm:py-14 text-center px-6"
-        style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
-      >
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
-        </Link>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-4 mb-2">
+    <div className={`${LANDING_FONTS} min-h-screen bg-paper text-ink`}>
+      <header className="px-5 sm:px-8 py-4 border-b border-rule">
+        <div className="max-w-6xl mx-auto w-full">
+          <Link href="/" aria-label="ChordSheetMaker — home"><Wordmark className="text-[1.15rem] sm:text-2xl" /></Link>
+        </div>
+      </header>
+
+      <div className="max-w-2xl mx-auto px-6 pt-10 sm:pt-14">
+        <Eyebrow className="mb-4">Last updated {UPDATED}</Eyebrow>
+        <h1 className="font-display font-medium text-[2.6rem] sm:text-6xl leading-[1.05] tracking-[-0.02em] text-ink">
           Terms of Service
         </h1>
-        <p className="text-zinc-400 text-sm">Last updated {UPDATED}</p>
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-10 sm:py-12">
-        <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-6 sm:p-10">
+        <div className="bg-white rounded-xl border border-rule p-6 sm:p-10">
           <Section title="1. Who we are">
             <p>
               ChordSheetMaker (chordsheetmaker.ai) is a web app for creating, styling and
               performing chord sheets, operated by HB Clavos, Sweden. Questions? Email{" "}
-              <a href="mailto:claes@clavos.se" className="text-indigo-600 hover:text-indigo-700">claes@clavos.se</a>.
+              <a href="mailto:claes@clavos.se" className="text-chord hover:text-ink">claes@clavos.se</a>.
             </p>
           </Section>
 
@@ -109,8 +110,8 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <div className="pt-4 border-t border-zinc-100 text-center">
-            <Link href="/" className="text-sm text-indigo-600 hover:text-indigo-700">
+          <div className="pt-4 border-t border-rule">
+            <Link href="/" className="text-sm text-chord hover:text-ink">
               ← Back to ChordSheetMaker
             </Link>
           </div>

@@ -244,7 +244,7 @@ export default function LyricLineEditor({
   })();
 
   return (
-    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-[#302b63]/15 border-l-2 border-transparent hover:border-[#302b63]/40">
+    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-ink/15 border-l-2 border-transparent hover:border-ink/40">
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
@@ -300,7 +300,7 @@ export default function LyricLineEditor({
               <input
                 autoFocus
                 defaultValue={chord.chord}
-                className="w-16 font-bold text-[#302b63] bg-[#302b63]/10 border border-[#302b63]/30 rounded px-1 outline-none shadow-sm"
+                className="w-16 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm"
                 style={{
                   fontSize: chordSize,
                   fontFamily: chordFont,
@@ -374,7 +374,7 @@ export default function LyricLineEditor({
               if (e.key === "Escape") setAddingAtPx(null);
             }}
             placeholder="Am"
-            className="absolute top-0 w-14 font-bold text-[#302b63] bg-[#302b63]/10 border border-[#302b63]/30 rounded px-1 outline-none shadow-sm z-10"
+            className="absolute top-0 w-14 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm z-10"
             style={{ fontSize: chordSize, left: addingAtPx, fontFamily: chordFont }}
             onClick={(e) => e.stopPropagation()}
           />
@@ -399,7 +399,7 @@ export default function LyricLineEditor({
 
       {/* Divider between chord row and lyric row */}
       {(line.chords.length > 0 || addingAtPx !== null) && (
-        <div className="w-full h-px bg-[#302b63]/10 mb-0.5 opacity-0 group-hover/line:opacity-100 transition-opacity" />
+        <div className="w-full h-px bg-ink/10 mb-0.5 opacity-0 group-hover/line:opacity-100 transition-opacity" />
       )}
 
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
@@ -426,7 +426,7 @@ export default function LyricLineEditor({
         {/* Add line below — hidden on phones (Enter on the keyboard does the same) */}
         <button
           onClick={onAddLineAfter}
-          className="hidden sm:block sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-1"
+          className="hidden sm:block sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-ink transition-all shrink-0 rounded-md p-1"
           tabIndex={-1}
           title="Add line below (Enter)"
         >
@@ -438,7 +438,7 @@ export default function LyricLineEditor({
         <div className="relative sm:opacity-0 sm:group-hover/line:opacity-100 transition-all shrink-0">
           <button
             onClick={() => setShowSectionPicker((v) => !v)}
-            className="text-zinc-600 hover:text-indigo-600 transition-colors rounded-md p-0.5 sm:p-1"
+            className="text-zinc-600 hover:text-ink transition-colors rounded-md p-0.5 sm:p-1"
             tabIndex={-1}
             title="Insert section below"
           >
@@ -455,7 +455,7 @@ export default function LyricLineEditor({
                   key={label}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { onAddSectionAfter(label); setShowSectionPicker(false); }}
-                  className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-indigo-600 transition-colors"
+                  className="px-3 py-1.5 text-sm text-left text-zinc-600 hover:bg-zinc-50 hover:text-ink transition-colors"
                 >
                   + {label}
                 </button>
@@ -465,7 +465,7 @@ export default function LyricLineEditor({
         </div>
         <button
           onClick={onDuplicate}
-          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-indigo-600 transition-all shrink-0 rounded-md p-0.5 sm:p-1"
+          className="sm:opacity-0 sm:group-hover/line:opacity-100 text-zinc-600 hover:text-ink transition-all shrink-0 rounded-md p-0.5 sm:p-1"
           tabIndex={-1}
           title="Duplicate line"
         >

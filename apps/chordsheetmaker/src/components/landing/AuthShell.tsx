@@ -4,19 +4,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LANDING_FONTS } from "./fonts";
+import { Wordmark } from "./kit";
 
 export default function AuthShell({ children }: { children: ReactNode }) {
   return (
     <div className={`${LANDING_FONTS} min-h-screen flex flex-col bg-paper text-ink`}>
       <header className="px-5 sm:px-8 py-4 border-b border-rule">
         <div className="max-w-6xl mx-auto w-full">
-          <Link
-            href="/"
-            aria-label="ChordSheetMaker — home"
-            className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap"
-            style={{ fontFamily: "var(--font-nunito)" }}
-          >
-            ChordSheet<span className="text-chord">Maker</span>
+          <Link href="/" aria-label="ChordSheetMaker — home">
+            <Wordmark className="text-[1.15rem] sm:text-2xl" />
           </Link>
         </div>
       </header>

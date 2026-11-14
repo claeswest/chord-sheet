@@ -17,6 +17,7 @@ import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analytics";
 import { LANDING_FONTS } from "@/components/landing/fonts";
+import { Wordmark } from "@/components/landing/kit";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -508,9 +509,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             </svg>
           </button>
         )}
-        <Link href="/" className="text-base font-extrabold tracking-tight text-ink" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-chord">Maker</span>
-        </Link>
+        <Link href="/"><Wordmark className="text-xl" /></Link>
         <div className="flex-1" />
         {isLoggedIn && songLimit !== null && (
           <Link

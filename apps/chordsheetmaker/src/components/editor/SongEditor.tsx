@@ -23,6 +23,7 @@ import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
 import Kbd from "@/components/ui/Kbd";
 import { LANDING_FONTS } from "@/components/landing/fonts";
+import { Wordmark } from "@/components/landing/kit";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
@@ -949,7 +950,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 pl-4 pr-1.5 py-1.5 rounded-full text-white shadow-2xl border border-white/15 backdrop-blur-md"
           style={{ background: "rgba(28, 25, 23, 0.94)" }}>
           <span className="text-sm whitespace-nowrap">
-            Placing <strong className="font-bold text-indigo-300">{activeChord}</strong>
+            Placing <strong className="font-bold text-chord-light">{activeChord}</strong>
             <span className="text-white/60">
               {" — "}
               <span className="sm:hidden">tap</span>
@@ -1035,9 +1036,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       {/* Toolbar */}
       <header className="flex items-center gap-3 px-6 h-14 border-b border-rule bg-paper z-10 shrink-0">
-        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-ink shrink-0" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-chord">Maker</span>
-        </Link>
+        <Link href="/" className="hidden sm:block shrink-0"><Wordmark className="text-lg" /></Link>
         <>
           <Link href="/songs" className="text-sm text-stone-600 hover:text-ink transition-colors flex items-center gap-1.5 shrink-0">
             ← Songs {isLoggedIn && <span className="hidden sm:inline"><Kbd variant="light">S</Kbd></span>}

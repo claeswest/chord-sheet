@@ -55,7 +55,7 @@ export default function NewSongAtLimit({ limit }: { limit: number }) {
           </Link>
           <Link
             href="/pricing"
-            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            className="flex-1 rounded-lg bg-ink px-4 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-stone-700"
           >
             Start free trial →
           </Link>

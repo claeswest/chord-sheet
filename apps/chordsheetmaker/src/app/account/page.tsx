@@ -7,6 +7,8 @@ import { syncStaleSubscription } from "@/lib/stripeSync";
 import { cancellationPending } from "@clavos/core/billing";
 import BuildStamp from "@clavos/core/build-stamp";
 import UserMenu from "@/components/ui/UserMenu";
+import { LANDING_FONTS } from "@/components/landing/fonts";
+import { Wordmark } from "@/components/landing/kit";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
@@ -79,86 +81,51 @@ export default async function AccountPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "#f0f0f5" }}>
+    <div className={`${LANDING_FONTS} min-h-screen bg-paper text-ink`}>
 
-      {/* ── Nav — solid bar, matches /songs exactly ─────────────────────── */}
-      <header className="bg-[#302b63] border-b border-white/10 flex items-center px-6 h-14 shrink-0">
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
-        </Link>
-        <div className="w-px h-5 bg-white/20 mx-4" />
-        <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors">
+      {/* ── Nav — matches /songs ────────────────────────────────────────── */}
+      <header className="bg-paper border-b border-rule flex items-center px-4 sm:px-6 h-14 shrink-0">
+        <Link href="/" aria-label="ChordSheetMaker — home"><Wordmark className="text-xl" /></Link>
+        <div className="w-px h-5 bg-ink/15 mx-4" />
+        <Link href="/songs" className="text-sm text-stone-600 hover:text-ink transition-colors">
           ← My songs
         </Link>
         <div className="flex-1" />
-        <UserMenu userName={user.name} userImage={user.image} />
+        <UserMenu userName={user.name} userImage={user.image} tone="paper" />
       </header>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <div
-        className="relative pb-20"
-        style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #24243e 100%)" }}
-      >
-        {/* Glow */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.35) 0%, transparent 70%)",
-        }} />
-
-        {/* Profile */}
-        <div className="relative max-w-2xl mx-auto px-6 pt-10 pb-2 flex flex-col items-center text-center">
-          {/* Avatar */}
-          <div className="relative mb-4">
-            {user.image ? (
-              <img src={user.image} alt={user.name ?? ""} referrerPolicy="no-referrer" className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50" />
-            ) : (
-              <div className="w-24 h-24 rounded-full ring-4 ring-white/20 shadow-2xl shadow-black/50 bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
-                {user.name?.[0] ?? "?"}
-              </div>
-            )}
-            <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow ${
-              isPaid ? "bg-indigo-500 text-white" : "bg-zinc-600 text-zinc-200"
-            }`}>
-              {planConfig.name}
-            </span>
+      {/* ── Who you are, and the two numbers that matter ─────────────────── */}
+      <div className="bg-paper-deep border-b border-rule">
+        <div className="max-w-2xl mx-auto px-6 py-10 flex flex-col sm:flex-row sm:items-center gap-6">
+          {user.image ? (
+            <img src={user.image} alt={user.name ?? ""} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full ring-1 ring-ink/15 shrink-0" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-ink flex items-center justify-center text-paper text-3xl font-display shrink-0">
+              {user.name?.[0] ?? "?"}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-2">
+              {planConfig.name} plan
+            </p>
+            <h1 className="font-display font-medium text-4xl tracking-[-0.02em] leading-tight text-ink break-words">
+              {user.name ?? "—"}
+            </h1>
+            <p className="text-stone-600 text-sm mt-1 break-all">{user.email}</p>
+            <p className="font-mono text-[11px] text-stone-500 mt-2">Member since {memberSince}</p>
           </div>
-
-          <h1 className="text-2xl font-extrabold text-white tracking-tight mt-2 mb-1">
-            {user.name ?? "—"}
-          </h1>
-          <p className="text-white/50 text-sm mb-3">{user.email}</p>
-          <span className="inline-flex items-center gap-1.5 bg-white/10 text-white/50 text-xs px-3 py-1 rounded-full border border-white/10">
-            <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            Member since {memberSince}
-          </span>
         </div>
-      </div>
 
-      {/* ── Stat tiles — overlapping hero ───────────────────────────────── */}
-      <div className="max-w-2xl mx-auto px-6 -mt-10 relative z-10">
-        <div className="grid grid-cols-2 gap-3">
-
-          {/* Songs tile — indigo tint to match its partner */}
-          <div
-            className="rounded-2xl px-6 py-5 shadow-lg shadow-black/20 text-center ring-1 ring-white/15"
-            style={{ background: "linear-gradient(135deg, #2d2a6e 0%, #3d3a9e 100%)" }}
-          >
-            <div className="text-4xl font-extrabold text-white tabular-nums leading-none">{songCount}</div>
-            <div className="text-xs text-indigo-300 mt-2 font-medium">
+        <div className="max-w-2xl mx-auto px-6 pb-8 grid grid-cols-2 gap-3">
+          <div className="rounded-lg bg-white border border-rule px-5 py-4">
+            <div className="font-display text-4xl text-ink tabular-nums leading-none">{songCount}</div>
+            <div className="text-xs text-stone-600 mt-2">
               {songLimit === true ? "Songs created" : `Songs · ${songLimit} max`}
             </div>
           </div>
-
-          {/* Plan tile */}
-          <div
-            className="rounded-2xl px-6 py-5 shadow-lg shadow-indigo-900/30 text-center"
-            style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)" }}
-          >
-            <div className="text-2xl font-extrabold text-white leading-none">
-              {planConfig.name}
-            </div>
-            <div className="text-xs text-indigo-200 mt-2 font-medium">
+          <div className="rounded-lg bg-white border border-rule px-5 py-4">
+            <div className="font-display text-4xl text-ink leading-none">{planConfig.name}</div>
+            <div className="text-xs text-stone-600 mt-2">
               {leaving ? `Ends ${endsOn}` : isPaid ? `$${planConfig.price}/mo` : "Free plan"}
             </div>
           </div>
@@ -169,7 +136,7 @@ export default async function AccountPage() {
       <div className="max-w-2xl mx-auto px-6 pt-5 pb-16 space-y-4">
 
         {/* Plan card */}
-        <div className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-rule overflow-hidden">
           <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Your plan</h2>
             <div className="flex items-center gap-2">
@@ -184,7 +151,7 @@ export default async function AccountPage() {
                 </span>
               )}
               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                isPaid ? "bg-indigo-100 text-indigo-700" : "bg-zinc-100 text-zinc-500"
+                isPaid ? "bg-paper-deep text-chord" : "bg-zinc-100 text-zinc-500"
               }`}>
                 {planConfig.name}
               </span>
@@ -228,7 +195,7 @@ export default async function AccountPage() {
           <div className="px-6 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2.5">
             {activeFeatures.map(({ key, label }) => (
               <div key={key} className="flex items-center gap-2 text-sm text-zinc-700">
-                <span className="w-5 h-5 flex items-center justify-center rounded-full text-xs shrink-0 bg-indigo-100 text-indigo-600 font-bold">✓</span>
+                <span className="w-5 h-5 flex items-center justify-center rounded-full text-xs shrink-0 bg-paper-deep text-chord font-bold">✓</span>
                 {label}
               </div>
             ))}
@@ -278,7 +245,7 @@ export default async function AccountPage() {
                   </p>
                   <Link
                     href="/pricing"
-                    className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shadow shadow-indigo-200"
+                    className="shrink-0 bg-ink hover:bg-stone-700 text-paper text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Upgrade to yearly →
                   </Link>
@@ -296,15 +263,14 @@ export default async function AccountPage() {
             </div>
           ) : (
             <div
-              className="px-6 py-5 border-t border-zinc-100 flex items-center justify-between gap-4"
-              style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)" }}
+              className="px-6 py-5 border-t border-rule bg-paper flex items-center justify-between gap-4"
             >
               <p className="text-sm text-zinc-600 leading-snug">
                 Unlock unlimited songs, PDF export, sharing and more.
               </p>
               <Link
                 href="/pricing"
-                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow shadow-indigo-300"
+                className="shrink-0 bg-ink hover:bg-stone-700 text-paper text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
               >
                 Upgrade →
               </Link>
@@ -313,7 +279,7 @@ export default async function AccountPage() {
         </div>
 
         {/* Account card */}
-        <div className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-rule overflow-hidden">
           <div className="px-6 py-4 border-b border-zinc-100">
             <h2 className="text-sm font-semibold text-zinc-900">Account</h2>
           </div>

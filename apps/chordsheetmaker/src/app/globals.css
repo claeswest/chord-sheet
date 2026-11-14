@@ -58,7 +58,7 @@
   pointer-events: none;
   user-select: none;
 }
-.on-ink .chorded::before { color: #a5b4fc; }
+.on-ink .chorded::before { color: var(--color-chord-light); }
 
 /* Staggered hero entrance */
 @keyframes hero-rise {
@@ -102,7 +102,11 @@
   --color-paper-deep: #f2ecdf;
   --color-ink: #1c1917;
   --color-rule: #e0d7c6;
-  --color-chord: #4338ca;
+  /* Blue ink — what a chord is pencilled in with. Was indigo, which on warm
+     paper read as the purple the redesign set out to leave. */
+  --color-chord: #1c4a94;
+  /* The same ink where the page is dark. */
+  --color-chord-light: #9ec5f0;
 }
 
 @media (prefers-color-scheme: dark) {

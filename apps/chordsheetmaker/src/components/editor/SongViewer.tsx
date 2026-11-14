@@ -14,6 +14,8 @@ import Kbd from "@/components/ui/Kbd";
 import CtaLink from "@/components/ui/CtaLink";
 import PrintView from "./PrintView";
 import ChordLabel from "./ChordLabel";
+import { Wordmark } from "@/components/landing/kit";
+import { LANDING_FONTS } from "@/components/landing/fonts";
 
 // Reuse a single canvas context across all measurements
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -392,7 +394,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
 
   return (
     <div
-      className="relative isolate flex flex-col flex-1 min-h-0"
+      className={`${LANDING_FONTS} relative isolate flex flex-col flex-1 min-h-0`}
       style={backgroundStyle(s)}
       onMouseMove={revealControls}
     >
@@ -610,9 +612,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       >
         <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo — account-less share viewers land on the marketing page */}
-          <Link href={promoCta ? "/" : "/songs"} className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-300">Maker</span>
-          </Link>
+          <Link href={promoCta ? "/" : "/songs"} className="hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm"><Wordmark onInk className="text-lg" /></Link>
           <div className="flex-1" />
           {promoCta ? (
             /* Growth loop: this viewer got the link from a bandmate — the

@@ -42,6 +42,19 @@ export function ChordedLine({ text, chords }: { text: string; chords: [string, s
   );
 }
 
+/**
+ * The name, set in the serif the headings use. It was in a rounded sans from
+ * the old design, which made every header look inherited rather than drawn.
+ * Size comes from the caller; `onInk` is for dark surfaces.
+ */
+export function Wordmark({ className = "", onInk = false }: { className?: string; onInk?: boolean }) {
+  return (
+    <span className={`font-display font-semibold tracking-[-0.015em] whitespace-nowrap ${onInk ? "text-white" : "text-ink"} ${className}`}>
+      ChordSheet<em className={onInk ? "text-chord-light" : "text-chord"}>Maker</em>
+    </span>
+  );
+}
+
 /** The small label over a section's heading. */
 export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <p className={`${EYEBROW} ${className}`}>{children}</p>;

@@ -59,11 +59,11 @@ export default function FindReplaceModal({ lines, onReplace, onClose }: Props) {
               onChange={(e) => { setFind(e.target.value); setDone(false); }}
               placeholder="e.g. Am"
               spellCheck={false}
-              className="border border-zinc-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-400"
+              className="border border-zinc-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-ink"
               onKeyDown={(e) => { if (e.key === "Enter") handleReplace(); }}
             />
             {find.trim() && (
-              <p className={`text-xs mt-0.5 ${matchCount > 0 ? "text-indigo-600" : "text-zinc-400"}`}>
+              <p className={`text-xs mt-0.5 ${matchCount > 0 ? "text-chord" : "text-zinc-400"}`}>
                 {matchCount > 0
                   ? `${matchCount} chord${matchCount !== 1 ? "s" : ""} found`
                   : "No chords match"}
@@ -78,7 +78,7 @@ export default function FindReplaceModal({ lines, onReplace, onClose }: Props) {
               onChange={(e) => { setReplace(e.target.value); setDone(false); }}
               placeholder="e.g. A"
               spellCheck={false}
-              className="border border-zinc-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-400"
+              className="border border-zinc-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-ink"
               onKeyDown={(e) => { if (e.key === "Enter") handleReplace(); }}
             />
           </div>
@@ -94,7 +94,7 @@ export default function FindReplaceModal({ lines, onReplace, onClose }: Props) {
           <button
             onClick={handleReplace}
             disabled={matchCount === 0 || done}
-            className="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+            className="text-sm bg-ink text-white px-5 py-2 rounded-lg hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
           >
             {done ? "✓ Replaced!" : `Replace all${matchCount > 0 ? ` (${matchCount})` : ""}`}
           </button>

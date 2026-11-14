@@ -42,29 +42,30 @@ export default function GlobalError({
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "system-ui, sans-serif",
-          background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #1a1640 100%)",
-          color: "white",
+          // Inline, and the paper-and-ink values by hand: this replaces the root
+          // layout, so no stylesheet and no font is guaranteed to have loaded.
+          background: "#faf6ee",
+          color: "#1c1917",
           padding: "24px",
-          textAlign: "center",
+          textAlign: "left",
         }}
       >
         <div style={{ maxWidth: 420 }}>
-          <div style={{ fontSize: 44, marginBottom: 12 }}>𝄞</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px" }}>
+          <h1 style={{ fontFamily: "ui-serif, Georgia, 'Times New Roman', serif", fontSize: 34, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 12px" }}>
             Something hit a wrong note
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.5, margin: "0 0 24px" }}>
+          <p style={{ color: "#57534e", lineHeight: 1.6, margin: "0 0 28px" }}>
             An unexpected error occurred. It&rsquo;s been logged and we&rsquo;ll take a look.
             Try again — your work is saved.
           </p>
           <button
             onClick={() => reset()}
             style={{
-              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-              color: "white",
+              background: "#1c1917",
+              color: "#faf6ee",
               border: "none",
-              padding: "12px 28px",
-              borderRadius: 999,
+              padding: "13px 28px",
+              borderRadius: 8,
               fontSize: 15,
               fontWeight: 600,
               cursor: "pointer",
@@ -73,7 +74,7 @@ export default function GlobalError({
             Try again
           </button>
           <div style={{ marginTop: 16 }}>
-            <a href="/songs" style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, textDecoration: "none" }}>
+            <a href="/songs" style={{ color: "#57534e", fontSize: 14, textDecoration: "underline", textUnderlineOffset: 4 }}>
               Back to my songs
             </a>
           </div>

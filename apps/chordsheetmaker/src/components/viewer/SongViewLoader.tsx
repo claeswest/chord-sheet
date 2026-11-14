@@ -44,7 +44,7 @@ export default function SongViewLoader() {
     return (
       <div className="flex items-center justify-center h-screen text-zinc-400 text-sm">
         No song found.{" "}
-        <Link href="/songs" className="text-indigo-600 underline ml-1">
+        <Link href="/songs" className="text-chord underline ml-1">
           Go to library
         </Link>
       </div>

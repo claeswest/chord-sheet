@@ -6,7 +6,7 @@ import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
 import HeroDemo from "@/components/ui/HeroDemo";
 import { LANDING_FONTS } from "@/components/landing/fonts";
-import { BTN_INK, BTN_PAPER, CHART_LEADING, ChordedLine, Eyebrow, H2 } from "@/components/landing/kit";
+import { BTN_INK, BTN_PAPER, CHART_LEADING, ChordedLine, Eyebrow, H2, Wordmark } from "@/components/landing/kit";
 import { LANDING_PAGES, LANDING_SLUGS, getLandingPage } from "@/data/landingPages";
 
 const BASE_URL = "https://chordsheetmaker.ai";
@@ -82,9 +82,7 @@ export default async function LandingPage({ params }: Props) {
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-paper/90 backdrop-blur border-b border-rule">
         <div className="flex items-center justify-between gap-3 px-5 sm:px-8 py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" aria-label="ChordSheetMaker — home" className="text-lg sm:text-xl font-extrabold tracking-tight text-ink whitespace-nowrap" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-chord">Maker</span>
-          </Link>
+          <Link href="/" aria-label="ChordSheetMaker — home"><Wordmark className="text-[1.15rem] sm:text-2xl" /></Link>
           <nav className="flex items-center gap-4 sm:gap-7 text-sm text-stone-600">
             <Link href="/#features" className="hover:text-ink transition-colors hidden sm:block">Features</Link>
             <Link href="/pricing" className="hover:text-ink transition-colors hidden sm:block">Pricing</Link>
@@ -272,9 +270,7 @@ export default async function LandingPage({ params }: Props) {
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="bg-ink border-t border-white/10 px-5 sm:px-8 py-10">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
-          <Link href="/" className="text-sm font-extrabold tracking-tight text-white/80" style={{ fontFamily: "var(--font-nunito)" }}>
-            ChordSheet<span className="text-indigo-300">Maker</span>
-          </Link>
+          <Link href="/"><Wordmark onInk className="text-lg" /></Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-5 text-xs text-stone-400 [&>a]:py-2">
             {LANDING_PAGES.map((p) => (
               <Link key={p.slug} href={`/${p.slug}`} className="hover:text-white transition-colors">
