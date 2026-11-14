@@ -83,6 +83,9 @@ function metaSummary(item: Item): string {
   if (typeof m.origin === "string") parts.push(`via ${ORIGIN_LABELS[m.origin] ?? m.origin}`);
   if (m.via === "banner") parts.push("from the one-click banner");
   if (m.via === "toolbar") parts.push("from the Style it button");
+  if (m.via === "offer") parts.push("from the Style it offer");
+  if (m.via === "panel") parts.push("from Style it in the panel");
+  if (m.via === "again") parts.push("from Try another");
   // Which email, and whether a person or the daily job sent it.
   if (item.type === "marketing_email" && typeof m.template === "string") {
     parts.push(m.template.replace(/_/g, " ") + (m.auto === true ? " · sent automatically" : ""));

@@ -87,8 +87,10 @@ export const trackStunningTip = (action: "shown" | "clicked" | "dismissed") =>
   track("stunning_tip", { action });
 
 /** The toolbar's one-click "Style it": fonts, colours and a background together. */
-export const trackStyleIt = (action: "clicked" | "done" | "partial" | "failed" | "undone") =>
-  track("style_it", { action });
+export const trackStyleIt = (
+  action: "clicked" | "done" | "partial" | "failed" | "undone",
+  from?: "toolbar" | "offer" | "panel" | "again",
+) => track("style_it", from ? { action, from } : { action });
 
 /** Library callout that drives discovery of categories (setlists/collections). */
 export const trackCategoriesTip = (action: "shown" | "clicked" | "dismissed") =>

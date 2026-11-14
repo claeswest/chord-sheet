@@ -33,8 +33,8 @@ import PrintView from "./PrintView";
 import StartModal from "./StartModal";
 import TemplateModal from "./TemplateModal";
 import type { SongTemplate } from "@/data/templates";
-import { saveSong, listSongs, type StoredSong } from "@/lib/storage";
-import { encodeSong, isEmbeddedImage, type SharedSong } from "@/lib/songUrl";
+import { getSong, saveSongWithPicture, listSongs, type StoredSong } from "@/lib/storage";
+import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { getSongLimit } from "@/lib/plans";
 import { DEFAULT_STYLE, DEFAULT_BG_STYLE, backgroundStyle, loadStyleFonts } from "@/lib/songStyle";
@@ -48,9 +48,17 @@ import {
 
 const genId = () => Math.random().toString(36).slice(2, 10);
 
-/** localStorage: the background banner has done its job, or been closed. */
-const BG_TIP_DONE_KEY = "bgTipDone";
-/** Lyric lines before the banner offers a background — enough to paint from. */
+/** localStorage: ids of songs whose "Style it" offer has been closed. */
+const LOOK_OFFER_CLOSED_KEY = "lookOfferClosed";
+function readClosedLookOffers(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(LOOK_OFFER_CLOSED_KEY) ?? "[]");
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+/** Lyric lines before the look is offered — enough to style from. */
 const BG_TIP_MIN_LINES = 4;
 
 /**
@@ -201,22 +209,21 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // One-time "keep your song" modal for guests — fired at a moment of pride
   // (leaving play mode) or at an idle pause, never twice per device.
   const [showKeepModal, setShowKeepModal] = useState(false);
-  // The background banner is retired for good once a background has actually
-  // been made from it, or it has been closed — not on a mere click. Its old
-  // key ("stunningTipDismissed") was set by "Try it" whether or not anything
-  // was generated, so a failed attempt used the banner up; a new key gives
-  // everyone the one-click version once.
-  const [stunningTipDismissed, setStunningTipDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem(BG_TIP_DONE_KEY) === "1"
+  // The "Style it" offer is made once per song, not once per browser: closing
+  // it, or using it, settles it for that song only. It used to be a single
+  // flag, so whoever had seen it once was never offered it again — on any song.
+  const [closedLookOffers, setClosedLookOffers] = useState<string[]>(() =>
+    typeof window === "undefined" ? [] : readClosedLookOffers()
   );
-  // idle → working → done (kept on screen with Remove / Change look) or error.
+  // idle → working → done (kept on screen with Try another / Adjust / Undo) or error.
   const [bgTip, setBgTip] = useState<"idle" | "working" | "done" | "error">("idle");
   const [bgTipError, setBgTipError] = useState("");
-  // What the strip is reporting on: the banner's background, or the toolbar's
-  // whole look (fonts, colours and a background together).
-  const [lookKind, setLookKind] = useState<"background" | "look">("background");
-  // How a whole-look run went when it only half worked.
+  // While working: still waiting for everything, or type is in and the picture is coming.
+  const [lookStage, setLookStage] = useState<"both" | "picture">("both");
+  // How a run went when it only half worked.
   const [lookPartial, setLookPartial] = useState<"" | "no-picture" | "no-type">("");
+  // The style to go back to. Kept across "Try another", so Undo always
+  // returns to how the song looked before any of it.
   const styleBeforeLook = useRef<SongStyle | null>(null);
   const guestLimitNotified = useRef(false);
   const [title, setTitle] = useState(isDemo ? DEMO_SONG.title : (initialSong?.title ?? ""));
@@ -471,7 +478,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // Also cache it in sessionStorage so the next load is instant.
   useEffect(() => {
     const id = initialSong?.id;
-    if (!id || !isLoggedIn) return;
+    if (!id) return;
+    if (!isLoggedIn) {
+      // A guest's song: the link that opened the editor cannot carry the
+      // picture, but this browser has it if there was room to keep it.
+      const local = getSong(id)?.style;
+      if (local?.backgroundImage) {
+        suppressAutoSave.current = true;
+        setSongStyle((prev) => ({
+          ...prev,
+          backgroundImage: local.backgroundImage,
+          backgroundSource: local.backgroundSource,
+          overlayOpacity: local.overlayOpacity ?? prev.overlayOpacity,
+        }));
+      }
+      return;
+    }
     fetchSongStyle(id).then(fullStyle => {
       if (fullStyle?.backgroundImage) {
         sessionStorage.setItem(`bgImg:${id}`, fullStyle.backgroundImage);
@@ -676,13 +698,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         }
         return; // don't persist beyond the free limit
       }
-      // Strip an embedded (potentially huge base64) background image so we don't
-      // blow the localStorage quota; everything else (fonts, colours, jazzChords…)
-      // persists — and so does a bundled picture, which is only a short path.
-      const safeStyle = isEmbeddedImage(songStyle.backgroundImage)
-        ? { ...songStyle, backgroundImage: undefined }
-        : songStyle;
-      saveSong({ id: songId, title, artist, lines, updatedAt: new Date().toISOString(), style: safeStyle, semitones });
+      // The picture is saved too when the browser has room for it (see
+      // saveSongWithPicture); a bundled one is only a short path either way.
+      saveSongWithPicture({ id: songId, title, artist, lines, updatedAt: new Date().toISOString(), style: songStyle, semitones });
       setGuestEdited(true); // ensure the "saved on this device" reminder shows
       // Guest songs never hit /api/songs, so log create/edit from here
       // (server records them anonymously; edits throttled per song).
@@ -844,7 +862,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     artist.trim() !== "" ||
     lines.some((l) => (l.type === "section" ? !!l.label : (!!l.text || l.chords.length > 0)));
   // Show for any guest song with content; the unedited demo waits for a first edit.
-  const showGuestSaveReminder =
+  const guestReminderDue =
     !isLoggedIn && !showDemoBanner && guestHasContent && (!isDemo || guestEdited);
 
   // The fonts the song is set in. The style panel loaded a font when you chose
@@ -855,37 +873,39 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songStyle.title.fontFamily, songStyle.artist?.fontFamily, songStyle.lyrics.fontFamily, songStyle.chords.fontFamily, songStyle.section?.fontFamily]);
 
-  // The background banner — most users never discover that the AI paints a
-  // picture from the song. On a snapshot of real accounts, 34 people had a
-  // song, 5 had touched any styling and 1 had generated a background: the
-  // feature sits on the second tab of a side panel, and the old banner's
-  // button only opened that tab. This one generates on the click, with the
-  // song still in view, so the first thing that happens is the result.
+  // The "Style it" offer — most users never discover that the AI styles a
+  // song from its lyrics. In the 30 days before this was written, signed-in
+  // users generated no backgrounds at all, and 71% of songs were made by
+  // guests, who were never shown the offer.
   //
-  // Offered once the song has real lyrics — the picture is painted from them,
-  // and a title alone gives a generic one — while it is still on the plain
-  // white page. Signed-in only: a guest's background isn't saved.
+  // So: offered on every song that has real lyrics and is still on the plain
+  // white page, to guests as well, until it is used or closed for that song.
   const looksUnstyled =
     !songStyle.backgroundImage && (songStyle.background ?? "#ffffff").toLowerCase() === "#ffffff";
   const lyricLineCount = lines.filter((l) => l.type === "lyric" && l.text.trim()).length;
-  const bgTipOffer =
-    isLoggedIn && !stunningTipDismissed && looksUnstyled && lyricLineCount >= BG_TIP_MIN_LINES &&
-    !showGuestSaveReminder && !showDemoBanner;
+  const lookOffer =
+    !closedLookOffers.includes(songId) && looksUnstyled && lyricLineCount >= BG_TIP_MIN_LINES && !showDemoBanner;
   // Once started it stays until it has said how it went.
-  const showStunningTip = bgTipOffer || bgTip !== "idle";
+  const showStunningTip = lookOffer || bgTip !== "idle";
+  // One strip at a time. The offer goes first: its result is the better
+  // reason to make an account, and the reminder is back as soon as it is settled.
+  const showGuestSaveReminder = guestReminderDue && !showStunningTip;
 
-  function retireBgTip() {
-    setStunningTipDismissed(true);
-    try { localStorage.setItem(BG_TIP_DONE_KEY, "1"); } catch { /* private mode */ }
+  function closeLookOffer() {
+    setClosedLookOffers((prev) => {
+      if (prev.includes(songId)) return prev;
+      const next = [...prev, songId].slice(-200);
+      try { localStorage.setItem(LOOK_OFFER_CLOSED_KEY, JSON.stringify(next)); } catch { /* private mode */ }
+      return next;
+    });
   }
 
   // One click for the whole look. The two AI features lived on two tabs of a
   // side panel, behind "Tools" on a phone, and almost nobody found either;
   // this asks for both at once and shows the result behind the song.
-  async function styleWithAi() {
+  async function styleWithAi(from: "toolbar" | "offer" | "panel" | "again" = "toolbar") {
     if (bgTip === "working") return;
     const lyrics = lines.filter((l) => l.type === "lyric").map((l) => (l.type === "lyric" ? l.text : "")).filter(Boolean).join("\n");
-    setLookKind("look");
     setLookPartial("");
     setBgTipError("");
     setShowDemoBanner(false);
@@ -894,32 +914,46 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       setBgTip("error");
       return;
     }
-    trackStyleIt("clicked");
+    trackStyleIt("clicked", from);
+    // "Try another" keeps the first undo point: Undo means "as it was before
+    // any of this", not "the attempt before this one".
+    if (from !== "again" || !styleBeforeLook.current) styleBeforeLook.current = songStyle;
+    setLookStage("both");
     setBgTip("working");
-    styleBeforeLook.current = songStyle;
+
+    // The type comes back in a few seconds and the picture in about twenty.
+    // Show the type as soon as it is here rather than holding it for the picture.
+    const typeRun = generateTextStyle({ title, artist, lyrics }).then((text) => {
+      if (text.ok) {
+        setSongStyle((prev) => ({ ...prev, ...text.style, aiStyled: true }));
+        setLookStage("picture");
+      }
+      return text;
+    });
     const [text, picture] = await Promise.all([
-      generateTextStyle({ title, artist, lyrics }),
-      generateBackground({ title, artist, lyrics, bgStyle: DEFAULT_BG_STYLE, via: "toolbar" }),
+      typeRun,
+      generateBackground({ title, artist, lyrics, bgStyle: DEFAULT_BG_STYLE, via: from }),
     ]);
     if (!text.ok && !picture.ok) {
-      trackStyleIt("failed");
+      trackStyleIt("failed", from);
       setBgTipError(picture.error || text.error);
       setBgTip("error");
       return;
     }
     activityBeacon("style_changed", { songId, title });
-    setSongStyle((prev) => ({
-      ...prev,
-      ...(text.ok ? { ...text.style, aiStyled: true } : {}),
+    if (picture.ok) {
       // The existing backgroundImage effect saves the picture at once.
-      ...(picture.ok
-        ? { backgroundImage: picture.image, backgroundSource: "ai" as const, overlayOpacity: prev.overlayOpacity ?? 0.5 }
-        : {}),
-    }));
+      setSongStyle((prev) => ({
+        ...prev,
+        backgroundImage: picture.image,
+        backgroundSource: "ai" as const,
+        overlayOpacity: prev.overlayOpacity ?? 0.5,
+      }));
+    }
     const partial = !picture.ok ? "no-picture" : !text.ok ? "no-type" : "";
     setLookPartial(partial);
-    trackStyleIt(partial ? "partial" : "done");
-    retireBgTip(); // they have found the feature; the one-time offer has done its job
+    trackStyleIt(partial ? "partial" : "done", from);
+    closeLookOffer();
     setBgTip("done");
   }
 
@@ -930,40 +964,6 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     setBgTip("idle");
   }
 
-  async function createBackgroundFromTip() {
-    setLookKind("background");
-    trackStunningTip("clicked");
-    setBgTip("working");
-    setBgTipError("");
-    const result = await generateBackground({
-      title,
-      artist,
-      lyrics: lines.filter((l) => l.type === "lyric").map((l) => (l.type === "lyric" ? l.text : "")).filter(Boolean).join("\n"),
-      bgStyle: DEFAULT_BG_STYLE,
-      via: "banner",
-    });
-    if (!result.ok) {
-      // Not retired: the offer comes back, here and on the next visit.
-      setBgTipError(result.error);
-      setBgTip("error");
-      return;
-    }
-    activityBeacon("style_changed", { songId, title });
-    // The existing backgroundImage effect saves it at once.
-    setSongStyle((prev) => ({
-      ...prev,
-      backgroundImage: result.image,
-      backgroundSource: "ai",
-      overlayOpacity: prev.overlayOpacity ?? 0.5,
-    }));
-    retireBgTip();
-    setBgTip("done");
-  }
-
-  function removeTipBackground() {
-    setSongStyle((prev) => ({ ...prev, backgroundImage: undefined, backgroundSource: undefined }));
-    setBgTip("idle");
-  }
   const stunningTipShownFired = useRef(false);
   useEffect(() => {
     if (showStunningTip && !stunningTipShownFired.current) {
@@ -1235,7 +1235,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
           {/* The whole look in one click: fonts, colours and a picture, from the lyrics */}
           <button
-            onClick={styleWithAi}
+            onClick={() => styleWithAi("toolbar")}
             disabled={bgTip === "working"}
             className="hidden sm:flex items-center gap-1.5 px-2.5 lg:px-3 h-8 rounded-lg text-sm font-medium border border-ink/20 text-ink hover:border-ink/60 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Style this song with AI — fonts, colours and a background, made from the lyrics"
@@ -1268,7 +1268,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             {showOverflow && (
               <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50">
                 <button
-                  onClick={() => { setShowOverflow(false); styleWithAi(); }}
+                  onClick={() => { setShowOverflow(false); styleWithAi("toolbar"); }}
                   disabled={bgTip === "working"}
                   className="sm:hidden flex items-center gap-2.5 w-full px-3 py-2 text-sm font-semibold text-ink hover:bg-zinc-50 transition-colors disabled:opacity-40"
                 >
@@ -1416,32 +1416,32 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {showStunningTip && (
         <div
           role="status"
-          className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-ink text-paper shrink-0"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-ink text-paper shrink-0"
         >
           <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
             {bgTip === "error" && <span className="shrink-0" aria-hidden>⚠️</span>}
             {bgTip === "working" ? (
               <span>
-                <strong className="font-semibold">{lookKind === "look" ? "Styling your song…" : "Painting your background…"}</strong>
+                <strong className="font-semibold">
+                  {lookStage === "picture" ? "Fonts and colours are in." : "Styling your song…"}
+                </strong>
                 <span className="text-white/80">
-                  {lookKind === "look"
-                    ? " The AI is reading your lyrics and choosing fonts, colours and a picture. About ten seconds."
-                    : " The AI is reading your lyrics. About ten seconds."}
+                  {lookStage === "picture"
+                    ? " Now painting the picture — about twenty seconds. You can keep working."
+                    : " The AI is reading your lyrics. Fonts and colours in a few seconds, the picture in about twenty."}
                 </span>
               </span>
             ) : bgTip === "done" ? (
               <span>
                 <strong className="font-semibold">There it is.</strong>
                 <span className="text-white/80">
-                  {lookKind !== "look"
-                    ? " Painted from your lyrics, and saved with the song."
-                    : lookPartial === "no-picture"
+                  {lookPartial === "no-picture"
                     ? " Fonts and colours from your lyrics. The picture didn't come through — try again in a minute."
                     : lookPartial === "no-type"
                     ? " A picture from your lyrics. The fonts and colours didn't come through — try again in a minute."
                     : isLoggedIn
                     ? " Fonts, colours and a picture, all made from your lyrics."
-                    : " Fonts, colours and a picture, all made from your lyrics. Create a free account to keep the picture."}
+                    : " Made from your lyrics, and saved on this device. A free account keeps it everywhere."}
                 </span>
               </span>
             ) : bgTip === "error" ? (
@@ -1451,12 +1451,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               </span>
             ) : (
               <span>
-                <strong className="font-semibold">Give this song a background.</strong>
-                <span className="text-white/80"> The AI reads your lyrics and paints a picture for it. One click — remove it if you don&apos;t like it.</span>
+                <strong className="font-semibold">Give this song a look.</strong>
+                <span className="text-white/80"> The AI reads your lyrics and picks fonts, colours and a picture for it. One click — undo it if you don&apos;t like it.</span>
               </span>
             )}
           </span>
-          <span className="flex items-center gap-1.5 shrink-0">
+          <span className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
             {bgTip === "working" ? (
               <svg className="w-4 h-4 animate-spin mr-2" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1464,37 +1464,43 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               </svg>
             ) : bgTip === "done" ? (
               <>
+                {/* Few people love the first one; another is one click away. */}
                 <button
-                  onClick={() => { setBgTip("idle"); setRightPanel("background"); setShowRightPanel(true); }}
+                  onClick={() => styleWithAi("again")}
                   className="bg-paper text-ink font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-white transition-colors whitespace-nowrap"
                 >
-                  Change the look
+                  Try another
                 </button>
                 <button
-                  onClick={lookKind === "look" ? undoLook : removeTipBackground}
+                  onClick={() => { setBgTip("idle"); setRightPanel("background"); setShowRightPanel(true); }}
                   className="text-white/85 hover:text-white underline underline-offset-2 text-xs sm:text-sm px-1.5 py-1 whitespace-nowrap"
                 >
-                  {lookKind === "look" ? "Undo" : "Remove"}
+                  Adjust
+                </button>
+                <button
+                  onClick={undoLook}
+                  className="text-white/85 hover:text-white underline underline-offset-2 text-xs sm:text-sm px-1.5 py-1 whitespace-nowrap"
+                >
+                  Undo
                 </button>
               </>
             ) : (
               <button
-                onClick={lookKind === "look" && bgTip === "error" ? styleWithAi : createBackgroundFromTip}
+                onClick={() => { if (bgTip !== "error") trackStunningTip("clicked"); styleWithAi(bgTip === "error" ? "toolbar" : "offer"); }}
                 className="bg-paper text-ink font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-white transition-colors whitespace-nowrap"
               >
-                {bgTip === "error" ? "Try again" : "Create background"}
+                {bgTip === "error" ? "Try again" : "Style it"}
               </button>
             )}
             {bgTip !== "working" && (
               <button
                 onClick={() => {
-                  // Closing the offer (or a failure) is a "no thanks"; closing
-                  // the result just puts the strip away.
-                  // (A failed "Style it" is neither: the button is still in the toolbar.)
-                  if (bgTip !== "done" && lookKind !== "look") { trackStunningTip("dismissed"); retireBgTip(); }
+                  // Closing the offer is a "no thanks" for this song; closing a
+                  // result or a failure just puts the strip away.
+                  if (bgTip === "idle") { trackStunningTip("dismissed"); closeLookOffer(); }
                   setBgTip("idle");
                 }}
-                aria-label={bgTip === "done" ? "Close" : "Dismiss"}
+                aria-label={bgTip === "idle" ? "Dismiss" : "Close"}
                 className="text-white/60 hover:text-white px-1.5 py-1 transition-colors"
               >
                 ✕
@@ -1694,6 +1700,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 songArtist={artist}
                 isLoggedIn={isLoggedIn}
                 activeTab={rightPanel}
+                stylingAll={bgTip === "working"}
+                onStyleAll={() => {
+                  // On a phone the panel covers the song; get out of the way
+                  // so the result is what they see.
+                  if (typeof window !== "undefined" && window.innerWidth < 768) setShowRightPanel(false);
+                  styleWithAi("panel");
+                }}
                 lyricsText={lines
                   .filter((l) => l.type === "lyric")
                   .map((l) => (l.type === "lyric" ? l.text : ""))

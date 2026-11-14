@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
+import { getSong } from "@/lib/storage";
 import type { SongStyle } from "@/lib/songStyle";
 import Link from "next/link";
 
@@ -33,6 +34,11 @@ export default function SongViewLoader() {
             sessionStorage.setItem(`bgImg:${id}`, fullStyle.backgroundImage);
           }
           setSongStyle(fullStyle);
+        } else {
+          // Not in an account — a guest's song. Its picture, if it has one, is
+          // in this browser; the link that opened this page cannot carry it.
+          const local = getSong(id)?.style?.backgroundImage;
+          if (local) setSongStyle((prev) => ({ ...(prev ?? ({} as SongStyle)), backgroundImage: local }));
         }
       })
       .catch(() => {})

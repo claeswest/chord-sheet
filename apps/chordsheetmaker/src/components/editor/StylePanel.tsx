@@ -16,6 +16,9 @@ interface Props {
   lyricsText?: string;
   isLoggedIn?: boolean;
   activeTab?: "background" | "text";
+  /** Styles the whole song — fonts, colours and a picture — in one go. */
+  onStyleAll?: () => void;
+  stylingAll?: boolean;
 }
 
 function TextSection({
@@ -115,7 +118,7 @@ const BG_STYLES = [
 
 type BgStyleId = (typeof BG_STYLES)[number]["id"];
 
-export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText, isLoggedIn = false, activeTab = "background" }: Props) {
+export default function StylePanel({ style, onChange, songTitle, songArtist, lyricsText, isLoggedIn = false, activeTab = "background", onStyleAll, stylingAll = false }: Props) {
   const tab = activeTab;
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -308,17 +311,37 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         </div>
       )}
 
+      {/* ── The whole look, from either tab ──
+          Each tab's own AI button does half the job: fonts and colours here,
+          a picture there. A picture alone, behind the default black type, is
+          why first results looked washed out. */}
+      {onStyleAll && (
+        <div className="mx-4 mt-3 rounded-xl border border-rule bg-white px-3 py-2.5 flex items-center gap-3">
+          <p className="flex-1 min-w-0 text-[11px] leading-snug text-stone-600">
+            <strong className="font-semibold text-ink">Want the whole look?</strong>{" "}
+            Fonts, colours and a picture together, made from your lyrics.
+          </p>
+          <button
+            onClick={onStyleAll}
+            disabled={stylingAll}
+            className="shrink-0 text-xs font-semibold bg-ink text-paper hover:bg-stone-700 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50 disabled:cursor-wait"
+          >
+            {stylingAll ? "Styling…" : "Style it"}
+          </button>
+        </div>
+      )}
+
       {/* ── Style with AI — shown on Text tab ── */}
       {tab === "text" && (
         <div className="px-4 pt-3 pb-1">
           <button
             onClick={handleAiStyle}
             disabled={aiLoading}
-            className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-ink px-3 py-2.5 rounded-xl hover:opacity-90 transition-opacity shadow-md  disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-ink bg-white border border-ink/25 hover:border-ink/60 px-3 py-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {aiLoading ? (
               <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
-            ) : "Style with AI"}
+            ) : "Restyle fonts & colours with AI"}
           </button>
           <p className="text-[11px] text-stone-500 leading-snug mt-1.5 text-center">
             The AI reads your lyrics and picks fonts, sizes &amp; colours to match the song&apos;s mood.
@@ -337,13 +360,6 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
         className={tab !== "background" ? "hidden" : "px-4 py-3 space-y-4"}
         onPaste={handlePaste}
       >
-
-          {/* Why the AI results feel personal — most users never realise this */}
-          <p className="text-[11px] leading-snug rounded-xl border border-rule bg-paper px-3 py-2 text-stone-600">
-            <strong className="font-semibold text-ink">The AI reads your song.</strong>{" "}
-            Generate a background and it paints what your lyrics are about — a moody
-            ballad gets dusk tones, a summer tune gets light.
-          </p>
 
           {/* ── Page color ── */}
           <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
@@ -446,7 +462,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     </span>
                   </div>
                   <button onClick={handleAiBackground} disabled={bgLoading}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-ink hover:opacity-90 text-white text-sm font-semibold transition-opacity shadow-md  disabled:opacity-40"
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white border border-ink/25 hover:border-ink/60 text-ink text-sm font-semibold transition-colors disabled:opacity-40"
                   >
                     {bgLoading
                       ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
@@ -520,8 +536,8 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                   <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z"/>
                 </svg>
                 <div>
-                  <p className="text-xs font-semibold text-ink leading-snug">Backgrounds aren&apos;t saved for guests</p>
-                  <p className="text-[11px] text-stone-600 leading-snug mt-0.5">Create a free account to keep your generated backgrounds.</p>
+                  <p className="text-xs font-semibold text-ink leading-snug">Your picture is saved on this device only</p>
+                  <p className="text-[11px] text-stone-600 leading-snug mt-0.5">Create a free account to keep it, and your songs, everywhere.</p>
                 </div>
               </div>
               <Link

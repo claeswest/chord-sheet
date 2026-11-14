@@ -133,7 +133,8 @@ export async function POST(req: NextRequest) {
   const { title, artist, lyrics, bgStyle = DEFAULT_BG_STYLE } = body;
   // Started from the editor's one-click banner rather than the style panel —
   // recorded so the activity feed can show whether the banner earns its place.
-  const via = body.via === "banner" || body.via === "toolbar" ? (body.via as "banner" | "toolbar") : null;
+  const VIAS = ["banner", "toolbar", "offer", "panel", "again"] as const;
+  const via = VIAS.find((v) => v === body.via) ?? null;
   if (!title && !lyrics) {
     // Hit most often on a song that hasn't been written yet: the button is
     // there from the first moment, and there is nothing to draw from.
