@@ -4,7 +4,7 @@
 // exampleStyles.json is what /api/ai/style returned for each song, untouched;
 // the picture beside it in /public/examples came from /api/ai/background, in
 // the background style named in the source. Nothing was drawn or picked by
-// hand except that style and, where noted, the overlay. To give a song a new
+// hand except that style and whatever a song lists under `adjust`. To give a song a new
 // look, ask the same two routes again and save what comes back.
 
 import type { SongLine } from "@/types/song";
@@ -15,7 +15,7 @@ import { EXAMPLE_SOURCES, type ExampleSource } from "./exampleSources";
 export { EXAMPLE_SLUGS } from "./exampleSources";
 import styles from "./exampleStyles.json";
 
-export interface ExampleSong extends Omit<ExampleSource, "text" | "bgStyle" | "overlayOpacity"> {
+export interface ExampleSong extends Omit<ExampleSource, "text" | "bgStyle" | "adjust" | "rev"> {
   href: string;
   /** Screenshot of the page at `href`, for the card. */
   img: string;
@@ -36,18 +36,32 @@ function toLines(slug: string, text: string): SongLine[] {
   return extractInlineChords(lines);
 }
 
-export const EXAMPLE_SONGS: ExampleSong[] = EXAMPLE_SOURCES.map(({ text, bgStyle: _bgStyle, overlayOpacity, ...song }) => ({
-  ...song,
-  href: `/examples/${song.slug}`,
-  img: `/examples/${song.slug}.jpg`,
-  lines: toLines(song.slug, text),
-  style: {
-    ...(styles as unknown as Record<string, SongStyle>)[song.slug],
-    backgroundImage: `/examples/${song.slug}-bg.jpg`,
+const PARTS = ["title", "artist", "lyrics", "chords", "section"] as const;
+
+function lookOf(slug: string, adjust: ExampleSource["adjust"]): SongStyle {
+  const ai = (styles as unknown as Record<string, SongStyle>)[slug];
+  const style: SongStyle = {
+    ...ai,
+    backgroundImage: `/examples/${slug}-bg.jpg`,
     backgroundSource: "ai",
     aiStyled: true,
-    overlayOpacity: overlayOpacity ?? 0.5,
-  },
+    overlayOpacity: adjust?.overlayOpacity ?? 0.5,
+  };
+  if (adjust?.background) style.background = adjust.background;
+  for (const part of PARTS) {
+    const color = adjust?.colors?.[part];
+    const base = style[part];
+    if (color && base) style[part] = { ...base, color };
+  }
+  return style;
+}
+
+export const EXAMPLE_SONGS: ExampleSong[] = EXAMPLE_SOURCES.map(({ text, bgStyle: _bgStyle, adjust, rev, ...song }) => ({
+  ...song,
+  href: `/examples/${song.slug}`,
+  img: `/examples/${song.slug}${rev ? `-${rev}` : ""}.jpg`,
+  lines: toLines(song.slug, text),
+  style: lookOf(song.slug, adjust),
 }));
 
 export function exampleBySlug(slug: string): ExampleSong | undefined {

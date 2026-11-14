@@ -17,8 +17,23 @@ export interface ExampleSource {
   vibe: string;
   /** Which of the style panel's background styles the picture was made with. */
   bgStyle: string;
-  /** How much of the page colour is laid over the picture, where the default 0.5 left the words hard to read. */
-  overlayOpacity?: number;
+  /**
+   * Add one each time the card's screenshot is retaken: the file is then
+   * <slug>-<rev>.jpg. Images are cached by address, so a new picture under
+   * the old name keeps showing the old one.
+   */
+  rev?: number;
+  /**
+   * What was changed by hand after the AI's look, the way "Adjust" does in
+   * the editor. Leave it out and the song is exactly what the AI returned.
+   */
+  adjust?: {
+    /** Page colour, which is also what is laid over the picture. */
+    background?: string;
+    /** How much of the page colour covers the picture (default 0.5). */
+    overlayOpacity?: number;
+    colors?: Partial<Record<"title" | "artist" | "lyrics" | "chords" | "section", string>>;
+  };
   text: string;
 }
 
@@ -129,9 +144,17 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
     slug: "half-past-blue",
     title: "Half Past Blue",
     artist: "Jazz ballad · original",
-    vibe: "Rainy bar window, lead-sheet chords",
-    bgStyle: "vintage",
-    overlayOpacity: 0.7,
+    vibe: "Late-night jazz club, lead-sheet chords",
+    bgStyle: "jazz",
+    rev: 2,
+    // The AI set this one in black ink on cream paper, which over a dark
+    // picture went grey. The fonts, the jazz chords and the picture are its
+    // own; the colours were turned to night by hand.
+    adjust: {
+      background: "#0b1424",
+      overlayOpacity: 0.4,
+      colors: { title: "#f6e7c4", artist: "#9fb4cf", lyrics: "#ece6d8", chords: "#f3b562", section: "#7f9cc4" },
+    },
     text: `
 # Intro
 [Fmaj7]          [Dm7]          [Gm7]          [C7]

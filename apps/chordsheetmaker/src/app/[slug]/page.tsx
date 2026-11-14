@@ -143,7 +143,7 @@ export default async function LandingPage({ params }: Props) {
             <Eyebrow className="mb-4">Examples</Eyebrow>
             <h2 className={`${H2} mb-3`}>See what you can create</h2>
             <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl leading-relaxed">
-              Original songs set with ChordSheetMaker. The AI chose the fonts and colours and made the pictures behind them. Open one and press play.
+              Original songs set with ChordSheetMaker. The AI chose the fonts and made the pictures behind them. Open one and press play.
             </p>
             <ExampleCards />
           </div>

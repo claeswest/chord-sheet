@@ -9,7 +9,7 @@ import { EXAMPLE_SONGS } from "@/data/exampleSongs";
 // The previews are real screenshots of those pages, not mock-ups. Retake them
 // whenever a song's look or the viewer's design changes: load
 // /examples/<slug> at 860x592, 2x, hide the viewer's top and bottom bars, and
-// save as /public/examples/<slug>.jpg.
+// save it under a new name by raising the song's `rev` in exampleSources.ts.
 
 /** The three cards on their own, for pages that bring their own heading. */
 export function ExampleCards() {
@@ -65,8 +65,8 @@ export default function ExamplesSection() {
             <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink text-balance">Your sheets can look like this</h2>
           </div>
           <p className="text-lg text-stone-600 leading-relaxed lg:pb-1.5">
-            Three original songs. For each, the AI read the lyrics, chose the fonts and colours,
-            and made the picture behind them. Open one and press{" "}
+            Three original songs. For each, the AI read the lyrics, chose the fonts and made the
+            picture behind them. Open one and press{" "}
             <strong className="font-semibold text-ink">play</strong> to feel the auto-scroll.
           </p>
         </div>
