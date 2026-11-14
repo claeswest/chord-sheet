@@ -1035,7 +1035,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       )}
 
       {/* Toolbar */}
-      <header className="flex items-center gap-3 px-6 h-14 border-b border-rule bg-paper z-10 shrink-0">
+      <header className="flex items-center gap-2 sm:gap-3 px-3 sm:px-6 h-14 border-b border-rule bg-paper z-10 shrink-0">
         <Link href="/" className="hidden sm:block shrink-0"><Wordmark className="text-lg" /></Link>
         <>
           <Link href="/songs" className="text-sm text-stone-600 hover:text-ink transition-colors flex items-center gap-1.5 shrink-0">
@@ -1043,13 +1043,16 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </Link>
         </>
         <div className="flex items-center gap-2 ml-auto">
-          {/* Undo / Redo */}
-          <div className="hidden sm:flex items-center border border-ink/20 rounded-lg overflow-hidden">
+          {/* Undo / Redo. Undo is on every screen: on a phone the delete
+              buttons are small and close together, and a slip had no way
+              back. Redo lives in the ••• menu there. */}
+          <div className="flex items-center border border-ink/20 rounded-lg overflow-hidden">
             <button
               onClick={undo}
               disabled={historyPos <= 0 && !pendingSnap.current}
-              className="w-7 h-7 flex items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Undo (Ctrl+Z)"
+              aria-label="Undo"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                 <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8Z"/>
@@ -1058,8 +1061,9 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <button
               onClick={redo}
               disabled={historyPos >= historyStack.current.length - 1}
-              className="w-7 h-7 flex items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-ink/20"
+              className="hidden sm:flex w-7 h-7 items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-ink/20"
               title="Redo (Ctrl+Y)"
+              aria-label="Redo"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                 <path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6Z"/>
@@ -1152,6 +1156,39 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             >•••</button>
             {showOverflow && (
               <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-zinc-200 py-1.5 z-50">
+                {/* Phones only: what the toolbar has no room for. The menu
+                    stays open while you step the key. */}
+                <div className="sm:hidden flex items-center justify-between gap-2 px-3 py-1.5">
+                  <span className="text-sm text-zinc-600">Key</span>
+                  <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setSemitones((v) => v - 1)}
+                      className="w-9 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 text-base"
+                      aria-label="Transpose down 1 semitone"
+                    >−</button>
+                    <button
+                      onClick={() => setSemitones(0)}
+                      className={`text-xs px-2 min-w-[4.25rem] h-8 text-center border-x border-zinc-200 ${semitones === 0 ? "text-zinc-400" : "text-chord font-semibold"}`}
+                      aria-label="Reset to original key"
+                    >
+                      {semitones === 0 ? "Original" : semitoneLabel(semitones)}
+                    </button>
+                    <button
+                      onClick={() => setSemitones((v) => v + 1)}
+                      className="w-9 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 text-base"
+                      aria-label="Transpose up 1 semitone"
+                    >+</button>
+                  </div>
+                </div>
+                <button
+                  onClick={redo}
+                  disabled={historyPos >= historyStack.current.length - 1}
+                  className="sm:hidden flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors disabled:opacity-40"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6Z"/></svg>
+                  Redo
+                </button>
+                <div className="sm:hidden my-1 border-t border-zinc-100" />
                 <button onClick={() => { setShowImport("search"); setShowOverflow(false); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-zinc-400"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"/></svg>

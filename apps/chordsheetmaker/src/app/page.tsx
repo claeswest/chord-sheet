@@ -302,7 +302,14 @@ export default async function HomePage() {
                           Try it free
                         </CtaLink>
                       ) : (
-                        <Link href="/pricing" className={`${isPopular ? BTN_INK : BTN_LINE} w-full py-3 text-sm`}>
+                        // Straight to where the trial starts. /pricing?plan= opens
+                        // checkout by itself for someone signed in; a visitor signs
+                        // in first, on a page that says the trial continues after.
+                        // It used to open the price list a second time.
+                        <Link
+                          href={session ? `/pricing?plan=${planKey}` : `/login?next=/pricing?plan=${planKey}`}
+                          className={`${isPopular ? BTN_INK : BTN_LINE} w-full py-3 text-sm`}
+                        >
                           Start 7-day free trial <span aria-hidden>→</span>
                         </Link>
                       )}

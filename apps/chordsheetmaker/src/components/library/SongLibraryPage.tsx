@@ -75,6 +75,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; title: string; source: "db" | "local" } | null>(null);
+  // A category takes its subcategories with it and cannot be undone, so it
+  // asks first — unless it is empty, when there is nothing to lose.
+  const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{ id: string; name: string; subCount: number; songCount: number } | null>(null);
   const searchRef   = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [searchBarStuck, setSearchBarStuck] = useState(false);
@@ -322,6 +325,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     setSongs((prev) => prev.map((s) => ({ ...s, categoryIds: s.categoryIds.filter((cid) => !allIds.includes(cid)) })));
     if (selectedCategoryId && allIds.includes(selectedCategoryId)) setSelectedCategoryId(null);
     await deleteCategory(id); // DB cascade removes children automatically
+  };
+
+  const askDeleteCategory = (cat: DbCategory) => {
+    const childIds = categories.filter((c) => c.parentId === cat.id).map((c) => c.id);
+    const songCount = songs.filter((sg) => sg.categoryIds.includes(cat.id) || childIds.some((cid) => sg.categoryIds.includes(cid))).length;
+    if (childIds.length === 0 && songCount === 0) { handleDeleteCategory(cat.id); return; }
+    setConfirmDeleteCategory({ id: cat.id, name: cat.name, subCount: childIds.length, songCount });
   };
 
   // ── Drag and drop ────────────────────────────────────────────────────────────
@@ -698,7 +708,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             const sibs = categories.filter((c) => (c.parentId ?? null) === (cat.parentId ?? null));
                             const idx = sibs.findIndex((c) => c.id === cat.id);
                             return (
-                              <span className="sm:hidden flex flex-col shrink-0 mr-1 rounded-lg overflow-hidden border border-ink/15 bg-white">
+                              <span className="hidden max-sm:flex pointer-coarse:flex flex-col shrink-0 mr-1 rounded-lg overflow-hidden border border-ink/15 bg-white">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "up"); }}
                                   disabled={idx <= 0}
@@ -745,19 +755,19 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       )}
                       {/* Add subcategory */}
                       <button onClick={() => { setShowAddSubCategory(cat.id); setNewSubCategoryName(""); }}
-                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0 ml-0.5"
+                        className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:p-1.5 text-stone-400 hover:text-ink transition-opacity shrink-0 ml-0.5"
                         title="Add subcategory">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg>
                       </button>
                       {/* Rename */}
                       <button onClick={() => startRename(cat)}
-                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0"
+                        className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:p-1.5 text-stone-400 hover:text-ink transition-opacity shrink-0"
                         title="Rename">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
                       </button>
                       {/* Delete */}
-                      <button onClick={() => handleDeleteCategory(cat.id)}
-                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
+                      <button onClick={() => askDeleteCategory(cat)}
+                        className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:px-2 pointer-coarse:py-1 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                         title="Delete">×</button>
                       <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{totalCount}</span>
                     </div>
@@ -802,13 +812,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             )}
                             {/* Rename */}
                             <button onClick={() => startRename(sub)}
-                              className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0"
+                              className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:p-1.5 text-stone-400 hover:text-ink transition-opacity shrink-0"
                               title="Rename">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
                             </button>
                             {/* Delete */}
-                            <button onClick={() => handleDeleteCategory(sub.id)}
-                              className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
+                            <button onClick={() => askDeleteCategory(sub)}
+                              className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:px-2 pointer-coarse:py-1 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                               title="Delete">×</button>
                             <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{sub.songIds.length}</span>
                           </div>
@@ -1362,7 +1372,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                 {cat.name}
                                 <button
                                   onClick={() => handleRemoveFromCategory(song.id, catId)}
-                                  className="opacity-0 group-hover:opacity-60 hover:!opacity-100 ml-0.5 leading-none transition-opacity"
+                                  className="opacity-0 group-hover:opacity-60 pointer-coarse:opacity-60 hover:!opacity-100 ml-0.5 leading-none transition-opacity"
                                   title={`Remove from ${cat.name}`}
                                 >
                                   ×
@@ -1375,7 +1385,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                       {/* ⋯ / × button — visible below xl, for all users */}
                       <button
-                        className="xl:hidden shrink-0 p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-paper-deep transition-colors"
+                        className="xl:pointer-fine:hidden shrink-0 p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-paper-deep transition-colors"
                         title={expandedSongId === song.id ? "Close" : "More options"}
                         onClick={(e) => { e.stopPropagation(); setExpandedSongId(expandedSongId === song.id ? null : song.id); setCatPickerSongId(null); }}
                       >
@@ -1391,7 +1401,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       </button>
 
                       {/* Actions — grouped pill, revealed on row hover to keep rows calm */}
-                      <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
+                      <div className="hidden xl:pointer-fine:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-paper-deep rounded-lg p-0.5 border border-rule">
                         {/* View — locked songs route to the upgrade modal */}
                         <Link href={isLocked ? "#" : viewUrl} title="View"
@@ -1449,7 +1459,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                     {/* Expanded panel — edit/duplicate/delete + categories (< xl only, all users) */}
                     {expandedSongId === song.id && (
-                      <div className="xl:hidden border-t border-rule bg-paper px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="xl:pointer-fine:hidden border-t border-rule bg-paper px-5 py-3" onClick={(e) => e.stopPropagation()}>
                         {/* Action buttons */}
                         <div className="flex items-center gap-2 flex-wrap mb-2">
                           <Link href={isLocked ? "#" : editUrl}
@@ -1585,6 +1595,38 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               )}
             </div>
             <p className="text-center text-[11px] text-stone-400 mt-3">No credit card charged today · cancel anytime</p>
+          </div>
+        </div>
+      )}
+
+      {/* Delete-category confirmation */}
+      {confirmDeleteCategory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeleteCategory(null)}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title" className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 id="delete-category-title" className="text-base font-semibold text-stone-900 mb-1">Delete category?</h2>
+            <p className="text-sm text-stone-500 mb-5">
+              <span className="font-medium text-stone-700">&ldquo;{confirmDeleteCategory.name}&rdquo;</span>
+              {confirmDeleteCategory.subCount > 0 && <> and its {confirmDeleteCategory.subCount} subcategor{confirmDeleteCategory.subCount === 1 ? "y" : "ies"}</>}
+              {" "}will be removed. This cannot be undone.
+              {confirmDeleteCategory.songCount > 0 && (
+                <> The {confirmDeleteCategory.songCount === 1 ? "song" : `${confirmDeleteCategory.songCount} songs`} in it {confirmDeleteCategory.songCount === 1 ? "stays" : "stay"} in your library.</>
+              )}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                autoFocus
+                onClick={() => setConfirmDeleteCategory(null)}
+                className="px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { handleDeleteCategory(confirmDeleteCategory.id); setConfirmDeleteCategory(null); }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

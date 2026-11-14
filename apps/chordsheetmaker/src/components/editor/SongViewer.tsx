@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { SongLine } from "@/types/song";
 import { extractInlineChords } from "@/lib/parseChordSheet";
+import { transposeSong } from "@/lib/transpose";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
@@ -133,8 +134,13 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust + perfBoost;
   const titleSize = (s.title.fontSize ?? 20) + sizeAdjust + perfBoost;
 
+  // A key change for this play-through only: the singer needs it a tone down
+  // tonight. It is not saved — the song's own key is set in the editor — but
+  // it does carry into a PDF made from here, which should match the screen.
+  const [keyShift, setKeyShift] = useState(0);
+
   // #3 Convert leftover inline [Em7] tokens into real positioned chords
-  const cleanLines = useMemo(() => extractInlineChords(lines), [lines]);
+  const cleanLines = useMemo(() => transposeSong(extractInlineChords(lines), keyShift), [lines, keyShift]);
 
   // Lyrics-only mode: drop chord-only lines (intros/outros mean nothing to a
   // singer) and collapse the blank stacks they leave behind.
@@ -787,7 +793,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           </div>
 
           {/* ── Row 2 (wraps on mobile): speed + font size ── */}
-          <div className="flex items-center gap-3 pl-1 border-l border-white/20">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pl-1 border-l border-white/20">
             {/* Speed */}
             <div className="flex items-center gap-1.5">
               <span className="text-white/50 text-xs tabular-nums w-4 text-right">{speed}</span>
@@ -822,6 +828,36 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 A+
               </button>
             </div>
+
+            {/* Key — hidden with the chords, since there is nothing to move */}
+            {!hideChords && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => { setKeyShift((k) => Math.max(-11, k - 1)); revealControls(); }}
+                  className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+                  title="Transpose down a semitone"
+                  aria-label="Transpose down a semitone"
+                >
+                  −
+                </button>
+                <button
+                  onClick={() => { setKeyShift(0); revealControls(); }}
+                  className={`h-7 min-w-[2.75rem] px-1 text-center text-xs tabular-nums rounded transition-colors ${keyShift === 0 ? "text-white/50" : "text-white font-semibold hover:bg-white/10"}`}
+                  title={keyShift === 0 ? "Change the key for this play-through" : "Back to the song's own key"}
+                  aria-label={keyShift === 0 ? "Key: as written" : `Key shifted ${keyShift > 0 ? "up" : "down"} ${Math.abs(keyShift)} semitones. Reset`}
+                >
+                  {keyShift === 0 ? "Key" : `${keyShift > 0 ? "+" : "−"}${Math.abs(keyShift)}`}
+                </button>
+                <button
+                  onClick={() => { setKeyShift((k) => Math.min(11, k + 1)); revealControls(); }}
+                  className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
+                  title="Transpose up a semitone"
+                  aria-label="Transpose up a semitone"
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
