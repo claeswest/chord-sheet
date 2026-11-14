@@ -145,7 +145,7 @@ export default async function HomePage() {
             <figure className="hero-reveal hero-reveal-5 w-full max-w-md mx-auto lg:max-w-none">
               <HeroDemo />
               <figcaption className="mt-3 font-mono text-[11px] leading-relaxed text-stone-500">
-                Auto-scroll in action — hands-free play mode, exactly as it looks when you play
+                Play mode, as it looks when you play: the sheet scrolls and your hands stay on the instrument
               </figcaption>
             </figure>
           </div>
