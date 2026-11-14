@@ -22,6 +22,7 @@ import SectionHeaderBlock from "./SectionHeaderBlock";
 import SortableLine from "./SortableLine";
 import ChordPalette from "./ChordPalette";
 import Kbd from "@/components/ui/Kbd";
+import { LANDING_FONTS } from "@/components/landing/fonts";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
@@ -935,7 +936,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     );
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className={`${LANDING_FONTS} flex flex-col h-screen bg-white`}>
       {/* "Nothing to play yet" hint — shown when Play is tapped on an empty sheet */}
       {showEmptyPlayHint && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 bg-zinc-900 text-white text-sm px-4 py-2.5 rounded-full shadow-xl whitespace-nowrap">
@@ -945,8 +946,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       {/* Chord placement mode — floating status pill with an exit */}
       {activeChord && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 pl-4 pr-1.5 py-1.5 rounded-full text-white shadow-2xl border border-indigo-400/40 backdrop-blur-md"
-          style={{ background: "rgba(24, 22, 58, 0.92)" }}>
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 pl-4 pr-1.5 py-1.5 rounded-full text-white shadow-2xl border border-white/15 backdrop-blur-md"
+          style={{ background: "rgba(28, 25, 23, 0.94)" }}>
           <span className="text-sm whitespace-nowrap">
             Placing <strong className="font-bold text-indigo-300">{activeChord}</strong>
             <span className="text-white/60">
@@ -996,7 +997,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 ]},
               ] as const).map((g) => (
                 <div key={g.group}>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-indigo-500 mb-2">{g.group}</p>
+                  <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-2">{g.group}</p>
                   <div className="space-y-1.5">
                     {g.rows.map(([keys, what]) => (
                       <div key={keys} className="flex items-center justify-between gap-4">
@@ -1033,22 +1034,22 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       )}
 
       {/* Toolbar */}
-      <header className="flex items-center gap-3 px-6 h-14 border-b border-white/10 bg-[#302b63] z-10 shrink-0">
-        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-white shrink-0" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
+      <header className="flex items-center gap-3 px-6 h-14 border-b border-rule bg-paper z-10 shrink-0">
+        <Link href="/" className="hidden sm:block text-sm font-extrabold tracking-tight text-ink shrink-0" style={{ fontFamily: "var(--font-nunito)" }}>
+          ChordSheet<span className="text-chord">Maker</span>
         </Link>
         <>
-          <Link href="/songs" className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
-            ← Songs {isLoggedIn && <span className="hidden sm:inline"><Kbd>S</Kbd></span>}
+          <Link href="/songs" className="text-sm text-stone-600 hover:text-ink transition-colors flex items-center gap-1.5 shrink-0">
+            ← Songs {isLoggedIn && <span className="hidden sm:inline"><Kbd variant="light">S</Kbd></span>}
           </Link>
         </>
         <div className="flex items-center gap-2 ml-auto">
           {/* Undo / Redo */}
-          <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
+          <div className="hidden sm:flex items-center border border-ink/20 rounded-lg overflow-hidden">
             <button
               onClick={undo}
               disabled={historyPos <= 0 && !pendingSnap.current}
-              className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="w-7 h-7 flex items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Undo (Ctrl+Z)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -1058,7 +1059,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <button
               onClick={redo}
               disabled={historyPos >= historyStack.current.length - 1}
-              className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-white/20"
+              className="w-7 h-7 flex items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-ink/20"
               title="Redo (Ctrl+Y)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -1070,7 +1071,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           {/* Keyboard shortcuts */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="hidden lg:flex w-7 h-7 items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="hidden lg:flex w-7 h-7 items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors"
             title="Keyboard shortcuts (?)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
@@ -1080,18 +1081,18 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           </button>
 
           {/* Transpose: − key + */}
-          <div className="hidden sm:flex items-center border border-white/20 rounded-lg overflow-hidden">
+          <div className="hidden sm:flex items-center border border-ink/20 rounded-lg overflow-hidden">
             <button
               onClick={() => setSemitones((s) => s - 1)}
-              className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-base font-medium"
+              className="w-7 h-7 flex items-center justify-center text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors text-base font-medium"
               title="Transpose down 1 semitone"
             >−</button>
             <button
               onClick={() => setSemitones(0)}
-              className={`text-xs px-2 min-w-[3.5rem] text-center border-x border-white/20 h-7 transition-colors ${
+              className={`text-xs px-2 min-w-[3.5rem] text-center border-x border-ink/20 h-7 transition-colors ${
                 semitones === 0
-                  ? "text-white/40"
-                  : "text-indigo-300 font-semibold hover:bg-white/10"
+                  ? "text-stone-500"
+                  : "text-chord font-semibold hover:bg-ink/5"
               }`}
               title="Reset to original key"
             >
@@ -1099,7 +1100,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </button>
             <button
               onClick={() => setSemitones((s) => s + 1)}
-              className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-base font-medium"
+              className="w-7 h-7 flex items-center justify-center text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors text-base font-medium"
               title="Transpose up 1 semitone"
             >+</button>
           </div>
@@ -1110,8 +1111,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             onClick={() => setShowRightPanel((v) => !v)}
             className={`md:hidden flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm font-medium transition-colors ${
               showRightPanel
-                ? "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
-                : "bg-white/10 text-white/70 hover:text-white hover:bg-white/20"
+                ? "bg-ink/5 text-stone-700 hover:text-ink hover:bg-ink/10"
+                : "bg-ink/5 text-stone-700 hover:text-ink hover:bg-ink/10"
             }`}
             title="Toggle tools panel"
           >
@@ -1135,19 +1136,19 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           {/* Play / performance mode — always visible (one tap on mobile) */}
           <button
             onClick={enterPlayMode}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-lg text-sm font-medium bg-white/10 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-lg text-sm font-medium border border-ink/20 text-ink hover:border-ink/60 transition-colors"
             title="Play mode — hands-free auto-scroll"
           >
             <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             <span className="hidden sm:inline">Play</span>
-            <span className="hidden md:inline"><Kbd>P</Kbd></span>
+            <span className="hidden md:inline"><Kbd variant="light">P</Kbd></span>
           </button>
 
           {/* Overflow menu — Import, Replace, View, Print, New */}
           <div className="relative" ref={overflowRef}>
             <button
               onClick={() => setShowOverflow((v) => !v)}
-              className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-lg leading-none"
+              className="w-8 h-8 flex items-center justify-center text-stone-600 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors text-lg leading-none"
               title="More options"
             >•••</button>
             {showOverflow && (
@@ -1184,10 +1185,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           {/* Save */}
           <button
             onClick={handleSave}
-            className={`text-sm px-4 py-1.5 rounded-lg font-medium transition-colors ${
+            className={`text-sm px-4 py-1.5 rounded-lg font-semibold transition-colors ${
               saveFlash
                 ? "bg-green-500 text-white"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-ink text-paper hover:bg-stone-700"
             }`}
           >
             {saveFlash ? "Saved!" : "Save"}
@@ -1197,20 +1198,19 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       {/* Demo bridge — turn "I tried it" into "I'll make my own" */}
       {showDemoBanner && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-indigo-600 text-white shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 bg-ink text-paper shrink-0">
           <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
-            <span className="shrink-0">👋</span>
             <span>
               <strong className="font-semibold">This is a demo song.</strong>
-              <span className="text-indigo-100"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or </span>
-              <span className="text-indigo-100 sm:hidden">tap ▶ above to play.</span>
-              <span className="text-indigo-100 hidden sm:inline">press <Kbd>P</Kbd> for play mode.</span>
+              <span className="text-stone-300"> Drag a chord, edit the lyrics, change the key, restyle the text and background — or </span>
+              <span className="text-stone-300 sm:hidden">tap ▶ above to play.</span>
+              <span className="text-stone-300 hidden sm:inline">press <Kbd>P</Kbd> for play mode.</span>
             </span>
           </span>
           <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
             <button
               onClick={() => { trackStartChoice("search"); setShowImport("search"); setShowDemoBanner(false); }}
-              className="inline-flex items-center gap-1 bg-white text-indigo-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-50 transition-colors"
+              className="inline-flex items-center gap-1 bg-paper text-ink font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-white transition-colors"
             >
               Make your own
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1219,7 +1219,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </button>
             <button
               onClick={() => setShowDemoBanner(false)}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-indigo-200 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
               aria-label="Dismiss"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1258,11 +1258,10 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {showStunningTip && (
         <div
           role="status"
-          className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 text-white shrink-0"
-          style={{ background: "linear-gradient(90deg, #4338ca 0%, #7c3aed 60%, #a21caf 100%)" }}
+          className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-ink text-paper shrink-0"
         >
           <span className="flex items-start sm:items-center gap-2 min-w-0 text-sm">
-            <span className="shrink-0" aria-hidden>{bgTip === "error" ? "⚠️" : "✨"}</span>
+            {bgTip === "error" && <span className="shrink-0" aria-hidden>⚠️</span>}
             {bgTip === "working" ? (
               <span>
                 <strong className="font-semibold">Painting your background…</strong>
@@ -1295,7 +1294,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
               <>
                 <button
                   onClick={() => { setBgTip("idle"); setRightPanel("background"); setShowRightPanel(true); }}
-                  className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors whitespace-nowrap"
+                  className="bg-paper text-ink font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-white transition-colors whitespace-nowrap"
                 >
                   Change the look
                 </button>
@@ -1309,7 +1308,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             ) : (
               <button
                 onClick={createBackgroundFromTip}
-                className="bg-white text-violet-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-violet-50 transition-colors whitespace-nowrap"
+                className="bg-paper text-ink font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-white transition-colors whitespace-nowrap"
               >
                 {bgTip === "error" ? "Try again" : "Create background"}
               </button>
@@ -1424,14 +1423,14 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <div className="flex items-center gap-2 mt-6 pl-4 pb-4">
               <button
                 onClick={() => addLineAfter(lastLineId)}
-                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-indigo-600 border border-dashed border-zinc-300 hover:border-indigo-400 rounded-lg px-3 py-1.5 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-ink border border-dashed border-zinc-300 hover:border-ink/50 rounded-lg px-3 py-1.5 transition-colors"
               >
                 <span className="text-sm leading-none">＋</span> Line
               </button>
               <div className="relative">
                 <button
                   onClick={() => setShowEndSectionPicker((v) => !v)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-indigo-600 border border-dashed border-zinc-300 hover:border-indigo-400 rounded-lg px-3 py-1.5 transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-ink border border-dashed border-zinc-300 hover:border-ink/50 rounded-lg px-3 py-1.5 transition-colors"
                 >
                   <span className="text-sm leading-none">＋</span> Section
                 </button>
@@ -1441,7 +1440,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                       <button
                         key={label}
                         onClick={() => { addSectionAfter(lastLineId, label); setShowEndSectionPicker(false); }}
-                        className="block w-full text-left px-3 py-1.5 text-sm text-zinc-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                        className="block w-full text-left px-3 py-1.5 text-sm text-zinc-600 hover:bg-paper hover:text-ink transition-colors"
                       >
                         {label}
                       </button>
@@ -1455,12 +1454,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
         </div>
 
         {/* Right panel with tabs — always visible on desktop, toggled on mobile */}
-        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-zinc-200 flex-col overflow-hidden bg-[#f4f3fa] ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
-            <div className="flex shrink-0 border-b border-white/10" style={{ background: "linear-gradient(160deg, #241f4d 0%, #302b63 100%)" }}>
+        <div className={`md:flex md:w-80 md:shrink-0 md:relative md:inset-auto md:z-auto md:border-l md:border-rule flex-col overflow-hidden bg-paper ${showRightPanel ? "fixed inset-0 z-40 flex" : "hidden md:flex"}`}>
+            <div className="flex shrink-0 border-b border-rule bg-paper-deep">
               {/* Back to the sheet — mobile only; mirrors the toolbar Tools/Sheet pill */}
               <button
                 onClick={() => setShowRightPanel(false)}
-                className="md:hidden flex items-center gap-1.5 self-center m-1 px-3 h-8 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shrink-0 transition-colors"
+                className="md:hidden flex items-center gap-1.5 self-center m-1 px-3 h-8 rounded-lg text-sm font-semibold bg-ink text-paper hover:bg-stone-700 shrink-0 transition-colors"
                 aria-label="Close panel"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1486,8 +1485,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                     onClick={() => setRightPanel(t.id)}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
                       active
-                        ? "text-white border-indigo-400 bg-white/10"
-                        : "text-white/50 border-transparent hover:text-white/80 hover:bg-white/5"
+                        ? "text-ink border-ink bg-white"
+                        : "text-stone-500 border-transparent hover:text-ink hover:bg-ink/5"
                     }`}
                   >
                     {t.icon}
@@ -1508,7 +1507,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 songChords={Array.from(new Set(
                   lines.flatMap(l => l.type === "lyric" ? l.chords.map(c => c.chord) : [])
                 ))}
-                asideClassName="flex flex-col overflow-hidden flex-1 bg-[#f4f3fa]"
+                asideClassName="flex flex-col overflow-hidden flex-1 bg-paper"
               />
             ) : (
               <StylePanel
@@ -1611,8 +1610,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {showGuestLimitModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowGuestLimitModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+            <div className="w-12 h-12 rounded-xl bg-paper-deep flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-ink" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
             </div>
             <h2 className="text-lg font-bold text-zinc-900 mb-1.5">You&apos;ve reached the free limit</h2>
             <p className="text-sm text-zinc-500 leading-relaxed mb-5">
@@ -1620,7 +1619,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             </p>
             <Link
               href="/login?next=/songs&from=save"
-              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+              className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
             >
               Create a free account →
             </Link>
@@ -1648,7 +1647,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             <Link
               href="/login?next=/songs&from=save"
               onClick={() => trackKeepModal("clicked")}
-              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+              className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
             >
               Keep my songs — free →
             </Link>

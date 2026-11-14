@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 interface Props {
   onSearch: () => void;
   onImport: () => void;
@@ -10,151 +12,117 @@ interface Props {
   onClose?: () => void;
 }
 
+/** One way to start. The first is the one we would pick for you, so it is set in ink. */
+function Option({
+  onClick, title, hint, primary = false, icon,
+}: { onClick: () => void; title: string; hint: string; primary?: boolean; icon: ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group w-full flex items-center gap-4 px-5 py-4 rounded-lg text-left transition-colors cursor-pointer ${
+        primary
+          ? "bg-ink text-paper hover:bg-stone-700"
+          : "bg-white text-ink border border-rule hover:border-ink/40"
+      }`}
+    >
+      <span className={`shrink-0 ${primary ? "text-paper" : "text-stone-500"}`}>{icon}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-semibold text-sm">{title}</span>
+        <span className={`block text-xs mt-0.5 ${primary ? "text-stone-300" : "text-stone-500"}`}>{hint}</span>
+      </span>
+      <span aria-hidden className={`shrink-0 transition-transform group-hover:translate-x-0.5 ${primary ? "text-paper" : "text-stone-400"}`}>→</span>
+    </button>
+  );
+}
+
 export default function StartModal({ onSearch, onImport, onWriteMyself, onTemplate, showDemo = false, onDemo, onClose }: Props) {
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-5"
-      style={{ background: "linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #1a1640 100%)" }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="start-heading"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-5 bg-paper text-ink overflow-y-auto"
     >
-      {/* Radial glow */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(99,102,241,0.28) 0%, transparent 70%)",
-      }} />
-
       {/* × close button */}
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full text-white/30 hover:text-white hover:bg-white/10 transition-all"
+          className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-lg text-stone-500 hover:text-ink hover:bg-ink/5 transition-colors"
           aria-label="Close"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       )}
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm py-10">
 
         {/* Header */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-5">
-            <div className="absolute inset-0 rounded-2xl blur-xl opacity-60"
-              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", transform: "scale(1.3)" }} />
-            <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-              <span className="text-white select-none leading-none" style={{ fontSize: 38, marginTop: 2 }}>𝄞</span>
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">New chord sheet</h2>
-          <p className="text-white/40 mt-2 text-sm">How do you want to get started?</p>
+        <div className="mb-8">
+          <h2 id="start-heading" className="font-display font-medium text-[2.1rem] leading-[1.1] tracking-[-0.02em] text-ink">
+            New chord sheet
+          </h2>
+          <p className="text-stone-600 mt-3 text-[15px]">How do you want to get started?</p>
         </div>
 
         {/* Options */}
         <div className="space-y-2.5">
-
-          {/* Find a song — primary */}
-          <button
+          <Option
+            primary
             onClick={onSearch}
-            className="relative overflow-hidden group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white transition-all duration-200 text-left hover:scale-[1.02]"
-            style={{
-              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-              boxShadow: "0 4px 24px rgba(99,102,241,0.45), 0 1px 3px rgba(0,0,0,0.3)",
-            }}
-          >
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.13) 50%, transparent 60%)" }} />
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            title="Find a song with AI"
+            hint="Type a title — chords appear in seconds"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
               </svg>
-            </div>
-            <div className="relative flex-1 min-w-0">
-              <p className="font-semibold text-sm">Find a song with AI</p>
-              <p className="text-xs text-indigo-200 mt-0.5">Type a title — chords appear in seconds</p>
-            </div>
-            <svg className="relative w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-
-          {/* Import */}
-          <button
+            }
+          />
+          <Option
             onClick={onImport}
-            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
-            style={{ background: "rgba(255,255,255,0.04)" }}
-          >
-            <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)" }}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            title="I already have chords"
+            hint="Paste lyrics & chords, or snap a photo"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
               </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">I already have chords</p>
-              <p className="text-xs text-white/30 mt-0.5">Paste lyrics & chords, or snap a photo</p>
-            </div>
-            <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-
-          {/* Template */}
+            }
+          />
           {onTemplate && (
-            <button
+            <Option
               onClick={onTemplate}
-              className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
-              style={{ background: "rgba(255,255,255,0.04)" }}
-            >
-              <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
-                style={{ background: "rgba(255,255,255,0.06)" }}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              title="Use a template"
+              hint="Pick a song structure to start from"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                   <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                   <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                 </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Use a template</p>
-                <p className="text-xs text-white/30 mt-0.5">Pick a song structure to start from</p>
-              </div>
-              <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-              </svg>
-            </button>
+              }
+            />
           )}
-
-          {/* Write myself */}
-          <button
+          <Option
             onClick={onWriteMyself}
-            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200 text-left"
-            style={{ background: "rgba(255,255,255,0.04)" }}
-          >
-            <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-indigo-400/30 transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)" }}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            title="Build from scratch"
+            hint="Type your lyrics, then click or drag to place chords"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Build from scratch</p>
-              <p className="text-xs text-white/30 mt-0.5">Type your lyrics, then click or drag to place chords</p>
-            </div>
-            <svg className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-
+            }
+          />
         </div>
 
         {/* Footer */}
         {showDemo && onDemo && (
-          <div className="mt-7 flex items-center justify-center">
+          <div className="mt-7 pt-6 border-t border-rule">
             <button
               onClick={onDemo}
-              className="text-sm text-indigo-300/80 hover:text-indigo-200 transition-colors"
+              className="text-sm font-semibold text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink transition-colors cursor-pointer"
             >
-              ✦ <span className="font-semibold text-indigo-300">Explore with a demo song</span>
+              Explore with a demo song
             </button>
           </div>
         )}

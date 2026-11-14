@@ -610,7 +610,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       >
         <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo — account-less share viewers land on the marketing page */}
-          <Link href={promoCta ? "/" : "/songs"} className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
+          <Link href={promoCta ? "/" : "/songs"} className="text-sm font-bold tracking-tight text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm" style={{ fontFamily: "var(--font-nunito)" }}>
             ChordSheet<span className="text-indigo-300">Maker</span>
           </Link>
           <div className="flex-1" />
@@ -620,8 +620,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             <CtaLink
               from="share-page"
               href="/editor/new?start=demo"
-              className="text-sm font-bold text-white hover:scale-[1.03] transition-all px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-indigo-900/50"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+              className="text-sm font-semibold bg-paper text-ink hover:bg-white transition-colors px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-lg shadow-black/30"
             >
               Make your own — free
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -631,7 +630,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
           ) : (
             <Link
               href="/songs"
-              className="text-sm font-bold text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-[#302b63]/40 backdrop-blur-sm flex items-center gap-1.5"
+              className="text-sm font-bold text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm flex items-center gap-1.5"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
@@ -771,7 +770,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             {/* Play / Pause */}
             <button
               onClick={(e) => { togglePlay(); (e.currentTarget as HTMLButtonElement).blur(); }}
-              className="w-11 h-11 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg transition-colors"
+              className="w-11 h-11 flex items-center justify-center bg-paper hover:bg-white text-ink rounded-full shadow-lg transition-colors"
               title="Space to toggle"
             >
               {playing ? (
@@ -799,7 +798,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 max={MAX_SPEED}
                 value={speed}
                 onChange={(e) => { setSpeed(Number(e.target.value)); revealControls(); }}
-                className="w-24 sm:w-28 accent-indigo-400"
+                className="w-24 sm:w-28 accent-white"
                 title="← → to adjust"
               />
               <span className="hidden sm:inline text-white/60 text-xs">Fast</span>
@@ -845,10 +844,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         onClick={scrollToTop}
         aria-label="Scroll to top"
         title="Scroll to top [T]"
-        className={`fixed bottom-36 right-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-2xl backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 group ${
+        className={`fixed bottom-36 right-5 z-50 w-11 h-11 flex flex-col items-center justify-center gap-0.5 rounded-lg backdrop-blur-md transition-all duration-300 group ${
           scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
-        style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 20px rgba(99,102,241,0.5)" }}
+        style={{ background: "rgba(28, 25, 23, 0.9)", boxShadow: "0 0 0 1px rgba(255,255,255,0.15), 0 10px 24px -10px rgba(0,0,0,0.6)" }}
       >
         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -860,8 +859,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       {upgradeFeature && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setUpgradeFeature(null)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
+            <div className="w-12 h-12 rounded-xl bg-[#f2ecdf] flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#1c1917]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
             </div>
             <h2 className="text-lg font-bold text-zinc-900 mb-1.5">
               {upgradeFeature === "pdf" ? "PDF export is a Pro feature" : "Sharing is a Pro feature"}
@@ -871,7 +870,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             </p>
             <Link
               href="/pricing"
-              className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+              className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
             >
               Start 7-day free trial →
             </Link>

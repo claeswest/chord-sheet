@@ -123,8 +123,8 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
   };
 
   const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
-  const btnActive = "bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent text-white shadow-md shadow-indigo-500/30";
-  const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 hover:-translate-y-[1px] hover:shadow-sm";
+  const btnActive = "bg-chord border-transparent text-white";
+  const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-ink/40 hover:text-ink";
   const heading = "text-[11px] font-semibold uppercase tracking-widest text-zinc-400";
 
   return (
@@ -134,8 +134,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         {/* ── Active chord display ── */}
         {activeChord ? (
           <div
-            className="relative overflow-hidden flex items-center justify-between rounded-2xl px-4 py-3 shadow-lg shadow-indigo-500/25"
-            style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 65%, #8b5cf6 100%)" }}
+            className="relative overflow-hidden flex items-center justify-between rounded-xl px-4 py-3 bg-chord"
           >
             <div className="absolute inset-0 pointer-events-none" style={{
               background: "radial-gradient(ellipse 60% 80% at 20% 0%, rgba(255,255,255,0.18) 0%, transparent 60%)",
@@ -165,8 +164,8 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/50 px-3.5 py-2.5">
-            <span className="flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-500 text-sm">♪</span>
+          <div className="flex items-center gap-2.5 rounded-xl border border-rule bg-white px-3.5 py-2.5">
+            <span className="flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-paper-deep text-chord text-sm">♪</span>
             <p className="text-xs text-zinc-600 leading-relaxed">
               Pick a root note, then{" "}
               <span className="sm:hidden">tap</span>
@@ -248,7 +247,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
             <button
               type="button"
               onClick={toggleAdvanced}
-              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors py-1.5"
+              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-stone-600 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors py-1.5"
             >
               {showAdvanced || qualityIsAdvanced ? "Fewer chords" : "More chords"}
               <svg className={`w-3 h-3 transition-transform ${showAdvanced || qualityIsAdvanced ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -266,10 +265,10 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
               value={customChord}
               onChange={(e) => setCustomChord(e.target.value)}
               placeholder="D/F#, Badd11…"
-              className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-zinc-50 transition-shadow"
+              className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 bg-white transition-shadow"
             />
             <button type="submit"
-              className="shrink-0 text-xs bg-gradient-to-br from-indigo-500 to-violet-600 text-white px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-opacity font-semibold shadow-sm shadow-indigo-500/30"
+              className="shrink-0 text-xs bg-ink text-paper px-3.5 py-1.5 rounded-lg hover:bg-stone-700 transition-colors font-semibold"
             >Use</button>
           </form>
         </div>
