@@ -15,7 +15,9 @@ import { EXAMPLE_SOURCES, type ExampleSource } from "./exampleSources";
 export { EXAMPLE_SLUGS } from "./exampleSources";
 import styles from "./exampleStyles.json";
 
-export interface ExampleSong extends Omit<ExampleSource, "text" | "bgStyle" | "adjust" | "rev"> {
+export interface ExampleSong extends Omit<ExampleSource, "text" | "bgStyle" | "adjust" | "rev" | "listed"> {
+  /** On the start page's cards. Every song has a page either way. */
+  listed: boolean;
   href: string;
   /** Screenshot of the page at `href`, for the card. */
   img: string;
@@ -56,8 +58,9 @@ function lookOf(slug: string, adjust: ExampleSource["adjust"]): SongStyle {
   return style;
 }
 
-export const EXAMPLE_SONGS: ExampleSong[] = EXAMPLE_SOURCES.map(({ text, bgStyle: _bgStyle, adjust, rev, ...song }) => ({
+export const EXAMPLE_SONGS: ExampleSong[] = EXAMPLE_SOURCES.map(({ text, bgStyle: _bgStyle, adjust, rev, listed, ...song }) => ({
   ...song,
+  listed: listed !== false,
   href: `/examples/${song.slug}`,
   img: `/examples/${song.slug}${rev ? `-${rev}` : ""}.jpg`,
   lines: toLines(song.slug, text),

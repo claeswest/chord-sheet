@@ -4,10 +4,38 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import CtaLink from "./CtaLink";
 
+// Before and after, and both are real. The photo is a page from a notepad.
+// The sheet is what the app made of that photo: /api/ai/ocr read the title,
+// the sections, the words and where each chord sits (3.8 seconds when it was
+// measured), and one "Style it" chose the type and made the picture. Nothing
+// was corrected by hand; only the artist's name was typed.
+//
+// The sheet lives at /examples/burning-gold (src/data/exampleSources.ts).
+// Its picture here is a screenshot of that page at 720x576, 2x, with the
+// viewer's bars hidden. Retake it when the viewer's design changes, under a
+// new filename: images are cached by address.
 const IMAGES = [
-  { src: "/BurningGold.jpeg", label: "BEFORE", alt: "Handwritten chord sheet for Burning Gold on a notepad" },
-  { src: "/BurningGold_CSM.png", label: "AFTER", alt: "Burning Gold chord sheet styled in ChordSheetMaker with AI background" },
+  { src: "/burning-gold-photo.jpg", label: "BEFORE", alt: "Handwritten chord sheet for Burning Gold on a notepad" },
+  { src: "/examples/burning-gold.jpg", label: "AFTER", alt: "Burning Gold as a chord sheet in ChordSheetMaker, gold type over a city street at night" },
 ];
+
+const ZOOM = (
+  <span className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
+    <span className="flex items-center gap-1 text-[10px] font-semibold bg-ink/80 text-white px-2 py-1 rounded">
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M11 8v6M8 11h6"/></svg>
+      Zoom
+    </span>
+  </span>
+);
+
+/** The corner tag that names each picture, like "Play" on the example cards. */
+function Tag({ children, accent = false }: { children: string; accent?: boolean }) {
+  return (
+    <span className={`absolute left-3 top-3 z-10 rounded-full px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] ${accent ? "bg-chord text-white" : "bg-ink/90 text-paper"}`}>
+      {children}
+    </span>
+  );
+}
 
 export default function TransformationSection() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -37,79 +65,91 @@ export default function TransformationSection() {
   return (
     <section>
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
-        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-4">Photo import</p>
-        <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink mb-3">
-          Go from this to this — in 30 seconds
-        </h2>
-        <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl leading-relaxed">
-          Snap a photo of any handwritten chord sheet. AI reads it and turns it into a polished, play-ready version.
-        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-4 lg:gap-16 lg:items-end mb-10 sm:mb-14">
+          <div>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-4">Photo import</p>
+            <h2 className="font-display font-medium text-4xl sm:text-5xl tracking-[-0.02em] text-ink text-balance">
+              From this to this in under a minute
+            </h2>
+          </div>
+          <p className="text-lg text-stone-600 leading-relaxed lg:pb-1.5">
+            Snap a photo of a handwritten or printed chord sheet. The AI reads the words, the chords
+            and where they sit. One more press gives it a look.
+          </p>
+        </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
-          {/* Before */}
-          <div className="flex-1 w-full flex flex-col gap-2">
+        {/* The two frames are the same height: 4:5 and 5:4 at these widths. */}
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,0.64fr)_auto_minmax(0,1fr)] items-start gap-5 sm:gap-6 lg:gap-9">
+          {/* Before — a photograph, so it sits a little askew */}
+          <figure>
             <button
               onClick={() => setLightboxIndex(0)}
-              className="relative rounded-lg overflow-hidden border border-ink/15 cursor-zoom-in group w-full text-left"
+              aria-label="Enlarge the photo of the handwritten sheet"
+              className="group relative block w-full overflow-hidden rounded-lg border border-ink/15 cursor-zoom-in sm:-rotate-[1.25deg] sm:hover:rotate-0 transition-transform duration-300"
+              style={{ boxShadow: "0 18px 34px -24px rgba(28,25,23,0.45)" }}
             >
-              <span className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="flex items-center gap-1 text-[10px] font-semibold bg-ink/80 text-white px-2 py-1 rounded">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l1 1"/><path strokeLinecap="round" strokeLinejoin="round" d="M11 8v6M8 11h6"/></svg>
-                  Zoom
-                </span>
-              </span>
-              <div className="relative aspect-[4/3]">
+              <Tag>Before</Tag>
+              {ZOOM}
+              <div className="relative aspect-[4/5]">
                 <Image
-                  src="/BurningGold.jpeg"
-                  alt="Handwritten chord sheet for Burning Gold on a notepad"
+                  src={IMAGES[0].src}
+                  alt={IMAGES[0].alt}
                   fill
-                  sizes="(max-width: 640px) 100vw, 430px"
-                  className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  className="object-cover object-top"
                 />
               </div>
             </button>
-            <p className="font-mono text-[11px] text-stone-500"><span className="uppercase tracking-[0.18em] text-ink">Before</span> — your photo</p>
-          </div>
+            <figcaption className="mt-3.5 text-sm text-stone-600">A page from a notepad, photographed on a table.</figcaption>
+          </figure>
 
-          {/* Arrow */}
-          <div className="flex items-center justify-center shrink-0 sm:mb-6">
-            <svg aria-hidden className="w-8 h-8 text-ink rotate-90 sm:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          {/* Arrow — level with the middle of the pictures, not of the captions */}
+          <div aria-hidden className="flex items-center justify-center self-stretch sm:pb-12 text-ink">
+            <svg className="h-7 w-7 rotate-90 sm:rotate-0 lg:h-9 lg:w-9" fill="none" stroke="currentColor" strokeWidth="1.25" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 5.5L20 12m0 0l-6.5 6.5M20 12H3" />
             </svg>
           </div>
 
           {/* After */}
-          <div className="flex-1 w-full flex flex-col gap-2">
+          <figure>
             <button
               onClick={() => setLightboxIndex(1)}
-              className="relative rounded-lg overflow-hidden border border-ink/15 cursor-zoom-in group w-full text-left"
+              aria-label="Enlarge the finished chord sheet"
+              className="group relative block w-full overflow-hidden rounded-lg border border-ink/15 cursor-zoom-in"
               style={{ boxShadow: "0 26px 46px -28px rgba(28,25,23,0.5)" }}
             >
-              <span className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="flex items-center gap-1 text-[10px] font-semibold bg-ink/80 text-white px-2 py-1 rounded">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l1 1"/><path strokeLinecap="round" strokeLinejoin="round" d="M11 8v6M8 11h6"/></svg>
-                  Zoom
-                </span>
-              </span>
-              <div className="relative aspect-[4/3]">
+              <Tag accent>After</Tag>
+              {ZOOM}
+              <div className="relative aspect-[5/4]">
                 <Image
-                  src="/BurningGold_CSM.png"
-                  alt="Burning Gold chord sheet styled in ChordSheetMaker with AI background"
+                  src={IMAGES[1].src}
+                  alt={IMAGES[1].alt}
                   fill
-                  sizes="(max-width: 640px) 100vw, 430px"
-                  className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                  sizes="(max-width: 640px) 100vw, 620px"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
             </button>
-            <p className="font-mono text-[11px] text-stone-500"><span className="uppercase tracking-[0.18em] text-chord">After</span> — ChordSheetMaker output</p>
-          </div>
+            <figcaption className="mt-3.5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 text-sm text-stone-600">
+              <span>Read in four seconds, styled in one press. Not a word corrected by hand.</span>
+              <a
+                href="/examples/burning-gold"
+                target="_blank"
+                rel="noopener"
+                className="font-semibold text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink transition-colors whitespace-nowrap"
+              >
+                Open this sheet →
+              </a>
+            </figcaption>
+          </figure>
         </div>
 
-        <div className="mt-10 sm:mt-12">
+        <div className="mt-10 sm:mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-ink/15 pt-8">
           {/* Straight to the import dialog — the button promises exactly that. */}
           <CtaLink from="home-photo" href="/editor/new?start=import" className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink text-paper hover:bg-stone-700 px-7 py-3.5 text-[15px] font-semibold transition-colors">
             Try it with your own sheet <span aria-hidden>→</span>
           </CtaLink>
+          <p className="text-sm text-stone-600">Handwritten or printed. No account needed.</p>
         </div>
       </div>
 
@@ -148,7 +188,6 @@ export default function TransformationSection() {
           {/* Image + label */}
           {/* A click anywhere closes — the image box is wider than the picture in it. */}
           <div className="flex flex-col items-center gap-3 w-full max-h-full">
-            {/* Optimised by next/image: the AFTER original is a 1.3 MB PNG. */}
             <div className="relative w-full max-w-5xl h-[80vh]">
               <Image
                 src={lightbox.src}

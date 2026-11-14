@@ -23,6 +23,8 @@ export interface ExampleSource {
    * the old name keeps showing the old one.
    */
   rev?: number;
+  /** false keeps the song off the example cards; it still has its page. */
+  listed?: boolean;
   /**
    * What was changed by hand after the AI's look, the way "Adjust" does in
    * the editor. Leave it out and the song is exactly what the AI returned.
@@ -185,6 +187,31 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
 
 # Outro
 [Gm7]Half past [C7]blue          [Fmaj7]
+`,
+  },
+  {
+    // The "after" of the photo-import section on the start page. The text
+    // is exactly what /api/ai/ocr returned for /public/burning-gold-photo.jpg
+    // (title, sections and chord positions included), in 3.8 seconds; only
+    // the artist was typed in. It is the site owner's own song.
+    slug: "burning-gold",
+    title: "Burning Gold",
+    artist: "Luca Vale",
+    vibe: "Read from a handwritten page",
+    bgStyle: "photoreal",
+    listed: false,
+    text: `
+# Verse 1
+You [G]came in like a light at [D]night
+Turned my [Em]dark into something [C]bright
+Now [G]I feel alive with [D]you
+Like [Em]every dream is coming [C]true
+
+# Chorus
+Oh, [G]we shine like city [D]lights
+Burning [Em]gold across the [C]night
+When you're [G]here, I feel [D]so free
+Like [Em]you're everything to [C]me
 `,
   },
 ];

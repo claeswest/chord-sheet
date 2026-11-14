@@ -15,7 +15,7 @@ import { EXAMPLE_SONGS } from "@/data/exampleSongs";
 export function ExampleCards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-7">
-      {EXAMPLE_SONGS.map((ex, i) => (
+      {EXAMPLE_SONGS.filter((ex) => ex.listed).map((ex, i) => (
         <a key={ex.slug} href={ex.href} target="_blank" rel="noopener" className="group block">
           <div
             className="relative aspect-[860/592] overflow-hidden rounded-lg border border-ink/15 bg-stone-100"

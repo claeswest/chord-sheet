@@ -124,5 +124,47 @@
       "bold": true,
       "italic": false
     }
+  },
+  "burning-gold": {
+    "background": "#0f141d",
+    "jazzChords": false,
+    "titleAlign": "center",
+    "sectionAlign": "center",
+    "sectionDivider": true,
+    "title": {
+      "fontFamily": "'Raleway', sans-serif",
+      "fontSize": 30,
+      "color": "#f6c358",
+      "bold": true,
+      "italic": false
+    },
+    "artist": {
+      "fontFamily": "'Lato', sans-serif",
+      "fontSize": 14,
+      "color": "#d1d5db",
+      "bold": false,
+      "italic": true
+    },
+    "lyrics": {
+      "fontFamily": "'Poppins', sans-serif",
+      "fontSize": 15,
+      "color": "#e2e8f0",
+      "bold": false,
+      "italic": false
+    },
+    "chords": {
+      "fontFamily": "'Space Mono', monospace",
+      "fontSize": 13,
+      "color": "#fbbf24",
+      "bold": true,
+      "italic": false
+    },
+    "section": {
+      "fontFamily": "'Poppins', sans-serif",
+      "fontSize": 11,
+      "color": "#f59e0b",
+      "bold": true,
+      "italic": false
+    }
   }
 }
