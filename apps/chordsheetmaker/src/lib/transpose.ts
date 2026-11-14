@@ -151,6 +151,24 @@ export function transposeSong(lines: SongLine[], semitones: number): SongLine[] 
   });
 }
 
+/**
+ * The key a song is in, the way a musician would say it: "G", "Bb", "F#m".
+ * `semitones` is the song's saved transposition. null when it has no chords
+ * that can be read.
+ */
+export function songKey(lines: SongLine[], semitones = 0): string | null {
+  const chords: string[] = [];
+  for (const line of lines) {
+    if (line.type === "lyric" && Array.isArray(line.chords)) chords.push(...line.chords.map((c) => c.chord));
+  }
+  const key = detectKey(chords);
+  if (!key) return null;
+  const tonic = mod12(key.tonic + semitones);
+  const keyPosition = tonic === 6 && key.minor ? -6 : KEY_POSITION[tonic];
+  // The relative minor sits a minor third below its major.
+  return key.minor ? `${nameInKey(mod12(tonic + 9), keyPosition)}m` : nameInKey(tonic, keyPosition);
+}
+
 /** Human-readable key name from semitone offset, e.g. +2 = "up 2" */
 export function semitoneLabel(semitones: number): string {
   if (semitones === 0) return "Transpose";

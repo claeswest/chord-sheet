@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import WelcomeModal from "./WelcomeModal";
@@ -18,22 +18,48 @@ import UserMenu from "@/components/ui/UserMenu";
 import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analytics";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { Wordmark } from "@/components/landing/kit";
+import { songKey } from "@/lib/transpose";
+import type { SongLine } from "@/types/song";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-// One palette entry per category slot — full Tailwind class strings so purging works
+// One palette entry per setlist slot — full class strings so purging works.
+// Seven muted tones that sit on paper: the bright pastels these replaced were
+// the last of the old design on the page.
 const CATEGORY_COLORS = [
-  { chip: "bg-indigo-100 text-indigo-700", dot: "bg-indigo-400",  accent: "bg-indigo-300",  sidebarSelected: "border-l-indigo-400"  },
-  { chip: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500", accent: "bg-emerald-400", sidebarSelected: "border-l-emerald-500" },
-  { chip: "bg-amber-100 text-amber-700",    dot: "bg-amber-400",   accent: "bg-amber-300",   sidebarSelected: "border-l-amber-400"   },
-  { chip: "bg-rose-100 text-rose-700",      dot: "bg-rose-400",    accent: "bg-rose-300",    sidebarSelected: "border-l-rose-400"    },
-  { chip: "bg-sky-100 text-sky-700",        dot: "bg-sky-400",     accent: "bg-sky-300",     sidebarSelected: "border-l-sky-400"     },
-  { chip: "bg-violet-100 text-violet-700",  dot: "bg-violet-400",  accent: "bg-violet-300",  sidebarSelected: "border-l-violet-400"  },
-  { chip: "bg-orange-100 text-orange-700",  dot: "bg-orange-400",  accent: "bg-orange-300",  sidebarSelected: "border-l-orange-400"  },
+  { chip: "bg-[#e6ebf2] text-[#3d5573]", dot: "bg-[#5b7393]", sidebarSelected: "border-l-[#5b7393]" }, // slate
+  { chip: "bg-[#e7eddf] text-[#4c6338]", dot: "bg-[#6f8a5b]", sidebarSelected: "border-l-[#6f8a5b]" }, // moss
+  { chip: "bg-[#f3ead2] text-[#7a5c14]", dot: "bg-[#c29a3e]", sidebarSelected: "border-l-[#c29a3e]" }, // ochre
+  { chip: "bg-[#f3e2dd] text-[#8a4336]", dot: "bg-[#b5675a]", sidebarSelected: "border-l-[#b5675a]" }, // clay
+  { chip: "bg-[#dfecea] text-[#2f615d]", dot: "bg-[#4f8f8b]", sidebarSelected: "border-l-[#4f8f8b]" }, // teal
+  { chip: "bg-[#ece4ee] text-[#674a70]", dot: "bg-[#8a6a93]", sidebarSelected: "border-l-[#8a6a93]" }, // plum
+  { chip: "bg-[#f4e5d6] text-[#8a4f1f]", dot: "bg-[#c07a43]", sidebarSelected: "border-l-[#c07a43]" }, // rust
 ];
+
+/** "Today", "3 days ago", "12 Nov" — when a song was last changed. */
+function editedLabel(iso: string): string {
+  const then = new Date(iso);
+  if (isNaN(then.getTime())) return "";
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date()) - startOfDay(then)) / 86_400_000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  const sameYear = then.getFullYear() === new Date().getFullYear();
+  return then.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(sameYear ? {} : { year: "numeric" }) });
+}
+
+/** The little arrow in a sortable column heading. */
+function SortMark({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-3 h-3 ${active ? "text-chord" : "text-stone-300"}`} aria-hidden>
+      {active ? (dir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z" /> : <path d="M12 16l6-6H6l6 6Z" />) : <path d="M12 5l-5 6h10l-5-6Zm0 14 5-6H7l5 6Z" />}
+    </svg>
+  );
+}
 
 function getCatColor(catId: string, cats: DbCategory[]) {
   const idx = cats.findIndex((c) => c.id === catId);
@@ -498,6 +524,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     });
 
+  const songKeys = useMemo(
+    () => new Map(songs.map((s) => [s.id, songKey((s.lines ?? []) as SongLine[], s.semitones ?? 0)])),
+    [songs],
+  );
+
   return (
     <div className={`${LANDING_FONTS} min-h-screen bg-paper text-ink flex flex-col`}>
       {/* Welcome modal — shown when library is empty OR when landing via ?welcome=1 */}
@@ -609,7 +640,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         {isLoggedIn ? (<>
             {/* Mobile close button */}
             <div className="lg:hidden flex items-center justify-between px-4 pb-3 border-b border-rule mb-1">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Categories</span>
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Library</span>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors"
@@ -629,12 +660,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               }`}
             >
               <span className="w-2 h-2 rounded-full shrink-0 bg-ink/30" />
-              <span className="flex-1">All Songs</span>
+              <span className="flex-1">All songs</span>
               <span className="text-xs bg-ink/5 text-stone-600 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
             </button>
 
             <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Categories</span>
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Setlists &amp; collections</span>
             </div>
 
 
@@ -756,7 +787,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Add subcategory */}
                       <button onClick={() => { setShowAddSubCategory(cat.id); setNewSubCategoryName(""); }}
                         className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:p-1.5 text-stone-400 hover:text-ink transition-opacity shrink-0 ml-0.5"
-                        title="Add subcategory">
+                        title="Add a list inside this one">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg>
                       </button>
                       {/* Rename */}
@@ -834,7 +865,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               if (e.key === "Escape") { setShowAddSubCategory(null); setNewSubCategoryName(""); }
                             }}
                             onBlur={() => { if (newSubCategoryName.trim()) handleCreateSubCategory(cat.id); else setShowAddSubCategory(null); }}
-                            placeholder="Subcategory name…"
+                            placeholder="Name…"
                             className="w-full text-xs bg-white border border-ink/40 rounded px-2 py-1 outline-none text-ink placeholder:text-stone-400"
                         />
                         </div>
@@ -855,7 +886,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       if (e.key === "Escape") { setShowAddCategory(false); setNewCategoryName(""); }
                     }}
                     onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
-                    placeholder="Category name…"
+                    placeholder="Setlist name…"
                     className="w-full text-sm bg-white border border-ink/40 rounded px-2 py-1 outline-none text-ink placeholder:text-stone-400"
                   />
                 </div>
@@ -864,7 +895,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors border-l-4 border-l-transparent mt-1"
                 >
                   <span className="w-4 h-4 rounded-full shrink-0 bg-ink/10 flex items-center justify-center text-stone-600 text-base leading-none">+</span>
-                  Add category
+                  Add a setlist
                 </button>
               )}
 
@@ -974,7 +1005,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
                     <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                   </svg>
-                  New Song
+                  New song
                 </button>
               ) : (
                 <Link
@@ -984,7 +1015,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
                     <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
                   </svg>
-                  New Song
+                  New song
                 </Link>
               )}
               {/* List / Grid toggle */}
@@ -1046,8 +1077,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 rounded-lg border border-rule border-l-2 border-l-chord bg-white px-4 py-3 mt-4">
                   <span className="flex items-start sm:items-center gap-2.5 min-w-0 text-sm text-stone-600">
                     <span>
-                      <strong className="font-semibold text-stone-800">Your songs can live in folders.</strong>{" "}
-                      Group them into setlists for gigs or collections for practice — then drag any song onto a folder to file it.
+                      <strong className="font-semibold text-stone-800">Your songs can live in setlists.</strong>{" "}
+                      One for each gig, or collections for practice. Drag any song onto a setlist to file it.
                     </span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -1061,7 +1092,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       }}
                       className="bg-ink text-paper hover:bg-stone-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm transition-colors"
                     >
-                      Create a folder
+                      Create a setlist
                     </button>
                     <button
                       onClick={() => {
@@ -1117,7 +1148,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         </svg>
                         <div>
                           <p className="text-sm font-medium text-stone-500">No songs in <span className="text-stone-700">"{catName}"</span> yet</p>
-                          <p className="text-xs mt-1 text-stone-400">Go to <span className="font-medium text-stone-500">All Songs</span>, then drag a song and drop it onto this category in the sidebar.</p>
+                          <p className="text-xs mt-1 text-stone-400">Go to <span className="font-medium text-stone-500">All songs</span>, then drag a song and drop it onto this setlist in the sidebar.</p>
                         </div>
                       </div>
                     );
@@ -1236,23 +1267,27 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
               <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-lg border border-rule overflow-hidden mt-4 song-list-enter">
-                {/* Column headers */}
-                <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-rule bg-paper-deep">
+                {/* Column headers. The columns share the row's widths: a fixed
+                    tile, title and setlists in proportion, then fixed ends —
+                    so on a wide screen the title is not a screen away from
+                    everything else. */}
+                <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-rule bg-paper-deep font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em]">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  {/* Invisible icon spacer so SONG label aligns with title text */}
-                  <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                    <span className="shrink-0 w-8" aria-hidden />
-                    <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] hover:text-ink transition-colors">
-                      Song
-                      {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-chord">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                  <span className="w-9 shrink-0 text-center">Key</span>
+                  <div className={`min-w-0 flex items-center gap-4 ${isLoggedIn ? "flex-[5]" : "flex-1"}`}>
+                    <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 uppercase tracking-[0.16em] hover:text-ink transition-colors">
+                      Song <SortMark active={sortBy === "title"} dir={sortDir} />
+                    </button>
+                    <button onClick={() => handleSortClick("artist")} className="flex items-center gap-1 uppercase tracking-[0.16em] text-stone-500 hover:text-ink transition-colors">
+                      Artist <SortMark active={sortBy === "artist"} dir={sortDir} />
                     </button>
                   </div>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[160px] shrink-0 items-center gap-1 font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] hover:text-ink transition-colors p-0">
-                    Artist
-                    {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-chord">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                  {isLoggedIn && <span className="hidden lg:block flex-[4] min-w-0">Setlists</span>}
+                  <button onClick={() => handleSortClick("date")} className="hidden md:flex w-[104px] shrink-0 items-center gap-1 uppercase tracking-[0.16em] hover:text-ink transition-colors">
+                    Edited <SortMark active={sortBy === "date"} dir={sortDir} />
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] w-[200px] xl:w-[280px] shrink-0">Categories</span>}
-                  <div className="hidden xl:block w-[100px] shrink-0 ml-4" />
+                  <div className="xl:pointer-fine:hidden w-7 shrink-0" />
+                  <div className="hidden xl:pointer-fine:block w-[150px] shrink-0 ml-4" />
                 </div>
                 {filtered.map((song, idx) => {
                   const encoded = encodeSong({ id: song.id, title: song.title, artist: song.artist, lines: song.lines, style: song.style, semitones: song.semitones || undefined });
@@ -1263,7 +1298,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   const titleColor = "#1c1917";
                   const artistColor = "#57534e";
                   const isReorderTarget = dragOverSongId === song.id;
-                  const firstCatAccent = song.categoryIds[0] ? getCatColor(song.categoryIds[0], categories).accent : null;
+
 
                   // Quick-info stats (computed once per row)
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1302,11 +1337,6 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         isReorderTarget ? "ring-2 ring-inset ring-chord" : ""
                       }`}
                     >
-                      {/* Left-edge accent bar — category colour */}
-                      {firstCatAccent ? (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-50 ${firstCatAccent}`} />
-                      ) : null}
-
                       {/* Lock icon for over-limit songs */}
                       {isLocked && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -1323,19 +1353,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         </div>
                       )}
 
-                      {/* Title — flex-1 wrapper keeps icon + link together */}
-                      <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                        <span className="shrink-0 w-8 h-8 rounded-md bg-paper-deep flex items-center justify-center text-chord">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                            <path d="M9 18V5l12-2v13" />
-                            <circle cx="6" cy="18" r="3" />
-                            <circle cx="18" cy="16" r="3" />
-                          </svg>
-                        </span>
+                      {/* The song's key, on the song's own colours: page colour
+                          behind, chord colour for the letter. It is the row's
+                          one picture of how the song looks (the list is not
+                          sent the background pictures). */}
+                      <span
+                        className="shrink-0 w-9 h-9 rounded-md border border-ink/10 flex items-center justify-center font-mono text-[11px] font-semibold"
+                        style={{ background: song.style?.background ?? "#ffffff", color: song.style?.chords?.color ?? "#4f46e5" }}
+                        title={songKeys.get(song.id) ? `Key of ${songKeys.get(song.id)}` : "No chords yet"}
+                      >
+                        {songKeys.get(song.id) ?? "–"}
+                      </span>
+
+                      {/* Title, with the artist under it */}
+                      <div className={`min-w-0 ${isLoggedIn ? "flex-[5]" : "flex-1"}`}>
                         <Link
                           href={isLocked ? "#" : viewUrl}
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
-                          className="min-w-0 group/title"
+                          className="block min-w-0 group/title"
                         >
                           <div className="text-sm font-medium truncate group-hover/title:underline underline-offset-4 decoration-ink/30" style={{ color: titleColor }}>
                             {song.title
@@ -1344,22 +1379,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               ? <span className="italic" style={{ color: "#78716c" }}>{song.artist}</span>
                               : <span className="italic" style={{ color: "#a8a29e" }}>Untitled song</span>}
                           </div>
-                          {song.artist && (
-                            <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
+                          {song.title && song.artist && (
+                            <div className="text-xs truncate mt-0.5" style={{ color: artistColor }}>
                               {song.artist}
                             </div>
                           )}
                         </Link>
                       </div>
 
-                      {/* Artist */}
-                      <div className="hidden sm:block w-[160px] shrink-0 text-xs truncate text-stone-500">
-                        {song.artist || <span className="text-stone-300">—</span>}
-                      </div>
-
-                      {/* Category chips */}
+                      {/* Setlist chips */}
                       {isLoggedIn && (
-                        <div className="hidden lg:flex flex-nowrap gap-1 w-[200px] xl:w-[280px] shrink-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="hidden lg:flex flex-nowrap gap-1 flex-[4] min-w-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                           {song.categoryIds.map((catId) => {
                             const cat = categories.find((c) => c.id === catId);
                             if (!cat) return null;
@@ -1383,6 +1413,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         </div>
                       )}
 
+                      {/* Last edited */}
+                      <div className="hidden md:block w-[104px] shrink-0 text-xs text-stone-500 whitespace-nowrap" title={formatDate(song.updatedAt)}>
+                        {editedLabel(song.updatedAt)}
+                      </div>
+
                       {/* ⋯ / × button — visible below xl, for all users */}
                       <button
                         className="xl:pointer-fine:hidden shrink-0 p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-paper-deep transition-colors"
@@ -1400,8 +1435,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         )}
                       </button>
 
-                      {/* Actions — grouped pill, revealed on row hover to keep rows calm */}
-                      <div className="hidden xl:pointer-fine:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
+                      {/* Actions — always in sight, quiet until the row is under the
+                          pointer. A click on the row plays the song, so Edit must
+                          not be something you only find by hovering. */}
+                      <div className="hidden xl:pointer-fine:flex shrink-0 items-center justify-end ml-4 w-[150px] opacity-45 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-0 bg-paper-deep rounded-lg p-0.5 border border-rule">
                         {/* View — locked songs route to the upgrade modal */}
                         <Link href={isLocked ? "#" : viewUrl} title="View"
@@ -1438,7 +1475,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {/* Remove from category */}
                         {selectedCategoryId && (
                           <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
-                            title="Remove from this category"
+                            title="Remove from this setlist"
                             className="p-1.5 rounded-md text-stone-500 hover:text-orange-500 hover:bg-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                               <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-4 8H8v-2h8v2Z"/>
@@ -1511,7 +1548,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                 onClick={() => setCatPickerSongId(catPickerSongId === song.id ? null : song.id)}
                                 className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-white text-stone-600 hover:text-ink transition-colors border border-dashed border-stone-300 hover:border-ink/50"
                               >
-                                + Category
+                                + Setlist
                               </button>
                             </div>
                             {catPickerSongId === song.id && (
@@ -1534,7 +1571,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                   );
                                 })}
                                 {categories.filter((c) => !song.categoryIds.includes(c.id)).length === 0 && (
-                                  <span className="text-xs text-stone-400">All categories assigned</span>
+                                  <span className="text-xs text-stone-400">In every setlist already</span>
                                 )}
                               </div>
                             )}
@@ -1603,10 +1640,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       {confirmDeleteCategory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeleteCategory(null)}>
           <div role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title" className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <h2 id="delete-category-title" className="text-base font-semibold text-stone-900 mb-1">Delete category?</h2>
+            <h2 id="delete-category-title" className="text-base font-semibold text-stone-900 mb-1">Delete setlist?</h2>
             <p className="text-sm text-stone-500 mb-5">
               <span className="font-medium text-stone-700">&ldquo;{confirmDeleteCategory.name}&rdquo;</span>
-              {confirmDeleteCategory.subCount > 0 && <> and its {confirmDeleteCategory.subCount} subcategor{confirmDeleteCategory.subCount === 1 ? "y" : "ies"}</>}
+              {confirmDeleteCategory.subCount > 0 && <> and the {confirmDeleteCategory.subCount === 1 ? "list" : `${confirmDeleteCategory.subCount} lists`} inside it</>}
               {" "}will be removed. This cannot be undone.
               {confirmDeleteCategory.songCount > 0 && (
                 <> The {confirmDeleteCategory.songCount === 1 ? "song" : `${confirmDeleteCategory.songCount} songs`} in it {confirmDeleteCategory.songCount === 1 ? "stays" : "stay"} in your library.</>
