@@ -197,31 +197,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Testimonial — reassurance right before the pricing decision ──── */}
-        <section className="bg-paper-deep border-y border-rule">
-          <figure className="max-w-3xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
-            <blockquote className="font-display text-2xl sm:text-[2rem] leading-[1.35] tracking-[-0.01em] text-ink">
-              <p>
-                &ldquo;ChordSheetMaker has made playing at home much easier for me. I have loads of
-                little songs in old notebooks, and now I can just take a photo and turn them
-                into chord sheets instead of typing everything out.&rdquo;
-              </p>
-              <p className="mt-5 font-sans text-base sm:text-[17px] leading-relaxed tracking-normal text-stone-600">
-                My handwriting is a bit messy so I sometimes need to fix a few things, but
-                it&apos;s still way quicker. I also like adding backgrounds and fonts, probably
-                more than I should. Then I put it on my tablet, change the key if needed,
-                and just play.
-              </p>
-            </blockquote>
-            <figcaption className="mt-7 text-sm">
-              <span className="font-semibold text-ink">Emma Larson</span>
-              <span className="text-stone-500"> — Hobby guitarist · Liverpool</span>
-            </figcaption>
-          </figure>
-        </section>
-
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
-        <section id="pricing" className="scroll-mt-16">
+        <section id="pricing" className="scroll-mt-16 border-t border-rule">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
             <Eyebrow className="mb-4">Pricing</Eyebrow>
             <h2 className={`${H2} mb-3`}>Plans &amp; pricing</h2>

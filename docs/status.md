@@ -197,9 +197,11 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
    what anonymous visitors paste; it does not cover who arrives and leaves.
 6. **Audit the paywall moments** (6th song, PDF, share): each should show the
    benefit, the price, "7 days free, no charge today" and a one-click path.
-7. **Replace the placeholder testimonial.** "Emma Larson" on the landing page is
-   invented. There are real customers now — the 💬 *Feedback ask* email exists
-   precisely to collect a usable quote.
+7. ~~**Replace the placeholder testimonial.**~~ **Removed 14 Nov 2026.** The quote on
+   the landing page was invented, and an invented customer is worse than no
+   customer. The section is gone rather than reworded. When there is a real
+   quote — the 💬 *Feedback ask* email exists to collect one — it goes between
+   Features and Pricing, where the old one sat.
 8. **Give people a reason to return** — e.g. play-through-a-setlist (prev/next
    in play mode, which doesn't exist yet), or PWA install so the app lives on
    the tablet home screen.
@@ -237,6 +239,8 @@ First look at GA4's own funnel rather than the activity log, for the 28 days to
   Check the ads' Final URL to settle it. Harmless either way now that the
   action is Secondary, but the same mechanism could hide a real problem.
 - **A build can fail on a Google Fonts download, and a retry fixes it.** The symptom is Turbopack reporting `next/font/google queries have exactly one entry` and a list of font files it "can't resolve". Seen on Vercel (RecipeBookMaker, 12 Nov 2026) and locally (13 Nov), each time gone on the next attempt with no change. Redeploy rather than investigate. If it becomes regular, bundle the font files with `next/font/local` — the public pages now load two more Google faces than before.
+- **Transposed chords are spelled for the key they land in** (14 Nov 2026). `transposeSong` works out the song's key from its chords and names each note by where it sits around that key on the line of fifths, so Am–G–C up three is Cm–Bb–Eb, not Cm–A#–D#. It used to vote on how the *original* chords were spelled, which a song with no accidentals could not answer. Existing transposed songs change spelling on screen and in PDFs as a result; nothing stored changes. `transposeChord` (one chord, sharps-or-flats) is unchanged and is what the editor uses to store a chord placed while transposed.
+- **Vercel now labels Cron Jobs "legacy"** and points to Schedules instead. Both apps' crons still run (ChordSheetMaker's drip fired 12 and 13 Nov at 14:39 UTC, 13 emails), so nothing is broken — but it is the sort of label that precedes a removal date.
 - **The social cards are drawn with the renderer's built-in sans, not the site's serif.** Deliberate: a serif there means shipping a font file or fetching one at request time. Also fixed 14 Nov: the keyword pages' card read `params.slug` from what Next 16 passes as a promise, so all eleven had been sharing the fallback card with no headline since the upgrade.
 - **Both crons refuse to run without `CRON_SECRET`** — RecipeBookMaker's
   `/api/cron/lifecycle` and ChordSheetMaker's `/api/cron/drip`, each with a
