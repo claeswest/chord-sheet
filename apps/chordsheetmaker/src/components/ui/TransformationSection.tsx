@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import CtaLink from "./CtaLink";
 
-// Before and after, and both are real. The photo is a page from a notepad.
+// Before and after, and both are real. The photo is a page from a notepad,
+// cropped to the handwriting and brightened: as it came off the phone it had
+// a tablecloth round it and grey paper, and next to the finished sheet it
+// made the whole section look grubby. The import was run on the original.
 // The sheet is what the app made of that photo: /api/ai/ocr read the title,
 // the sections, the words and where each chord sits (3.8 seconds when it was
 // measured), and one "Style it" chose the type and made the picture. Nothing
@@ -15,7 +18,7 @@ import CtaLink from "./CtaLink";
 // viewer's bars hidden. Retake it when the viewer's design changes, under a
 // new filename: images are cached by address.
 const IMAGES = [
-  { src: "/burning-gold-photo.jpg", label: "BEFORE", alt: "Handwritten chord sheet for Burning Gold on a notepad" },
+  { src: "/burning-gold-page.jpg", label: "BEFORE", alt: "Handwritten chord sheet for Burning Gold on a notepad" },
   { src: "/examples/burning-gold.jpg", label: "AFTER", alt: "Burning Gold as a chord sheet in ChordSheetMaker, gold type over a city street at night" },
 ];
 
@@ -29,9 +32,9 @@ const ZOOM = (
 );
 
 /** The corner tag that names each picture, like "Play" on the example cards. */
-function Tag({ children, accent = false }: { children: string; accent?: boolean }) {
+function Tag({ children, accent = false, at = "left-3 top-3" }: { children: string; accent?: boolean; at?: string }) {
   return (
-    <span className={`absolute left-3 top-3 z-10 rounded-full px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] ${accent ? "bg-chord text-white" : "bg-ink/90 text-paper"}`}>
+    <span className={`absolute ${at} z-10 rounded-full px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] ${accent ? "bg-chord text-white" : "bg-ink/90 text-paper"}`}>
       {children}
     </span>
   );
@@ -78,33 +81,36 @@ export default function TransformationSection() {
           </p>
         </div>
 
-        {/* The two frames are the same height: 4:5 and 5:4 at these widths. */}
-        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,0.64fr)_auto_minmax(0,1fr)] items-start gap-5 sm:gap-6 lg:gap-9">
-          {/* Before — a photograph, so it sits a little askew */}
-          <figure>
+        {/* The page is the small thing and the sheet the large one: that is
+            the point of the section, and it keeps a phone photo from setting
+            the tone. */}
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,0.4fr)_auto_minmax(0,1fr)] items-center gap-6 sm:gap-6 lg:gap-10">
+          {/* Before — a sheet of paper lying beside the screen, a little askew */}
+          <figure className="w-[58%] sm:w-full">
             <button
               onClick={() => setLightboxIndex(0)}
               aria-label="Enlarge the photo of the handwritten sheet"
-              className="group relative block w-full overflow-hidden rounded-lg border border-ink/15 cursor-zoom-in sm:-rotate-[1.25deg] sm:hover:rotate-0 transition-transform duration-300"
-              style={{ boxShadow: "0 18px 34px -24px rgba(28,25,23,0.45)" }}
+              className="group relative block w-full bg-white p-2 rounded-[3px] border border-ink/10 cursor-zoom-in -rotate-[2deg] hover:rotate-0 transition-transform duration-300"
+              style={{ boxShadow: "0 1px 0 rgba(28,25,23,0.04), 0 16px 28px -18px rgba(28,25,23,0.4)" }}
             >
-              <Tag>Before</Tag>
+              {/* Off the corner: on the page it sat on the song's title. */}
+              <Tag at="-left-3 -top-3">Before</Tag>
               {ZOOM}
-              <div className="relative aspect-[4/5]">
+              <div className="relative aspect-[540/716]">
                 <Image
                   src={IMAGES[0].src}
                   alt={IMAGES[0].alt}
                   fill
-                  sizes="(max-width: 640px) 100vw, 400px"
+                  sizes="(max-width: 640px) 60vw, 300px"
                   className="object-cover object-top"
                 />
               </div>
             </button>
-            <figcaption className="mt-3.5 text-sm text-stone-600">A page from a notepad, photographed on a table.</figcaption>
+            <figcaption className="mt-5 text-sm text-stone-600">A handwritten page from a notepad.</figcaption>
           </figure>
 
           {/* Arrow — level with the middle of the pictures, not of the captions */}
-          <div aria-hidden className="flex items-center justify-center self-stretch sm:pb-12 text-ink">
+          <div aria-hidden className="flex items-center justify-start pl-[26%] sm:pl-0 sm:justify-center sm:pb-10 text-ink">
             <svg className="h-7 w-7 rotate-90 sm:rotate-0 lg:h-9 lg:w-9" fill="none" stroke="currentColor" strokeWidth="1.25" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 5.5L20 12m0 0l-6.5 6.5M20 12H3" />
             </svg>

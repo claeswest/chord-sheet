@@ -191,9 +191,10 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
   },
   {
     // The "after" of the photo-import section on the start page. The text
-    // is exactly what /api/ai/ocr returned for /public/burning-gold-photo.jpg
-    // (title, sections and chord positions included), in 3.8 seconds; only
-    // the artist was typed in. It is the site owner's own song.
+    // is exactly what /api/ai/ocr returned for the photograph that
+    // /public/burning-gold-page.jpg is cropped from (title, sections and
+    // chord positions included), in 3.8 seconds; only the artist was typed
+    // in. It is the site owner's own song.
     slug: "burning-gold",
     title: "Burning Gold",
     artist: "Luca Vale",
