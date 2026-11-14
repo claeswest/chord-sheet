@@ -35,6 +35,12 @@ export interface ExampleSource {
     /** How much of the page colour covers the picture (default 0.5). */
     overlayOpacity?: number;
     colors?: Partial<Record<"title" | "artist" | "lyrics" | "chords" | "section", string>>;
+    /**
+     * Points added to every size: 2 is the viewer's A+ pressed twice. The
+     * AI's sizes are a little small on a laptop, and a visitor's first look
+     * at an example should not need adjusting.
+     */
+    size?: number;
   };
   text: string;
 }
@@ -46,6 +52,8 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
     artist: "Synth-pop · original",
     vibe: "Neon night, dark stage look",
     bgStyle: "neon",
+    rev: 2,
+    adjust: { size: 2 },
     text: `
 # Intro
 [Am]        [F]        [C]        [G]
@@ -101,6 +109,8 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
     artist: "Folk · original",
     vibe: "Watercolour coast, light and airy",
     bgStyle: "watercolor",
+    rev: 2,
+    adjust: { size: 2 },
     text: `
 # Intro
 [G]        [C]        [G]        [D]
@@ -148,13 +158,14 @@ export const EXAMPLE_SOURCES: ExampleSource[] = [
     artist: "Jazz ballad · original",
     vibe: "Late-night jazz club, lead-sheet chords",
     bgStyle: "jazz",
-    rev: 2,
+    rev: 3,
     // The AI set this one in black ink on cream paper, which over a dark
     // picture went grey. The fonts, the jazz chords and the picture are its
     // own; the colours were turned to night by hand.
     adjust: {
       background: "#0b1424",
       overlayOpacity: 0.4,
+      size: 2,
       colors: { title: "#f6e7c4", artist: "#9fb4cf", lyrics: "#ece6d8", chords: "#f3b562", section: "#7f9cc4" },
     },
     text: `

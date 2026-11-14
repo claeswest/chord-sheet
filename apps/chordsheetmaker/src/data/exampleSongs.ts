@@ -53,7 +53,12 @@ function lookOf(slug: string, adjust: ExampleSource["adjust"]): SongStyle {
   for (const part of PARTS) {
     const color = adjust?.colors?.[part];
     const base = style[part];
-    if (color && base) style[part] = { ...base, color };
+    if (!base) continue;
+    style[part] = {
+      ...base,
+      ...(color ? { color } : {}),
+      ...(adjust?.size && base.fontSize ? { fontSize: base.fontSize + adjust.size } : {}),
+    };
   }
   return style;
 }

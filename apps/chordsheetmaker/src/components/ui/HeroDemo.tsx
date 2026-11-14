@@ -5,21 +5,22 @@
 // the app produces: AI background, serif typesetting, chords sitting over
 // the right syllables.
 //
-// Regenerating /public/hero-salt-and-clover.jpg (do this whenever the viewer's design
-// changes, or the hero will quietly keep showing the old look):
+// Regenerating the image (do this whenever the viewer's design or the song's
+// look changes, or the hero will quietly keep showing the old one; save it
+// under a new filename, because images are cached by address):
 //   1. npm run dev
-//   2. Load /examples/salt-and-clover at a 430x1835 viewport
+//   2. Load /examples/salt-and-clover at a 430x1908 viewport
 //   3. Hide the viewer chrome — the top bar (logo + "Make your own"), the
 //      bottom control bar, and the Next.js dev badge
 //   4. Capture full-page at 2x device scale factor, save as JPEG
 //   5. Fade the last 65px of the image into the colour of its top edge. The
 //      picture is pale at the top and green at the bottom, and without this
 //      the loop shows a hard line where one copy meets the next.
-// The 430x1835 viewport is deliberate on both axes: 430 is roughly the width
+// The 430x1908 viewport is deliberate on both axes: 430 is roughly the width
 // the hero actually renders at, so the lyrics aren't downscaled into mush,
-// and 1835 ends just past the last line — enough field for the loop to
+// and 1908 ends just past the last line — enough field for the loop to
 // breathe, not so much that it reads as a gap. If the height changes, change
-// it on the <Image> below and re-sample the two colours.
+// it on the <Image> below and re-sample SHEET_TOP.
 
 import Image from "next/image";
 
@@ -35,10 +36,10 @@ const SQUARE = "flex h-7 w-7 items-center justify-center rounded border border-w
 function Sheet() {
   return (
     <Image
-      src="/hero-salt-and-clover.jpg"
+      src="/hero-salt-and-clover-2.jpg"
       alt=""
       width={430}
-      height={1835}
+      height={1908}
       priority
       draggable={false}
       className="block w-full h-auto select-none"
