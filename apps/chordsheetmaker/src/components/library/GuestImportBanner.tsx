@@ -55,34 +55,27 @@ export default function GuestImportBanner({ onImported }: Props) {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white px-5 py-4 flex gap-4 items-start shadow-sm">
-      {/* Icon */}
-      <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4.5 h-4.5 text-indigo-500">
-          <path d="M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9Z"/>
-        </svg>
-      </div>
-
+    <div className="mt-4 mb-2 rounded-lg border border-rule border-l-2 border-l-chord bg-white px-5 py-4 flex gap-4 items-start">
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-zinc-800">
+        <p className="text-sm font-semibold text-ink">
           {count === 1
             ? "You have 1 song from before you signed in"
             : `You have ${count} songs from before you signed in`}
         </p>
-        <p className="text-sm text-zinc-500 mt-0.5 leading-snug">
+        <p className="text-sm text-stone-600 mt-0.5 leading-snug">
           {count === 1
             ? "This song was created without an account and is only stored in this browser. Add it to your account so it's saved safely and available on all your devices."
             : `These songs were created without an account and are only stored in this browser. Add them to your account so they're saved safely and available on all your devices.`}
         </p>
 
-        {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
+        {error && <p className="text-xs text-red-600 mt-1.5">{error}</p>}
 
         <div className="flex items-center gap-3 mt-3">
           <button
             onClick={handleImport}
             disabled={state === "loading"}
-            className="flex items-center gap-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium px-4 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-sm bg-ink text-paper hover:bg-stone-700 disabled:opacity-60 font-semibold px-4 py-1.5 rounded-lg transition-colors"
           >
             {state === "loading" ? (
               <>
@@ -98,7 +91,7 @@ export default function GuestImportBanner({ onImported }: Props) {
           </button>
           <button
             onClick={handleSnooze}
-            className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="text-sm text-stone-600 hover:text-ink transition-colors"
           >
             Not now
           </button>
@@ -108,7 +101,7 @@ export default function GuestImportBanner({ onImported }: Props) {
       {/* × discards the guest songs permanently */}
       <button
         onClick={handleDiscard}
-        className="text-zinc-300 hover:text-zinc-500 transition-colors shrink-0 mt-0.5 text-lg leading-none"
+        className="text-stone-400 hover:text-ink transition-colors shrink-0 mt-0.5 text-lg leading-none"
         title="Discard guest songs"
       >
         ×

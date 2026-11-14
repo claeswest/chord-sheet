@@ -16,6 +16,7 @@ import LoadingNotes from "@/components/ui/LoadingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analytics";
+import { LANDING_FONTS } from "@/components/landing/fonts";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -487,58 +488,55 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     });
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className={`${LANDING_FONTS} min-h-screen bg-paper text-ink flex flex-col`}>
       {/* Welcome modal — shown when library is empty OR when landing via ?welcome=1 */}
       {!loading && (forceWelcome || songs.length === 0) && !welcomeDismissed && (
         <WelcomeModal onDismiss={() => setWelcomeDismissed(true)} />
       )}
 
       {/* Header */}
-      <header className="bg-[#302b63] border-b border-white/10 px-4 h-14 flex items-center gap-3 shrink-0">
+      <header className="bg-paper border-b border-rule px-4 h-14 flex items-center gap-3 shrink-0">
         {isLoggedIn && (
           <button
             onClick={() => setSidebarOpen((o) => !o)}
-            className="p-1.5 rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            className="p-1.5 rounded-md text-stone-500 hover:text-ink hover:bg-ink/5 transition-colors shrink-0"
             title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+            aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
               <path d="M3 18h18v-2H3v2Zm0-5h18v-2H3v2Zm0-7v2h18V6H3Z"/>
             </svg>
           </button>
         )}
-        <Link href="/" className="text-sm font-extrabold tracking-tight text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-          ChordSheet<span className="text-indigo-400">Maker</span>
+        <Link href="/" className="text-base font-extrabold tracking-tight text-ink" style={{ fontFamily: "var(--font-nunito)" }}>
+          ChordSheet<span className="text-chord">Maker</span>
         </Link>
         <div className="flex-1" />
         {isLoggedIn && songLimit !== null && (
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3 sm:px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
-            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+            className="inline-flex items-center text-sm font-semibold bg-ink text-paper hover:bg-stone-700 px-3 sm:px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap"
             title="Go unlimited — start a 7-day free trial"
           >
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.8 5.7 21.4 8 14 2 9.4h7.6z"/></svg>
             Upgrade
           </Link>
         )}
         {isLoggedIn
-          ? <UserMenu userName={userName} userImage={userImage} />
+          ? <UserMenu userName={userName} userImage={userImage} tone="paper" />
           : (
             <div className="flex items-center gap-3">
               {/* Returning users need a visible way in — the pill alone reads as signup-only */}
               <Link
                 href="/login?next=/songs"
-                className="text-sm text-white/70 hover:text-white transition-colors whitespace-nowrap"
+                className="text-sm text-stone-600 hover:text-ink transition-colors whitespace-nowrap"
               >
                 Sign in
               </Link>
               <Link
                 href="/login?next=/songs&from=save"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-3.5 py-1.5 rounded-lg shadow-sm transition-all hover:scale-[1.03] whitespace-nowrap"
-                style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold bg-ink text-paper hover:bg-stone-700 px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap"
               >
-                Sign up
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+                Sign up <span aria-hidden>→</span>
               </Link>
             </div>
           )
@@ -547,25 +545,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
       {/* Free-plan signpost — makes the path to subscribe clear & always available */}
       {isLoggedIn && songLimit !== null && !upgradeBarDismissed && (
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2 bg-indigo-50 border-b border-indigo-100 text-sm shrink-0">
-          <span className="flex items-center gap-2 min-w-0 text-indigo-900/80">
-            <span className="shrink-0">✨</span>
-            <span className="truncate">
-              <strong className="font-semibold">Free plan</strong>
-              <span className="text-indigo-900/55"> · {Math.min(songs.length, songLimit)} of {songLimit} songs used — go unlimited with PDF export &amp; sharing.</span>
-            </span>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2 bg-paper-deep border-b border-rule text-sm shrink-0">
+          <span className="truncate min-w-0 text-stone-600">
+            <strong className="font-semibold text-ink">Free plan</strong>
+            <span> · {Math.min(songs.length, songLimit)} of {songLimit} songs used — go unlimited with PDF export &amp; sharing.</span>
           </span>
           <div className="flex items-center gap-1 shrink-0">
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-1 bg-indigo-600 text-white font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm hover:bg-indigo-700 transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink px-2 py-1.5 text-xs sm:text-sm transition-colors whitespace-nowrap"
             >
-              Start free trial
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" /></svg>
+              Start free trial <span aria-hidden>→</span>
             </Link>
             <button
               onClick={() => { setUpgradeBarDismissed(true); try { sessionStorage.setItem("upgradeBarDismissed", "1"); } catch { /* ignore */ } }}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-stone-500 hover:text-ink hover:bg-ink/5 transition-colors"
               aria-label="Dismiss"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -578,14 +572,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       {!isLoggedIn && songs.length > 0 && (
         <Link
           href="/login?next=/songs&from=save"
-          className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border-b border-indigo-100 text-sm text-indigo-900/80 active:bg-indigo-100 transition-colors shrink-0"
+          className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-paper-deep border-b border-rule text-sm text-stone-600 active:bg-stone-200 transition-colors shrink-0"
         >
-          <span className="shrink-0">✨</span>
           <span className="flex-1 min-w-0 leading-snug">
-            <strong className="font-semibold">Your songs are saved on this device only.</strong>{" "}
-            <span className="text-indigo-900/55">Tap to create a free account and keep them everywhere.</span>
+            <strong className="font-semibold text-ink">Your songs are saved on this device only.</strong>{" "}
+            <span>Tap to create a free account and keep them everywhere.</span>
           </span>
-          <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" /></svg>
+          <svg className="w-4 h-4 text-stone-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" /></svg>
         </Link>
       )}
 
@@ -599,18 +592,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         )}
 
         {/* Sidebar — full-screen overlay on mobile, inline on desktop */}
-        <aside className={`shrink-0 bg-[#302b63] border-r border-white/10 flex flex-col py-3 overflow-hidden transition-all duration-200
+        <aside className={`shrink-0 bg-paper-deep border-r border-rule flex flex-col py-3 overflow-hidden transition-all duration-200
           ${sidebarOpen
             ? "fixed inset-0 z-40 w-full overflow-y-auto overscroll-contain lg:relative lg:inset-auto lg:z-auto lg:w-64 xl:lg:w-80 lg:overflow-hidden"
             : "w-0 py-0 border-r-0 lg:w-0"
           }`}>
         {isLoggedIn ? (<>
             {/* Mobile close button */}
-            <div className="lg:hidden flex items-center justify-between px-4 pb-3 border-b border-white/10 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-widest text-white/40">Categories</span>
+            <div className="lg:hidden flex items-center justify-between px-4 pb-3 border-b border-rule mb-1">
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Categories</span>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -622,17 +615,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               onClick={() => selectCategory(null)}
               className={`flex items-center gap-2 pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
-                  ? "bg-white/20 text-white font-semibold border-l-indigo-300"
-                  : "text-white/60 hover:bg-white/10 border-l-transparent"
+                  ? "bg-white text-ink font-semibold border-l-ink"
+                  : "text-stone-600 hover:bg-ink/5 border-l-transparent"
               }`}
             >
-              <span className="w-2 h-2 rounded-full shrink-0 bg-white/30" />
+              <span className="w-2 h-2 rounded-full shrink-0 bg-ink/30" />
               <span className="flex-1">All Songs</span>
-              <span className="text-xs bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
+              <span className="text-xs bg-ink/5 text-stone-600 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
             </button>
 
             <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-              <span className="text-xs font-semibold uppercase tracking-widest text-white/30">Categories</span>
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">Categories</span>
             </div>
 
 
@@ -670,16 +663,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         dragSongId ? "py-3" : "py-1.5"
                       } ${
                         dragOverCatReorderId === cat.id
-                          ? "bg-white/20 ring-2 ring-inset ring-white/40 border-l-transparent"
+                          ? "bg-white ring-2 ring-inset ring-ink/30 border-l-transparent"
                           : dragOverCategoryId === cat.id
-                          ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400 border-l-transparent"
+                          ? "bg-chord/10 ring-2 ring-inset ring-chord border-l-transparent"
                           : dragSongId
-                          ? "bg-white/5 ring-1 ring-inset ring-white/10 border-l-transparent"
+                          ? "bg-paper ring-1 ring-inset ring-ink/10 border-l-transparent"
                           : dragCatId === cat.id
                           ? "opacity-40 border-l-transparent"
                           : selectedCategoryId === cat.id
-                          ? `bg-white/20 ${getCatColor(cat.id, categories).sidebarSelected}`
-                          : "hover:bg-white/10 border-l-transparent"
+                          ? `bg-white ${getCatColor(cat.id, categories).sidebarSelected}`
+                          : "hover:bg-ink/5 border-l-transparent"
                       }`}
                     >
                       {editingCategoryId === cat.id ? (
@@ -687,7 +680,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           onChange={(e) => setEditingCategoryName(e.target.value)}
                           onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(cat.id); if (e.key === "Escape") setEditingCategoryId(null); }}
                           onBlur={() => handleRenameCategory(cat.id)}
-                          className="flex-1 text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
+                          className="flex-1 text-sm bg-white border border-ink/40 rounded px-2 py-0.5 outline-none min-w-0 text-ink placeholder:text-stone-400"
                         />
                       ) : (
                         <>
@@ -696,7 +689,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             draggable
                             onDragStart={(e) => { e.stopPropagation(); e.dataTransfer.effectAllowed = "move"; setDragCatId(cat.id); }}
                             onDragEnd={() => { setDragCatId(null); setDragOverCatReorderId(null); }}
-                            className="hidden sm:inline shrink-0 text-white/20 hover:text-white/60 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
+                            className="hidden sm:inline shrink-0 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
                             title="Drag to reorder"
                           >⠿</span>
                           {/* ▲ ▼ reorder pill — mobile only (no drag on touch).
@@ -706,11 +699,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             const sibs = categories.filter((c) => (c.parentId ?? null) === (cat.parentId ?? null));
                             const idx = sibs.findIndex((c) => c.id === cat.id);
                             return (
-                              <span className="sm:hidden flex flex-col shrink-0 mr-1 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                              <span className="sm:hidden flex flex-col shrink-0 mr-1 rounded-lg overflow-hidden border border-ink/15 bg-white">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "up"); }}
                                   disabled={idx <= 0}
-                                  className="text-white/40 active:bg-white/20 active:text-white transition-colors px-1.5 pt-1.5 pb-1 disabled:opacity-20"
+                                  className="text-stone-500 active:bg-ink/10 active:text-ink transition-colors px-1.5 pt-1.5 pb-1 disabled:opacity-20"
                                   title="Move up"
                                   aria-label={`Move ${cat.name} up`}
                                 >
@@ -718,11 +711,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                                   </svg>
                                 </button>
-                                <span className="h-px bg-white/10" />
+                                <span className="h-px bg-ink/10" />
                                 <button
                                   onClick={(e) => { e.stopPropagation(); moveCategoryStep(cat.id, "down"); }}
                                   disabled={idx >= sibs.length - 1}
-                                  className="text-white/40 active:bg-white/20 active:text-white transition-colors px-1.5 pt-1 pb-1.5 disabled:opacity-20"
+                                  className="text-stone-500 active:bg-ink/10 active:text-ink transition-colors px-1.5 pt-1 pb-1.5 disabled:opacity-20"
                                   title="Move down"
                                   aria-label={`Move ${cat.name} down`}
                                 >
@@ -735,7 +728,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           })()}
                           <span className="w-4 h-4 shrink-0 flex items-center justify-center">
                             {children.length > 0 && (
-                              <button onClick={() => toggleCollapse(cat.id)} className="text-white/60 hover:text-white transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
+                              <button onClick={() => toggleCollapse(cat.id)} className="text-stone-600 hover:text-ink transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 transition-transform duration-150 ${collapsedCategories.has(cat.id) ? "-rotate-90" : ""}`}><path d="M7 10l5 5 5-5H7Z"/></svg>
                               </button>
                             )}
@@ -743,7 +736,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           <button
                             onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
                             onDoubleClick={() => startRename(cat)}
-                            className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-white font-semibold" : "text-white/60"}`}
+                            className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-ink font-semibold" : "text-stone-600"}`}
                             title="Double-click to rename"
                           >
                             <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
@@ -753,26 +746,26 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       )}
                       {/* Add subcategory */}
                       <button onClick={() => { setShowAddSubCategory(cat.id); setNewSubCategoryName(""); }}
-                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0 ml-0.5"
+                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0 ml-0.5"
                         title="Add subcategory">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg>
                       </button>
                       {/* Rename */}
                       <button onClick={() => startRename(cat)}
-                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
+                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0"
                         title="Rename">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
                       </button>
                       {/* Delete */}
                       <button onClick={() => handleDeleteCategory(cat.id)}
-                        className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                         title="Delete">×</button>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-white/10 text-white/50`}>{totalCount}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{totalCount}</span>
                     </div>
 
                     {/* Subcategory rows + add input — wrapped in a tree-line container */}
                     {!collapsedCategories.has(cat.id) && (children.length > 0 || showAddSubCategory === cat.id) && (
-                      <div className="ml-9 border-l border-white/20 mb-2">
+                      <div className="ml-9 border-l border-ink/15 mb-2">
                         {children.map((sub) => (
                           <div key={sub.id}
                             onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(sub.id); }}
@@ -782,12 +775,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               dragSongId ? "py-2" : "py-1"
                             } ${
                               dragOverCategoryId === sub.id
-                                ? "bg-indigo-500/30 ring-2 ring-inset ring-indigo-400"
+                                ? "bg-chord/10 ring-2 ring-inset ring-chord"
                                 : dragSongId
-                                ? "bg-white/5 ring-1 ring-inset ring-white/10"
+                                ? "bg-paper ring-1 ring-inset ring-ink/10"
                                 : selectedCategoryId === sub.id
-                                ? "bg-white/15"
-                                : "hover:bg-white/10"
+                                ? "bg-white"
+                                : "hover:bg-ink/5"
                             }`}
                           >
                             {editingCategoryId === sub.id ? (
@@ -795,13 +788,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                 onChange={(e) => setEditingCategoryName(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter") handleRenameCategory(sub.id); if (e.key === "Escape") setEditingCategoryId(null); }}
                                 onBlur={() => handleRenameCategory(sub.id)}
-                                className="flex-1 text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-0.5 outline-none min-w-0 text-white placeholder:text-white/30"
+                                className="flex-1 text-xs bg-white border border-ink/40 rounded px-2 py-0.5 outline-none min-w-0 text-ink placeholder:text-stone-400"
                               />
                             ) : (
                               <button
                                 onClick={() => selectCategory(sub.id === selectedCategoryId ? null : sub.id)}
                                 onDoubleClick={() => startRename(sub)}
-                                className={`flex-1 flex items-center gap-1.5 text-left text-xs truncate min-w-0 ${selectedCategoryId === sub.id ? "text-white font-semibold" : "text-white/50"}`}
+                                className={`flex-1 flex items-center gap-1.5 text-left text-xs truncate min-w-0 ${selectedCategoryId === sub.id ? "text-ink font-semibold" : "text-stone-600"}`}
                                 title="Double-click to rename"
                               >
                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getCatColor(sub.id, categories).dot}`} />
@@ -810,15 +803,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             )}
                             {/* Rename */}
                             <button onClick={() => startRename(sub)}
-                              className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-indigo-300 transition-opacity shrink-0"
+                              className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-ink transition-opacity shrink-0"
                               title="Rename">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
                             </button>
                             {/* Delete */}
                             <button onClick={() => handleDeleteCategory(sub.id)}
-                              className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 transition-opacity shrink-0 text-base leading-none"
+                              className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                               title="Delete">×</button>
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-white/10 text-white/50`}>{sub.songIds.length}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{sub.songIds.length}</span>
                           </div>
                         ))}
 
@@ -833,7 +826,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             }}
                             onBlur={() => { if (newSubCategoryName.trim()) handleCreateSubCategory(cat.id); else setShowAddSubCategory(null); }}
                             placeholder="Subcategory name…"
-                            className="w-full text-xs bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
+                            className="w-full text-xs bg-white border border-ink/40 rounded px-2 py-1 outline-none text-ink placeholder:text-stone-400"
                         />
                         </div>
                         )}
@@ -854,14 +847,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                     }}
                     onBlur={() => { if (newCategoryName.trim()) handleCreateCategory(); else setShowAddCategory(false); }}
                     placeholder="Category name…"
-                    className="w-full text-sm bg-white/10 border border-indigo-400/60 rounded px-2 py-1 outline-none text-white placeholder:text-white/30"
+                    className="w-full text-sm bg-white border border-ink/40 rounded px-2 py-1 outline-none text-ink placeholder:text-stone-400"
                   />
                 </div>
               ) : (
                 <button onClick={() => setShowAddCategory(true)}
-                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors border-l-4 border-l-transparent mt-1"
+                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors border-l-4 border-l-transparent mt-1"
                 >
-                  <span className="w-4 h-4 rounded-full shrink-0 bg-white/10 flex items-center justify-center text-white/60 text-base leading-none">+</span>
+                  <span className="w-4 h-4 rounded-full shrink-0 bg-ink/10 flex items-center justify-center text-stone-600 text-base leading-none">+</span>
                   Add category
                 </button>
               )}
@@ -873,23 +866,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
               {/* Create actions — first */}
               <div className="space-y-2.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/30 px-1">Create a chord chart</p>
+                <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 px-1">Create a chord chart</p>
 
                 {/* Find with AI — primary */}
                 <Link
                   href="/editor/new?start=search"
                   onClick={atLimit ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
-                  className="relative overflow-hidden group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-ink text-paper hover:bg-stone-700 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
-                    </svg>
-                  </div>
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
+                  </svg>
                   <div className="min-w-0">
                     <p className="font-semibold text-sm">Find a song with AI</p>
-                    <p className="text-[11px] text-indigo-200">Type a title — chords in seconds</p>
+                    <p className="text-[11px] text-stone-300">Type a title — chords in seconds</p>
                   </div>
                 </Link>
 
@@ -897,74 +887,50 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 <Link
                   href="/editor/new?start=import"
                   onClick={atLimit ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
-                  className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200"
-                  style={{ background: "rgba(255,255,255,0.04)" }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white text-ink border border-rule hover:border-ink/40 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
-                    </svg>
-                  </div>
+                  <svg className="w-4 h-4 shrink-0 text-stone-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 8-3-3m3 3 3-3" />
+                  </svg>
                   <div className="min-w-0">
                     <p className="font-semibold text-sm">I already have chords</p>
-                    <p className="text-[11px] text-white/30">Paste, or snap a photo</p>
+                    <p className="text-[11px] text-stone-500">Paste, or snap a photo</p>
                   </div>
                 </Link>
 
                 {/* Try demo */}
                 <Link
                   href="/editor/new?start=demo"
-                  className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white border border-white/10 hover:border-indigo-400/30 hover:bg-indigo-500/10 transition-all duration-200"
-                  style={{ background: "rgba(255,255,255,0.04)" }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white text-ink border border-rule hover:border-ink/40 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
+                  <svg className="w-4 h-4 shrink-0 text-stone-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 5v14l11-7z" />
+                  </svg>
                   <div className="min-w-0">
                     <p className="font-semibold text-sm">Try the demo</p>
-                    <p className="text-[11px] text-white/30">See a finished chart</p>
+                    <p className="text-[11px] text-stone-500">See a finished chart</p>
                   </div>
                 </Link>
               </div>
 
               {/* Account pitch — secondary, below the value */}
-              <div
-                className="rounded-2xl border border-indigo-400/30 p-4 mt-auto relative overflow-hidden"
-                style={{ background: "linear-gradient(160deg, rgba(99,102,241,0.20) 0%, rgba(139,92,246,0.10) 100%)" }}
-              >
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/30 flex items-center justify-center shrink-0">
-                    <svg className="w-4 h-4 text-indigo-200" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/>
-                    </svg>
-                  </div>
-                  <p className="text-sm font-bold text-white">Save your work</p>
-                </div>
+              <div className="rounded-lg border border-rule bg-white p-4 mt-auto">
+                <p className="text-sm font-semibold text-ink mb-2.5">Save your work</p>
                 <ul className="space-y-1.5 mb-3.5">
                   {["Keep your charts forever", "Sync across all devices", "Build setlists for gigs"].map((b) => (
-                    <li key={b} className="flex items-center gap-2 text-xs text-white/75">
-                      <svg className="w-3.5 h-3.5 text-indigo-300 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                    <li key={b} className="flex items-baseline gap-2 text-xs text-stone-600">
+                      <span aria-hidden className="font-semibold text-chord">✓</span>
                       {b}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href="/login"
-                  className="relative overflow-hidden group flex items-center justify-center gap-1.5 w-full text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition-all hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 4px 16px rgba(99,102,241,0.4)" }}
+                  className="flex items-center justify-center gap-1.5 w-full text-sm font-semibold rounded-lg px-4 py-2.5 bg-ink text-paper hover:bg-stone-700 transition-colors"
                 >
-                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)" }} />
-                  <span className="relative">Create free account</span>
-                  <svg className="relative w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5-5 5M6 12h12" />
-                  </svg>
+                  Create free account <span aria-hidden>→</span>
                 </Link>
-                <p className="text-center text-[10px] text-white/40 mt-2">Free forever · No credit card</p>
+                <p className="text-center text-[11px] text-stone-500 mt-2">Free forever · No credit card</p>
               </div>
             </div>
           )}
@@ -976,9 +942,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             {/* Sentinel: when this leaves the viewport the search bar is "stuck" */}
             <div ref={sentinelRef} className="h-0" />
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
-            <div className={`sticky top-0 z-20 bg-white ${searchBarStuck ? "pt-4" : "pt-0"} pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 border-b border-zinc-100 shadow-sm transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
+            <div className={`sticky top-0 z-20 bg-paper ${searchBarStuck ? "pt-4" : "pt-0"} pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 border-b border-rule transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
               <div className="relative w-full max-w-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none">
                   <path d="M10.5 2a8.5 8.5 0 1 0 5.262 15.176l3.53 3.531a1 1 0 0 0 1.415-1.414l-3.53-3.53A8.5 8.5 0 0 0 10.5 2Zm-6.5 8.5a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/>
                 </svg>
                 <input
@@ -986,14 +952,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search songs…"
-                  className="w-full text-sm bg-white border border-zinc-200 rounded-lg pl-9 pr-4 py-2 outline-none focus:border-indigo-400 transition-colors"
+                  className="w-full text-sm bg-white border border-rule rounded-lg pl-9 pr-4 py-2 outline-none focus:border-ink transition-colors"
                 />
               </div>
               <div className="flex-1" />
               {atLimit ? (
                 <button
                   onClick={() => setShowUpgradeModal(true)}
-                  className="flex items-center gap-1.5 text-sm bg-zinc-200 text-zinc-500 px-4 py-2 rounded-lg font-medium shrink-0 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                  className="flex items-center gap-1.5 text-sm bg-stone-200 text-stone-500 px-4 py-2 rounded-lg font-medium shrink-0 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition-colors"
                   title={`Free plan limit: ${songLimit} songs`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
@@ -1004,7 +970,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               ) : (
                 <Link
                   href="/editor/new"
-                  className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shrink-0"
+                  className="flex items-center gap-1.5 text-sm bg-ink text-paper hover:bg-stone-700 px-4 py-2 rounded-lg transition-colors font-semibold shrink-0"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
                     <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/>
@@ -1014,15 +980,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               )}
               {/* List / Grid toggle */}
               {!loading && (
-                <div className="flex items-center gap-0.5 bg-white border border-zinc-200 rounded-lg p-0.5 shrink-0">
+                <div className="flex items-center gap-0.5 bg-white border border-rule rounded-lg p-0.5 shrink-0">
                   <button onClick={() => setViewMode("list")} title="List view"
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-zinc-100 text-zinc-700" : "text-zinc-400 hover:text-zinc-600"}`}>
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-paper-deep text-stone-700" : "text-stone-400 hover:text-stone-600"}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                       <path d="M3 13h2v-2H3v2Zm0 4h2v-2H3v2Zm0-8h2V7H3v2Zm4 4h14v-2H7v2Zm0 4h14v-2H7v2ZM7 7v2h14V7H7Z"/>
                     </svg>
                   </button>
                   <button onClick={() => setViewMode("grid")} title="Card view"
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-zinc-100 text-zinc-700" : "text-zinc-400 hover:text-zinc-600"}`}>
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-paper-deep text-stone-700" : "text-stone-400 hover:text-stone-600"}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                       <path d="M3 3h8v8H3V3Zm0 10h8v8H3v-8Zm10-10h8v8h-8V3Zm0 10h8v8h-8v-8Z"/>
                     </svg>
@@ -1068,11 +1034,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             {isLoggedIn && !loading && !categoriesTipDismissed && songs.length >= 3 && categories.length === 0 && (() => {
               if (!categoriesTipFired.current) { categoriesTipFired.current = true; trackCategoriesTip("shown"); }
               return (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-3 mt-4">
-                  <span className="flex items-start sm:items-center gap-2.5 min-w-0 text-sm text-zinc-600">
-                    <span className="shrink-0 text-lg" aria-hidden>🗂️</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 rounded-lg border border-rule border-l-2 border-l-chord bg-white px-4 py-3 mt-4">
+                  <span className="flex items-start sm:items-center gap-2.5 min-w-0 text-sm text-stone-600">
                     <span>
-                      <strong className="font-semibold text-zinc-800">Your songs can live in folders.</strong>{" "}
+                      <strong className="font-semibold text-stone-800">Your songs can live in folders.</strong>{" "}
                       Group them into setlists for gigs or collections for practice — then drag any song onto a folder to file it.
                     </span>
                   </span>
@@ -1085,7 +1050,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         setSidebarOpen(true);       // mobile: reveal the drawer
                         setShowAddCategory(true);   // focus the "Add category" input
                       }}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm transition-colors"
+                      className="bg-ink text-paper hover:bg-stone-700 font-semibold rounded-lg px-3 py-1.5 text-xs sm:text-sm transition-colors"
                     >
                       Create a folder
                     </button>
@@ -1096,7 +1061,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         localStorage.setItem("categoriesTipDismissed", "1");
                       }}
                       aria-label="Dismiss"
-                      className="text-zinc-400 hover:text-zinc-600 px-1.5 py-1 transition-colors"
+                      className="text-stone-400 hover:text-stone-600 px-1.5 py-1 transition-colors"
                     >
                       ✕
                     </button>
@@ -1110,17 +1075,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 <LoadingNotes label="Loading your songs…" />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-24 text-zinc-400">
+              <div className="text-center py-24 text-stone-400">
                 {songs.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-24 px-6">
-                    <div className="text-6xl mb-6 select-none">𝄞</div>
-                    <h2 className="text-xl font-semibold text-zinc-700 mb-2">Your library is empty</h2>
-                    <p className="text-sm text-zinc-400 mb-8 max-w-xs text-center leading-relaxed">
+                    <div className="text-6xl mb-6 select-none text-chord" aria-hidden>𝄞</div>
+                    <h2 className="font-display font-medium text-3xl tracking-[-0.02em] text-ink mb-2">Your library is empty</h2>
+                    <p className="text-sm text-stone-400 mb-8 max-w-xs text-center leading-relaxed">
                       Search any song by name and artist — AI will build a chord sheet in seconds.
                     </p>
                     <Link href="/editor/new"
-                      className="bg-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-100">
-                      + Add your first song
+                      className="bg-ink text-paper hover:bg-stone-700 px-6 py-3 rounded-lg text-sm font-semibold transition-colors">
+                      Add your first song <span aria-hidden>→</span>
                     </Link>
                   </div>
                 ) : selectedCategoryId && !search ? (
@@ -1130,7 +1095,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                     return (
                       <div className="flex flex-col items-center gap-4">
                         {/* Drag illustration */}
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" fill="none" className="w-20 h-12 text-zinc-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" fill="none" className="w-20 h-12 text-stone-200">
                           {/* Song pill on the right */}
                           <rect x="44" y="10" width="32" height="14" rx="7" fill="currentColor"/>
                           <rect x="48" y="14" width="16" height="3" rx="1.5" fill="white" opacity="0.7"/>
@@ -1142,15 +1107,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           <rect x="2" y="14" width="10" height="8" rx="2" fill="currentColor" opacity="0.8"/>
                         </svg>
                         <div>
-                          <p className="text-sm font-medium text-zinc-500">No songs in <span className="text-zinc-700">"{catName}"</span> yet</p>
-                          <p className="text-xs mt-1 text-zinc-400">Go to <span className="font-medium text-zinc-500">All Songs</span>, then drag a song and drop it onto this category in the sidebar.</p>
+                          <p className="text-sm font-medium text-stone-500">No songs in <span className="text-stone-700">"{catName}"</span> yet</p>
+                          <p className="text-xs mt-1 text-stone-400">Go to <span className="font-medium text-stone-500">All Songs</span>, then drag a song and drop it onto this category in the sidebar.</p>
                         </div>
                       </div>
                     );
                   })()
                 ) : search ? (
                   /* Search returned nothing */
-                  <p className="text-sm">No songs match <span className="font-medium text-zinc-600">"{search}"</span></p>
+                  <p className="text-sm">No songs match <span className="font-medium text-stone-600">"{search}"</span></p>
                 ) : (
                   <p className="text-sm">No songs match your filter.</p>
                 )}
@@ -1163,8 +1128,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
-                  const titleColor = song.style?.title?.color ?? "#18181b";
-                  const artistColor = song.style?.artist?.color ?? "#71717a";
+                  const titleColor = song.style?.title?.color ?? "#1c1917";
+                  const artistColor = song.style?.artist?.color ?? "#57534e";
                   const cardBg = song.style?.background;
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const firstChord = (song.lines as any[])?.find((l) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
@@ -1181,8 +1146,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       onDragEnd={handleDragEnd}
                       className={`group relative rounded-xl border overflow-hidden bg-white transition-all ${
                         isLocked
-                          ? "opacity-50 border-zinc-200 hover:opacity-70 hover:border-amber-300 cursor-pointer"
-                          : "border-zinc-200 hover:shadow-md"
+                          ? "opacity-50 border-rule hover:opacity-70 hover:border-amber-300 cursor-pointer"
+                          : "border-rule hover:shadow-md"
                       } ${dragSongId === song.id ? "opacity-40" : ""}`}
                       onClick={isLocked ? () => setShowUpgradeModal(true) : undefined}
                     >
@@ -1202,7 +1167,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           className="px-4 pt-4 pb-5 min-h-[88px]"
                           style={cardBg
                             ? { backgroundColor: cardBg }
-                            : { background: "linear-gradient(135deg,#eef2ff 0%,#e0e7ff 100%)" }}
+                            : { backgroundColor: "#f2ecdf" }}
                         >
                           <p className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
@@ -1216,12 +1181,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       </Link>
 
                       {/* Meta bar */}
-                      <div className="px-3 py-2 border-t border-zinc-100 flex items-center gap-2 flex-wrap min-h-[36px]">
+                      <div className="px-3 py-2 border-t border-rule flex items-center gap-2 flex-wrap min-h-[36px]">
                         {firstChord && (
-                          <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-medium">{firstChord}</span>
+                          <span className="text-xs font-mono bg-paper-deep text-chord px-1.5 py-0.5 rounded font-semibold">{firstChord}</span>
                         )}
                         {chordCount > 0 && (
-                          <span className="text-xs text-zinc-400">{chordCount} chords</span>
+                          <span className="text-xs text-stone-400">{chordCount} chords</span>
                         )}
                         <div className="flex-1" />
                         {/* Category colour dots */}
@@ -1235,21 +1200,21 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Hover action overlay — top-right corner */}
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link href={editUrl} title="Edit"
-                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-indigo-600 transition-colors">
+                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-stone-500 hover:text-ink transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
                           </svg>
                         </Link>
                         {song.source === "db" && (
                           <button onClick={() => handleDuplicate(song)} disabled={isDuplicating} title="Duplicate"
-                            className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-indigo-600 transition-colors disabled:opacity-30">
+                            className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-stone-500 hover:text-ink transition-colors disabled:opacity-30">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                               <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
                             </svg>
                           </button>
                         )}
                         <button onClick={() => setConfirmDelete({ id: song.id, title: song.title, source: song.source })} title="Delete permanently"
-                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-zinc-500 hover:text-red-500 transition-colors">
+                          className="p-1.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-stone-500 hover:text-red-500 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                             <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
                           </svg>
@@ -1261,23 +1226,23 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               </div>
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
-              <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mt-4 song-list-enter">
+              <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-lg border border-rule overflow-hidden mt-4 song-list-enter">
                 {/* Column headers */}
-                <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-zinc-200 bg-zinc-100">
+                <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-rule bg-paper-deep">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
                   {/* Invisible icon spacer so SONG label aligns with title text */}
                   <div className="flex-1 min-w-0 flex items-center gap-2.5">
                     <span className="shrink-0 w-8" aria-hidden />
-                    <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors">
+                    <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] hover:text-ink transition-colors">
                       Song
-                      {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                      {sortBy === "title" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-chord">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                     </button>
                   </div>
-                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[160px] shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 transition-colors p-0">
+                  <button onClick={() => handleSortClick("artist")} className="hidden sm:flex w-[160px] shrink-0 items-center gap-1 font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] hover:text-ink transition-colors p-0">
                     Artist
-                    {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-indigo-500">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
+                    {sortBy === "artist" ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-chord">{sortDir === "asc" ? <path d="M12 8l-6 6h12l-6-6Z"/> : <path d="M12 16l6-6H6l6 6Z"/>}</svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 opacity-20"><path d="M12 8l-6 6h12l-6-6Z"/></svg>}
                   </button>
-                  {isLoggedIn && <span className="hidden lg:block text-xs font-semibold text-zinc-500 uppercase tracking-wider w-[200px] xl:w-[280px] shrink-0">Categories</span>}
+                  {isLoggedIn && <span className="hidden lg:block font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em] w-[200px] xl:w-[280px] shrink-0">Categories</span>}
                   <div className="hidden xl:block w-[100px] shrink-0 ml-4" />
                 </div>
                 {filtered.map((song, idx) => {
@@ -1286,8 +1251,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
 
-                  const titleColor = "#3f3f46";
-                  const artistColor = "#71717a";
+                  const titleColor = "#1c1917";
+                  const artistColor = "#57534e";
                   const isReorderTarget = dragOverSongId === song.id;
                   const firstCatAccent = song.categoryIds[0] ? getCatColor(song.categoryIds[0], categories).accent : null;
 
@@ -1321,11 +1286,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       onDrop={(e) => handleDropOnSong(e, song.id)}
                       onClick={() => isLocked ? setShowUpgradeModal(true) : (window.location.href = viewUrl)}
                       className={`group relative flex items-center gap-4 px-5 py-2.5 transition-colors cursor-pointer ${
-                        isLocked ? "opacity-50 hover:opacity-70 hover:bg-amber-50/40" : "hover:bg-indigo-50/60"
+                        isLocked ? "opacity-50 hover:opacity-70 hover:bg-amber-50/40" : "hover:bg-paper"
                       } ${
-                        idx !== 0 || expandedSongId !== null ? "border-t border-zinc-100" : ""
+                        idx !== 0 || expandedSongId !== null ? "border-t border-rule" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
-                        isReorderTarget ? "ring-2 ring-inset ring-indigo-400" : ""
+                        isReorderTarget ? "ring-2 ring-inset ring-chord" : ""
                       }`}
                     >
                       {/* Left-edge accent bar — category colour */}
@@ -1344,18 +1309,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                       {/* Drag handle */}
                       {isLoggedIn && (
-                        <div className="w-3 shrink-0 text-zinc-200 group-hover:text-zinc-500 cursor-grab active:cursor-grabbing transition-colors select-none text-sm leading-none">
+                        <div className="w-3 shrink-0 text-stone-200 group-hover:text-stone-500 cursor-grab active:cursor-grabbing transition-colors select-none text-sm leading-none">
                           ⠿
                         </div>
                       )}
 
                       {/* Title — flex-1 wrapper keeps icon + link together */}
                       <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                        <span
-                          className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
-                          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.16) 100%)" }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="#6d6af8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <span className="shrink-0 w-8 h-8 rounded-md bg-paper-deep flex items-center justify-center text-chord">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                             <path d="M9 18V5l12-2v13" />
                             <circle cx="6" cy="18" r="3" />
                             <circle cx="18" cy="16" r="3" />
@@ -1366,12 +1328,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                           className="min-w-0 group/title"
                         >
-                          <div className="text-sm font-medium truncate group-hover/title:text-indigo-600 transition-colors" style={{ color: titleColor }}>
+                          <div className="text-sm font-medium truncate group-hover/title:underline underline-offset-4 decoration-ink/30" style={{ color: titleColor }}>
                             {song.title
                               ? song.title
                               : song.artist
-                              ? <span className="italic" style={{ color: "#a1a1aa" }}>{song.artist}</span>
-                              : <span className="italic" style={{ color: "#d4d4d8" }}>Untitled song</span>}
+                              ? <span className="italic" style={{ color: "#78716c" }}>{song.artist}</span>
+                              : <span className="italic" style={{ color: "#a8a29e" }}>Untitled song</span>}
                           </div>
                           {song.artist && (
                             <div className="sm:hidden text-xs truncate mt-0.5" style={{ color: artistColor }}>
@@ -1382,8 +1344,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       </div>
 
                       {/* Artist */}
-                      <div className="hidden sm:block w-[160px] shrink-0 text-xs truncate text-zinc-500">
-                        {song.artist || <span className="text-zinc-300">—</span>}
+                      <div className="hidden sm:block w-[160px] shrink-0 text-xs truncate text-stone-500">
+                        {song.artist || <span className="text-stone-300">—</span>}
                       </div>
 
                       {/* Category chips */}
@@ -1414,7 +1376,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                       {/* ⋯ / × button — visible below xl, for all users */}
                       <button
-                        className="xl:hidden shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                        className="xl:hidden shrink-0 p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-paper-deep transition-colors"
                         title={expandedSongId === song.id ? "Close" : "More options"}
                         onClick={(e) => { e.stopPropagation(); setExpandedSongId(expandedSongId === song.id ? null : song.id); setCatPickerSongId(null); }}
                       >
@@ -1431,11 +1393,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                       {/* Actions — grouped pill, revealed on row hover to keep rows calm */}
                       <div className="hidden xl:flex shrink-0 items-center justify-end ml-4 w-[100px] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-0 bg-zinc-100 rounded-lg p-0.5 border border-zinc-200">
+                        <div className="flex items-center gap-0 bg-paper-deep rounded-lg p-0.5 border border-rule">
                         {/* View — locked songs route to the upgrade modal */}
                         <Link href={isLocked ? "#" : viewUrl} title="View"
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
-                          className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
+                          className="p-1.5 rounded-md text-stone-500 hover:text-ink hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
                           </svg>
@@ -1443,7 +1405,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {/* Edit */}
                         <Link href={isLocked ? "#" : editUrl} title="Edit"
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
-                          className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors">
+                          className="p-1.5 rounded-md text-stone-500 hover:text-ink hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.08a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/>
                           </svg>
@@ -1452,7 +1414,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {song.source === "db" && !isLocked && (
                           <button onClick={() => handleDuplicate(song)} disabled={isDuplicating}
                             title="Duplicate"
-                            className="p-1.5 rounded-md text-zinc-500 hover:text-indigo-600 hover:bg-white transition-colors disabled:opacity-30">
+                            className="p-1.5 rounded-md text-stone-500 hover:text-ink hover:bg-white transition-colors disabled:opacity-30">
                             {isDuplicating ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 animate-spin">
                                 <path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8Z"/>
@@ -1468,7 +1430,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {selectedCategoryId && (
                           <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
                             title="Remove from this category"
-                            className="p-1.5 rounded-md text-zinc-500 hover:text-orange-500 hover:bg-white transition-colors">
+                            className="p-1.5 rounded-md text-stone-500 hover:text-orange-500 hover:bg-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                               <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-4 8H8v-2h8v2Z"/>
                             </svg>
@@ -1477,7 +1439,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {/* Delete */}
                         <button onClick={() => setConfirmDelete({ id: song.id, title: song.title, source: song.source })}
                           title="Delete song permanently"
-                          className="p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-white transition-colors">
+                          className="p-1.5 rounded-md text-stone-500 hover:text-red-500 hover:bg-white transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
                           </svg>
@@ -1488,11 +1450,11 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
                     {/* Expanded panel — edit/duplicate/delete + categories (< xl only, all users) */}
                     {expandedSongId === song.id && (
-                      <div className="xl:hidden border-t border-zinc-100 bg-zinc-50/80 px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="xl:hidden border-t border-rule bg-paper px-5 py-3" onClick={(e) => e.stopPropagation()}>
                         {/* Action buttons */}
                         <div className="flex items-center gap-2 flex-wrap mb-2">
                           <Link href={isLocked ? "#" : editUrl}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-rule text-stone-700 hover:border-ink/40 hover:text-ink transition-colors shadow-sm"
                             onClick={isLocked
                               ? (e) => { e.preventDefault(); setExpandedSongId(null); setShowUpgradeModal(true); }
                               : () => setExpandedSongId(null)}>
@@ -1505,7 +1467,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             <button
                               onClick={() => { handleDuplicate(song); setExpandedSongId(null); }}
                               disabled={isDuplicating}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-zinc-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-sm disabled:opacity-40">
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-rule text-stone-700 hover:border-ink/40 hover:text-ink transition-colors shadow-sm disabled:opacity-40">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                                 <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
                               </svg>
@@ -1514,7 +1476,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           )}
                           <button
                             onClick={() => { setConfirmDelete({ id: song.id, title: song.title, source: song.source }); setExpandedSongId(null); }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-zinc-200 text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors shadow-sm">
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-rule text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                               <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/>
                             </svg>
@@ -1538,7 +1500,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               })}
                               <button
                                 onClick={() => setCatPickerSongId(catPickerSongId === song.id ? null : song.id)}
-                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-zinc-100 text-zinc-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors border border-dashed border-zinc-300 hover:border-indigo-300"
+                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-white text-stone-600 hover:text-ink transition-colors border border-dashed border-stone-300 hover:border-ink/50"
                               >
                                 + Category
                               </button>
@@ -1563,7 +1525,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                   );
                                 })}
                                 {categories.filter((c) => !song.categoryIds.includes(c.id)).length === 0 && (
-                                  <span className="text-xs text-zinc-400">All categories assigned</span>
+                                  <span className="text-xs text-stone-400">All categories assigned</span>
                                 )}
                               </div>
                             )}
@@ -1583,7 +1545,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       {/* Upgrade modal */}
       {showUpgradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowUpgradeModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-500">
@@ -1591,39 +1553,39 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-zinc-900">You&apos;ve reached the free limit</h2>
-                <p className="text-xs text-zinc-500">{`Free includes ${songLimit} songs`}</p>
+                <h2 className="text-base font-semibold text-stone-900">You&apos;ve reached the free limit</h2>
+                <p className="text-xs text-stone-500">{`Free includes ${songLimit} songs`}</p>
               </div>
             </div>
-            <p className="text-sm text-zinc-600 mb-5 leading-relaxed">
+            <p className="text-sm text-stone-600 mb-5 leading-relaxed">
               {isLoggedIn
-                ? <>Go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong>. Try it free for 7 days; you won&apos;t be charged today.</>
-                : <>Create a free account to keep your songs, then go Pro for <strong className="text-zinc-800">unlimited songs, PDF export and sharing</strong> — a 7-day free trial, no card charged today.</>}
+                ? <>Go Pro for <strong className="text-stone-800">unlimited songs, PDF export and sharing</strong>. Try it free for 7 days; you won&apos;t be charged today.</>
+                : <>Create a free account to keep your songs, then go Pro for <strong className="text-stone-800">unlimited songs, PDF export and sharing</strong> — a 7-day free trial, no card charged today.</>}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowUpgradeModal(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
               >
                 Not now
               </button>
               {isLoggedIn ? (
                 <Link
                   href="/pricing"
-                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
+                  className="flex-1 px-4 py-2 text-sm font-semibold bg-ink text-paper hover:bg-stone-700 rounded-lg transition-colors text-center"
                 >
                   Start free trial →
                 </Link>
               ) : (
                 <Link
                   href="/login?next=/pricing&from=save"
-                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-center"
+                  className="flex-1 px-4 py-2 text-sm font-semibold bg-ink text-paper hover:bg-stone-700 rounded-lg transition-colors text-center"
                 >
                   Create free account →
                 </Link>
               )}
             </div>
-            <p className="text-center text-[11px] text-zinc-400 mt-3">No credit card charged today · cancel anytime</p>
+            <p className="text-center text-[11px] text-stone-400 mt-3">No credit card charged today · cancel anytime</p>
           </div>
         </div>
       )}
@@ -1631,15 +1593,15 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <h2 className="text-base font-semibold text-zinc-900 mb-1">Delete song?</h2>
-            <p className="text-sm text-zinc-500 mb-5">
-              <span className="font-medium text-zinc-700">"{confirmDelete.title}"</span> will be permanently deleted. This cannot be undone.
+          <div className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4">
+            <h2 className="text-base font-semibold text-stone-900 mb-1">Delete song?</h2>
+            <p className="text-sm text-stone-500 mb-5">
+              <span className="font-medium text-stone-700">"{confirmDelete.title}"</span> will be permanently deleted. This cannot be undone.
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
               >
                 Cancel
               </button>
@@ -1654,12 +1616,12 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
         </div>
       )}
 
-      <ScrollToTop />
+      <ScrollToTop tone="ink" />
 
       {/* Toast notification */}
       <div
         className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 pointer-events-none ${
-          toast ? "opacity-100 translate-y-0 bg-zinc-800 text-white" : "opacity-0 translate-y-2"
+          toast ? "opacity-100 translate-y-0 bg-ink text-paper" : "opacity-0 translate-y-2"
         }`}
       >
         {toast}
