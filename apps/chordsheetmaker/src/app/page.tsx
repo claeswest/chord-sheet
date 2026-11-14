@@ -7,57 +7,58 @@ import BuildStamp from "@clavos/core/build-stamp";
 import HeroDemo from "@/components/ui/HeroDemo";
 import TransformationSection from "@/components/ui/TransformationSection";
 import ExamplesSection from "@/components/ui/ExamplesSection";
+import Image from "next/image";
+import { EXAMPLE_SONGS } from "@/data/exampleSongs";
 import { auth } from "@/lib/auth";
 import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, H2, Wordmark } from "@/components/landing/kit";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
+
+// Where each example sheet lies in the closing section.
+const SHEET_SPOTS = [
+  "left-0 top-0 -rotate-[5deg]",
+  "right-0 top-[24%] rotate-[4deg]",
+  "left-[10%] bottom-0 -rotate-[2deg]",
+];
 const FEATURE_LABELS: Record<string, string> = {
   songLimit: "Songs",
   chordTranspose: "Chord transposition",
   pdfExport: "PDF export",
-  sharing: "Public song sharing",
+  sharing: "Share links",
   setlists: "Setlists & collections",
   prioritySupport: "Priority support",
 };
 
-const features = [
+// Nine things in the order you meet them. One sentence each: the sections
+// above have already shown most of this, so here it only needs naming.
+// `paid` marks what the free plan does not include (see plans.ts) — a list
+// of features that hides which ones cost money is a small lie.
+const featureGroups: { label: string; items: { title: string; description: string; paid?: boolean }[] }[] = [
   {
-    title: "Find any song with AI",
-    description: "Type a song name and artist — AI returns a clean chord chart with the chords sitting right above the lyrics, in seconds.",
+    label: "Get the song in",
+    items: [
+      { title: "Search by name", description: "Type an artist and a title, and the AI builds the chart with the chords over the right words." },
+      { title: "Snap a photo", description: "Photograph a handwritten or printed sheet and it becomes a chart you can edit. Old notebooks welcome." },
+      { title: "Paste from anywhere", description: "Paste lyrics and chords from a website or a document, and the formatting is cleaned up for you." },
+    ],
   },
   {
-    title: "Snap a photo",
-    description: "Photograph a handwritten or printed chord sheet — AI reads it and turns it into a fully editable chart. Old notebooks welcome.",
+    label: "Make it yours",
+    items: [
+      { title: "Drag chords into place", description: "Drop each chord above the syllable where the change lands. No fiddling with spaces." },
+      { title: "Transpose to your key", description: "One tap moves the whole chart up or down, with every chord respelled for the new key." },
+      { title: "Style it with AI", description: "One press, and the AI reads the lyrics and gives the song fonts, colours and a picture." },
+    ],
   },
   {
-    title: "Paste from any site",
-    description: "Copy lyrics and chords from anywhere on the web and paste them in — AI cleans up the formatting into a proper chart automatically.",
-  },
-  {
-    title: "Fix alignment by dragging",
-    description: "Grab any chord and drop it above the exact syllable where the change lands. What you build is what you play — no fiddly spacing.",
-  },
-  {
-    title: "Transpose to your key",
-    description: "Move the whole chart up or down with one tap to fit your singer's range. Every chord updates instantly — no capo math.",
-  },
-  {
-    title: "Hands-free auto-scroll",
-    description: "Hit play and the chart scrolls at your pace — large, readable text on phone, tablet or laptop. On the sofa or mid-gig, keep both hands on your instrument.",
-  },
-  {
-    title: "Setlists & collections",
-    description: "Group songs into setlists for gigs, or collections for practicing at home — drag them into the order you want to play.",
-  },
-  {
-    title: "One-tap PDF export",
-    description: "Export a clean, print-ready PDF with every chord still perfectly aligned — for the music stand, the folder, or the rest of the band.",
-  },
-  {
-    title: "Share & sync",
-    description: "Send a link anyone can open and play, auto-scroll included — no account needed. Your own library stays synced across all your devices.",
+    label: "Play it",
+    items: [
+      { title: "Hands-free auto-scroll", description: "Press play and the chart scrolls at your pace, in text large enough to read from the music stand." },
+      { title: "Setlists and collections", description: "Group songs for a gig or for practice, in the order you play them." },
+      { title: "Print and share", description: "Export a clean PDF for the music stand, or send a link your band can open and play without an account.", paid: true },
+    ],
   },
 ];
 
@@ -69,6 +70,13 @@ const steps = [
 
 export default async function HomePage() {
   const session = await auth();
+  // The page's one call to action. It had six wordings and two destinations
+  // (some buttons opened the empty song library); every "start" button now
+  // says this and goes here. The exceptions promise something specific:
+  // the photo section opens the import dialog, the paid plans open checkout.
+  const start = session
+    ? { href: "/editor/new", label: "Create a chord chart" }
+    : { href: "/editor/new?start=demo", label: "Build a chart free" };
 
   return (
     <div className={`${LANDING_FONTS} flex flex-col min-h-full bg-paper text-ink`}>
@@ -88,8 +96,10 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link href="/login" className="hover:text-ink transition-colors whitespace-nowrap py-2">Sign in</Link>
-                <CtaLink from="home-header" href="/editor/new?start=demo" className={`${BTN_INK} px-4 py-2 text-sm`}>
-                  Try it free <span aria-hidden>→</span>
+                {/* The full label does not fit beside the wordmark on a phone. */}
+                <CtaLink from="home-header" href={start.href} className={`${BTN_INK} px-4 py-2 text-sm`}>
+                  <span className="sm:hidden">Try it free</span>
+                  <span className="hidden sm:inline">{start.label}</span> <span aria-hidden>→</span>
                 </CtaLink>
               </>
             )}
@@ -104,7 +114,7 @@ export default async function HomePage() {
           <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-16 lg:pt-20 pb-12 sm:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10 lg:gap-16 items-center">
             <div>
               <Eyebrow className="hero-reveal hero-reveal-1 mb-6 sm:mb-8">
-                For every musician — from sofa to stage
+                For every musician, from sofa to stage
               </Eyebrow>
 
               {/* Set like a line on a chart: the chords are the page's ornament.
@@ -116,17 +126,17 @@ export default async function HomePage() {
               </h1>
 
               <p className="hero-reveal hero-reveal-3 text-lg sm:text-xl text-stone-600 max-w-md mb-8 leading-relaxed text-balance">
-                Every chord in the right place — then press play and perform it{" "}
+                Every chord in the right place. Then press play and perform it{" "}
                 <span className="whitespace-nowrap">hands-free.</span>
               </p>
 
               <div className="hero-reveal hero-reveal-4 flex flex-col sm:flex-row gap-3 mb-4">
                 <CtaLink
                   from="home-hero"
-                  href={session ? "/editor/new" : "/editor/new?start=demo"}
+                  href={start.href}
                   className={`${BTN_INK} px-7 py-3.5 text-base`}
                 >
-                  {session ? "Create a chord chart" : "Build a chart free"} <span aria-hidden>→</span>
+                  {start.label} <span aria-hidden>→</span>
                 </CtaLink>
                 {/* Secondary CTA must lead somewhere else — it used to point at the
                     same demo editor as the primary button, so the choice was fake. */}
@@ -137,7 +147,7 @@ export default async function HomePage() {
 
               {/* Trust microcopy — answers "what's the catch?" at the moment of decision */}
               <p className="hero-reveal hero-reveal-4 text-sm text-stone-500">
-                Free to start · No credit card · Ready in 30 seconds
+                Free to start · No credit card · No account needed
               </p>
             </div>
 
@@ -183,15 +193,15 @@ export default async function HomePage() {
               ))}
             </ol>
             <div className="mt-10 sm:mt-12">
-              <CtaLink from="home-how" href={session ? "/editor/new" : "/editor/new?start=demo"}className={`${BTN_LINE} px-6 py-3 text-[15px]`}>
-                Start with your first song <span aria-hidden>→</span>
+              <CtaLink from="home-how" href={start.href} className={`${BTN_LINE} px-6 py-3 text-[15px]`}>
+                {start.label} <span aria-hidden>→</span>
               </CtaLink>
             </div>
           </div>
         </section>
 
         {/* ── Examples — the strongest proof, straight after the hero ──────── */}
-        <ExamplesSection />
+        <ExamplesSection cta={start} />
 
         {/* Photo import: show the before/after result before listing features. */}
         <TransformationSection />
@@ -199,34 +209,54 @@ export default async function HomePage() {
         {/* ── Features ─────────────────────────────────────────────────────── */}
         <section id="features" className="scroll-mt-16 border-t border-rule">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
-            <Eyebrow className="mb-4">Features</Eyebrow>
-            <h2 className={`${H2} mb-3`}>
-              Everything you need to play
-            </h2>
-            <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl">
-              Focus on the music, not the formatting.
-            </p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 sm:gap-y-10">
-              {features.map((f, i) => (
-                <li key={f.title} className="border-t border-rule pt-5">
-                  <span aria-hidden className="block font-mono text-[11px] text-chord mb-3">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="text-lg font-semibold text-ink mb-1.5">{f.title}</h3>
-                  <p className="text-[15px] text-stone-600 leading-relaxed">{f.description}</p>
-                </li>
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-4 lg:gap-16 lg:items-end mb-10 sm:mb-14">
+              <div>
+                <Eyebrow className="mb-4">Features</Eyebrow>
+                <h2 className={`${H2} text-balance`}>Everything you need to play</h2>
+              </div>
+              <p className="text-lg text-stone-600 leading-relaxed lg:pb-1.5">
+                Focus on the music, not the formatting.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-12">
+              {featureGroups.map((g) => (
+                <div key={g.label}>
+                  <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 pb-3">{g.label}</h3>
+                  <ul className="border-b border-ink/15">
+                    {g.items.map((f) => (
+                      <li key={f.title} className="border-t border-ink/15 py-5">
+                        <h4 className="font-display font-medium text-xl leading-snug tracking-[-0.01em] text-ink mb-1.5 flex flex-wrap items-baseline gap-x-3">
+                          {f.title}
+                          {f.paid && (
+                            <Link href="#pricing" className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-chord hover:underline underline-offset-4">
+                              Paid plans
+                            </Link>
+                          )}
+                        </h4>
+                        <p className="text-[15px] text-stone-600 leading-relaxed">{f.description}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </section>
 
         {/* ── Pricing ──────────────────────────────────────────────────────── */}
         <section id="pricing" className="scroll-mt-16 border-t border-rule">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
-            <Eyebrow className="mb-4">Pricing</Eyebrow>
-            <h2 className={`${H2} mb-3`}>Plans &amp; pricing</h2>
-            <p className="text-lg text-stone-600 mb-2">Start free. Upgrade when you&apos;re ready.</p>
-            <p className="text-sm text-stone-500 mb-10 sm:mb-14 max-w-xl">
-              Every plan includes AI song search, photo import, AI backgrounds &amp; fonts, and setlists &amp; collections.
-            </p>
+            {/* The heading used to repeat the label above it ("Pricing" /
+                "Plans & pricing"); the line that says something is the heading now. */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-4 lg:gap-16 lg:items-end mb-10 sm:mb-14">
+              <div>
+                <Eyebrow className="mb-4">Pricing</Eyebrow>
+                <h2 className={`${H2} text-balance`}>Start free. Upgrade when you&apos;re ready.</h2>
+              </div>
+              <p className="text-lg text-stone-600 leading-relaxed lg:pb-1.5">
+                Every plan includes song search, photo import, AI styling and setlists.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
               {PLAN_ORDER.map((planKey) => {
                 const plan = PLANS[planKey];
@@ -256,7 +286,7 @@ export default async function HomePage() {
                             <span className="font-display text-5xl leading-none text-ink">${plan.price}</span>
                             <span className="text-stone-500 text-sm">{planKey === "monthly" ? "/mo" : "/yr"}</span>
                             {planKey === "yearly" && (
-                              <span className="ml-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">Save {yearlySavingPercent()}%</span>
+                              <span className="ml-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-chord whitespace-nowrap">Save {yearlySavingPercent()}%</span>
                             )}
                           </>
                         )}
@@ -296,8 +326,8 @@ export default async function HomePage() {
                       {/* Only the free button feeds the cta_try_free funnel step;
                           the paid ones lead to checkout, a different journey. */}
                       {isFree ? (
-                        <CtaLink from="home-pricing-free" href="/songs" className={`${BTN_LINE} w-full py-3 text-sm`}>
-                          Try it free
+                        <CtaLink from="home-pricing-free" href={start.href} className={`${BTN_LINE} w-full py-3 text-sm`}>
+                          {start.label} <span aria-hidden>→</span>
                         </CtaLink>
                       ) : (
                         // Straight to where the trial starts. /pricing?plan= opens
@@ -332,26 +362,27 @@ export default async function HomePage() {
         <FaqSection />
 
         {/* ── Closing CTA — the sticky phone CTA steps aside when this shows ── */}
-        <section id="get-started" className="on-ink bg-ink text-paper">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28">
+        <section id="get-started" className="on-ink bg-ink text-paper overflow-hidden">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10 lg:gap-16 items-center">
+           <div>
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord-light mb-6 sm:mb-8">
               Free to start
             </p>
-            <h2 className={`font-display font-medium text-[2.5rem] sm:text-6xl lg:text-7xl ${CHART_LEADING} tracking-[-0.02em] mb-6`}>
+            <h2 className={`font-display font-medium text-[2.5rem] sm:text-6xl ${CHART_LEADING} tracking-[-0.02em] mb-6`}>
               <Chorded chord="Am">Your</Chorded> songs <Chorded chord="F">deserve</Chorded>
               <br className="hidden sm:block" />{" "}
               a <Chorded chord="C"><em>better</em></Chorded> <Chorded chord="G">home.</Chorded>
             </h2>
             <p className="text-lg text-stone-300 mb-10 max-w-md leading-relaxed">
-              Build, transpose and play your chord charts — on any device, at home or on stage.
+              Build, transpose and play your chord charts on any device, at home or on stage.
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <CtaLink
                 from="home-bottom"
-                href={session ? "/songs" : "/editor/new?start=demo"}
+                href={session ? "/songs" : start.href}
                 className={`${BTN_PAPER} px-8 py-4 text-base`}
               >
-                {session ? "Go to my songs" : "Create your first chart free"} <span aria-hidden>→</span>
+                {session ? "Go to my songs" : start.label} <span aria-hidden>→</span>
               </CtaLink>
               {!session && (
                 <Link href="/pricing" className="text-sm text-stone-300 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors px-1 py-2 self-start sm:self-auto">
@@ -360,8 +391,25 @@ export default async function HomePage() {
               )}
             </div>
             {!session && (
-              <p className="mt-5 text-sm text-stone-400">Free to start · No credit card · Works on any device</p>
+              <p className="mt-5 text-sm text-stone-400">No credit card · No account needed</p>
             )}
+           </div>
+
+           {/* The three example sheets, laid out like pages on a table. The
+               right half of this block was empty on a wide screen. */}
+           <div aria-hidden className="relative hidden lg:block h-[25rem]">
+             {EXAMPLE_SONGS.filter((s) => s.listed).map((s, i) => (
+               <div
+                 key={s.slug}
+                 className={`absolute w-[64%] overflow-hidden rounded-lg border border-white/15 ${SHEET_SPOTS[i % SHEET_SPOTS.length]}`}
+                 style={{ boxShadow: "0 30px 50px -24px rgba(0,0,0,0.8)" }}
+               >
+                 <div className="relative aspect-[860/592]">
+                   <Image src={s.img} alt="" fill sizes="360px" className="object-cover object-top" />
+                 </div>
+               </div>
+             ))}
+           </div>
           </div>
         </section>
       </main>
@@ -380,7 +428,7 @@ export default async function HomePage() {
             <a href="mailto:claes@clavos.se" className="hover:text-white transition-colors">Contact</a>
           </nav>
           <p className="text-xs text-stone-400">
-            © {new Date().getFullYear()} ChordSheetMaker.ai — Built for musicians
+            © {new Date().getFullYear()} ChordSheetMaker.ai · Built for musicians
           </p>
         </div>
         <div className="max-w-6xl mx-auto mt-4 text-center sm:text-right">

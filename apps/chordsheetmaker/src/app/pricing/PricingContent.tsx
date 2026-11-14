@@ -15,7 +15,7 @@ const FEATURES: { key: string; label: string }[] = [
   { key: "songLimit",       label: "Songs"               },
   { key: "chordTranspose",  label: "Chord transposition" },
   { key: "pdfExport",       label: "PDF export"          },
-  { key: "sharing",         label: "Public song sharing" },
+  { key: "sharing",         label: "Share links"         },
   { key: "setlists",        label: "Setlists & collections" },
   { key: "prioritySupport", label: "Priority support"    },
 ];

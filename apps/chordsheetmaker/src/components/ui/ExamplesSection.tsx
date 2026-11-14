@@ -55,7 +55,7 @@ export function ExampleCards() {
   );
 }
 
-export default function ExamplesSection() {
+export default function ExamplesSection({ cta }: { cta: { href: string; label: string } }) {
   return (
     <section id="examples" className="bg-paper-deep border-b border-rule scroll-mt-16">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
@@ -74,8 +74,8 @@ export default function ExamplesSection() {
         <ExampleCards />
 
         <div className="mt-12 sm:mt-14 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-ink/15 pt-8">
-          <CtaLink from="home-examples" href="/songs" className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink text-paper hover:bg-stone-700 px-7 py-3.5 text-[15px] font-semibold transition-colors">
-            Create yours for free <span aria-hidden>→</span>
+          <CtaLink from="home-examples" href={cta.href} className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink text-paper hover:bg-stone-700 px-7 py-3.5 text-[15px] font-semibold transition-colors">
+            {cta.label} <span aria-hidden>→</span>
           </CtaLink>
           <p className="text-sm text-stone-600">No account needed to start.</p>
         </div>
