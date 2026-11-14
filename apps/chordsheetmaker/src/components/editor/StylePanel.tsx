@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, DEFAULT_BG_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
+import { ALL_FONTS, loadGoogleFont, loadStyleFonts, fontByStack, DEFAULT_STYLE, DEFAULT_BG_STYLE, STYLE_PRESETS } from "@/lib/songStyle";
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@clavos/core/image";
 import { generateBackground } from "@/lib/generateBackground";
@@ -16,18 +16,6 @@ interface Props {
   lyricsText?: string;
   isLoggedIn?: boolean;
   activeTab?: "background" | "text";
-}
-
-/** True for colors too light to read on a white panel (used to pick the
- *  "Aa" preview chip's backing so the swatch is always visible). */
-function isLightColor(hex?: string): boolean {
-  if (!hex) return false;
-  const c = hex.replace("#", "");
-  if (c.length !== 6) return false;
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.72;
 }
 
 function TextSection({
@@ -58,7 +46,7 @@ function TextSection({
       </select>
 
       <div className="flex items-center gap-1.5">
-        <label className="text-xs text-zinc-400 shrink-0">Size</label>
+        <label className="text-xs text-stone-500 shrink-0">Size</label>
         <input
           type="number"
           min={8}
@@ -79,7 +67,7 @@ function TextSection({
             value.italic ? "bg-ink border-ink text-white" : "bg-white border-zinc-200 text-zinc-500 hover:border-ink/40"
           }`}
         >I</button>
-        <span className="text-xs text-zinc-400 ml-auto shrink-0">Color</span>
+        <span className="text-xs text-stone-500 ml-auto shrink-0">Color</span>
         <input
           type="color"
           value={value.color ?? "#000000"}
@@ -196,6 +184,13 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
   const bg = style.background ?? "#ffffff";
   const overlayOpacity = style.overlayOpacity ?? 0.5;
+  const hasPicture = !!style.backgroundImage;
+  const pictureSource = hasPicture ? (style.backgroundSource ?? imageSource) : null;
+
+  // The presets show themselves in their own type; have it ready when the tab opens.
+  useEffect(() => {
+    if (tab === "text") STYLE_PRESETS.forEach((p) => loadStyleFonts(p.style));
+  }, [tab]);
 
   return (
     <div className="flex-1 overflow-y-auto relative bg-paper">
@@ -323,15 +318,15 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
           >
             {aiLoading ? (
               <><svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Styling…</>
-            ) : "✦ Style with AI"}
+            ) : "Style with AI"}
           </button>
-          <p className="text-[11px] text-zinc-400 leading-snug mt-1.5 text-center">
+          <p className="text-[11px] text-stone-500 leading-snug mt-1.5 text-center">
             The AI reads your lyrics and picks fonts, sizes &amp; colours to match the song&apos;s mood.
           </p>
           {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
           <div className="flex items-center gap-2 mt-3">
             <div className="flex-1 h-px bg-zinc-200" />
-            <span className="text-[10px] text-zinc-400">or customise below</span>
+            <span className="text-[10px] text-stone-500">or customise below</span>
             <div className="flex-1 h-px bg-zinc-200" />
           </div>
         </div>
@@ -345,7 +340,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
           {/* Why the AI results feel personal — most users never realise this */}
           <p className="text-[11px] leading-snug rounded-xl border border-rule bg-paper px-3 py-2 text-stone-600">
-            ✦ <strong className="font-semibold text-chord">The AI reads your song.</strong>{" "}
+            <strong className="font-semibold text-ink">The AI reads your song.</strong>{" "}
             Generate a background and it paints what your lyrics are about — a moody
             ballad gets dusk tones, a summer tune gets light.
           </p>
@@ -353,8 +348,8 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
           {/* ── Page color ── */}
           <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
             <div className="flex items-center mb-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400 flex-1">Page color</p>
-              <span className="text-[11px] text-zinc-300 font-mono">{bg}</span>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-stone-500 flex-1">Page color</p>
+              <span className="text-[11px] text-stone-500 font-mono">{bg}</span>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               {/* One-tap presets — paper tones first, stage-dark tones after */}
@@ -389,7 +384,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
             <div className="flex rounded-xl border border-zinc-200 bg-zinc-100 p-1 mb-2">
               <button onClick={() => setBgMode("ai")}
                 className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition-all ${bgMode === "ai" ? "bg-white text-chord shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
-              >✦ Generate with AI</button>
+              >Generate with AI</button>
               <button onClick={() => setBgMode("upload")}
                 className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition-all ${bgMode === "upload" ? "bg-white text-chord shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
               >
@@ -415,10 +410,10 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                 >
                   <span className="text-lg leading-none shrink-0">{BG_STYLES.find(s => s.id === bgStyle)?.emoji}</span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[10px] uppercase tracking-wide text-zinc-400">Image style</span>
+                    <span className="block text-[10px] uppercase tracking-wide text-stone-500">Image style</span>
                     <span className="block text-sm font-semibold text-zinc-800">{BG_STYLES.find(s => s.id === bgStyle)?.label}</span>
                   </span>
-                  <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+                  <svg className="w-4 h-4 text-stone-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
                 </button>
 
                 {/* Existing image preview + dim */}
@@ -435,8 +430,8 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                       </div>
                       <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-ink" />
                       <div className="flex justify-between mt-1">
-                        <span className="text-[10px] text-zinc-400">← Show image</span>
-                        <span className="text-[10px] text-zinc-400">Readable text →</span>
+                        <span className="text-[10px] text-stone-500">← Show image</span>
+                        <span className="text-[10px] text-stone-500">Readable text →</span>
                       </div>
                     </div>
                   </div>
@@ -444,20 +439,20 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
                 {/* Step 2 — generate (primary action) */}
                 <div className="border-t border-zinc-100 px-3 pt-2 pb-3">
-                  {!style.backgroundImage && (
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="w-4 h-4 rounded-full bg-paper-deep text-chord text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
-                      <span className="text-[11px] font-medium text-zinc-500">Generate it with AI</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="w-4 h-4 rounded-full bg-paper-deep text-chord text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                    <span className="text-[11px] font-medium text-zinc-500">
+                      {hasPicture ? "Make a new one — it replaces this picture" : "Generate it with AI"}
+                    </span>
+                  </div>
                   <button onClick={handleAiBackground} disabled={bgLoading}
                     className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-ink hover:opacity-90 text-white text-sm font-semibold transition-opacity shadow-md  disabled:opacity-40"
                   >
                     {bgLoading
                       ? <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Generating…</>
-                      : imageSource === "ai" ? <>↺ Regenerate</>
-                      : imageSource === "upload" ? <>✦ Replace with AI image</>
-                      : <>✦ Generate background image</>}
+                      : pictureSource === "upload" ? "Replace with an AI picture"
+                      : hasPicture ? "Generate a new picture"
+                      : "Generate background image"}
                   </button>
                 </div>
               </div>
@@ -479,8 +474,8 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                       </div>
                       <input type="range" min={0} max={100} value={Math.round(overlayOpacity * 100)} onChange={(e) => onChange({ ...style, overlayOpacity: Number(e.target.value) / 100 })} className="w-full accent-ink" />
                       <div className="flex justify-between mt-1">
-                        <span className="text-[10px] text-zinc-400">← Show image</span>
-                        <span className="text-[10px] text-zinc-400">Readable text →</span>
+                        <span className="text-[10px] text-stone-500">← Show image</span>
+                        <span className="text-[10px] text-stone-500">Readable text →</span>
                       </div>
                     </div>
                     <div className="border-t border-zinc-100" />
@@ -495,7 +490,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     dragOver ? "border-ink bg-paper scale-[0.98]" : "border-zinc-200 hover:border-ink/40 hover:bg-paper"
                   }`}
                 >
-                  <svg className={`w-5 h-5 shrink-0 ${dragOver ? "text-chord" : "text-zinc-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className={`w-5 h-5 shrink-0 ${dragOver ? "text-chord" : "text-stone-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     {dragOver
                       ? <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                       : <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12h.008v.008H13.5V12zm-4.5 4.5h.008v.008H9V16.5zM3.75 20.25h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12.75c0 .828.672 1.5 1.5 1.5z" />
@@ -503,9 +498,9 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                   </svg>
                   <div>
                     <p className="text-xs font-semibold text-zinc-600">
-                      {dragOver ? "Drop to use this image" : imageSource === "upload" ? "Replace image" : "Drop or click to browse"}
+                      {dragOver ? "Drop to use this image" : hasPicture ? "Replace with your own image" : "Drop or click to browse"}
                     </p>
-                    <p className="text-[10px] text-zinc-400 mt-0.5">Also supports Ctrl+V paste</p>
+                    <p className="text-[10px] text-stone-500 mt-0.5">Also supports Ctrl+V paste</p>
                   </div>
                 </div>
                 <input id="bg-upload-input" type="file" accept="image/*" className="sr-only"
@@ -567,7 +562,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     {editingElement === "title" && (
                       <div className="mt-3 pt-3 border-t border-zinc-100">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-zinc-400 shrink-0">Align</span>
+                          <span className="text-xs text-stone-500 shrink-0">Align</span>
                           <div className="flex rounded border border-zinc-200 overflow-hidden">
                             {(["left", "center"] as const).map((a) => (
                               <button key={a} onClick={() => onChange({ ...style, titleAlign: a })}
@@ -583,7 +578,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                         <div className="flex items-center justify-between gap-2">
                           <div>
                             <span className="text-xs font-medium text-zinc-600">Real Book style</span>
-                            <p className="text-[11px] text-zinc-400 mt-0.5">Jazz lead-sheet look — raised superscript extensions (E♭<sup>ma7</sup>)</p>
+                            <p className="text-[11px] text-stone-500 mt-0.5">Jazz lead-sheet look — raised superscript extensions (E♭<sup>ma7</sup>)</p>
                           </div>
                           <button onClick={() => onChange({ ...style, jazzChords: !style.jazzChords })}
                             className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${style.jazzChords ? "bg-ink" : "bg-zinc-200"}`}
@@ -596,7 +591,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                     {editingElement === "sections" && (
                       <div className="mt-3 pt-3 border-t border-zinc-100 space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-zinc-400 shrink-0">Align</span>
+                          <span className="text-xs text-stone-500 shrink-0">Align</span>
                           <div className="flex rounded border border-zinc-200 overflow-hidden">
                             {(["left", "center"] as const).map((a) => (
                               <button key={a} onClick={() => onChange({ ...style, sectionAlign: a })}
@@ -606,7 +601,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-zinc-400 shrink-0">Divider line</span>
+                          <span className="text-xs text-stone-500 shrink-0">Divider line</span>
                           <button onClick={() => onChange({ ...style, sectionDivider: !(style.sectionDivider ?? true) })}
                             className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${(style.sectionDivider ?? true) ? "bg-ink" : "bg-zinc-200"}`}
                           >
@@ -627,7 +622,7 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             {/* ── Presets ── */}
             <div className="px-4 pt-3 pb-1">
-              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-2">Presets</p>
+              <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-widest mb-2">Presets</p>
               <div className="grid grid-cols-3 gap-2">
                 {STYLE_PRESETS.map((p) => (
                   <button
@@ -640,11 +635,33 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                       });
                       onChange({ ...style, ...p.style });
                     }}
-                    className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-200/80 bg-white shadow-sm hover:border-ink/40 hover:-translate-y-0.5 hover:shadow-md  transition-all duration-150 py-2.5 px-1"
+                    className="flex flex-col items-stretch gap-1.5 rounded-xl border border-zinc-200/80 bg-white hover:border-ink/40 transition-colors p-1.5"
                     title={`Apply the ${p.label} style`}
                   >
-                    <span className="text-lg leading-none">{p.emoji}</span>
-                    <span className="text-xs font-semibold text-zinc-700" style={p.previewStack ? { fontFamily: p.previewStack } : undefined}>{p.label}</span>
+                    {/* A specimen: the preset's title face and colour on its
+                        page colour, with a chord beside it. */}
+                    <span
+                      aria-hidden
+                      className="h-9 rounded-md border flex items-baseline justify-center gap-1.5 pt-2"
+                      style={{ background: p.style.background ?? "#ffffff", borderColor: "rgba(28,25,23,0.12)" }}
+                    >
+                      <span style={{
+                        fontFamily: p.style.title?.fontFamily ?? p.previewStack,
+                        color: p.style.title?.color ?? "#18181b",
+                        fontWeight: p.style.title?.bold === false ? 400 : 700,
+                        fontStyle: p.style.title?.italic ? "italic" : "normal",
+                        fontSize: 17,
+                        lineHeight: 1,
+                      }}>Aa</span>
+                      <span style={{
+                        fontFamily: p.style.chords?.fontFamily ?? p.previewStack,
+                        color: p.style.chords?.color ?? "#4f46e5",
+                        fontWeight: 700,
+                        fontSize: 11,
+                        lineHeight: 1,
+                      }}>G7</span>
+                    </span>
+                    <span className="text-xs font-semibold text-stone-700 text-center">{p.label}</span>
                   </button>
                 ))}
               </div>
@@ -656,19 +673,17 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                 {ELEMENTS.map(e => {
                   const font = fontByStack(e.value.fontFamily ?? "");
                   const color = e.value.color ?? "#000000";
-                  // Light colors are invisible on white — back the chip with dark navy.
-                  const lightColor = isLightColor(color);
                   return (
                     <button key={e.key} onClick={() => setEditingElement(e.key)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-zinc-100 last:border-0 hover:bg-paper transition-colors group text-left"
                     >
-                      {/* "Aa" chip — shows font + color on a contrast-safe backing */}
+                      {/* "Aa" chip — the font and colour on the song's own page colour.
+                          It used to sit on white, or on a stock dark navy for
+                          light colours, so it showed a pairing the song never
+                          had; this one also shows when a colour won't read. */}
                       <span
-                        className="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 shadow-sm"
-                        style={{
-                          background: lightColor ? "#241f4d" : "#ffffff",
-                          borderColor: lightColor ? "transparent" : "rgba(0,0,0,0.08)",
-                        }}
+                        className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0"
+                        style={{ background: bg, borderColor: "rgba(28,25,23,0.14)" }}
                       >
                         <span style={{
                           fontFamily: e.value.fontFamily,
@@ -687,10 +702,10 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
                             fontStyle: e.value.italic ? "italic" : "normal",
                           }}
                         >{e.label}</span>
-                        <span className="block text-[10px] text-zinc-400 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
+                        <span className="block text-[10px] text-stone-500 truncate mt-0.5">{font.name} · {e.value.fontSize ?? 14}px</span>
                       </span>
-                      <span className="text-[10px] text-zinc-300 font-mono shrink-0">{color}</span>
-                      <span className="text-sm text-zinc-400 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0 px-1">›</span>
+                      <span className="text-[10px] text-stone-500 font-mono shrink-0">{color}</span>
+                      <span className="text-sm text-stone-500 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0 px-1">›</span>
                     </button>
                   );
                 })}
@@ -699,20 +714,20 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
 
             <div className="px-4 pb-4 pt-2">
               {confirmReset ? (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-500 shrink-0">Reset all text styles?</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="text-xs text-stone-600">Back to the default look? This also removes the background.</span>
                   <button
                     onClick={() => { reset(); setConfirmReset(false); }}
                     className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors px-3 py-1.5 rounded-lg shrink-0"
                   >Reset</button>
                   <button
                     onClick={() => setConfirmReset(false)}
-                    className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
+                    className="text-xs text-stone-500 hover:text-zinc-600 transition-colors shrink-0"
                   >Cancel</button>
                 </div>
               ) : (
-                <button onClick={() => setConfirmReset(true)} className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">
-                  ↺ Restore default styles
+                <button onClick={() => setConfirmReset(true)} className="text-xs text-stone-500 hover:text-zinc-600 transition-colors">
+                  Restore the default look
                 </button>
               )}
             </div>

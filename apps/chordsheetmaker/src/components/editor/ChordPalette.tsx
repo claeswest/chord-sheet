@@ -125,7 +125,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
   const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
   const btnActive = "bg-chord border-transparent text-white";
   const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-ink/40 hover:text-ink";
-  const heading = "text-[11px] font-semibold uppercase tracking-widest text-zinc-400";
+  const heading = "text-[11px] font-semibold uppercase tracking-widest text-stone-500";
 
   return (
     <aside className={asideClassName ?? "w-80 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
@@ -212,7 +212,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
                   }`}
                 >{a.label}</button>
               ))}
-              <span className="text-[11px] text-zinc-300 ml-1">sharp / flat</span>
+              <span className="text-[11px] text-stone-500 ml-1">sharp / flat</span>
             </div>
           </div>
 
@@ -274,7 +274,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         </div>
 
         {/* ── Tip ── */}
-        <p className="text-[11px] text-zinc-400 px-1">💡 Drag a placed chord to move it · double-click to rename</p>
+        <p className="text-[11px] text-stone-500 px-1">Drag a placed chord to move it · double-click to rename</p>
 
       </div>
     </aside>
