@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   const { title, artist, lyrics, bgStyle = DEFAULT_BG_STYLE } = body;
   // Started from the editor's one-click banner rather than the style panel —
   // recorded so the activity feed can show whether the banner earns its place.
-  const viaBanner = body.via === "banner";
+  const via = body.via === "banner" || body.via === "toolbar" ? (body.via as "banner" | "toolbar") : null;
   if (!title && !lyrics) {
     // Hit most often on a song that hasn't been written yet: the button is
     // there from the first moment, and there is nothing to draw from.
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     await logActivity("bg_generated", session.user.id, {
       title,
       source: bgStyle,
-      ...(viaBanner ? { via: "banner" } : {}),
+      ...(via ? { via } : {}),
     });
   }
 

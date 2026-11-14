@@ -14,7 +14,7 @@ export async function generateBackground(input: {
   lyrics: string;
   bgStyle: string;
   /** Where the request was started, for the activity log only. */
-  via?: "banner";
+  via?: "banner" | "toolbar";
 }): Promise<BackgroundResult> {
   try {
     const res = await fetch("/api/ai/background", {

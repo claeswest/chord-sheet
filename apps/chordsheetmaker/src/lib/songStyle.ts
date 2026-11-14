@@ -15,7 +15,7 @@ export interface SongStyle {
   chords: TextStyle;
   section?: TextStyle;
   background?: string;
-  backgroundImage?: string;   // base64 data URL, not included in share URLs
+  backgroundImage?: string;   // a base64 data URL (left out of share URLs), or a site path for a bundled picture
   overlayOpacity?: number;    // 0–1, default 0.5
   titleAlign?: "left" | "center";
   sectionAlign?: "left" | "center";
@@ -203,6 +203,17 @@ export function loadGoogleFont(url: string): void {
   link.rel = "stylesheet";
   link.href = url;
   document.head.appendChild(link);
+}
+
+/**
+ * Loads every web font a style uses. Cheap to call often: each font is
+ * requested once.
+ */
+export function loadStyleFonts(s: Partial<SongStyle>): void {
+  for (const part of [s.title, s.artist, s.lyrics, s.chords, s.section]) {
+    const font = part?.fontFamily ? ALL_FONTS.find((f) => f.stack === part.fontFamily) : undefined;
+    if (font) loadGoogleFont(font.url);
+  }
 }
 
 export function fontByStack(stack: string): GoogleFont {

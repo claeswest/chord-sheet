@@ -6,6 +6,7 @@ import { ALL_FONTS, loadGoogleFont, fontByStack, DEFAULT_STYLE, DEFAULT_BG_STYLE
 import type { SongStyle, TextStyle } from "@/lib/songStyle";
 import { compressImage } from "@clavos/core/image";
 import { generateBackground } from "@/lib/generateBackground";
+import { generateTextStyle } from "@/lib/generateTextStyle";
 
 interface Props {
   style: SongStyle;
@@ -167,30 +168,12 @@ export default function StylePanel({ style, onChange, songTitle, songArtist, lyr
     setAiLoading(true);
     setAiError("");
     setTheme("");
-    try {
-      const res = await fetch("/api/ai/style", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: songTitle, artist: songArtist, lyrics: lyricsText }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setAiError(body.error ?? "AI request failed");
-        return;
-      }
-      const data = await res.json();
-      [data.style.title, data.style.lyrics, data.style.chords].forEach((s: any) => {
-        const font = ALL_FONTS.find(f => f.stack === s.fontFamily);
-        if (font) loadGoogleFont(font.url);
-      });
-      onChange({ ...style, ...data.style, aiStyled: true });
-      setTheme(data.theme ?? "");
-      setShowStylePopup(true);
-    } catch {
-      setAiError("Network error");
-    } finally {
-      setAiLoading(false);
-    }
+    const result = await generateTextStyle({ title: songTitle ?? "", artist: songArtist ?? "", lyrics: lyricsText ?? "" });
+    setAiLoading(false);
+    if (!result.ok) { setAiError(result.error); return; }
+    onChange({ ...style, ...result.style, aiStyled: true });
+    setTheme(result.theme);
+    setShowStylePopup(true);
   };
 
   const handleAiBackground = async () => {

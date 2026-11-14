@@ -10,11 +10,17 @@ export type SharedSong = {
   semitones?: number;
 };
 
+/** A picture carried inside the style itself, rather than pointed to. */
+export function isEmbeddedImage(src: string | undefined): boolean {
+  return !!src && src.startsWith("data:");
+}
+
 export function encodeSong(song: SharedSong): string {
-  // Strip backgroundImage — it's a large base64 blob that would break URLs
+  // Strip an embedded backgroundImage — it's a large base64 blob that would
+  // break URLs. A bundled picture (a short site path, as on the demo song) stays.
   const { style, ...rest } = song;
   const safeStyle = style
-    ? { ...style, backgroundImage: undefined }
+    ? { ...style, backgroundImage: isEmbeddedImage(style.backgroundImage) ? undefined : style.backgroundImage }
     : style;
   const json = JSON.stringify({ ...rest, style: safeStyle });
   // btoa doesn't handle unicode — use this safe wrapper

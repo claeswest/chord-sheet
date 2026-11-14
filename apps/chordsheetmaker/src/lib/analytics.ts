@@ -86,6 +86,10 @@ export const trackKeepModal = (action: "shown" | "clicked" | "dismissed") =>
 export const trackStunningTip = (action: "shown" | "clicked" | "dismissed") =>
   track("stunning_tip", { action });
 
+/** The toolbar's one-click "Style it": fonts, colours and a background together. */
+export const trackStyleIt = (action: "clicked" | "done" | "partial" | "failed" | "undone") =>
+  track("style_it", { action });
+
 /** Library callout that drives discovery of categories (setlists/collections). */
 export const trackCategoriesTip = (action: "shown" | "clicked" | "dismissed") =>
   track("categories_tip", { action });
