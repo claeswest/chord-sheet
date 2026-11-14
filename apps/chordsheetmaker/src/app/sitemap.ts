@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { LANDING_SLUGS } from "@/data/landingPages";
+import { EXAMPLE_SLUGS } from "@/data/exampleSources";
 
 const BASE_URL = "https://chordsheetmaker.ai";
 
@@ -22,6 +23,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...EXAMPLE_SLUGS.map((slug) => ({
+      url: `${BASE_URL}/examples/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.4,
     })),
     {
       url: `${BASE_URL}/login`,

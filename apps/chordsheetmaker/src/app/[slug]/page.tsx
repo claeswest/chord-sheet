@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
 import HeroDemo from "@/components/ui/HeroDemo";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { BTN_INK, BTN_PAPER, CHART_LEADING, ChordedLine, Eyebrow, H2, Wordmark } from "@/components/landing/kit";
+import { ExampleCards } from "@/components/ui/ExamplesSection";
 import { LANDING_PAGES, LANDING_SLUGS, getLandingPage } from "@/data/landingPages";
 
 const BASE_URL = "https://chordsheetmaker.ai";
@@ -143,33 +143,9 @@ export default async function LandingPage({ params }: Props) {
             <Eyebrow className="mb-4">Examples</Eyebrow>
             <h2 className={`${H2} mb-3`}>See what you can create</h2>
             <p className="text-lg text-stone-600 mb-10 sm:mb-14 max-w-xl leading-relaxed">
-              Real chord sheets made with ChordSheetMaker — backgrounds, fonts and colours all customised with AI.
+              Original songs set with ChordSheetMaker. The AI chose the fonts and colours and made the pictures behind them. Open one and press play.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8">
-              {[
-                { src: "/example1.png", title: "Hotel California", artist: "Eagles" },
-                { src: "/example2.png", title: "Perfect", artist: "Ed Sheeran" },
-              ].map((ex) => (
-                <figure key={ex.title}>
-                  <div
-                    className="relative overflow-hidden rounded-lg border border-ink/15 bg-stone-100"
-                    style={{ aspectRatio: "16 / 10", boxShadow: "0 22px 40px -26px rgba(28,25,23,0.45)" }}
-                  >
-                    <Image
-                      src={ex.src}
-                      alt={`${ex.title} by ${ex.artist} — example chord sheet`}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 560px"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <figcaption className="pt-4">
-                    <p className="font-display text-xl leading-snug text-ink">{ex.title}</p>
-                    <p className="text-sm text-stone-600">{ex.artist}</p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+            <ExampleCards />
           </div>
         </section>
 

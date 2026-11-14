@@ -437,7 +437,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         <div
           className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none"
           style={{
-            background: "rgba(48, 43, 99, 0.85)",
+            background: "rgba(28, 25, 23, 0.85)",
             opacity: (loading || !imgLoaded) ? 1 : 0,
             transition: "opacity 600ms ease",
           }}

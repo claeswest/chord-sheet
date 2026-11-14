@@ -1,0 +1,128 @@
+{
+  "midnight-signal": {
+    "background": "#0b0e17",
+    "jazzChords": false,
+    "titleAlign": "center",
+    "sectionAlign": "left",
+    "sectionDivider": true,
+    "title": {
+      "fontFamily": "'Space Mono', monospace",
+      "fontSize": 30,
+      "color": "#00f0ff",
+      "bold": true,
+      "italic": false
+    },
+    "artist": {
+      "fontFamily": "'Poppins', sans-serif",
+      "fontSize": 12,
+      "color": "#ff71ce",
+      "bold": false,
+      "italic": true
+    },
+    "lyrics": {
+      "fontFamily": "'Inter', sans-serif",
+      "fontSize": 15,
+      "color": "#d1d5db",
+      "bold": false,
+      "italic": false
+    },
+    "chords": {
+      "fontFamily": "'Fira Code', monospace",
+      "fontSize": 13,
+      "color": "#ff3864",
+      "bold": true,
+      "italic": false
+    },
+    "section": {
+      "fontFamily": "'Space Mono', monospace",
+      "fontSize": 11,
+      "color": "#7928ca",
+      "bold": true,
+      "italic": false
+    }
+  },
+  "salt-and-clover": {
+    "background": "#F5F3EC",
+    "jazzChords": false,
+    "titleAlign": "left",
+    "sectionAlign": "left",
+    "sectionDivider": true,
+    "title": {
+      "fontFamily": "'EB Garamond', serif",
+      "fontSize": 28,
+      "color": "#1F3B2C",
+      "bold": true,
+      "italic": true
+    },
+    "artist": {
+      "fontFamily": "'Lora', serif",
+      "fontSize": 13,
+      "color": "#637061",
+      "bold": false,
+      "italic": true
+    },
+    "lyrics": {
+      "fontFamily": "'Crimson Pro', serif",
+      "fontSize": 16,
+      "color": "#2A2E2B",
+      "bold": false,
+      "italic": false
+    },
+    "chords": {
+      "fontFamily": "'Space Mono', monospace",
+      "fontSize": 13,
+      "color": "#8C5E32",
+      "bold": true,
+      "italic": false
+    },
+    "section": {
+      "fontFamily": "'Lora', serif",
+      "fontSize": 11,
+      "color": "#3D5A45",
+      "bold": true,
+      "italic": false
+    }
+  },
+  "half-past-blue": {
+    "background": "#fbf8f0",
+    "jazzChords": true,
+    "titleAlign": "left",
+    "sectionAlign": "left",
+    "sectionDivider": true,
+    "title": {
+      "fontFamily": "'MuseJazz Text', cursive",
+      "fontSize": 28,
+      "color": "#1c2430",
+      "bold": true,
+      "italic": false
+    },
+    "artist": {
+      "fontFamily": "'Petaluma Script', cursive",
+      "fontSize": 15,
+      "color": "#4a5d6e",
+      "bold": false,
+      "italic": true
+    },
+    "lyrics": {
+      "fontFamily": "'MuseJazz Text', cursive",
+      "fontSize": 15,
+      "color": "#1f2226",
+      "bold": false,
+      "italic": false
+    },
+    "chords": {
+      "fontFamily": "'MuseJazz Text', cursive",
+      "fontSize": 14,
+      "color": "#1b3a5b",
+      "bold": true,
+      "italic": false
+    },
+    "section": {
+      "fontFamily": "'MuseJazz Text', cursive",
+      "fontSize": 12,
+      "color": "#536b82",
+      "bold": true,
+      "italic": false
+    }
+  }
+}

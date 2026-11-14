@@ -15,7 +15,7 @@ export default function LoadingNotes({
         {(["♩", "♫", "♪", "♬", "♩"] as const).map((note, i) => (
           <span
             key={i}
-            className="text-indigo-300 select-none leading-none"
+            className="text-chord-light select-none leading-none"
             style={{
               fontSize: [44, 56, 44, 64, 44][i],
               animation: "noteJump 1.1s ease-in-out infinite",
