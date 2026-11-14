@@ -94,7 +94,7 @@ export default async function AccountPage() {
         <UserMenu userName={user.name} userImage={user.image} tone="paper" />
       </header>
 
-      {/* ── Who you are, and the two numbers that matter ─────────────────── */}
+      {/* ── Who you are ──────────────────────────────────────────────────── */}
       <div className="bg-paper-deep border-b border-rule">
         <div className="max-w-2xl mx-auto px-6 py-10 flex flex-col sm:flex-row sm:items-center gap-6">
           {user.image ? (
@@ -106,28 +106,19 @@ export default async function AccountPage() {
           )}
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-2">
-              {planConfig.name} plan
+              Your account
             </p>
             <h1 className="font-display font-medium text-4xl tracking-[-0.02em] leading-tight text-ink break-words">
               {user.name ?? "—"}
             </h1>
             <p className="text-stone-600 text-sm mt-1 break-all">{user.email}</p>
-            <p className="font-mono text-[11px] text-stone-500 mt-2">Member since {memberSince}</p>
-          </div>
-        </div>
-
-        <div className="max-w-2xl mx-auto px-6 pb-8 grid grid-cols-2 gap-3">
-          <div className="rounded-lg bg-white border border-rule px-5 py-4">
-            <div className="font-display text-4xl text-ink tabular-nums leading-none">{songCount}</div>
-            <div className="text-xs text-stone-600 mt-2">
-              {songLimit === true ? "Songs created" : `Songs · ${songLimit} max`}
-            </div>
-          </div>
-          <div className="rounded-lg bg-white border border-rule px-5 py-4">
-            <div className="font-display text-4xl text-ink leading-none">{planConfig.name}</div>
-            <div className="text-xs text-stone-600 mt-2">
-              {leaving ? `Ends ${endsOn}` : isPaid ? `$${planConfig.price}/mo` : "Free plan"}
-            </div>
+            <p className="font-mono text-[11px] text-stone-500 mt-2">
+              <Link href="/songs" className="underline underline-offset-2 decoration-ink/25 hover:text-ink hover:decoration-ink transition-colors">
+                {songCount} {songCount === 1 ? "song" : "songs"}
+              </Link>
+              {songLimit !== true && <> · the Free plan holds {songLimit}</>}
+              {" · "}Member since {memberSince}
+            </p>
           </div>
         </div>
       </div>
@@ -137,11 +128,14 @@ export default async function AccountPage() {
 
         {/* Plan card */}
         <div className="bg-white rounded-xl border border-rule overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Your plan</h2>
+          <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between gap-3">
+            <h2 className="flex items-baseline gap-2.5 min-w-0">
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 shrink-0">Your plan</span>
+              <span className="font-display text-2xl leading-none text-ink">{planConfig.name}</span>
+            </h2>
             <div className="flex items-center gap-2">
               {leaving && (
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-50 text-red-600">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-paper-deep text-stone-700">
                   Cancelled
                 </span>
               )}
@@ -150,29 +144,27 @@ export default async function AccountPage() {
                   Trial — {daysLeft}d left
                 </span>
               )}
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                isPaid ? "bg-paper-deep text-chord" : "bg-zinc-100 text-zinc-500"
-              }`}>
-                {planConfig.name}
-              </span>
             </div>
           </div>
 
           {/* Cancellation notice — replaces the trial notice, whose "cancel
-              anytime" would read as an invitation to do what's already done. */}
+              anytime" would read as an invitation to do what's already done.
+              Stated plainly, not as an alarm: they chose this. The way back is
+              here rather than in small print further down, because this is
+              the one moment a leaving customer is reading about their plan. */}
           {leaving && (
-            <div className="mx-6 mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex items-start gap-3">
-              <span className="text-lg">👋</span>
-              <div>
-                <p className="text-sm font-semibold text-red-800">
+            <div className="mx-6 mt-4 rounded-lg border border-rule border-l-2 border-l-ink bg-paper px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink">
                   Your subscription is cancelled
                 </p>
-                <p className="text-xs text-red-700/80 mt-0.5">
-                  You keep everything in {planConfig.name} until {endsOn}, and you won&apos;t be charged
-                  again. After that your account moves to the Free plan. Changed your mind? You can
-                  resume it under Manage subscription.
+                <p className="text-[13px] text-stone-600 mt-1 leading-relaxed">
+                  You keep everything in {planConfig.name} until{" "}
+                  <strong className="font-semibold text-ink whitespace-nowrap">{endsOn}</strong>{" "}
+                  and won&apos;t be charged again. After that your account moves to the Free plan.
                 </p>
               </div>
+              <ManageSubscriptionButton primary label="Resume subscription" />
             </div>
           )}
 
@@ -219,18 +211,17 @@ export default async function AccountPage() {
           {/* Billing / CTA */}
           {isPaid ? (
             <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 space-y-2.5 text-sm">
+              {/* A cancelled plan has no price left to pay, and its end date is
+                  in the note above — said once. */}
               <div className="flex justify-between text-zinc-500">
-                <span>Price</span>
+                <span>{leaving ? "Billing" : "Price"}</span>
                 <span className="font-semibold text-zinc-900">
-                  {onTrial ? "Free during trial" : `$${planConfig.price}${plan === "monthly" ? "/mo" : "/yr"}`}
+                  {leaving
+                    ? "No further charges"
+                    : onTrial ? "Free during trial" : `$${planConfig.price}${plan === "monthly" ? "/mo" : "/yr"}`}
                 </span>
               </div>
-              {leaving ? (
-                <div className="flex justify-between text-zinc-500">
-                  <span>Access ends</span>
-                  <span className="font-semibold text-red-600">{endsOn}</span>
-                </div>
-              ) : renewsOn && (
+              {!leaving && renewsOn && (
                 <div className="flex justify-between text-zinc-500">
                   <span>{onTrial ? "Trial ends" : "Next renewal"}</span>
                   <span className="font-semibold text-zinc-900">{renewsOn}</span>
@@ -255,7 +246,7 @@ export default async function AccountPage() {
               <div className="pt-1 flex items-center justify-between gap-4 border-t border-zinc-200 mt-2">
                 <p className="text-xs text-zinc-400 leading-snug">
                   {leaving
-                    ? "Resume your subscription, update payment method or view invoices."
+                    ? "Update payment method or view invoices."
                     : "Update payment method, view invoices or cancel your subscription."}
                 </p>
                 <ManageSubscriptionButton />
