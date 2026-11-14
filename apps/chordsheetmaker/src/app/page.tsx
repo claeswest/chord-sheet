@@ -10,7 +10,7 @@ import ExamplesSection from "@/components/ui/ExamplesSection";
 import { auth } from "@/lib/auth";
 import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
 import { LANDING_FONTS } from "@/components/landing/fonts";
-import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, EYEBROW, H2, Wordmark } from "@/components/landing/kit";
+import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, H2, Wordmark } from "@/components/landing/kit";
 
 const PLAN_ORDER: Plan[] = ["free", "monthly", "yearly"];
 const FEATURE_LABELS: Record<string, string> = {
@@ -62,9 +62,9 @@ const features = [
 ];
 
 const steps = [
-  { n: 1, title: "Find or import your song", body: "Search any title with AI, snap a photo of a paper sheet, or paste from any site." },
-  { n: 2, title: "Make it yours",            body: "Style it with AI backgrounds and fonts, drag chords into place, transpose to your key." },
-  { n: 3, title: "Press play and perform",   body: "The chart scrolls hands-free at your pace — then file it into a setlist or collection for next time." },
+  { n: 1, title: "Find or import your song", body: "Search by artist and title, snap a photo of a paper sheet, or paste the text from anywhere." },
+  { n: 2, title: "Make it yours",            body: "Let the AI style it from the lyrics, drag chords into place, and move it to your key." },
+  { n: 3, title: "Press play and perform",   body: "The chart scrolls at your pace and your hands stay on the instrument. File it in a setlist for next time." },
 ];
 
 export default async function HomePage() {
@@ -153,19 +153,40 @@ export default async function HomePage() {
 
         {/* ── How it works — three steps ("See how it works" lands here) ───── */}
         <section id="how" className="scroll-mt-20 border-b border-rule">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
-            <h2 className={`${EYEBROW} mb-8 sm:mb-10`}>How it works</h2>
-            <ol className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-              {steps.map((h) => (
-                <li key={h.n} className="flex md:block gap-5 border-t border-ink pt-5">
-                  <span aria-hidden className="font-display text-5xl md:text-6xl leading-none text-ink md:block md:mb-5 shrink-0 w-10 md:w-auto">{h.n}</span>
-                  <div>
-                    <h3 className="text-lg font-semibold text-ink mb-1.5">{h.title}</h3>
-                    <p className="text-[15px] text-stone-600 leading-relaxed">{h.body}</p>
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
+            <Eyebrow className="mb-4">How it works</Eyebrow>
+            <h2 className="font-display font-medium text-3xl sm:text-4xl tracking-[-0.02em] text-ink text-balance mb-10 sm:mb-12">
+              From a song to the stage in three steps
+            </h2>
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-9">
+              {steps.map((h, i) => (
+                <li key={h.n}>
+                  {/* Each step is a bar: its number, a line through to the
+                      next, and a final double bar line after the last. */}
+                  <div aria-hidden className="mb-5 flex items-center gap-3">
+                    <span className="font-mono text-[11px] font-medium tracking-[0.18em] text-chord">{String(h.n).padStart(2, "0")}</span>
+                    <span className="h-px flex-1 bg-ink/25" />
+                    {i < steps.length - 1 ? (
+                      <svg className="hidden md:block -ml-3 h-2.5 w-2.5 shrink-0 text-ink/45" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 1l4 4-4 4" />
+                      </svg>
+                    ) : (
+                      <span className="hidden md:flex -ml-3 shrink-0 items-stretch gap-[2px] h-3.5">
+                        <span className="w-px bg-ink/60" />
+                        <span className="w-[3px] bg-ink" />
+                      </span>
+                    )}
                   </div>
+                  <h3 className="font-display font-medium text-2xl leading-snug tracking-[-0.01em] text-ink mb-2">{h.title}</h3>
+                  <p className="text-[15px] text-stone-600 leading-relaxed max-w-[38ch]">{h.body}</p>
                 </li>
               ))}
             </ol>
+            <div className="mt-10 sm:mt-12">
+              <CtaLink from="home-how" href={session ? "/editor/new" : "/editor/new?start=demo"}className={`${BTN_LINE} px-6 py-3 text-[15px]`}>
+                Start with your first song <span aria-hidden>→</span>
+              </CtaLink>
+            </div>
           </div>
         </section>
 
