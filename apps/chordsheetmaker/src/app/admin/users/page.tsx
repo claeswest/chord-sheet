@@ -4,65 +4,22 @@ import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import SongPreviewModal from "@/components/admin/SongPreviewModal";
-import PlanBadge, { relativeTime } from "@/components/admin/PlanBadge";
+import PlanBadge from "@/components/admin/PlanBadge";
+import UserPanel, { lastActiveIso, type AdminUser } from "@/components/admin/UserPanel";
 import {
-  AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS,
-  AUTO_DRIP_TEMPLATES,
-  EMAIL_COOLDOWN_DAYS,
-  EMAIL_SEQUENCE,
-  allowedTemplates,
-  isLeaving,
-  nextAutoTemplate,
-  suggestNextTemplate,
-  templateBlockReason,
-  type Audience,
-  type MarketingTemplate,
-} from "@/lib/marketingRules";
+  Avatar, CARD, ErrorBox, INPUT, LINK, Loading, PageHeader, Pager, ROW, TH, fmtDate, relativeTime,
+} from "@/components/admin/ui";
 import {
   USER_FILTERS,
   USER_FILTER_LABELS,
   parseUserFilter,
+  parseUserSort,
   type UserFilter,
+  type UserSort,
 } from "@/lib/adminUserFilters";
 
-interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  createdAt: string;
-}
-
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  plan: string | null;
-  stripeSubscriptionStatus: string | null;
-  stripeCurrentPeriodEnd: string | null;
-  stripeCancelAt: string | null;
-  hasSubscribedBefore: boolean;
-  marketingOptOut: boolean;
-  lastMarketingEmailAt: string | null;
-  createdAt: string;
-  _count: { songs: number; categories: number };
-  songs: (Song & { updatedAt: string })[];
-  categories: { id: string; name: string; parentId: string | null }[];
-  sessions: { expires: string }[];
-}
-
-// NextAuth database sessions live 30 days and roll forward on activity, so
-// the newest session's expiry minus 30 days ≈ when the user was last active.
-const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-function lastActiveIso(user: User): string | null {
-  const exp = user.sessions?.[0]?.expires;
-  if (!exp) return null;
-  return new Date(new Date(exp).getTime() - SESSION_MAX_AGE_MS).toISOString();
-}
-
 interface UsersResponse {
-  users: User[];
+  users: AdminUser[];
   total: number;
   /** How many users each tab holds, within the current search. */
   counts: Record<UserFilter, number>;
@@ -77,44 +34,17 @@ const EMPTY_TEXT: Record<UserFilter, string> = {
   paying: "No paying customers",
   trial: "Nobody is on a trial right now",
   cancelling: "Nobody has a cancellation pending",
+  active: "Nobody has used the app this week",
+  limit: "No free account is at the song limit",
+  nosongs: "Everybody has saved at least one song",
 };
 
-interface EmailHistoryItem {
-  id: string;
-  sentAt: string;
-  template: string;
-  /** Sent by the daily job rather than from this page. */
-  auto?: boolean;
-}
-
-// Labels for the marketing-email templates (mirror MARKETING_TEMPLATES)
-const EMAIL_TEMPLATES: [string, string][] = [
-  ["welcome_tips", "👋 Welcome tips"],
-  ["ai_magic", "🎨 AI magic"],
-  ["photo_rescue", "📷 Photo rescue"],
-  ["band_share", "🎤 Band sharing"],
-  ["upgrade_nudge", "✉️ Upgrade nudge"],
-  ["feedback_ask", "💬 Feedback ask"],
-  ["winback", "🎶 Win-back"],
-];
-const TEMPLATE_LABELS = Object.fromEntries(EMAIL_TEMPLATES);
-
-/** Everything the send rules need to know about one user. */
-function audienceOf(user: User): Audience {
-  return {
-    plan: user.plan,
-    cancelAt: user.stripeCancelAt,
-    hasSubscribedBefore: user.hasSubscribedBefore,
-  };
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+/** What the count on each tab is coloured by. */
+const TAB_TONE: Partial<Record<UserFilter, string>> = {
+  paying: "text-emerald-700",
+  trial: "text-amber-700",
+  cancelling: "text-red-700",
+};
 
 function AdminUsersInner() {
   const router = useRouter();
@@ -123,6 +53,8 @@ function AdminUsersInner() {
   const currentPage = parseInt(searchParams.get("page") ?? "1", 10) || 1;
   const currentQ = searchParams.get("q") ?? "";
   const currentFilter = parseUserFilter(searchParams.get("filter"));
+  const currentSort = parseUserSort(searchParams.get("sort"));
+  const currentDir = searchParams.get("dir") === "asc" ? "asc" : "desc";
 
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,74 +62,28 @@ function AdminUsersInner() {
   const [search, setSearch] = useState(currentQ);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [previewSongId, setPreviewSongId] = useState<string | null>(null);
-  // Marketing email feedback per user: "sending" | API SendResult
-  const [emailStatus, setEmailStatus] = useState<Record<string, string>>({});
-  // Selected template in the per-user send dropdown
-  const [emailTemplate, setEmailTemplate] = useState<Record<string, string>>({});
-  // Full send history per user (from the activity log), lazy-loaded on expand
-  const [userEmails, setUserEmails] = useState<Record<string, EmailHistoryItem[]>>({});
 
-  function loadEmailHistory(userId: string) {
-    fetch(`/api/admin/users/${userId}/emails`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
-      .then((d) => setUserEmails((m) => ({ ...m, [userId]: d.emails })))
-      .catch(() => {});
-  }
-
-  async function sendEmail(userId: string, template: string) {
-    setEmailStatus((m) => ({ ...m, [userId]: "sending" }));
-    try {
-      const res = await fetch("/api/admin/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds: [userId], template }),
-      });
-      const d = await res.json();
-      const result = d.results?.[userId] ?? "failed";
-      setEmailStatus((m) => ({ ...m, [userId]: result }));
-      if (result === "sent") loadEmailHistory(userId); // reflect the new send
-    } catch {
-      setEmailStatus((m) => ({ ...m, [userId]: "failed" }));
-    }
-  }
-  // Full song lists per user, lazy-loaded when a row is expanded (the list API
-  // only returns the 5 most recent to keep the payload light).
-  const [userSongs, setUserSongs] = useState<Record<string, Song[]>>({});
-
-  function toggleExpand(userId: string) {
-    setExpandedUserId((cur) => (cur === userId ? null : userId));
-    if (!userSongs[userId]) {
-      fetch(`/api/admin/users/${userId}/songs`)
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
-        .then((d) => setUserSongs((m) => ({ ...m, [userId]: d.songs })))
-        .catch(() => {});
-    }
-    if (!userEmails[userId]) loadEmailHistory(userId);
-  }
-
-  const load = useCallback(
-    (page: number, q: string, filter: UserFilter) => {
-      setLoading(true);
-      setError("");
-      const params = new URLSearchParams();
-      if (q) params.set("q", q);
-      if (filter !== "all") params.set("filter", filter);
-      params.set("page", String(page));
-      fetch(`/api/admin/users?${params}`)
-        .then((r) => {
-          if (!r.ok) throw new Error("Failed to load users");
-          return r.json();
-        })
-        .then(setData)
-        .catch((e) => setError(e.message))
-        .finally(() => setLoading(false));
-    },
-    []
-  );
+  const load = useCallback((page: number, q: string, filter: UserFilter, sort: UserSort | null, dir: string) => {
+    setLoading(true);
+    setError("");
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (filter !== "all") params.set("filter", filter);
+    if (sort) { params.set("sort", sort); params.set("dir", dir); }
+    params.set("page", String(page));
+    fetch(`/api/admin/users?${params}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load users");
+        return r.json();
+      })
+      .then(setData)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    load(currentPage, currentQ, currentFilter);
-  }, [currentPage, currentQ, currentFilter, load]);
+    load(currentPage, currentQ, currentFilter, currentSort, currentDir);
+  }, [currentPage, currentQ, currentFilter, currentSort, currentDir, load]);
 
   // The box follows the URL. It only read it once, so after Back or Forward it
   // went on showing the search you had just left.
@@ -205,487 +91,211 @@ function AdminUsersInner() {
     setSearch(currentQ);
   }, [currentQ]);
 
-  // The tab lives in the URL like the search and page, so a filtered list can
+  // Search, tab, sort and page all live in the URL, so a view of the list can
   // be bookmarked, reloaded and gone back to.
-  function navigate(page: number, q: string, filter: UserFilter = currentFilter) {
+  function href(next: { page?: number; q?: string; filter?: UserFilter; sort?: UserSort | null; dir?: string }) {
+    const q = next.q ?? currentQ;
+    const filter = next.filter ?? currentFilter;
+    const sort = next.sort === undefined ? currentSort : next.sort;
+    const dir = next.dir ?? currentDir;
+    const page = next.page ?? 1;
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (filter !== "all") params.set("filter", filter);
+    if (sort) { params.set("sort", sort); params.set("dir", dir); }
     if (page > 1) params.set("page", String(page));
-    router.push(`/admin/users?${params}`);
+    const qs = params.toString();
+    return `/admin/users${qs ? `?${qs}` : ""}`;
   }
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    navigate(1, search);
+  // Search as you type. A short wait, so a name is one request and not one
+  // per letter; replace rather than push, so Back does not step through every
+  // keystroke.
+  useEffect(() => {
+    if (search === currentQ) return;
+    const t = setTimeout(() => router.replace(href({ q: search })), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  /** A column heading you can sort by: first click newest/most first, second click reverses, third clears. */
+  function SortHead({ col, children, className = "" }: { col: UserSort; children: string; className?: string }) {
+    const active = currentSort === col;
+    const next = !active ? { sort: col, dir: "desc" } : currentDir === "desc" ? { sort: col, dir: "asc" } : { sort: null as UserSort | null, dir: "desc" };
+    return (
+      <th className={`${TH} ${className}`} aria-sort={active ? (currentDir === "asc" ? "ascending" : "descending") : undefined}>
+        <button onClick={() => router.push(href(next))} className="inline-flex items-center gap-1 uppercase tracking-[0.14em] hover:text-ink transition-colors">
+          {children}
+          <span aria-hidden className={active ? "text-chord" : "text-stone-300"}>{active ? (currentDir === "asc" ? "▲" : "▼") : "↕"}</span>
+        </button>
+      </th>
+    );
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 sm:mb-8 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Users</h1>
-          {data && (
-            <p className="text-zinc-400 text-sm mt-1">
-              {data.filter === "all"
-                ? `${data.total} user${data.total !== 1 ? "s" : ""} total`
-                : `${data.total} ${USER_FILTER_LABELS[data.filter].toLowerCase()}`}
-            </p>
-          )}
-        </div>
-
-        {/* Search */}
-        <form onSubmit={handleSearch} className="flex gap-2 w-full sm:w-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
+      <PageHeader
+        title="Users"
+        sub={
+          data
+            ? data.filter === "all"
+              ? `${data.total} account${data.total !== 1 ? "s" : ""}${currentQ ? ` matching “${currentQ}”` : ""}`
+              : `${data.total} · ${USER_FILTER_LABELS[data.filter].toLowerCase()}`
+            : undefined
+        }
+      >
+        <div className="relative w-full sm:w-72">
           <input
-            type="text"
+            type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email…"
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 sm:flex-none sm:w-64"
+            aria-label="Search users"
+            className={`${INPUT} w-full`}
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            Search
-          </button>
-          {currentQ && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch("");
-                navigate(1, "");
-              }}
-              className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm rounded-lg transition-colors"
-            >
-              ×
-            </button>
-          )}
-        </form>
-      </div>
+        </div>
+      </PageHeader>
 
       {/* Tabs. Counts come with each response, so they stay right while the
           list loads; until the first one arrives the tabs show without them. */}
       <div role="tablist" aria-label="Filter users" className="flex flex-wrap gap-2 mb-5">
-        {USER_FILTERS.map((f) => {
+        {USER_FILTERS.map((f, i) => {
           const active = f === currentFilter;
           const count = data?.counts?.[f];
-          const tone =
-            f === "paying" ? "text-emerald-300" : f === "trial" ? "text-amber-300" : f === "cancelling" ? "text-red-300" : "text-zinc-300";
           return (
-            <button
-              key={f}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => navigate(1, currentQ, f)}
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
-                active
-                  ? "bg-zinc-100 text-zinc-900 border-zinc-100 font-semibold"
-                  : "bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600"
-              }`}
-            >
-              {USER_FILTER_LABELS[f]}
-              {count !== undefined && (
-                <span className={`tabular-nums text-xs ${active ? "text-zinc-500" : tone}`}>{count}</span>
-              )}
-            </button>
+            <Fragment key={f}>
+              {/* The first four are about money, the rest about behaviour. */}
+              {i === 4 && <span aria-hidden className="w-px self-stretch bg-rule mx-1" />}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => router.push(href({ filter: f }))}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
+                  active ? "bg-ink text-paper border-ink font-semibold" : "bg-white text-stone-700 border-rule hover:border-ink/40"
+                }`}
+              >
+                {USER_FILTER_LABELS[f]}
+                {count !== undefined && (
+                  <span className={`tabular-nums text-xs ${active ? "text-paper/70" : TAB_TONE[f] ?? "text-stone-500"}`}>{count}</span>
+                )}
+              </button>
+            </Fragment>
           );
         })}
       </div>
 
-      {loading && (
-        <div className="flex items-center gap-3 text-zinc-400">
-          <div className="w-5 h-5 border-2 border-zinc-600 border-t-indigo-500 rounded-full animate-spin" />
-          Loading…
-        </div>
-      )}
+      {loading && !data && <Loading />}
+      {error && <ErrorBox>{error}</ErrorBox>}
 
-      {error && (
-        <div className="bg-red-950 border border-red-800 text-red-300 rounded-xl px-5 py-4 text-sm">
-          {error}
-        </div>
-      )}
-
-      {data && !loading && (
+      {data && (
         <>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-x-auto">
+          {/* Dimmed rather than removed while the next page or search loads:
+              the list used to vanish and come back on every keystroke. */}
+          <div className={`${CARD} overflow-x-auto transition-opacity ${loading ? "opacity-60" : ""}`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
-                    User
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden md:table-cell">
-                    Email
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
-                    Songs
-                  </th>
-                  <th className="text-left px-4 sm:px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide">
-                    Plan
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden lg:table-cell">
-                    Joined
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wide hidden md:table-cell">
-                    Last active
-                  </th>
+                <tr>
+                  <th className={TH}>User</th>
+                  <SortHead col="songs">Songs</SortHead>
+                  <th className={TH}>Plan</th>
+                  <SortHead col="joined" className="hidden lg:table-cell">Joined</SortHead>
+                  <SortHead col="active" className="hidden md:table-cell">Last active</SortHead>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
-                {data.users.map((user) => (
-                  <Fragment key={user.id}>
-                    <tr
-                      className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer ${
-                        expandedUserId === user.id ? "bg-zinc-800/20" : ""
-                      }`}
-                      onClick={() => toggleExpand(user.id)}
-                    >
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          {user.image ? (
-                            <img
-                              src={user.image}
-                              alt=""
-                              referrerPolicy="no-referrer"
-                              className="w-8 h-8 rounded-full object-cover shrink-0"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                              {(user.name ?? user.email ?? "?")[0].toUpperCase()}
+                {data.users.map((user) => {
+                  const open = expandedUserId === user.id;
+                  const seen = lastActiveIso(user);
+                  const latest = user.songs[0];
+                  return (
+                    <Fragment key={user.id}>
+                      <tr
+                        className={`${ROW} hover:bg-paper transition-colors cursor-pointer ${open ? "bg-paper" : ""}`}
+                        onClick={() => setExpandedUserId(open ? null : user.id)}
+                      >
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={user.name ?? user.email ?? "?"} image={user.image} />
+                            <div className="min-w-0">
+                              {/* The name opens their page; the rest of the row opens the panel. */}
+                              <Link
+                                href={`/admin/users/${encodeURIComponent(user.id)}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="font-medium text-ink hover:underline underline-offset-4 truncate block max-w-[220px]"
+                              >
+                                {user.name ?? user.email ?? "—"}
+                              </Link>
+                              {user.name && <span className="text-xs text-stone-500 truncate block max-w-[220px]">{user.email}</span>}
                             </div>
-                          )}
-                          <span className="font-medium text-white truncate max-w-[120px]">
-                            {user.name ?? "—"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3 text-zinc-400 hidden md:table-cell">
-                        <span className="truncate block max-w-[200px]">{user.email}</span>
-                      </td>
-                      <td className="px-5 py-3 text-zinc-300">
-                        <p>{user._count.songs}</p>
-                        {user.songs[0] ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setPreviewSongId(user.songs[0].id);
-                            }}
-                            className="mt-1 block max-w-[220px] rounded text-left text-xs text-indigo-300 hover:text-indigo-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-400"
-                            title={user.songs[0].title.trim() || "Untitled song"}
-                            aria-label={`Preview latest saved song: ${user.songs[0].title.trim() || "Untitled song"}`}
-                          >
-                            <span className="block truncate">{user.songs[0].title.trim() || "Untitled song"}</span>
-                            <span className="block text-zinc-400">
-                              Last saved <time dateTime={user.songs[0].updatedAt}>{formatDate(user.songs[0].updatedAt)}</time>
-                            </span>
-                          </button>
-                        ) : (
-                          <p className="mt-1 text-xs text-zinc-400">No saved songs</p>
-                        )}
-                      </td>
-                      <td className="px-4 sm:px-5 py-3">
-                        <PlanBadge
-                          plan={user.plan}
-                          status={user.stripeSubscriptionStatus}
-                          periodEnd={user.stripeCurrentPeriodEnd}
-                          cancelAt={user.stripeCancelAt}
-                        />
-                      </td>
-                      <td className="px-5 py-3 text-zinc-500 text-xs hidden lg:table-cell">
-                        {formatDate(user.createdAt)}
-                      </td>
-                      <td className="px-5 py-3 text-xs hidden md:table-cell">
-                        {(() => {
-                          const seen = lastActiveIso(user);
-                          return seen
-                            ? <span className="text-zinc-300">{relativeTime(seen)}</span>
-                            : <span className="text-zinc-600">—</span>;
-                        })()}
-                      </td>
-                      <td className="pl-4 pr-6 sm:pr-8 py-3 text-zinc-500 text-right">
-                        <span className="text-xs">
-                          {expandedUserId === user.id ? "▲" : "▼"}
-                        </span>
-                      </td>
-                    </tr>
-
-                    {/* Expanded: recent songs */}
-                    {expandedUserId === user.id && (
-                      <tr key={`${user.id}-expanded`} className="border-b border-zinc-800/50">
-                        <td colSpan={7} className="px-5 py-4 bg-zinc-950">
-                          {/* Account dates — visible on all sizes (columns hide on mobile) */}
-                          <p className="text-xs text-zinc-500 mb-4">
-                            Joined <span className="text-zinc-300">{formatDate(user.createdAt)}</span>
-                            <span className="mx-2 text-zinc-700">·</span>
-                            Last active{" "}
-                            {(() => {
-                              const seen = lastActiveIso(user);
-                              return <span className="text-zinc-300">{seen ? relativeTime(seen) : "—"}</span>;
-                            })()}
-                            <span className="mx-2 text-zinc-700">·</span>
-                            {/* What this person actually did — the question a
-                                row with "0 songs" raises and can't answer. */}
-                            <Link
-                              href={`/admin/activity?userId=${encodeURIComponent(user.id)}`}
-                              className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-stone-700">
+                          <span className="tabular-nums">{user._count.songs}</span>
+                          {latest && (
+                            <button
+                              type="button"
+                              onClick={(event) => { event.stopPropagation(); setPreviewSongId(latest.id); }}
+                              className={`block max-w-[220px] truncate text-left text-xs ${LINK}`}
+                              title={`Latest: ${latest.title.trim() || "Untitled song"}, saved ${fmtDate(latest.updatedAt)}`}
                             >
-                              View activity →
-                            </Link>
-                          </p>
-
-                          {/* Marketing emails — drip tracker + send controls */}
-                          {(() => {
-                            const history = userEmails[user.id] ?? [];
-                            const sentByTemplate = new Map<string, string>(); // template → latest sentAt
-                            history.forEach((e) => { if (!sentByTemplate.has(e.template)) sentByTemplate.set(e.template, e.sentAt); });
-                            const sentByJob = new Set(history.filter((e) => e.auto).map((e) => e.template));
-                            const audience = audienceOf(user);
-                            // What the daily job will send this person next, if anything. Same
-                            // rules as the job itself (lib/autoDrip.ts) — the age limit included.
-                            // Nothing is claimed until the history has arrived: with an empty
-                            // one, everybody looks like they are owed the welcome.
-                            const historyLoaded = user.id in userEmails;
-                            const tooOld = (Date.now() - new Date(user.createdAt).getTime()) / 86400000 > AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS;
-                            const autoNext =
-                              !historyLoaded || user.marketingOptOut || tooOld
-                                ? null
-                                : nextAutoTemplate(new Set(history.map((e) => e.template)), audience);
-                            const allowed = new Set(allowedTemplates(audience));
-                            const suggested = suggestNextTemplate(new Set(sentByTemplate.keys()), audience);
-                            const selected = emailTemplate[user.id] ?? suggested;
-                            const last = user.lastMarketingEmailAt ? new Date(user.lastMarketingEmailAt).getTime() : null;
-                            const cooldownUntil = last ? last + EMAIL_COOLDOWN_DAYS * 86400000 : null;
-                            const coolingDown = cooldownUntil !== null && cooldownUntil > Date.now();
-                            const trackerSteps = [...EMAIL_SEQUENCE, "winback" as MarketingTemplate]
-                              .filter((t) => allowed.has(t));
-                            return (
-                              <div className="mb-4">
-                                {/* Sequence tracker: ✓ sent · ● suggested next · rest pending */}
-                                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Email sequence</p>
-                                {/* What the daily job is going to do, so nobody sends by hand what
-                                    is about to send itself. Silent for opt-outs — the line below
-                                    already says why nothing goes out. */}
-                                {historyLoaded && !user.marketingOptOut && (
-                                  <p className="text-[11px] text-zinc-500 mb-2">
-                                    {autoNext
-                                      ? <>⚙ <span className="text-zinc-300">{TEMPLATE_LABELS[autoNext] ?? autoNext}</span> goes out by itself at the next daily run{coolingDown ? " after the cooldown" : ""} — you get a copy.</>
-                                      : isLeaving(audience)
-                                      ? <>Nothing is sent automatically to someone who is cancelling.</>
-                                      : tooOld
-                                      ? <>Account is older than {AUTO_DRIP_MAX_ACCOUNT_AGE_DAYS} days — nothing is sent automatically. Sending is up to you.</>
-                                      : <>The automatic part ({AUTO_DRIP_TEMPLATES.length} emails) is done. The rest are up to you.</>}
-                                  </p>
-                                )}
-                                {isLeaving(audience) && (
-                                  <p className="text-[11px] text-amber-300/90 mb-2">
-                                    ⚠ Cancelling — asking why beats pitching. Templates that assume they&apos;re
-                                    staying, or that they still have a trial to spend, are hidden.
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap gap-1.5 mb-3">
-                                  {trackerSteps.map((t) => {
-                                    const sentAt = sentByTemplate.get(t);
-                                    const isNext = !user.marketingOptOut && t === suggested;
-                                    return (
-                                      <span
-                                        key={t}
-                                        className={`text-[11px] px-2 py-1 rounded-lg border ${
-                                          sentAt
-                                            ? "bg-emerald-900/30 border-emerald-800/60 text-emerald-300"
-                                            : isNext
-                                            ? "bg-indigo-900/40 border-indigo-500 text-indigo-200 font-semibold"
-                                            : "bg-zinc-800/50 border-zinc-800 text-zinc-500"
-                                        }`}
-                                        title={sentAt ? `Sent ${formatDate(sentAt)}${sentByJob.has(t) ? " — automatically" : ""}` : t === autoNext ? "Next — sent automatically" : isNext ? "Suggested next" : "Not sent yet"}
-                                      >
-                                        {sentAt ? "✓ " : isNext ? "● " : ""}{TEMPLATE_LABELS[t] ?? t}
-                                        {sentAt && <span className="text-emerald-500/70"> · {formatDate(sentAt)}{sentByJob.has(t) ? " · auto" : ""}</span>}
-                                        {isNext && !sentAt && <span className="text-indigo-400"> · {t === autoNext ? "next, auto" : "next"}</span>}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-
-                                {user.marketingOptOut ? (
-                                  <span className="text-xs text-zinc-500">📭 Opted out of marketing emails</span>
-                                ) : (
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <select
-                                      value={selected}
-                                      onChange={(e) => setEmailTemplate((m) => ({ ...m, [user.id]: e.target.value }))}
-                                      className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg px-2 py-1.5"
-                                    >
-                                      {EMAIL_TEMPLATES.map(([key, label]) => {
-                                        const blocked = templateBlockReason(key as MarketingTemplate, audience);
-                                        return (
-                                          <option key={key} value={key} disabled={!!blocked}>
-                                            {label}
-                                            {blocked
-                                              ? `  — ${blocked}`
-                                              : key === suggested
-                                              ? "  (next)"
-                                              : sentByTemplate.has(key)
-                                              ? "  ✓ sent"
-                                              : ""}
-                                          </option>
-                                        );
-                                      })}
-                                    </select>
-                                    <button
-                                      onClick={() => sendEmail(user.id, selected)}
-                                      disabled={emailStatus[user.id] === "sending" || coolingDown}
-                                      className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                    >
-                                      Send email
-                                    </button>
-                                    {coolingDown && (
-                                      <span className="text-xs text-amber-400/90">
-                                        ⏳ Cooldown — can send again {formatDate(new Date(cooldownUntil!).toISOString())}
-                                      </span>
-                                    )}
-                                    {emailStatus[user.id] === "sending" && <span className="text-xs text-zinc-400">Sending…</span>}
-                                    {emailStatus[user.id] === "sent" && <span className="text-xs text-emerald-400">Sent ✓</span>}
-                                    {emailStatus[user.id] === "skipped_recent" && <span className="text-xs text-amber-400">Skipped — emailed within {EMAIL_COOLDOWN_DAYS} days</span>}
-                                    {emailStatus[user.id] === "skipped_optout" && <span className="text-xs text-zinc-400">Skipped — opted out</span>}
-                                    {emailStatus[user.id] === "skipped_ineligible" && <span className="text-xs text-amber-400">Skipped — not appropriate for this user</span>}
-                                    {emailStatus[user.id] === "failed" && <span className="text-xs text-red-400">Failed</span>}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Categories */}
-                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
-                            Categories ({user._count.categories} total)
-                          </p>
-                          {user.categories.length === 0 ? (
-                            <p className="text-sm text-zinc-600 italic mb-4">No categories</p>
-                          ) : (
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {user.categories.map((cat) => (
-                                <span
-                                  key={cat.id}
-                                  className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full ${
-                                    cat.parentId
-                                      ? "bg-zinc-800/60 text-zinc-400 ml-2"
-                                      : "bg-indigo-900/40 text-indigo-300"
-                                  }`}
-                                  title={cat.parentId ? "Subcategory" : "Category"}
-                                >
-                                  {cat.parentId && <span className="text-zinc-600">└</span>}
-                                  {cat.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
-                            Songs ({user._count.songs} total)
-                            {!userSongs[user.id] && user._count.songs > 0 && (
-                              <span className="ml-2 text-zinc-600 normal-case font-normal">loading…</span>
-                            )}
-                          </p>
-                          {(userSongs[user.id] ?? user.songs).length === 0 ? (
-                            <p className="text-sm text-zinc-600 italic">No songs yet</p>
-                          ) : (
-                            <div className="space-y-2">
-                              {(userSongs[user.id] ?? user.songs).map((song) => (
-                                <button
-                                  key={song.id}
-                                  onClick={() => setPreviewSongId(song.id)}
-                                  className="w-full flex items-center justify-between gap-4 bg-zinc-900 hover:bg-zinc-800 rounded-lg px-4 py-2.5 text-left transition-colors group"
-                                >
-                                  <div className="min-w-0">
-                                    {song.title?.trim() ? (
-                                      <p className="text-sm font-medium text-white truncate group-hover:text-indigo-300">
-                                        {song.title}
-                                      </p>
-                                    ) : (
-                                      <p className="text-sm font-medium italic text-zinc-500 truncate group-hover:text-indigo-300">
-                                        Untitled song
-                                      </p>
-                                    )}
-                                    {song.artist && (
-                                      <p className="text-xs text-zinc-500 truncate">{song.artist}</p>
-                                    )}
-                                  </div>
-                                  <span className="flex items-center gap-3 shrink-0">
-                                    <span className="text-xs text-zinc-600">
-                                      {formatDate(song.createdAt)}
-                                    </span>
-                                    <span className="text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      View →
-                                    </span>
-                                  </span>
-                                </button>
-                              ))}
-                              {!userSongs[user.id] && user._count.songs > user.songs.length && (
-                                <p className="text-xs text-zinc-600 pl-1">
-                                  + {user._count.songs - user.songs.length} more…
-                                </p>
-                              )}
-                            </div>
+                              {latest.title.trim() || "Untitled song"}
+                            </button>
                           )}
                         </td>
+                        <td className="px-5 py-3">
+                          <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} cancelAt={user.stripeCancelAt} />
+                        </td>
+                        <td className="px-5 py-3 text-stone-500 text-xs hidden lg:table-cell whitespace-nowrap">{fmtDate(user.createdAt)}</td>
+                        <td className="px-5 py-3 text-xs hidden md:table-cell whitespace-nowrap">
+                          {seen ? <span className="text-stone-700">{relativeTime(seen)}</span> : <span className="text-stone-400">—</span>}
+                        </td>
+                        <td className="pl-4 pr-5 py-3 text-stone-400 text-right">
+                          <span aria-hidden className="text-xs">{open ? "▲" : "▼"}</span>
+                          <span className="sr-only">{open ? "Close" : "Open"} details</span>
+                        </td>
                       </tr>
-                    )}
-                  </Fragment>
-                ))}
+
+                      {open && (
+                        <tr className={ROW}>
+                          <td colSpan={6} className="px-5 py-5 bg-paper">
+                            <p className="text-xs text-stone-500 mb-5">
+                              Joined <span className="text-stone-700">{fmtDate(user.createdAt)}</span>
+                              <span className="mx-2 text-stone-300">·</span>
+                              Last active <span className="text-stone-700">{seen ? relativeTime(seen) : "—"}</span>
+                              <span className="mx-2 text-stone-300">·</span>
+                              <Link href={`/admin/users/${encodeURIComponent(user.id)}`} className={LINK}>Their page, with the timeline →</Link>
+                            </p>
+                            <UserPanel user={user} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
 
             {data.users.length === 0 && (
-              <div className="px-5 py-12 text-center text-zinc-500">
-                {currentQ ? "No users found" : EMPTY_TEXT[data.filter]}
+              <div className="px-5 py-12 text-center text-stone-500 border-t border-rule">
+                {currentQ ? `No users match “${currentQ}”` : EMPTY_TEXT[data.filter]}
               </div>
             )}
           </div>
 
-          {/* Pagination */}
-          {data.pages > 1 && (
-            <div className="flex items-center justify-between mt-5">
-              <p className="text-sm text-zinc-500">
-                Page {data.page} of {data.pages}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  disabled={data.page <= 1}
-                  onClick={() => navigate(data.page - 1, currentQ)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors"
-                >
-                  ← Prev
-                </button>
-                <button
-                  disabled={data.page >= data.pages}
-                  onClick={() => navigate(data.page + 1, currentQ)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors"
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-          )}
+          <Pager page={data.page} pages={data.pages} onPage={(p) => router.push(href({ page: p }))} />
         </>
       )}
 
-      {previewSongId && (
-        <SongPreviewModal
-          songId={previewSongId}
-          onClose={() => setPreviewSongId(null)}
-        />
-      )}
+      {previewSongId && <SongPreviewModal songId={previewSongId} onClose={() => setPreviewSongId(null)} />}
     </div>
   );
 }
 
 export default function AdminUsersPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-zinc-400">Loading…</div>}>
+    <Suspense fallback={<div className="p-8 text-stone-500 text-sm">Loading…</div>}>
       <AdminUsersInner />
     </Suspense>
   );

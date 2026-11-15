@@ -19,7 +19,11 @@ export type ActivityType =
   | "bg_generated"
   | "ai_styled"
   | "style_changed"
-  | "marketing_email";
+  | "marketing_email"
+  // Bookkeeping rather than something a person did. Hidden from the admin
+  // feed unless asked for; the dashboard counts them.
+  | "ai_call"   // an import the AI read: meta.kind = search | paste | photo
+  | "job_run";  // a scheduled job finished: meta.job, and what it did
 
 export async function logActivity(
   type: ActivityType,

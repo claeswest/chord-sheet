@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { SongLine } from "@/types/song";
 import { parseChordSheet } from "@/lib/parseChordSheet";
-import { trackAiSearch, trackImportSuccess, activityBeacon } from "@/lib/analytics";
+import { trackAiSearch, trackImportSuccess, activityBeacon, anonHeader } from "@/lib/analytics";
 
 interface ImportMeta {
   title?: string;
@@ -157,7 +157,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     try {
       const res = await fetch("/api/ai/parse", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...anonHeader() },
         body: JSON.stringify({ text: input }),
       });
       if (!res.ok) {
@@ -210,7 +210,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     try {
       const res = await fetch("/api/ai/ocr", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...anonHeader() },
         body: JSON.stringify({ image: imageSrc }),
       });
       if (!res.ok) {
@@ -241,7 +241,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     try {
       const res = await fetch("/api/ai/search", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...anonHeader() },
         body: JSON.stringify({ query }),
       });
       const data = await res.json().catch(() => ({}));

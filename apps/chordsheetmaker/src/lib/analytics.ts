@@ -150,6 +150,12 @@ function anonId(): string | undefined {
   }
 }
 
+/** The same id as a request header, for the AI routes' own log (lib/aiLog.ts). */
+export function anonHeader(): Record<string, string> {
+  const id = anonId();
+  return id ? { "x-anon": id } : {};
+}
+
 export function activityBeacon(type: string, data: Record<string, unknown> = {}): void {
   try {
     fetch("/api/activity", {

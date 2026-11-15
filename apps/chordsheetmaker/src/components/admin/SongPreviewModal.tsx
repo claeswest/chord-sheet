@@ -21,7 +21,7 @@ interface FullSong {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 /**
@@ -66,29 +66,29 @@ export default function SongPreviewModal({
   const style = song?.content?.style ?? undefined;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-zinc-950">
+    <div className="fixed inset-0 z-50 flex flex-col bg-paper">
       {/* Floating close button + owner label, above SongViewer's own controls */}
       <button
         onClick={onClose}
-        className="fixed top-3 right-3 z-[70] w-9 h-9 flex items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm text-lg leading-none shadow-lg"
+        className="fixed top-3 right-3 z-[70] w-9 h-9 flex items-center justify-center rounded-full bg-black/60 text-paper hover:bg-black/80 backdrop-blur-sm text-lg leading-none shadow-lg"
         title="Close (Esc)"
       >
         ×
       </button>
       {song && (
-        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[70] px-3 py-1 rounded-full bg-black/60 text-white/80 text-xs backdrop-blur-sm shadow-lg max-w-[60vw] truncate">
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[70] px-3 py-1 rounded-full bg-black/60 text-paper/80 text-xs backdrop-blur-sm shadow-lg max-w-[60vw] truncate">
           {song.user.name ?? song.user.email} · {formatDate(song.createdAt)}
         </div>
       )}
 
       {error && (
-        <div className="flex-1 flex items-center justify-center text-red-400 text-sm">{error}</div>
+        <div className="flex-1 flex items-center justify-center text-red-700 text-sm">{error}</div>
       )}
       {!song && !error && (
-        <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">Loading…</div>
+        <div className="flex-1 flex items-center justify-center text-stone-500 text-sm">Loading…</div>
       )}
       {song && lines.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-zinc-600 italic text-sm">
+        <div className="flex-1 flex items-center justify-center text-stone-400 italic text-sm">
           This song has no content.
         </div>
       )}

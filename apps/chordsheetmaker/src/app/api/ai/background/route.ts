@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
-import { auth } from "@/lib/auth";
 import { DEFAULT_BG_STYLE } from "@/lib/songStyle";
-import { logActivity } from "@/lib/activity";
+import { logAi } from "@/lib/aiLog";
 
 const STYLE_PROMPTS: Record<string, string> = {
   abstract: `You are a visual artist. Given a song title, artist, and lyrics, write a single concise image generation prompt (max 60 words) for an ABSTRACT, PAINTERLY background image that suits the song's mood and genre.
@@ -230,15 +229,12 @@ export async function POST(req: NextRequest) {
   const b64: string = imagePart.inlineData.data;
   const mimeType: string = imagePart.inlineData.mimeType ?? "image/png";
 
-  // Log for signed-in users (guests can use AI too, but are not logged)
-  const session = await auth();
-  if (session?.user?.id) {
-    await logActivity("bg_generated", session.user.id, {
-      title,
-      source: bgStyle,
-      ...(via ? { via } : {}),
-    });
-  }
+  // Logged for everyone: visitors without an account are most of the use.
+  await logAi(req, "bg_generated", {
+    title,
+    source: bgStyle,
+    ...(via ? { via } : {}),
+  });
 
   return NextResponse.json({
     image: `data:${mimeType};base64,${b64}`,

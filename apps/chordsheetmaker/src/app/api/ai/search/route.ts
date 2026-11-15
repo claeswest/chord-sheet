@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
+import { logAi } from "@/lib/aiLog";
 
 const PROMPT = `You are an expert musician and chord transcriber with deep knowledge of popular songs across all genres and eras.
 
@@ -109,6 +110,9 @@ export async function POST(req: NextRequest) {
   }
 
   const cleanedText = rawLines.slice(contentStart).join("\n").trim();
+
+  // One row per successful read, so the admin can count them and what they cost.
+  await logAi(req, "ai_call", { kind: "search" });
 
   return NextResponse.json({ title, artist, text: cleanedText });
 }

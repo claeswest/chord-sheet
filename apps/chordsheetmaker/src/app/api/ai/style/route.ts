@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ALL_FONTS } from "@/lib/songStyle";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
-import { auth } from "@/lib/auth";
-import { logActivity } from "@/lib/activity";
+import { logAi } from "@/lib/aiLog";
 
 // Derived directly from songStyle.ts — always in sync with the actual font list
 const AVAILABLE_FONTS = ALL_FONTS.map(f => f.name);
@@ -136,9 +135,8 @@ export async function POST(req: NextRequest) {
 
   const sec = parsed.section ?? parsed.chords;
 
-  // Log for signed-in users (guests can use AI too, but are not logged)
-  const session = await auth();
-  if (session?.user?.id) await logActivity("ai_styled", session.user.id, { title });
+  // Logged for everyone: visitors without an account are most of the use.
+  await logAi(req, "ai_styled", { title });
 
   return NextResponse.json({
     theme: parsed.theme ?? "",

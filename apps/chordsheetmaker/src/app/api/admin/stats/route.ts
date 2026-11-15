@@ -3,6 +3,7 @@ import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { PLANS, isOnTrial, planFromUser } from "@/lib/plans";
 import { cancellationPending } from "@clavos/core/billing";
+import { adminInsights, type AdminInsights } from "@/lib/adminInsights";
 
 export async function GET() {
   if (!(await isAdmin())) {
@@ -79,7 +80,20 @@ export async function GET() {
     else if (eff === "lifetime") { paying++; } // no recurring MRR
   }
 
+  // The newer half of the dashboard. On its own try, so a fault in it leaves
+  // the head-count above standing and says what went wrong.
+  let insights: AdminInsights | null = null;
+  let insightsError: string | null = null;
+  try {
+    insights = await adminInsights();
+  } catch (e) {
+    insightsError = (e as Error)?.message ?? "unknown error";
+    console.error("[admin/stats] insights failed", e);
+  }
+
   return NextResponse.json({
+    insights,
+    insightsError,
     totalUsers,
     totalSongs,
     totalCategories,

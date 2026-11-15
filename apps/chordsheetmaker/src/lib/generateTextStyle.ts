@@ -1,3 +1,4 @@
+import { anonHeader } from "./analytics";
 import { loadStyleFonts, type SongStyle } from "./songStyle";
 
 // One AI text style — fonts, sizes and colours chosen from the song — ready to
@@ -17,7 +18,7 @@ export async function generateTextStyle(input: {
   try {
     const res = await fetch("/api/ai/style", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...anonHeader() },
       body: JSON.stringify(input),
     });
     const data = await res.json().catch(() => ({}));

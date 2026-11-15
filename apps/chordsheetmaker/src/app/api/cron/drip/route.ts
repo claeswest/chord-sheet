@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAutoDrip } from "@/lib/autoDrip";
 import { notifyAdmin } from "@/lib/notify";
+import { logActivity } from "@/lib/activity";
 
 // The daily job behind the automatic part of the email drip. Scheduled in
 // vercel.json; who gets what is lib/autoDrip.ts and lib/marketingRules.ts.
@@ -37,6 +38,13 @@ export async function GET(req: NextRequest) {
   // Logged as well as returned: cron output is visible in Vercel's logs, and
   // that is where you look when someone asks why they didn't get an email.
   console.log("[cron/drip]", JSON.stringify(run));
+
+  // And kept: Vercel's logs are gone within the hour on this plan, so the
+  // admin dashboard reads the last run from here. A day with nothing to send
+  // still leaves a row, which is the only proof the job ran at all.
+  await logActivity("job_run", null, {
+    job: "drip", dryRun, due: run.due, sent: run.sent, failed: run.failed, skipped: run.skipped,
+  });
 
   // Every email that goes out is copied to the founder, so success announces
   // itself. Failure is the one thing that would otherwise be silent.

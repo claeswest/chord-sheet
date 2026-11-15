@@ -31,6 +31,10 @@ export async function GET(req: NextRequest) {
     if (admins.length) where.NOT = { user: { email: { in: admins } } };
   }
   if (type) where.type = type;
+  // Bookkeeping rows — every AI read, every run of the daily job — are for the
+  // dashboard to count. In a feed of what people did they are noise, so they
+  // only show when asked for by type.
+  else where.type = { notIn: ["ai_call", "job_run"] };
   if (userId) where.userId = userId;
   // Anonymous visitors try the editor without an account and can fill most of
   // a page. ?guests=0 leaves only events that belong to an account.

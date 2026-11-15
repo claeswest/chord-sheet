@@ -1,3 +1,4 @@
+import { anonHeader } from "./analytics";
 import { compressImage } from "@clavos/core/image";
 
 // One AI background, from the song to a compressed image ready to store.
@@ -19,7 +20,7 @@ export async function generateBackground(input: {
   try {
     const res = await fetch("/api/ai/background", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...anonHeader() },
       body: JSON.stringify(input),
     });
     const data = await res.json().catch(() => ({}));

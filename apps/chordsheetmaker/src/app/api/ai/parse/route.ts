@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GEMINI_TEXT_MODEL, geminiUrl, geminiFetch } from "@clavos/core/ai";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
+import { logAi } from "@/lib/aiLog";
 
 const SYSTEM_PROMPT = `You are an expert chord sheet formatter and musician. The user has pasted raw text from a chord website (Ultimate Guitar, Chordify, Chordu, etc.) that may contain ads, navigation, tabs, chord diagrams, and other junk.
 
@@ -94,6 +95,9 @@ export async function POST(req: NextRequest) {
   }
 
   const cleanedText = rawLines.slice(contentStart).join("\n").trim();
+
+  // One row per successful read, so the admin can count them and what they cost.
+  await logAi(req, "ai_call", { kind: "paste" });
 
   return NextResponse.json({ title, artist, text: cleanedText });
 }
