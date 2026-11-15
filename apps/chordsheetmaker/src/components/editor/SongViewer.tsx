@@ -14,6 +14,7 @@ import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
 import Kbd from "@/components/ui/Kbd";
 import CtaLink from "@/components/ui/CtaLink";
 import PrintView from "./PrintView";
+import type { QueuePosition } from "@/lib/playQueue";
 import ChordLabel from "./ChordLabel";
 import { Wordmark } from "@/components/landing/kit";
 import { LANDING_FONTS } from "@/components/landing/fonts";
@@ -42,7 +43,28 @@ interface Props {
   loading?: boolean; // parent can keep overlay up while fetching data
   isShared?: boolean; // hides the share button on public share pages
   promoCta?: boolean; // share pages: viewer has no account → show "create your own" CTA
+  /** Where this song sits in the list it was opened from, for next and previous. */
+  queue?: QueuePosition | null;
+  /** Go to another song in that list. */
+  onQueueGo?: (url: string) => void;
 }
+
+/** What /api/me/entitlements says about PDF export and share links for this song. */
+interface Entitlements {
+  signedIn: boolean;
+  pdfExport: boolean;
+  sharing: boolean;
+  /** Songs the free plan still covers. null = no limit. */
+  pdfLeft: number | null;
+  sharesLeft: number | null;
+  pdfLimit: number | null;
+  shareLimit: number | null;
+  /** A free account's PDF says where it was made. */
+  branded: boolean;
+}
+const NO_ENTITLEMENTS: Entitlements = {
+  signedIn: false, pdfExport: false, sharing: false, pdfLeft: 0, sharesLeft: 0, pdfLimit: 0, shareLimit: 0, branded: true,
+};
 
 // Pixels per millisecond at each speed step (display-rate independent).
 // Tuned for performance reading: 1 is glacial (~0.8 px/s), the default 3 is
@@ -67,7 +89,7 @@ function isLightBg(hex?: string): boolean {
 }
 
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false, queue = null, onQueueGo }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -94,26 +116,40 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [shareFlash, setShareFlash] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
 
-  // Plan-gated entitlements (PDF export is a Pro feature). Fetched once; the
-  // PDF button re-checks before exporting so free users can never slip through.
-  const [entitlements, setEntitlements] = useState<{ pdfExport: boolean; sharing: boolean } | null>(null);
+  // What this viewer may do with PDF export and share links, for this song:
+  // a free account gets both for a few songs (plans.ts). Fetched once, and
+  // again before each use, so the answer is never a stale one.
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
   const [upgradeFeature, setUpgradeFeature] = useState<"pdf" | "share" | null>(null);
-  const fetchEntitlements = useCallback(async () => {
+  // The allowance is per song; a song not saved yet goes by its title.
+  const songKey = songId ?? title;
+  const fetchEntitlements = useCallback(async (): Promise<Entitlements> => {
     try {
-      const res = await fetch("/api/me/entitlements");
+      const res = await fetch(`/api/me/entitlements?song=${encodeURIComponent(songKey ?? "")}`);
       const data = await res.json();
-      const ent = { pdfExport: !!data.pdfExport, sharing: !!data.sharing };
+      const ent: Entitlements = {
+        signedIn: !!data.signedIn,
+        pdfExport: !!data.pdfExport,
+        sharing: !!data.sharing,
+        pdfLeft: data.pdfLeft ?? null,
+        sharesLeft: data.sharesLeft ?? null,
+        pdfLimit: data.pdfLimit ?? null,
+        shareLimit: data.shareLimit ?? null,
+        branded: data.branded !== false,
+      };
       setEntitlements(ent);
       return ent;
     } catch {
-      const ent = { pdfExport: false, sharing: false };
-      setEntitlements(ent);
-      return ent;
+      setEntitlements(NO_ENTITLEMENTS);
+      return NO_ENTITLEMENTS;
     }
-  }, []);
+  }, [songKey]);
   useEffect(() => { fetchEntitlements(); }, [fetchEntitlements]);
   const pdfLocked = entitlements != null && !entitlements.pdfExport;
   const shareLocked = entitlements != null && !entitlements.sharing;
+  /** "2 of 2 free songs left", for the buttons' tooltips. Empty on a paid plan. */
+  const leftNote = (left: number | null, limit: number | null) =>
+    left === null || !limit ? "" : ` — free for ${limit} song${limit === 1 ? "" : "s"}, ${left} left`;
   const [pdfLoading, setPdfLoading] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
@@ -323,11 +359,16 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       } else if ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey) {
         setHideChords((h) => !h);
         revealControls();
+      } else if ((e.key === "n" || e.key === "N") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Next and Back through the setlist
+        if (queue?.next && onQueueGo) onQueueGo(queue.next.url);
+      } else if ((e.key === "b" || e.key === "B") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (queue?.prev && onQueueGo) onQueueGo(queue.prev.url);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [revealControls]);
+  }, [revealControls, queue, onQueueGo]);
 
   // Reset and re-check whenever background image changes.
   // Base64 data URLs load synchronously — onLoad fires before React attaches
@@ -364,25 +405,36 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       setTimeout(() => setShareFlash(false), 2000);
       return;
     }
-    // Creating a share link is a Pro feature.
-    let ent = entitlements;
-    if (!ent) ent = await fetchEntitlements();
+    // Needs an account, and on the free plan covers a few songs. Asked fresh:
+    // the last link made may have used the allowance up.
+    const ent = await fetchEntitlements();
     if (!ent.sharing) { setUpgradeFeature("share"); return; }
     setShareLoading(true);
     try {
       const res = await fetch("/api/share", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, artist, lines, style: songStyle }),
+        body: JSON.stringify({ title, artist, lines, style: songStyle, songId: songKey }),
       });
+      // The server has the last word on the allowance.
+      if (!res.ok) { await fetchEntitlements(); setUpgradeFeature("share"); return; }
       const { token } = await res.json();
-      await navigator.clipboard.writeText(`${window.location.origin}/share/${token}`);
-      setShareFlash(true);
-      setTimeout(() => setShareFlash(false), 2000);
+      const link = `${window.location.origin}/share/${token}`;
+      fetchEntitlements();
+      // The link exists now, whatever the clipboard says. A browser may refuse
+      // to copy (no permission, page not in focus); the link was then made and
+      // lost, with nothing on screen. Show it to be copied by hand instead.
+      try {
+        await navigator.clipboard.writeText(link);
+        setShareFlash(true);
+        setTimeout(() => setShareFlash(false), 2000);
+      } catch {
+        window.prompt("Copy this link to share the chart:", link);
+      }
     } finally {
       setShareLoading(false);
     }
-  }, [title, artist, lines, songStyle, entitlements, fetchEntitlements]);
+  }, [title, artist, lines, songStyle, songKey, fetchEntitlements]);
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -608,6 +660,36 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               );
             })}
           </div>
+
+          {/* The end of the song is where you need the next one: a button
+              big enough to hit without looking for it. Its own dark plate,
+              so it reads on any background. */}
+          {queue && onQueueGo && (
+            <div className="mt-16 flex justify-center" style={{ textShadow: "none" }} onClick={(e) => e.stopPropagation()}>
+              {queue.next ? (
+                <button
+                  onClick={() => onQueueGo(queue.next!.url)}
+                  className="group max-w-full rounded-xl bg-black/60 hover:bg-black/75 backdrop-blur-sm text-white px-6 py-4 text-left transition-colors"
+                >
+                  <span className="block text-[11px] uppercase tracking-[0.16em] text-white/60">
+                    Next in {queue.label} · {queue.index + 2} of {queue.total}
+                  </span>
+                  <span className="mt-1 flex items-center gap-3 text-lg font-semibold">
+                    <span className="truncate">{queue.next.title}</span>
+                    <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+                  </span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => onQueueGo(queue.first.url)}
+                  className="rounded-xl bg-black/60 hover:bg-black/75 backdrop-blur-sm text-white px-6 py-4 text-left transition-colors"
+                >
+                  <span className="block text-[11px] uppercase tracking-[0.16em] text-white/60">End of {queue.label}</span>
+                  <span className="mt-1 block text-base font-semibold">Back to the first song</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -619,7 +701,35 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         <div className="flex items-center px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
           {/* Logo — account-less share viewers land on the marketing page */}
           <Link href={promoCta ? "/" : "/songs"} className="hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm"><Wordmark onInk className="text-lg" /></Link>
-          <div className="flex-1" />
+          {/* Where this song sits in the setlist it was opened from */}
+          <div className="flex-1 flex justify-center px-2 min-w-0">
+            {queue && onQueueGo && (
+              <div className="flex items-center gap-0.5 rounded-lg bg-black/45 backdrop-blur-sm text-white text-sm px-1 py-1 min-w-0">
+                <button
+                  onClick={() => queue.prev && onQueueGo(queue.prev.url)}
+                  disabled={!queue.prev}
+                  className="w-8 h-7 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  title={queue.prev ? `Previous: ${queue.prev.title} (B)` : "This is the first song"}
+                  aria-label={queue.prev ? `Previous song: ${queue.prev.title}` : "No previous song"}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <span className="px-1.5 whitespace-nowrap tabular-nums truncate">
+                  {queue.index + 1} / {queue.total}
+                  <span className="hidden md:inline text-white/60"> · {queue.label}</span>
+                </span>
+                <button
+                  onClick={() => queue.next && onQueueGo(queue.next.url)}
+                  disabled={!queue.next}
+                  className="w-8 h-7 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  title={queue.next ? `Next: ${queue.next.title} (N)` : "This is the last song"}
+                  aria-label={queue.next ? `Next song: ${queue.next.title}` : "No next song"}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            )}
+          </div>
           {promoCta ? (
             /* Growth loop: this viewer got the link from a bandmate — the
                warmest possible lead. One tasteful CTA, fades with the UI. */
@@ -682,7 +792,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                     ? "text-green-300 border-green-400/40"
                     : "text-white/70 hover:text-white border-white/20 hover:border-white/50"
                 }`}
-                title={shareLocked ? "Share link — a Pro feature" : "Copy shareable link"}
+                title={shareLocked ? (entitlements?.signedIn ? "Share link — your free ones are used" : "Share link — needs a free account") : `Copy a share link${leftNote(entitlements?.sharesLeft ?? null, entitlements?.shareLimit ?? null)}`}
               >
                 {shareFlash ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -741,18 +851,22 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               <span className="hidden sm:inline">{perfMode ? "Stage" : "Stage"}</span>
             </button>
 
-            {/* PDF download — Pro feature; gated for free users */}
+            {/* PDF download — any song on a paid plan, a few on the free one */}
             <button
               onClick={async () => {
-                let ent = entitlements;
-                if (!ent) ent = await fetchEntitlements();
+                const ent = await fetchEntitlements();
                 if (!ent.pdfExport) { setUpgradeFeature("pdf"); return; }
                 setPdfLoading(true);
-                try { await downloadPdf(`${title || "chord-sheet"}.pdf`); activityBeacon("pdf_exported", { songId, title }); } finally { setPdfLoading(false); }
+                try {
+                  await downloadPdf(`${title || "chord-sheet"}.pdf`);
+                  // The log row is also what counts this song against the free allowance.
+                  activityBeacon("pdf_exported", { songId: songKey, title });
+                  setTimeout(fetchEntitlements, 1500);
+                } finally { setPdfLoading(false); }
               }}
               disabled={pdfLoading}
               className="text-white/70 hover:text-white text-sm px-2.5 py-1.5 rounded-lg border border-white/20 hover:border-white/50 transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50"
-              title={pdfLocked ? "Download PDF — a Pro feature" : "Download PDF"}
+              title={pdfLocked ? (entitlements?.signedIn ? "Download PDF — your free one is used" : "Download PDF — needs a free account") : `Download PDF${leftNote(entitlements?.pdfLeft ?? null, entitlements?.pdfLimit ?? null)}`}
             >
               {pdfLoading ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
@@ -873,7 +987,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
       )}
 
       {/* Hidden print view — required for PDF export */}
-      <PrintView title={title} artist={artist} lines={cleanLines} songStyle={songStyle} watermark />
+      <PrintView title={title} artist={artist} lines={cleanLines} songStyle={songStyle} watermark branded={entitlements?.branded ?? true} />
 
       {/* Scroll to top button — appears once scrolled down, sits above the control bar */}
       <button
@@ -898,18 +1012,50 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             <div className="w-12 h-12 rounded-xl bg-[#f2ecdf] flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-[#1c1917]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0v3Z"/></svg>
             </div>
-            <h2 className="text-lg font-bold text-zinc-900 mb-1.5">
-              {upgradeFeature === "pdf" ? "PDF export is a Pro feature" : "Sharing is a Pro feature"}
-            </h2>
-            <p className="text-sm text-zinc-500 leading-relaxed mb-5">
-              Go Pro to export clean PDFs, share charts and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
-            </p>
-            <Link
-              href="/pricing"
-              className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
-            >
-              Start 7-day free trial →
-            </Link>
+            {(() => {
+              const pdf = upgradeFeature === "pdf";
+              const limit = (pdf ? entitlements?.pdfLimit : entitlements?.shareLimit) ?? 0;
+              const songs = `${limit} song${limit === 1 ? "" : "s"}`;
+              // No account yet: the free one already covers this.
+              if (!entitlements?.signedIn && limit > 0) {
+                return (
+                  <>
+                    <h2 className="text-lg font-bold text-zinc-900 mb-1.5">
+                      {pdf ? "Export this chart as a PDF" : "Share this chart with your band"}
+                    </h2>
+                    <p className="text-sm text-zinc-500 leading-relaxed mb-5">
+                      A free account {pdf ? `exports ${songs} as a PDF` : `shares ${songs} by link`}, and
+                      keeps your songs safe on every device. It takes a few seconds.
+                    </p>
+                    <Link
+                      href="/login"
+                      className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
+                    >
+                      Create a free account →
+                    </Link>
+                  </>
+                );
+              }
+              return (
+                <>
+                  <h2 className="text-lg font-bold text-zinc-900 mb-1.5">
+                    {limit > 0
+                      ? pdf ? "You've used your free PDF export" : "You've used your free share links"
+                      : pdf ? "PDF export is a Pro feature" : "Sharing is a Pro feature"}
+                  </h2>
+                  <p className="text-sm text-zinc-500 leading-relaxed mb-5">
+                    {limit > 0 && <>The free plan covers {songs}. </>}
+                    Go Pro to export and share any song, and add unlimited songs. Try it free for 7 days — you won&apos;t be charged today.
+                  </p>
+                  <Link
+                    href="/pricing"
+                    className="block w-full bg-ink text-paper hover:bg-stone-700 text-sm font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    Start 7-day free trial →
+                  </Link>
+                </>
+              );
+            })()}
             <button onClick={() => setUpgradeFeature(null)} className="mt-3 text-sm text-zinc-400 hover:text-zinc-600 transition-colors">
               Maybe later
             </button>

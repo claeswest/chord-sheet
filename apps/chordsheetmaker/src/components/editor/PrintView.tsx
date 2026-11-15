@@ -35,10 +35,12 @@ interface Props {
   artist: string;
   lines: SongLine[];
   watermark?: boolean;
+  /** A free account's export says where it was made. */
+  branded?: boolean;
   songStyle?: SongStyle;
 }
 
-export default function PrintView({ title, artist, lines, watermark = true, songStyle }: Props) {
+export default function PrintView({ title, artist, lines, watermark = true, branded = false, songStyle }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -237,6 +239,22 @@ export default function PrintView({ title, artist, lines, watermark = true, song
           </div>
         );
       })}
+      {/* A real line in the sheet, not the print stylesheet's corner mark:
+          the PDF is drawn from this element, and that mark is not part of it. */}
+      {branded && (
+        <div
+          style={{
+            marginTop: "18pt",
+            fontSize: "8pt",
+            fontFamily: "Arial, sans-serif",
+            letterSpacing: "0.04em",
+            color: s.lyrics.color ?? "#27272a",
+            opacity: 0.55,
+          }}
+        >
+          Made with ChordSheetMaker.ai
+        </div>
+      )}
     </div>
   );
 

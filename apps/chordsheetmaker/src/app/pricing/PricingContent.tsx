@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PLANS, Plan, yearlySavingPercent, yearlyPerMonth } from "@/lib/plans";
+import { PLANS, Plan, yearlySavingPercent, yearlyPerMonth, allowanceLabel, type Feature } from "@/lib/plans";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackTrialStarted } from "@/lib/analytics";
 import { LANDING_FONTS } from "@/components/landing/fonts";
@@ -177,9 +177,7 @@ export default function PricingContent({ currentPlan, userName, userImage }: { c
                             {active ? "✓" : "–"}
                           </span>
                           {!active && <span className="sr-only">Not included: </span>}
-                          {key === "songLimit"
-                            ? val === true ? "Unlimited songs" : `Up to ${val} songs`
-                            : featureLabel}
+                          {allowanceLabel(key as Feature, val) ?? featureLabel}
                         </li>
                       );
                     })}

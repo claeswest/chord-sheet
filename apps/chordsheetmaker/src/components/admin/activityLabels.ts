@@ -27,6 +27,7 @@ export const TYPES: Record<string, { label: string; tone: Tone }> = {
   song_edited:     { label: "Song edited", tone: "quiet" },
   chord_added:     { label: "Chord added", tone: "quiet" },
   pdf_exported:    { label: "PDF exported", tone: "info" },
+  share_created:   { label: "Share link made", tone: "info" },
   song_imported:   { label: "Song imported", tone: "info" },
   bg_generated:    { label: "AI picture", tone: "info" },
   ai_styled:       { label: "AI text style", tone: "info" },
@@ -171,12 +172,13 @@ const PHRASES: Record<string, (n: number) => string> = {
   ai_styled: (n) => (n === 1 ? "used AI text style" : `used AI text style ${n} times`),
   bg_generated: (n) => (n === 1 ? "made an AI picture" : `made ${n} AI pictures`),
   pdf_exported: (n) => (n === 1 ? "exported a PDF" : `exported ${n} PDFs`),
+  share_created: (n) => (n === 1 ? "made a share link" : `made ${n} share links`),
   marketing_email: (n) => (n === 1 ? "was sent an email" : `was sent ${n} emails`),
 };
 // What matters most first; the summary names the top few.
 const ORDER = [
   "sub_ended", "sub_started", "sub_changed", "account_created", "song_created", "song_imported",
-  "bg_generated", "ai_styled", "pdf_exported", "style_changed", "song_edited", "chord_added",
+  "share_created", "bg_generated", "ai_styled", "pdf_exported", "style_changed", "song_edited", "chord_added",
   "song_opened", "marketing_email", "login",
 ];
 

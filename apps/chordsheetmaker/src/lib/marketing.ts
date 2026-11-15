@@ -6,7 +6,7 @@
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
 import { adminRecipients } from "./notify";
-import { PLANS } from "./plans";
+import { PLANS, featureLimit } from "./plans";
 import { templateBlockReason, type Audience } from "./marketingRules";
 
 const FROM =process.env.EMAIL_FROM ?? "ChordSheetMaker <onboarding@resend.dev>";
@@ -51,6 +51,7 @@ function buildContent(
 ): EmailContent {
   const freeLimit = typeof PLANS.free.features.songLimit === "number" ? PLANS.free.features.songLimit : 5;
   const monthly = PLANS.monthly.price;
+  const freeShares = featureLimit("free", "sharing") ?? 0;
   const yearly = PLANS.yearly.price;
   // Offering "7 days free" to someone who has already used their trial is
   // simply untrue, and it's untrue in a purchase pitch — the worst place for it.
@@ -122,9 +123,11 @@ function buildContent(
       ],
       ctaLabel: "Share a chart →",
       ctaUrl: `${BASE_URL}/songs`,
+      // The free plan shares a few songs (plans.ts); the email used to say share
+      // links were Pro only.
       footnote: trialSpent
-        ? `Share links are part of Pro — $${monthly}/month. Cancel anytime.`
-        : `Share links are part of Pro — 7-day free trial, then $${monthly}/month. Cancel anytime.`,
+        ? `Your free account can share ${freeShares} song${freeShares === 1 ? "" : "s"}. Pro shares any number — $${monthly}/month. Cancel anytime.`
+        : `Your free account can share ${freeShares} song${freeShares === 1 ? "" : "s"}. Pro shares any number — 7-day free trial, then $${monthly}/month. Cancel anytime.`,
     };
   }
 

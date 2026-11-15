@@ -20,6 +20,7 @@ export type ActivityType =
   | "ai_styled"
   | "style_changed"
   | "marketing_email"
+  | "share_created" // a share link was made: meta.songId, meta.token
   // Bookkeeping rather than something a person did. Hidden from the admin
   // feed unless asked for; the dashboard counts them.
   | "ai_call"   // an import the AI read: meta.kind = search | paste | photo

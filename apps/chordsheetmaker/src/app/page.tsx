@@ -10,7 +10,7 @@ import ExamplesSection from "@/components/ui/ExamplesSection";
 import Image from "next/image";
 import { EXAMPLE_SONGS } from "@/data/exampleSongs";
 import { auth } from "@/lib/auth";
-import { PLANS, yearlySavingPercent, yearlyPerMonth, type Plan } from "@/lib/plans";
+import { PLANS, allowanceLabel, yearlySavingPercent, yearlyPerMonth, type Feature, type Plan } from "@/lib/plans";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { BTN_INK, BTN_LINE, BTN_PAPER, CHART_LEADING, Chorded, Eyebrow, H2, Wordmark } from "@/components/landing/kit";
 
@@ -33,9 +33,9 @@ const FEATURE_LABELS: Record<string, string> = {
 
 // Nine things in the order you meet them. One sentence each: the sections
 // above have already shown most of this, so here it only needs naming.
-// `paid` marks what the free plan does not include (see plans.ts) — a list
-// of features that hides which ones cost money is a small lie.
-const featureGroups: { label: string; items: { title: string; description: string; paid?: boolean }[] }[] = [
+// `limited` marks what the free plan only gives a taste of (see plans.ts) —
+// a list of features that hides which ones cost money is a small lie.
+const featureGroups: { label: string; items: { title: string; description: string; limited?: boolean }[] }[] = [
   {
     label: "Get the song in",
     items: [
@@ -56,8 +56,8 @@ const featureGroups: { label: string; items: { title: string; description: strin
     label: "Play it",
     items: [
       { title: "Hands-free auto-scroll", description: "Press play and the chart scrolls at your pace, in text large enough to read from the music stand." },
-      { title: "Setlists and collections", description: "Group songs for a gig or for practice, in the order you play them." },
-      { title: "Print and share", description: "Export a clean PDF for the music stand, or send a link your band can open and play without an account.", paid: true },
+      { title: "Setlists and collections", description: "Group songs for a gig or for practice, and play through them in order: the next song is one tap away." },
+      { title: "Print and share", description: "Export a clean PDF for the music stand, or send a link your band can open and play without an account.", limited: true },
     ],
   },
 ];
@@ -227,9 +227,9 @@ export default async function HomePage() {
                       <li key={f.title} className="border-t border-ink/15 py-5">
                         <h4 className="font-display font-medium text-xl leading-snug tracking-[-0.01em] text-ink mb-1.5 flex flex-wrap items-baseline gap-x-3">
                           {f.title}
-                          {f.paid && (
+                          {f.limited && (
                             <Link href="#pricing" className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-chord hover:underline underline-offset-4">
-                              Paid plans
+                              A few songs free
                             </Link>
                           )}
                         </h4>
@@ -313,9 +313,7 @@ export default async function HomePage() {
                                 {active ? "✓" : "–"}
                               </span>
                               {!active && <span className="sr-only">Not included: </span>}
-                              {key === "songLimit"
-                                ? val === true ? "Unlimited songs" : `Up to ${val} songs`
-                                : label}
+                              {allowanceLabel(key as Feature, val) ?? label}
                             </li>
                           );
                         })}

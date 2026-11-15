@@ -19,6 +19,7 @@ import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analyti
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { Wordmark } from "@/components/landing/kit";
 import { songKey } from "@/lib/transpose";
+import { savePlayQueue } from "@/lib/playQueue";
 import type { SongLine } from "@/types/song";
 
 function formatDate(iso: string): string {
@@ -523,6 +524,24 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
       if (sortBy === "artist") return dir * (a.artist ?? "").localeCompare(b.artist ?? "");
       return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     });
+
+  // Play mode steps through the list that is on screen — a setlist in its
+  // order, or all songs as sorted and searched — so opening a song from here
+  // gives it a "next". Locked songs are left out: they cannot be opened.
+  const queueSignature = `${selectedCategoryId ?? "all"}|${filtered.map((s) => (lockedSongIds.has(s.id) ? "" : s.id)).join(",")}`;
+  useEffect(() => {
+    savePlayQueue({
+      label: selectedCategoryId ? (categories.find((c) => c.id === selectedCategoryId)?.name ?? "this setlist") : "All songs",
+      items: filtered
+        .filter((s) => !lockedSongIds.has(s.id))
+        .map((s) => ({
+          id: s.id,
+          title: s.title || "Untitled song",
+          url: `/view?song=${encodeSong({ id: s.id, title: s.title, artist: s.artist, lines: s.lines, style: s.style, semitones: s.semitones || undefined })}`,
+        })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueSignature]);
 
   const songKeys = useMemo(
     () => new Map(songs.map((s) => [s.id, songKey((s.lines ?? []) as SongLine[], s.semitones ?? 0)])),

@@ -3,9 +3,12 @@
 // Every answer here is a claim about the product. Plan facts come from
 // plans.ts; the rest were checked against the code when written — keep it so.
 
-import { PLANS, getSongLimit } from "@/lib/plans";
+import { PLANS, featureLimit, getSongLimit } from "@/lib/plans";
 
 const FREE_SONGS = getSongLimit("free");
+const FREE_SHARES = featureLimit("free", "sharing");
+const FREE_PDFS = featureLimit("free", "pdfExport");
+const songs = (n: number | null) => `${n} song${n === 1 ? "" : "s"}`;
 
 // In the order a visitor asks them: can I try it, what does it do when I
 // play, what does it cost.
@@ -40,11 +43,11 @@ const GROUPS: { label: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Can I organise songs into setlists?",
-        a: "Yes. Make a folder for each gig, or for collections like “Campfire” or “Sunday practice”, drag songs into it and put them in playing order. A song can sit in more than one folder. Setlists are free.",
+        a: "Yes. Make a setlist for each gig, or collections like “Campfire” or “Sunday practice”, drag songs into it and put them in playing order. Open the first song and play mode takes you through the rest: the next one is a tap away when a song ends. A song can sit in more than one setlist. Setlists are free.",
       },
       {
         q: "Can my bandmates use a chart without an account?",
-        a: "Yes. On a paid plan you can make a share link for any song. It opens in their browser, ready to play with auto-scroll, and they need no account. A singer can hide the chords and read just the lyrics.",
+        a: `Yes. Make a share link for a song and it opens in their browser, ready to play with auto-scroll, and they need no account. A singer can hide the chords and read just the lyrics. A free account can share ${songs(FREE_SHARES)}; a paid plan shares any number.`,
       },
     ],
   },
@@ -53,7 +56,7 @@ const GROUPS: { label: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "What is free, and what does a paid plan add?",
-        a: `Free gives you the whole editor for ${FREE_SONGS} songs: importing, transposing, AI styling, play mode and setlists. A paid plan adds unlimited songs, PDF export and share links, for $${PLANS.monthly.price} a month or $${PLANS.yearly.price} a year.`,
+        a: `Free gives you the whole editor for ${FREE_SONGS} songs: importing, transposing, AI styling, play mode and setlists, with share links for ${songs(FREE_SHARES)} and a PDF of ${songs(FREE_PDFS)}. A paid plan takes the limits away: unlimited songs, PDF export and share links, for $${PLANS.monthly.price} a month or $${PLANS.yearly.price} a year.`,
       },
       {
         q: "How does the 7-day free trial work?",

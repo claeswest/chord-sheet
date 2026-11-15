@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining, yearlySavingPercent } from "@/lib/plans";
+import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining, yearlySavingPercent, allowanceLabel } from "@/lib/plans";
 import { syncStaleSubscription } from "@/lib/stripeSync";
 import { cancellationPending } from "@clavos/core/billing";
 import BuildStamp from "@clavos/core/build-stamp";
@@ -13,7 +13,7 @@ import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
   { key: "pdfExport",       label: "PDF export"          },
-  { key: "sharing",         label: "Public sharing"      },
+  { key: "sharing",         label: "Share links"         },
   { key: "setlists",        label: "Setlists & folders"  },
   { key: "chordTranspose",  label: "Chord transposition" },
   { key: "prioritySupport", label: "Priority support"    },
@@ -71,13 +71,21 @@ export default async function AccountPage() {
     : null;
 
   const unlimitedSongs = planConfig.features.songLimit === true;
+  // A feature the plan has for a few songs is in both lists: under what you
+  // have, with its number; and under what a paid plan adds, without one.
   const activeFeatures = [
     ...(unlimitedSongs ? [{ key: "songLimit" as const, label: "Unlimited songs" }] : []),
-    ...FEATURE_ROWS.filter(({ key }) => canUseFeature(plan, key)),
+    ...FEATURE_ROWS.filter(({ key }) => canUseFeature(plan, key)).map(({ key, label }) => ({
+      key,
+      label: allowanceLabel(key, planConfig.features[key]) ?? label,
+    })),
   ];
   const lockedFeatures = [
     ...(!unlimitedSongs ? [{ key: "songLimit" as const, label: "Unlimited songs" }] : []),
-    ...FEATURE_ROWS.filter(({ key }) => !canUseFeature(plan, key)),
+    ...FEATURE_ROWS.filter(({ key }) => planConfig.features[key] !== true).map(({ key, label }) => ({
+      key,
+      label: typeof planConfig.features[key] === "number" ? `${label} for every song` : label,
+    })),
   ];
 
   return (

@@ -1,19 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
 import { getSong } from "@/lib/storage";
+import { queuePosition } from "@/lib/playQueue";
 import type { SongStyle } from "@/lib/songStyle";
 import Link from "next/link";
 
+/**
+ * Keyed on the song, so stepping to the next one in a setlist starts it
+ * afresh — at the top, not playing, with its own picture — instead of
+ * carrying the last song's state across.
+ */
 export default function SongViewLoader() {
-  const searchParams = useSearchParams();
+  const encoded = useSearchParams().get("song");
+  return <SongView key={encoded ?? ""} encoded={encoded} />;
+}
+
+function SongView({ encoded }: { encoded: string | null }) {
   const router = useRouter();
-  const encoded = searchParams.get("song");
   const song = encoded ? decodeSong(encoded) : null;
+  // The list the song was opened from, if the library left one (lib/playQueue.ts).
+  const queue = useMemo(() => queuePosition(song?.id), [song?.id]);
 
   const [ready, setReady] = useState(false);
   const [songStyle, setSongStyle] = useState<SongStyle | undefined>(song?.style);
@@ -69,6 +80,8 @@ export default function SongViewLoader() {
         songId={song.id}
         onEdit={() => router.push(editUrl)}
         loading={!ready}
+        queue={queue}
+        onQueueGo={(url) => router.push(url)}
       />
     </div>
   );

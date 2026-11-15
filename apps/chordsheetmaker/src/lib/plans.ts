@@ -11,8 +11,8 @@ export interface PlanConfig {
 
 export type Feature =
   | "songLimit"       // max songs (number = limit, true = unlimited)
-  | "pdfExport"
-  | "sharing"
+  | "pdfExport"       // true = any song, number = for that many songs
+  | "sharing"         // true = any song, number = for that many songs
   | "setlists"
   | "chordTranspose"  // already built, free for all
   | "prioritySupport";
@@ -26,8 +26,12 @@ export const PLANS: Record<Plan, PlanConfig> = {
     isRecurring: false,
     features: {
       songLimit: 5,
-      pdfExport: false,
-      sharing: false,
+      // A taste rather than a lock (15 Nov 2026). Nobody bought what they had
+      // never been able to try, and a share link is the one thing here that
+      // puts the product in front of other musicians: it opens with a "make
+      // your own" button. Counted per song, not per use — see lib/allowance.ts.
+      pdfExport: 1,
+      sharing: 2,
       // Deliberately free: organising songs builds the return habit that the
       // paid features later monetise. The API never gated it anyway.
       setlists: true,
@@ -95,6 +99,30 @@ export function yearlyPerMonth(): string {
 export function canUseFeature(plan: Plan, feature: Feature): boolean {
   const value = PLANS[plan].features[feature];
   return value === true || (typeof value === "number" && value > 0);
+}
+
+/**
+ * How many songs a plan may use a feature on: null for no limit, 0 when the
+ * plan does not include it.
+ */
+export function featureLimit(plan: Plan, feature: Feature): number | null {
+  const value = PLANS[plan].features[feature];
+  if (value === true) return null;
+  return typeof value === "number" ? value : 0;
+}
+
+/**
+ * How a plan's allowance of a feature reads in a price list, where it needs
+ * more than the feature's name: "Up to 5 songs", "Share links for 2 songs".
+ * null when the plain name will do.
+ */
+export function allowanceLabel(feature: Feature, value: boolean | number): string | null {
+  if (feature === "songLimit") return value === true ? "Unlimited songs" : `Up to ${value} songs`;
+  if (typeof value !== "number" || value <= 0) return null;
+  const songs = `${value} song${value === 1 ? "" : "s"}`;
+  if (feature === "pdfExport") return `PDF export for ${songs}`;
+  if (feature === "sharing") return `Share links for ${songs}`;
+  return null;
 }
 
 export function getSongLimit(plan: Plan): number | null {
