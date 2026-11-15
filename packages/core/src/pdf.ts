@@ -26,11 +26,19 @@ const PAGE_H_PX    = mmToPx(A4_H_MM);
 const PADDING_PX   = mmToPx(PADDING_MM);
 const CONTENT_H_PX = PAGE_H_PX - 2 * PADDING_PX;
 
-/** Parse "linear-gradient(rgba(...)), url(data:...)" → { imageUrl, overlay } */
+/**
+ * Parse "linear-gradient(rgba(...)), url(...)" → { imageUrl, overlay }.
+ *
+ * Any address, not only an embedded one. This matched "url(data:…)" alone,
+ * which is how a picture a person generates or uploads is stored — so a
+ * picture kept as a file on the site (a bundled demo or example) was passed
+ * over, and its PDF came out with no background at all.
+ */
 function parseBgStyle(css: string): { imageUrl: string | null; overlay: string | null } {
-  const urlMatch  = css.match(/url\(["']?(data:[^"')]+)["']?\)/);
+  const urlMatch  = css.match(/url\(\s*(?:"([^"]+)"|'([^']+)'|([^)\s]+))\s*\)/);
   const rgbaMatch = css.match(/rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)/);
-  return { imageUrl: urlMatch ? urlMatch[1] : null, overlay: rgbaMatch ? rgbaMatch[0] : null };
+  const imageUrl  = urlMatch ? (urlMatch[1] ?? urlMatch[2] ?? urlMatch[3] ?? null) : null;
+  return { imageUrl, overlay: rgbaMatch ? rgbaMatch[0] : null };
 }
 
 async function loadImage(src: string): Promise<HTMLImageElement> {

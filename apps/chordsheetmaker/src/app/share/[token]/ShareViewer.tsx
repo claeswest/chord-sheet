@@ -14,9 +14,11 @@ interface Props {
   style?: SongStyle;
   token?: string;
   promo?: boolean;
+  /** false on the site's own example songs, which are not for exporting. */
+  pdf?: boolean;
 }
 
-export default function ShareViewer({ title, artist, lines, style, token, promo }: Props) {
+export default function ShareViewer({ title, artist, lines, style, token, promo, pdf = true }: Props) {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <SongViewer
@@ -29,6 +31,7 @@ export default function ShareViewer({ title, artist, lines, style, token, promo 
         songId={token}
         isShared
         promoCta={promo}
+        noPdf={!pdf}
       />
     </div>
   );

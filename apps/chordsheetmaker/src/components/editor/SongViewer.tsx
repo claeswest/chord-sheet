@@ -47,6 +47,8 @@ interface Props {
   queue?: QueuePosition | null;
   /** Go to another song in that list. */
   onQueueGo?: (url: string) => void;
+  /** Leave the PDF button out. */
+  noPdf?: boolean;
 }
 
 /** What /api/me/entitlements says about PDF export and share links for this song. */
@@ -89,7 +91,7 @@ function isLightBg(hex?: string): boolean {
 }
 
 
-export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false, queue = null, onQueueGo }: Props) {
+export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false, queue = null, onQueueGo, noPdf = false }: Props) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -851,6 +853,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               <span className="hidden sm:inline">{perfMode ? "Stage" : "Stage"}</span>
             </button>
 
+            {/* Not on the site's own example songs: they are there to be played, and a
+                visitor's one free export should go on a song of their own. */}
+            {!noPdf && (<>
             {/* PDF download — any song on a paid plan, a few on the free one */}
             <button
               onClick={async () => {
@@ -886,6 +891,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 </svg>
               )}
             </button>
+            </>)}
 
             {/* Play / Pause */}
             <button

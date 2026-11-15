@@ -42,6 +42,7 @@ export default async function ExamplePage({ params }: Props) {
       // Doubles as the id the viewer keeps scroll speed and text size under.
       token={`example-${song.slug}`}
       promo
+      pdf={false}
     />
   );
 }
