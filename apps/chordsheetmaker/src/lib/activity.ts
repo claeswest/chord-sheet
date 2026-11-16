@@ -2,6 +2,7 @@
 // Logging must never break the action that triggered it: both helpers
 // swallow all errors.
 
+import { headers } from "next/headers";
 import { prisma } from "./prisma";
 
 export type ActivityType =
@@ -26,14 +27,42 @@ export type ActivityType =
   | "ai_call"   // an import the AI read: meta.kind = search | paste | photo
   | "job_run";  // a scheduled job finished: meta.job, and what it did
 
+/**
+ * Events that are logged by the person's own request, so that request's
+ * country is theirs. The rest are logged by someone else's — Stripe's webhook,
+ * the daily job, the admin sending an email — and would record a data centre
+ * or the founder's kitchen.
+ */
+const FROM_THE_PERSON = new Set<ActivityType>([
+  "account_created", "login", "song_created", "song_opened", "song_edited", "chord_added",
+  "pdf_exported", "song_imported", "bg_generated", "ai_styled", "style_changed", "share_created", "ai_call",
+]);
+
+/**
+ * The country the current request came from, as two letters ("SE"), or null.
+ * The hosting platform works it out from the visitor's address and sends it
+ * in a header; the address itself is never read or stored here. Outside a
+ * request, and on a developer's machine, there is no such header.
+ */
+async function requestCountry(): Promise<string | null> {
+  try {
+    const code = (await headers()).get("x-vercel-ip-country");
+    return code && /^[A-Z]{2}$/.test(code) && code !== "XX" ? code : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function logActivity(
   type: ActivityType,
   userId?: string | null,
   meta?: Record<string, unknown>
 ): Promise<void> {
   try {
+    const country = FROM_THE_PERSON.has(type) ? await requestCountry() : null;
+    const withCountry = country ? { ...meta, country } : meta;
     await prisma.activityLog.create({
-      data: { type, userId: userId ?? null, meta: (meta ?? undefined) as never },
+      data: { type, userId: userId ?? null, meta: (withCountry ?? undefined) as never },
     });
   } catch {
     /* never break the caller */

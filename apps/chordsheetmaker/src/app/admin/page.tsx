@@ -6,7 +6,7 @@ import PlanBadge from "@/components/admin/PlanBadge";
 import { Bars, Funnel } from "@/components/admin/Charts";
 import {
   Avatar, BADGE, CARD, ErrorBox, LABEL, LINK, Loading, PageHeader, ROW, TH, TONE,
-  fmtDate, fmtDateTime, fmtDay, relativeTime, untilLabel,
+  countryName, fmtDate, fmtDateTime, fmtDay, relativeTime, untilLabel,
 } from "@/components/admin/ui";
 import { AI_COST_USD, AI_KINDS, type AdminInsights, type AiKind, type Person } from "@/lib/adminInsightsShared";
 
@@ -286,6 +286,56 @@ function Guests({ g }: { g: AdminInsights["guests"] }) {
   );
 }
 
+// ── Where people are ─────────────────────────────────────────────────────────
+
+function Countries({ c }: { c: AdminInsights["countries"] }) {
+  const max = Math.max(1, ...c.rows.map((r) => r.accounts + r.visitors));
+  return (
+    <Section title="Where people are" aside={`Last ${c.days} days`} className="mb-6">
+      {c.rows.length === 0 ? (
+        <p className="text-sm text-stone-600">
+          Nothing yet. The country is recorded each time someone does something in the app, starting
+          16 Nov 2026, so this fills in as people come back.
+        </p>
+      ) : (
+        <>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="font-mono text-[10px] uppercase tracking-[0.14em] text-stone-500">
+                <th className="text-left font-medium pb-2">Country</th>
+                <th className="text-right font-medium pb-2 w-24">Accounts</th>
+                <th className="text-right font-medium pb-2 w-24">Visitors</th>
+                <th className="pb-2 w-[40%]" aria-hidden />
+              </tr>
+            </thead>
+            <tbody>
+              {c.rows.map((r) => (
+                <tr key={r.code} className={ROW}>
+                  <td className="py-2 text-ink">{countryName(r.code)} <span className="font-mono text-[10px] text-stone-400">{r.code}</span></td>
+                  <td className="py-2 text-right tabular-nums text-stone-700">{r.accounts}</td>
+                  <td className="py-2 text-right tabular-nums text-stone-700">{r.visitors}</td>
+                  <td className="py-2 pl-4" aria-hidden>
+                    {/* Accounts in ink, visitors in blue, on one scale. */}
+                    <div className="flex h-2 rounded-full bg-paper-deep overflow-hidden">
+                      <div className="bg-ink" style={{ width: `${(r.accounts / max) * 100}%` }} />
+                      <div className="bg-chord ml-[2px]" style={{ width: `${(r.visitors / max) * 100}%` }} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-xs text-stone-500 mt-3 leading-relaxed">
+            Counted from where each request came from, recorded since 16 Nov 2026. The bar shows
+            accounts in black and visitors without an account in blue. Someone on a VPN or travelling
+            shows up where their connection is.
+          </p>
+        </>
+      )}
+    </Section>
+  );
+}
+
 // ── 6 · Trends ───────────────────────────────────────────────────────────────
 
 function Trend({ title, values, weeks }: { title: string; values: number[]; weeks: string[] }) {
@@ -407,6 +457,8 @@ export default function AdminDashboard() {
                 <Guests g={ins.guests} />
                 <AiUse ai={ins.ai} />
               </div>
+
+              <Countries c={ins.countries} />
             </>
           )}
 

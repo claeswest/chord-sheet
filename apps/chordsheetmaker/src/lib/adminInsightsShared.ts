@@ -71,6 +71,11 @@ export interface AdminInsights {
     /** First row of the newer logging: before it, imports and visitors were not counted. */
     countedSince: string | null;
   };
+  /** Where the people active in the period were, most accounts first. */
+  countries: {
+    days: number;
+    rows: { code: string; accounts: number; visitors: number }[];
+  };
   trends: {
     weeks: string[];
     signups: number[];

@@ -68,6 +68,20 @@ export function untilLabel(iso: string): string {
   return `in ${days} days`;
 }
 
+// ── Countries ────────────────────────────────────────────────────────────────
+
+const REGION_NAMES = typeof Intl !== "undefined" && "DisplayNames" in Intl ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
+
+/** "SE" → "Sweden". The code itself if the browser has no name for it. */
+export function countryName(code: string | null | undefined): string {
+  if (!code) return "";
+  try {
+    return REGION_NAMES?.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 // ── Pieces ───────────────────────────────────────────────────────────────────
 
 export function PageHeader({ title, sub, children }: { title: string; sub?: ReactNode; children?: ReactNode }) {

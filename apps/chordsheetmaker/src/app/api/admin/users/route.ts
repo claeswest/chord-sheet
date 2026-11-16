@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getSongLimit } from "@/lib/plans";
 import { USER_FILTERS, parseUserFilter, parseUserSort, type UserFilter } from "@/lib/adminUserFilters";
 import { ADMIN_USER_SELECT, toAdminUser } from "@/lib/adminUsers";
+import { countriesOf } from "@/lib/adminCountries";
 
 /** Sessions live 30 days and roll forward on use, so one that expires more than 23 days out was used this week. */
 const ACTIVE_WEEK_MS = 23 * 24 * 60 * 60 * 1000;
@@ -173,8 +174,10 @@ export async function GET(req: NextRequest) {
       : prisma.user.findMany({ where, orderBy, skip, take: limit, select: ADMIN_USER_SELECT }),
   ]);
 
+  const countries = await countriesOf(users.map((u) => u.id));
+
   return NextResponse.json({
-    users: users.map(toAdminUser),
+    users: users.map((u) => ({ ...toAdminUser(u), country: countries.get(u.id) ?? null })),
     total,
     counts,
     filter,

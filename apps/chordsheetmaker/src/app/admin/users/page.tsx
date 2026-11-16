@@ -7,7 +7,7 @@ import SongPreviewModal from "@/components/admin/SongPreviewModal";
 import PlanBadge from "@/components/admin/PlanBadge";
 import UserPanel, { lastActiveIso, type AdminUser } from "@/components/admin/UserPanel";
 import {
-  Avatar, CARD, ErrorBox, INPUT, LINK, Loading, PageHeader, Pager, ROW, TH, fmtDate, relativeTime,
+  Avatar, CARD, ErrorBox, INPUT, LINK, Loading, PageHeader, Pager, ROW, TH, countryName, fmtDate, relativeTime,
 } from "@/components/admin/ui";
 import {
   USER_FILTERS,
@@ -199,6 +199,7 @@ function AdminUsersInner() {
                   <th className={TH}>User</th>
                   <SortHead col="songs">Songs</SortHead>
                   <th className={TH}>Plan</th>
+                  <th className={`${TH} hidden xl:table-cell`}>Country</th>
                   <SortHead col="joined" className="hidden lg:table-cell">Joined</SortHead>
                   <SortHead col="active" className="hidden md:table-cell">Last active</SortHead>
                   <th className="px-5 py-3" />
@@ -247,6 +248,11 @@ function AdminUsersInner() {
                         <td className="px-5 py-3">
                           <PlanBadge plan={user.plan} status={user.stripeSubscriptionStatus} periodEnd={user.stripeCurrentPeriodEnd} cancelAt={user.stripeCancelAt} />
                         </td>
+                        <td className="px-5 py-3 text-xs hidden xl:table-cell whitespace-nowrap">
+                          {user.country
+                            ? <span className="text-stone-700" title={user.country}>{countryName(user.country)}</span>
+                            : <span className="text-stone-400" title="Not known yet: recorded the next time they use the app">—</span>}
+                        </td>
                         <td className="px-5 py-3 text-stone-500 text-xs hidden lg:table-cell whitespace-nowrap">{fmtDate(user.createdAt)}</td>
                         <td className="px-5 py-3 text-xs hidden md:table-cell whitespace-nowrap">
                           {seen ? <span className="text-stone-700">{relativeTime(seen)}</span> : <span className="text-stone-400">—</span>}
@@ -259,7 +265,7 @@ function AdminUsersInner() {
 
                       {open && (
                         <tr className={ROW}>
-                          <td colSpan={6} className="px-5 py-5 bg-paper">
+                          <td colSpan={7} className="px-5 py-5 bg-paper">
                             <p className="text-xs text-stone-500 mb-5">
                               Joined <span className="text-stone-700">{fmtDate(user.createdAt)}</span>
                               <span className="mx-2 text-stone-300">·</span>

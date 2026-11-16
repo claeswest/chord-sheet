@@ -196,6 +196,22 @@ export async function adminInsights(now = Date.now()): Promise<AdminInsights> {
     dueNow = null;
   }
 
+  // Where people were. Only rows that carry a country, which is every action
+  // a person takes themselves from 16 Nov 2026 on.
+  const countryRows = await prisma.$queryRaw<{ code: string; accounts: number; visitors: number }[]>`
+    select meta->>'country' as code,
+           count(distinct "userId") filter (
+             where "userId" is not null and not ("userId" = any(${adminIds}::text[]))
+           )::int as accounts,
+           count(distinct meta->>'guest') filter (
+             where "userId" is null and meta->>'guest' is not null and meta->>'guest' <> 'unknown'
+           )::int as visitors
+    from "ActivityLog"
+    where "createdAt" >= ${d30} and meta->>'country' is not null
+    group by 1
+    order by 2 desc, 3 desc
+    limit 12`;
+
   const runMeta = (lastRunRow?.meta ?? null) as Record<string, unknown> | null;
   const num = (v: unknown) => (typeof v === "number" ? v : 0);
 
@@ -262,6 +278,10 @@ export async function adminInsights(now = Date.now()): Promise<AdminInsights> {
       daily: days30.map((day, i) => ({ day, n: fill(days30, aiDailyRows)[i] })),
       estimateUsd: Math.round(estimateUsd * 100) / 100,
       countedSince: aiSinceRows[0]?.at ? new Date(aiSinceRows[0].at).toISOString() : null,
+    },
+    countries: {
+      days: 30,
+      rows: countryRows.filter((r) => r.accounts + r.visitors > 0),
     },
     trends: {
       weeks: weekKeys,

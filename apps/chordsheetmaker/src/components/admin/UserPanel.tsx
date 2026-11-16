@@ -39,6 +39,8 @@ export interface AdminUser {
   stripeCurrentPeriodEnd: string | null;
   stripeCancelAt: string | null;
   hasSubscribedBefore: boolean;
+  /** Where their latest activity came from, as two letters. null until they do something after 16 Nov 2026. */
+  country?: string | null;
   marketingOptOut: boolean;
   lastMarketingEmailAt: string | null;
   createdAt: string;

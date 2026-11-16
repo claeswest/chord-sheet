@@ -10,7 +10,7 @@ import Link from "next/link";
 import PlanBadge from "@/components/admin/PlanBadge";
 import UserPanel, { lastActiveIso, type AdminUser } from "@/components/admin/UserPanel";
 import {
-  Avatar, BADGE, BTN_LINE, CARD, ErrorBox, LABEL, LINK, Loading, ROW, TONE, fmtDate, fmtDateTime, relativeTime,
+  Avatar, BADGE, BTN_LINE, CARD, ErrorBox, LABEL, LINK, Loading, ROW, TONE, countryName, fmtDate, fmtDateTime, relativeTime,
 } from "@/components/admin/ui";
 import { badgeFor, metaSummary, type ActivityItem } from "@/components/admin/activityLabels";
 
@@ -87,7 +87,10 @@ export default function AdminUserPage() {
             </div>
           </header>
 
-          <dl className={`${CARD} grid grid-cols-2 sm:grid-cols-5 gap-5 p-5 mb-6`}>
+          <dl className={`${CARD} grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 p-5 mb-6`}>
+            <Fact label="Country">
+              {user.country ? countryName(user.country) : <span className="text-stone-400" title="Recorded the next time they use the app">Not known yet</span>}
+            </Fact>
             <Fact label="Joined">{fmtDate(user.createdAt)}</Fact>
             <Fact label="Last active">{seen ? relativeTime(seen) : "—"}</Fact>
             <Fact label="Songs">{user._count.songs}</Fact>

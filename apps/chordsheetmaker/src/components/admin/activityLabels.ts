@@ -103,6 +103,11 @@ export function metaSummary(item: ActivityItem): string {
   return parts.join(" · ");
 }
 
+/** Where an event came from, as two letters, when that was recorded. */
+export function countryOf(item: ActivityItem): string | null {
+  return typeof item.meta?.country === "string" ? item.meta.country : null;
+}
+
 /** The per-browser id a visitor's events carry. */
 export function guestIdOf(item: ActivityItem): string | null {
   return !item.user && typeof item.meta?.guest === "string" ? item.meta.guest : null;

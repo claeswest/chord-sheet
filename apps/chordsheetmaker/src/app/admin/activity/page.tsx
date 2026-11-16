@@ -4,10 +4,10 @@ import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  Avatar, BADGE, CARD, ErrorBox, INPUT, LABEL, Loading, PageHeader, Pager, ROW, TONE, fmtDate, fmtDateTime, relativeTime,
+  Avatar, BADGE, CARD, ErrorBox, INPUT, LABEL, Loading, PageHeader, Pager, ROW, TONE, countryName, fmtDate, fmtDateTime, relativeTime,
 } from "@/components/admin/ui";
 import {
-  TYPES, actorName, badgeFor, groupVisits, guestIdOf, metaSummary, visitLength, visitSummary, visitTitles,
+  TYPES, actorName, badgeFor, countryOf, groupVisits, guestIdOf, metaSummary, visitLength, visitSummary, visitTitles,
   type ActivityItem, type Visit,
 } from "@/components/admin/activityLabels";
 
@@ -132,6 +132,9 @@ function AdminActivityInner() {
 
           <span className="flex-1 min-w-0 text-xs text-stone-600 truncate">{metaSummary(item)}</span>
 
+          {!indent && countryOf(item) && (
+            <span className="hidden sm:inline shrink-0 text-xs text-stone-500 whitespace-nowrap" title={countryOf(item)!}>{countryName(countryOf(item))}</span>
+          )}
           <span className="shrink-0 text-xs text-stone-500 whitespace-nowrap tabular-nums" title={fmtDateTime(item.createdAt)}>
             {indent ? clock(item.createdAt) : relativeTime(item.createdAt)}
           </span>
@@ -159,6 +162,7 @@ function AdminActivityInner() {
     const open = openVisit === visit.key;
     const titles = visitTitles(visit);
     const length = visitLength(visit);
+    const country = visit.items.map(countryOf).find(Boolean) ?? null;
     return (
       <div>
         <div className="flex items-center gap-3 px-4 sm:px-5 py-3">
@@ -178,7 +182,7 @@ function AdminActivityInner() {
               <span aria-hidden className="ml-2 text-xs text-stone-400 group-hover/visit:text-ink">{open ? "▴" : "▾"}</span>
             </span>
             <span className="block text-xs text-stone-500 truncate mt-0.5">
-              {visit.items.length} events{length ? ` over ${length}` : ""}
+              {visit.items.length} events{length ? ` over ${length}` : ""}{country ? ` · ${countryName(country)}` : ""}
               {titles.length > 0 && <> · {titles.slice(0, 3).map((t) => `“${t}”`).join(", ")}{titles.length > 3 ? ` +${titles.length - 3}` : ""}</>}
             </span>
           </button>
