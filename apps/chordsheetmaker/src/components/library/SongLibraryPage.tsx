@@ -40,6 +40,10 @@ const CATEGORY_COLORS = [
   { chip: "bg-[#f4e5d6] text-[#8a4f1f]", dot: "bg-[#c07a43]", sidebarSelected: "border-l-[#c07a43]" }, // rust
 ];
 
+// The page's one column. On a very wide screen a row's title, setlists and
+// date would otherwise sit a hand's width apart.
+const COLUMN = "mx-auto w-full max-w-[1240px]";
+
 /** "Today", "3 days ago", "12 Nov" — when a song was last changed. */
 function editedLabel(iso: string): string {
   const then = new Date(iso);
@@ -374,7 +378,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     ghost.textContent = song ? `${song.title}` : "Song";
     ghost.style.cssText = [
       "position:fixed", "top:-999px", "left:-999px",
-      "background:#4f46e5", "color:#fff",
+      "background:#1c1917", "color:#faf6ee",
       "padding:5px 12px", "border-radius:8px",
       "font-size:13px", "font-family:sans-serif",
       "white-space:nowrap", "pointer-events:none",
@@ -543,6 +547,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueSignature]);
 
+  const selectedCategory = selectedCategoryId ? categories.find((c) => c.id === selectedCategoryId) ?? null : null;
+
   const songKeys = useMemo(
     () => new Map(songs.map((s) => [s.id, songKey((s.lines ?? []) as SongLine[], s.semitones ?? 0)])),
     [songs],
@@ -672,7 +678,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
             <button
               onClick={() => selectCategory(null)}
-              className={`flex items-center gap-2 pl-3 pr-4 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
+              className={`flex items-center gap-2 pl-3 pr-3 py-1.5 text-sm w-full text-left transition-colors border-l-4 ${
                 selectedCategoryId === null
                   ? "bg-white text-ink font-semibold border-l-ink"
                   : "text-stone-600 hover:bg-ink/5 border-l-transparent"
@@ -680,7 +686,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             >
               <span className="w-2 h-2 rounded-full shrink-0 bg-ink/30" />
               <span className="flex-1">All songs</span>
-              <span className="text-xs bg-ink/5 text-stone-600 px-1.5 py-0.5 rounded-full shrink-0">{songs.length}</span>
+              <span className="font-mono text-[11px] tabular-nums text-stone-500 shrink-0">{songs.length}</span>
             </button>
 
             <div className="flex items-center gap-2 px-4 pt-3 pb-1">
@@ -718,7 +724,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         if (dragCatId) { handleCatReorder(dragCatId, cat.id); setDragCatId(null); setDragOverCatReorderId(null); return; }
                         handleDrop(e, cat.id);
                       }}
-                      className={`group flex items-center gap-1 pl-3 pr-2 transition-all duration-100 border-l-4 ${
+                      className={`group relative flex items-center gap-1 pl-3 pr-3 transition-all duration-100 border-l-4 ${
                         dragSongId ? "py-3" : "py-1.5"
                       } ${
                         dragOverCatReorderId === cat.id
@@ -748,7 +754,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             draggable
                             onDragStart={(e) => { e.stopPropagation(); e.dataTransfer.effectAllowed = "move"; setDragCatId(cat.id); }}
                             onDragEnd={() => { setDragCatId(null); setDragOverCatReorderId(null); }}
-                            className="hidden sm:inline shrink-0 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-sm leading-none px-0.5"
+                            className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 w-3 text-center text-stone-400 hover:text-stone-700 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-all select-none text-[11px] leading-none"
                             title="Drag to reorder"
                           >⠿</span>
                           {/* ▲ ▼ reorder pill — mobile only (no drag on touch).
@@ -785,21 +791,28 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               </span>
                             );
                           })()}
-                          <span className="w-4 h-4 shrink-0 flex items-center justify-center">
-                            {children.length > 0 && (
-                              <button onClick={() => toggleCollapse(cat.id)} className="text-stone-600 hover:text-ink transition-colors" title={collapsedCategories.has(cat.id) ? "Expand" : "Collapse"}>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 transition-transform duration-150 ${collapsedCategories.has(cat.id) ? "-rotate-90" : ""}`}><path d="M7 10l5 5 5-5H7Z"/></svg>
-                              </button>
-                            )}
-                          </span>
                           <button
                             onClick={() => selectCategory(cat.id === selectedCategoryId ? null : cat.id)}
                             onDoubleClick={() => startRename(cat)}
-                            className={`flex-1 flex items-center gap-2 text-left text-sm truncate min-w-0 ${selectedCategoryId === cat.id ? "text-ink font-semibold" : "text-stone-600"}`}
+                            className={`flex-1 flex items-center gap-2 text-left text-sm min-w-0 ${selectedCategoryId === cat.id ? "text-ink font-semibold" : "text-stone-600"}`}
                             title="Double-click to rename"
                           >
                             <span className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(cat.id, categories).dot}`} />
-                            {cat.name}
+                            <span className="truncate">{cat.name}</span>
+                            {children.length > 0 && (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={(e) => { e.stopPropagation(); toggleCollapse(cat.id); }}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleCollapse(cat.id); } }}
+                                className="shrink-0 -ml-1 rounded text-stone-400 hover:text-ink hover:bg-ink/5 transition-colors"
+                                title={collapsedCategories.has(cat.id) ? "Show the lists inside" : "Hide the lists inside"}
+                                aria-label={collapsedCategories.has(cat.id) ? `Show the lists inside ${cat.name}` : `Hide the lists inside ${cat.name}`}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 transition-transform duration-150 ${collapsedCategories.has(cat.id) ? "-rotate-90" : ""}`} aria-hidden><path d="M7 10l5 5 5-5H7Z"/></svg>
+                              </span>
+                            )}
                           </button>
                         </>
                       )}
@@ -819,18 +832,18 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       <button onClick={() => askDeleteCategory(cat)}
                         className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:px-2 pointer-coarse:py-1 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                         title="Delete">×</button>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{totalCount}</span>
+                      <span className="font-mono text-[11px] tabular-nums text-stone-500 shrink-0 min-w-[1.25rem] text-right">{totalCount}</span>
                     </div>
 
                     {/* Subcategory rows + add input — wrapped in a tree-line container */}
                     {!collapsedCategories.has(cat.id) && (children.length > 0 || showAddSubCategory === cat.id) && (
-                      <div className="ml-9 border-l border-ink/15 mb-2">
+                      <div className="ml-[19px] border-l border-ink/15 mb-2">
                         {children.map((sub) => (
                           <div key={sub.id}
                             onDragOver={(e) => { e.preventDefault(); setDragOverCategoryId(sub.id); }}
                             onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCategoryId(null); }}
                             onDrop={(e) => handleDrop(e, sub.id)}
-                            className={`group flex items-center gap-1 pl-4 pr-2 transition-all duration-100 ${
+                            className={`group flex items-center gap-1 pl-4 pr-3 transition-all duration-100 ${
                               dragSongId ? "py-2" : "py-1"
                             } ${
                               dragOverCategoryId === sub.id
@@ -870,7 +883,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             <button onClick={() => askDeleteCategory(sub)}
                               className="opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:px-2 pointer-coarse:py-1 text-stone-400 hover:text-red-600 transition-opacity shrink-0 text-base leading-none"
                               title="Delete">×</button>
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 tabular-nums min-w-[1.5rem] text-center bg-ink/5 text-stone-600`}>{sub.songIds.length}</span>
+                            <span className="font-mono text-[11px] tabular-nums text-stone-500 shrink-0 min-w-[1.25rem] text-right">{sub.songIds.length}</span>
                           </div>
                         ))}
 
@@ -911,9 +924,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 </div>
               ) : (
                 <button onClick={() => setShowAddCategory(true)}
-                  className="flex items-center gap-2 w-full pl-3 pr-4 py-1.5 text-sm text-stone-600 hover:text-ink hover:bg-ink/5 transition-colors border-l-4 border-l-transparent mt-1"
+                  className="flex items-center gap-2 w-full pl-3 pr-3 py-1.5 text-sm text-stone-500 hover:text-ink hover:bg-ink/5 transition-colors border-l-4 border-l-transparent mt-1"
                 >
-                  <span className="w-4 h-4 rounded-full shrink-0 bg-ink/10 flex items-center justify-center text-stone-600 text-base leading-none">+</span>
+                  <span className="w-2 shrink-0 flex items-center justify-center text-base leading-none" aria-hidden>+</span>
                   Add a setlist
                 </button>
               )}
@@ -1001,7 +1014,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             {/* Sentinel: when this leaves the viewport the search bar is "stuck" */}
             <div ref={sentinelRef} className="h-0" />
             {/* Search + sort + count — sticky so it stays visible while scrolling */}
-            <div className={`sticky top-0 z-20 bg-paper ${searchBarStuck ? "pt-4" : "pt-0"} pb-4 flex items-center gap-3 flex-wrap -mx-6 px-6 border-b border-rule transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
+            <div className={`sticky top-0 z-20 bg-paper ${searchBarStuck ? "pt-4" : "pt-0"} pb-4 -mx-6 px-6 border-b border-rule transition-[padding] duration-150 ${loading ? "invisible" : ""}`}>
+              <div className={`${COLUMN} flex items-center gap-3 flex-wrap`}>
               <div className="relative w-full max-w-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none">
                   <path d="M10.5 2a8.5 8.5 0 1 0 5.262 15.176l3.53 3.531a1 1 0 0 0 1.415-1.414l-3.53-3.53A8.5 8.5 0 0 0 10.5 2Zm-6.5 8.5a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/>
@@ -1054,8 +1068,10 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   </button>
                 </div>
               )}
+              </div>
             </div>
 
+            <div className={COLUMN}>
             {/* Plan limit banner */}
             {!loading && atLimit && isLoggedIn && (
               <div className="mt-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
@@ -1128,6 +1144,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 </div>
               );
             })()}
+
+            {!loading && songs.length > 0 && (
+              <div className="flex items-baseline gap-3 mt-6 min-w-0">
+                {selectedCategory && (
+                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 self-center ${getCatColor(selectedCategory.id, categories).dot}`} aria-hidden />
+                )}
+                <h1 className="font-display font-medium text-[28px] leading-tight tracking-[-0.02em] text-ink truncate">
+                  {selectedCategory ? selectedCategory.name : "All songs"}
+                </h1>
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-stone-500 whitespace-nowrap">
+                  {filtered.length} {filtered.length === 1 ? "song" : "songs"}{search ? " found" : ""}
+                </span>
+              </div>
+            )}
 
             {loading ? (
               <div className="flex items-center justify-center pb-40" style={{ height: "50vh" }}>
@@ -1228,7 +1258,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             ? { backgroundColor: cardBg }
                             : { backgroundColor: "#f2ecdf" }}
                         >
-                          <p className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: titleColor }}>
+                          <p className="font-display text-[17px] font-medium leading-snug tracking-[-0.01em] line-clamp-2" style={{ color: titleColor }}>
                             {song.title || "Untitled Song"}
                           </p>
                           {song.artist && (
@@ -1285,14 +1315,14 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               </div>
             ) : (
               /* ── List view (default) ──────────────────────────────────── */
-              <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-lg border border-rule overflow-hidden mt-4 song-list-enter">
+              <div key={`${selectedCategoryId}-${search}`} className="bg-white rounded-lg border border-rule overflow-hidden mt-3 song-list-enter">
                 {/* Column headers. The columns share the row's widths: a fixed
                     tile, title and setlists in proportion, then fixed ends —
                     so on a wide screen the title is not a screen away from
                     everything else. */}
                 <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-2 border-b border-rule bg-paper-deep font-mono text-[11px] font-medium text-stone-600 uppercase tracking-[0.16em]">
                   {isLoggedIn && <div className="w-3 shrink-0" />}
-                  <span className="w-9 shrink-0 text-center">Key</span>
+                  <span className="w-10 shrink-0 text-center">Key</span>
                   <div className={`min-w-0 flex items-center gap-4 ${isLoggedIn ? "flex-[5]" : "flex-1"}`}>
                     <button onClick={() => handleSortClick("title")} className="flex items-center gap-1 uppercase tracking-[0.16em] hover:text-ink transition-colors">
                       Song <SortMark active={sortBy === "title"} dir={sortDir} />
@@ -1315,7 +1345,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   const isDuplicating = duplicatingId === song.id;
 
                   const titleColor = "#1c1917";
-                  const artistColor = "#57534e";
+                  const artistColor = "#78716c";
                   const isReorderTarget = dragOverSongId === song.id;
 
 
@@ -1358,7 +1388,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                     >
                       {/* Lock icon for over-limit songs */}
                       {isLocked && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-400">
                             <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                           </svg>
@@ -1377,7 +1407,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           one picture of how the song looks (the list is not
                           sent the background pictures). */}
                       <span
-                        className="shrink-0 w-9 h-9 rounded-md border border-ink/10 flex items-center justify-center font-mono text-[11px] font-semibold"
+                        className="shrink-0 w-10 h-10 rounded-lg border border-ink/10 flex items-center justify-center font-mono text-xs font-semibold"
                         style={{ background: song.style?.background ?? "#ffffff", color: song.style?.chords?.color ?? "#4f46e5" }}
                         title={songKeys.get(song.id) ? `Key of ${songKeys.get(song.id)}` : "No chords yet"}
                       >
@@ -1391,7 +1421,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
                           className="block min-w-0 group/title"
                         >
-                          <div className="text-sm font-medium truncate group-hover/title:underline underline-offset-4 decoration-ink/30" style={{ color: titleColor }}>
+                          <div className="font-display text-[17px] leading-snug font-medium tracking-[-0.01em] truncate group-hover/title:underline underline-offset-4 decoration-ink/30" style={{ color: titleColor }}>
                             {song.title
                               ? song.title
                               : song.artist
@@ -1399,7 +1429,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                               : <span className="italic" style={{ color: "#a8a29e" }}>Untitled song</span>}
                           </div>
                           {song.title && song.artist && (
-                            <div className="text-xs truncate mt-0.5" style={{ color: artistColor }}>
+                            <div className="text-xs truncate" style={{ color: artistColor }}>
                               {song.artist}
                             </div>
                           )}
@@ -1457,8 +1487,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Actions — always in sight, quiet until the row is under the
                           pointer. A click on the row plays the song, so Edit must
                           not be something you only find by hovering. */}
-                      <div className="hidden xl:pointer-fine:flex shrink-0 items-center justify-end ml-4 w-[150px] opacity-45 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-0 bg-paper-deep rounded-lg p-0.5 border border-rule">
+                      <div className="hidden xl:pointer-fine:flex shrink-0 items-center justify-end ml-4 w-[150px] opacity-55 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-0 rounded-lg p-0.5 border border-transparent group-hover:bg-paper-deep group-hover:border-rule transition-colors duration-150">
                         {/* View — locked songs route to the upgrade modal */}
                         <Link href={isLocked ? "#" : viewUrl} title="View"
                           onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined}
@@ -1603,6 +1633,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                 })}
               </div>
             )}
+            </div>
           </div>
         </main>
       </div>
