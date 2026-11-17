@@ -11,6 +11,7 @@
     "start": "npm run start --workspace=chordsheetmaker",
     "lint": "npm run lint --workspace=chordsheetmaker",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "dev:recipes": "npm run dev --workspace=recipemaker",
     "build:recipes": "cross-env NEXT_DIST_DIR=.next-build npm run build --workspace=recipemaker",
     "dev:schedules": "npm run dev --workspace=schedulemaker",

@@ -1,4 +1,4 @@
-# Builds and typechecks all three apps on every push.
+# Builds, typechecks and tests all three apps on every push.
 #
 # Why this exists: `master` deploys to production by itself, and the only
 # check before that was whatever was run by hand — in practice a build of
@@ -8,8 +8,8 @@
 #
 # What it does not do: it does not stop a deploy. Vercel builds from the same
 # push and does not wait for this. A red run here is a warning to act on, not
-# a gate. It also runs no tests, because there are none — it proves the code
-# compiles and builds, not that it behaves.
+# a gate. It runs the unit tests there are, which is a handful: for the most
+# part it proves the code compiles and builds, not that it behaves.
 #
 # No secrets are used. The values below are placeholders that let the apps
 # build: nothing connects to a database or signs anything while building.
@@ -65,6 +65,11 @@ jobs:
       # not in the repository and is what gives image imports their types.
       - name: Typecheck
         run: npm run typecheck --workspace=${{ matrix.app }}
+
+      # Unit tests, for the apps that have any (`npm test` in the app). So far
+      # that is ChordSheetMaker; the others skip this step until they do.
+      - name: Test
+        run: npm run test --workspace=${{ matrix.app }} --if-present
 
   core:
     name: shared code

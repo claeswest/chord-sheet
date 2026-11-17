@@ -125,8 +125,9 @@ used locally), Resend, and any AI provider all hit the real service.
 Every push to `master` is deployed by Vercel, and separately built and typechecked
 for all three apps by GitHub Actions (`.github/workflows/ci.yml`). The two do not
 wait for each other: a red run is a warning that something already went out, or
-failed to. There are no automated tests, so a green run means the code builds,
-not that it behaves. Results: the Actions tab of the repository.
+failed to. It also runs the unit tests (`npm test`), of which there are only a few so
+far, so a green run mostly means the code builds, not that it behaves. A test sits
+beside what it tests, as `<file>.test.ts`. Results: the Actions tab of the repository.
 
 ## Everyday commands
 
@@ -134,6 +135,7 @@ not that it behaves. Results: the Actions tab of the repository.
 npm run dev            # dev server
 npm run build          # production build (run before pushing anything risky)
 npx tsc --noEmit       # typecheck
+npm test               # unit tests (Vitest)
 npm run lint           # eslint
 npx prisma studio      # browse/edit the database in a GUI
 npx prisma db push     # apply schema.prisma changes (additive changes are safe)
