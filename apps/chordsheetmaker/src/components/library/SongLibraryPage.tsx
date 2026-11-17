@@ -28,17 +28,52 @@ function formatDate(iso: string): string {
 }
 
 // One palette entry per setlist slot — full class strings so purging works.
-// Seven muted tones that sit on paper: the bright pastels these replaced were
-// the last of the old design on the page.
+// Seven muted tones that sit on paper. A setlist shows as a dot in its tone,
+// in the sidebar and on every song that is in it.
 const CATEGORY_COLORS = [
-  { chip: "bg-[#e6ebf2] text-[#3d5573]", dot: "bg-[#5b7393]", sidebarSelected: "border-l-[#5b7393]" }, // slate
-  { chip: "bg-[#e7eddf] text-[#4c6338]", dot: "bg-[#6f8a5b]", sidebarSelected: "border-l-[#6f8a5b]" }, // moss
-  { chip: "bg-[#f3ead2] text-[#7a5c14]", dot: "bg-[#c29a3e]", sidebarSelected: "border-l-[#c29a3e]" }, // ochre
-  { chip: "bg-[#f3e2dd] text-[#8a4336]", dot: "bg-[#b5675a]", sidebarSelected: "border-l-[#b5675a]" }, // clay
-  { chip: "bg-[#dfecea] text-[#2f615d]", dot: "bg-[#4f8f8b]", sidebarSelected: "border-l-[#4f8f8b]" }, // teal
-  { chip: "bg-[#ece4ee] text-[#674a70]", dot: "bg-[#8a6a93]", sidebarSelected: "border-l-[#8a6a93]" }, // plum
-  { chip: "bg-[#f4e5d6] text-[#8a4f1f]", dot: "bg-[#c07a43]", sidebarSelected: "border-l-[#c07a43]" }, // rust
+  { dot: "bg-[#5b7393]", sidebarSelected: "border-l-[#5b7393]" }, // slate
+  { dot: "bg-[#6f8a5b]", sidebarSelected: "border-l-[#6f8a5b]" }, // moss
+  { dot: "bg-[#c29a3e]", sidebarSelected: "border-l-[#c29a3e]" }, // ochre
+  { dot: "bg-[#b5675a]", sidebarSelected: "border-l-[#b5675a]" }, // clay
+  { dot: "bg-[#4f8f8b]", sidebarSelected: "border-l-[#4f8f8b]" }, // teal
+  { dot: "bg-[#8a6a93]", sidebarSelected: "border-l-[#8a6a93]" }, // plum
+  { dot: "bg-[#c07a43]", sidebarSelected: "border-l-[#c07a43]" }, // rust
 ];
+
+/** Relative luminance of a #rgb or #rrggbb colour; null for anything else. */
+function luminance(color: string | null | undefined): number | null {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec((color ?? "").trim());
+  if (!m) return null;
+  const hex = m[1].length === 3 ? m[1].split("").map((c) => c + c).join("") : m[1];
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * `wanted` if it can be read on `background`, else ink or paper, whichever
+ * can. A song's colours are chosen for its page, often over a picture; here
+ * they sit on the bare page colour, where a white title may be on white.
+ */
+function readableOn(background: string, wanted: string | null | undefined, min = 3): string {
+  const bg = luminance(background) ?? 1;
+  const ratio = (l: number) => (Math.max(bg, l) + 0.05) / (Math.min(bg, l) + 0.05);
+  const fg = luminance(wanted);
+  if (wanted && fg !== null && ratio(fg) >= min) return wanted;
+  return ratio(0.955) > ratio(0.011) ? "#faf6ee" : "#1c1917"; // paper, ink
+}
+
+// Dialogs, in the page's own paper and ink.
+const VEIL = "fixed inset-0 z-50 flex items-center justify-center bg-ink/45 backdrop-blur-[2px]";
+const DIALOG = "bg-paper rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4";
+const DIALOG_TITLE = "font-display font-medium text-xl tracking-[-0.01em] text-ink";
+const BTN_QUIET = "px-4 py-2 text-sm font-medium text-stone-700 bg-white border border-rule hover:border-ink/40 hover:text-ink rounded-lg transition-colors";
+const BTN_DANGER = "px-4 py-2 text-sm font-semibold text-white bg-red-700 hover:bg-red-800 rounded-lg transition-colors";
+
+// A setlist's name on a song: its colour as a dot, as in the sidebar.
+const CHIP = "inline-flex items-center text-xs py-0.5 rounded-full whitespace-nowrap border border-rule bg-white text-stone-600";
 
 // The page's one column. On a very wide screen a row's title, setlists and
 // date would otherwise sit a hand's width apart.
@@ -1024,15 +1059,32 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   ref={searchRef}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Escape") return;
+                    if (search) setSearch(""); else e.currentTarget.blur();
+                  }}
                   placeholder="Search songs…"
-                  className="w-full text-sm bg-white border border-rule rounded-lg pl-9 pr-4 py-2 outline-none focus:border-ink transition-colors"
+                  className="peer w-full text-sm bg-white border border-rule rounded-lg pl-9 pr-9 py-2 outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 transition-[border-color,box-shadow]"
                 />
+                {search ? (
+                  <button
+                    onClick={() => { setSearch(""); searchRef.current?.focus(); }}
+                    aria-label="Clear the search"
+                    title="Clear"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-md text-stone-400 hover:text-ink hover:bg-ink/5 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                ) : (
+                  /* The key that jumps here. Only where there is a keyboard to press it on. */
+                  <kbd aria-hidden className="hidden pointer-fine:flex absolute right-2 top-1/2 -translate-y-1/2 h-5 min-w-5 px-1 items-center justify-center rounded border border-rule bg-paper font-mono text-[11px] text-stone-500 pointer-events-none transition-opacity peer-focus:opacity-0">/</kbd>
+                )}
               </div>
               <div className="flex-1" />
               {atLimit ? (
                 <button
                   onClick={() => setShowUpgradeModal(true)}
-                  className="flex items-center gap-1.5 text-sm bg-stone-200 text-stone-500 px-4 py-2 rounded-lg font-medium shrink-0 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                  className="flex items-center gap-1.5 text-sm bg-white border border-rule text-stone-500 px-4 py-2 rounded-lg font-medium shrink-0 cursor-pointer hover:border-ink/40 hover:text-ink transition-colors"
                   title={`Free plan limit: ${songLimit} songs`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
@@ -1074,17 +1126,17 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             <div className={COLUMN}>
             {/* Plan limit banner */}
             {!loading && atLimit && isLoggedIn && (
-              <div className="mt-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-500 shrink-0">
+              <div className="mt-4 flex items-center gap-3 rounded-lg border border-rule border-l-2 border-l-chord bg-white px-4 py-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-chord shrink-0">
                   <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                 </svg>
-                <p className="flex-1 text-sm text-amber-800">
-                  <span className="font-semibold">Free plan limit reached</span> — you can keep your existing songs, but need to upgrade to add more.
+                <p className="flex-1 text-sm text-stone-600">
+                  <strong className="font-semibold text-ink">Free plan limit reached.</strong> You can keep your existing songs, but need to upgrade to add more.
                   {lockedSongIds.size > 0 && <span> Your {lockedSongIds.size} older song{lockedSongIds.size !== 1 ? "s are" : " is"} locked below.</span>}
                 </p>
                 <button
                   onClick={() => setShowUpgradeModal(true)}
-                  className="shrink-0 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                  className="shrink-0 text-sm font-semibold bg-ink text-paper hover:bg-stone-700 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   Upgrade
                 </button>
@@ -1184,7 +1236,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                     return (
                       <div className="flex flex-col items-center gap-4">
                         {/* Drag illustration */}
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" fill="none" className="w-20 h-12 text-stone-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" fill="none" className="w-20 h-12 text-stone-300">
                           {/* Song pill on the right */}
                           <rect x="44" y="10" width="32" height="14" rx="7" fill="currentColor"/>
                           <rect x="48" y="14" width="16" height="3" rx="1.5" fill="white" opacity="0.7"/>
@@ -1196,15 +1248,26 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           <rect x="2" y="14" width="10" height="8" rx="2" fill="currentColor" opacity="0.8"/>
                         </svg>
                         <div>
-                          <p className="text-sm font-medium text-stone-500">No songs in <span className="text-stone-700">"{catName}"</span> yet</p>
-                          <p className="text-xs mt-1 text-stone-400">Go to <span className="font-medium text-stone-500">All songs</span>, then drag a song and drop it onto this setlist in the sidebar.</p>
+                          <p className="font-display text-2xl tracking-[-0.02em] text-ink">Nothing in {catName} yet</p>
+                          <p className="text-sm mt-2 text-stone-500 max-w-sm mx-auto">Go to <span className="font-medium text-stone-500">All songs</span>, then drag a song and drop it onto this setlist in the sidebar.</p>
                         </div>
                       </div>
                     );
                   })()
                 ) : search ? (
                   /* Search returned nothing */
-                  <p className="text-sm">No songs match <span className="font-medium text-stone-600">"{search}"</span></p>
+                  <div className="flex flex-col items-center gap-3">
+                    <p className="font-display text-2xl tracking-[-0.02em] text-ink max-w-full truncate">Nothing matches &ldquo;{search}&rdquo;</p>
+                    <p className="text-sm text-stone-500">
+                      Titles and artists are searched{selectedCategory ? <>, here in {selectedCategory.name} only</> : null}.
+                    </p>
+                    <button
+                      onClick={() => { setSearch(""); searchRef.current?.focus(); }}
+                      className="text-sm font-semibold text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink transition-colors"
+                    >
+                      Clear the search
+                    </button>
+                  </div>
                 ) : (
                   <p className="text-sm">No songs match your filter.</p>
                 )}
@@ -1217,13 +1280,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                   const editUrl = `/editor/new?song=${encoded}`;
                   const viewUrl = `/view?song=${encoded}`;
                   const isDuplicating = duplicatingId === song.id;
-                  const titleColor = song.style?.title?.color ?? "#1c1917";
-                  const artistColor = song.style?.artist?.color ?? "#57534e";
-                  const cardBg = song.style?.background;
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const firstChord = (song.lines as any[])?.find((l) => l.chords?.length > 0)?.chords?.[0]?.chord ?? null;
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const chordCount = (song.lines as any[])?.reduce((n: number, l: any) => n + (l.chords?.length ?? 0), 0) ?? 0;
+                  // The song's own colours, where they can be read on its page colour.
+                  const cardBg = song.style?.background ?? "#f2ecdf";
+                  const titleColor = readableOn(cardBg, song.style?.title?.color);
+                  const ownArtist = song.style?.artist?.color;
+                  const artistColor = readableOn(cardBg, ownArtist);
+                  const keyColor = readableOn(cardBg, song.style?.chords?.color ?? "#4f46e5");
+                  const cardKey = songKeys.get(song.id);
 
                   const isLocked = lockedSongIds.has(song.id);
 
@@ -1235,7 +1298,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       onDragEnd={handleDragEnd}
                       className={`group relative rounded-xl border overflow-hidden bg-white transition-all ${
                         isLocked
-                          ? "opacity-50 border-rule hover:opacity-70 hover:border-amber-300 cursor-pointer"
+                          ? "opacity-50 border-rule hover:opacity-70 hover:border-ink/30 cursor-pointer"
                           : "border-rule hover:shadow-md"
                       } ${dragSongId === song.id ? "opacity-40" : ""}`}
                       onClick={isLocked ? () => setShowUpgradeModal(true) : undefined}
@@ -1243,8 +1306,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Lock overlay for grid cards */}
                       {isLocked && (
                         <div className="absolute top-2 left-2 z-10 pointer-events-none">
-                          <div className="bg-amber-400/90 rounded-full p-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
+                          <div className="bg-ink rounded-full p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-paper">
                               <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                             </svg>
                           </div>
@@ -1252,34 +1315,29 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       )}
                       {/* Coloured top area */}
                       <Link href={isLocked ? "#" : viewUrl} onClick={isLocked ? (e) => { e.preventDefault(); setShowUpgradeModal(true); } : undefined} className="block">
-                        <div
-                          className="px-4 pt-4 pb-5 min-h-[88px]"
-                          style={cardBg
-                            ? { backgroundColor: cardBg }
-                            : { backgroundColor: "#f2ecdf" }}
-                        >
-                          <p className="font-display text-[17px] font-medium leading-snug tracking-[-0.01em] line-clamp-2" style={{ color: titleColor }}>
-                            {song.title || "Untitled Song"}
+                        <div className="relative px-4 pt-4 pb-9 min-h-[112px]" style={{ backgroundColor: cardBg }}>
+                          <p className="font-display text-[19px] font-medium leading-snug tracking-[-0.01em] line-clamp-2" style={{ color: titleColor }}>
+                            {song.title || "Untitled song"}
                           </p>
                           {song.artist && (
-                            <p className="text-xs mt-1 truncate" style={{ color: artistColor }}>
+                            <p className="text-xs mt-1 truncate" style={{ color: artistColor, opacity: artistColor === ownArtist ? 1 : 0.7 }}>
                               {song.artist}
                             </p>
+                          )}
+                          {cardKey && (
+                            <span className="absolute left-4 bottom-3 font-mono text-xs font-semibold" style={{ color: keyColor }} title={`Key of ${cardKey}`}>
+                              {cardKey}
+                            </span>
                           )}
                         </div>
                       </Link>
 
                       {/* Meta bar */}
-                      <div className="px-3 py-2 border-t border-rule flex items-center gap-2 flex-wrap min-h-[36px]">
-                        {firstChord && (
-                          <span className="text-xs font-mono bg-paper-deep text-chord px-1.5 py-0.5 rounded font-semibold">{firstChord}</span>
-                        )}
-                        {chordCount > 0 && (
-                          <span className="text-xs text-stone-400">{chordCount} chords</span>
-                        )}
+                      <div className="px-4 py-2 border-t border-rule flex items-center gap-2 min-h-[36px]">
+                        <span className="text-xs text-stone-500" title={formatDate(song.updatedAt)}>{editedLabel(song.updatedAt)}</span>
                         <div className="flex-1" />
                         {/* Category colour dots */}
-                        <div className="flex gap-0.5">
+                        <div className="flex gap-1">
                           {song.categoryIds.slice(0, 4).map((catId) => (
                             <span key={catId} className={`w-2 h-2 rounded-full shrink-0 ${getCatColor(catId, categories).dot}`} />
                           ))}
@@ -1379,7 +1437,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       onDrop={(e) => handleDropOnSong(e, song.id)}
                       onClick={() => isLocked ? setShowUpgradeModal(true) : (window.location.href = viewUrl)}
                       className={`group relative flex items-center gap-4 px-5 py-2.5 transition-colors cursor-pointer ${
-                        isLocked ? "opacity-50 hover:opacity-70 hover:bg-amber-50/40" : "hover:bg-paper"
+                        isLocked ? "opacity-50 hover:opacity-70 hover:bg-paper" : "hover:bg-paper"
                       } ${
                         idx !== 0 || expandedSongId !== null ? "border-t border-rule" : ""
                       } ${dragSongId === song.id ? "opacity-40" : ""} ${
@@ -1389,7 +1447,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                       {/* Lock icon for over-limit songs */}
                       {isLocked && (
                         <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-ink">
                             <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                           </svg>
                         </div>
@@ -1408,7 +1466,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                           sent the background pictures). */}
                       <span
                         className="shrink-0 w-10 h-10 rounded-lg border border-ink/10 flex items-center justify-center font-mono text-xs font-semibold"
-                        style={{ background: song.style?.background ?? "#ffffff", color: song.style?.chords?.color ?? "#4f46e5" }}
+                        style={{ background: song.style?.background ?? "#ffffff", color: readableOn(song.style?.background ?? "#ffffff", song.style?.chords?.color ?? "#4f46e5", 2.5) }}
                         title={songKeys.get(song.id) ? `Key of ${songKeys.get(song.id)}` : "No chords yet"}
                       >
                         {songKeys.get(song.id) ?? "–"}
@@ -1444,18 +1502,20 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                             if (!cat) return null;
                             const color = getCatColor(catId, categories);
                             return (
-                              <span
-                                key={catId}
-                                className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${color.chip}`}
-                              >
-                                {cat.name}
+                              <span key={catId} className={`group/chip ${CHIP} gap-1 pl-1.5 pr-2.5`}>
+                                {/* The dot is the setlist's colour; under the pointer
+                                    it becomes the way out of the setlist. On a touch
+                                    screen it stays a dot: removing is in the row's menu. */}
                                 <button
                                   onClick={() => handleRemoveFromCategory(song.id, catId)}
-                                  className="opacity-0 group-hover:opacity-60 pointer-coarse:opacity-60 hover:!opacity-100 ml-0.5 leading-none transition-opacity"
+                                  className="relative shrink-0 w-4 h-4 flex items-center justify-center rounded-full hover:bg-ink/10 pointer-coarse:pointer-events-none"
                                   title={`Remove from ${cat.name}`}
+                                  aria-label={`Remove from ${cat.name}`}
                                 >
-                                  ×
+                                  <span className={`w-1.5 h-1.5 rounded-full ${color.dot} transition-opacity group-hover/chip:opacity-0`} />
+                                  <span className="absolute inset-0 flex items-center justify-center text-[13px] leading-none text-stone-600 opacity-0 transition-opacity group-hover/chip:opacity-100" aria-hidden>×</span>
                                 </button>
+                                {cat.name}
                               </span>
                             );
                           })}
@@ -1525,7 +1585,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                         {selectedCategoryId && (
                           <button onClick={() => handleRemoveFromCategory(song.id, selectedCategoryId)}
                             title="Remove from this setlist"
-                            className="p-1.5 rounded-md text-stone-500 hover:text-orange-500 hover:bg-white transition-colors">
+                            className="p-1.5 rounded-md text-stone-500 hover:text-ink hover:bg-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                               <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-4 8H8v-2h8v2Z"/>
                             </svg>
@@ -1587,15 +1647,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                 if (!cat) return null;
                                 const color = getCatColor(catId, categories);
                                 return (
-                                  <span key={catId} className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${color.chip}`}>
+                                  <span key={catId} className={`${CHIP} gap-1.5 pl-2.5 pr-1`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.dot}`} aria-hidden />
                                     {cat.name}
-                                    <button onClick={() => handleRemoveFromCategory(song.id, catId)} className="opacity-60 hover:opacity-100 ml-0.5 leading-none transition-opacity">×</button>
+                                    <button onClick={() => handleRemoveFromCategory(song.id, catId)} aria-label={`Remove from ${cat.name}`} className="w-5 h-5 -my-0.5 flex items-center justify-center rounded-full text-stone-400 hover:text-ink hover:bg-ink/10 text-sm leading-none transition-colors">×</button>
                                   </span>
                                 );
                               })}
                               <button
                                 onClick={() => setCatPickerSongId(catPickerSongId === song.id ? null : song.id)}
-                                className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-white text-stone-600 hover:text-ink transition-colors border border-dashed border-stone-300 hover:border-ink/50"
+                                className="inline-flex items-center gap-0.5 text-xs px-2.5 py-0.5 rounded-full bg-white text-stone-600 hover:text-ink transition-colors border border-dashed border-stone-300 hover:border-ink/50"
                               >
                                 + Setlist
                               </button>
@@ -1613,8 +1674,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
                                         setCatPickerSongId(null);
                                         await addSongToCategory(cat.id, song.id);
                                       }}
-                                      className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${color.chip} opacity-70 hover:opacity-100 transition-opacity`}
+                                      className={`${CHIP} gap-1.5 px-2.5 hover:border-ink/40 hover:text-ink transition-colors`}
                                     >
+                                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.dot}`} aria-hidden />
                                       {cat.name}
                                     </button>
                                   );
@@ -1640,16 +1702,16 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
       {/* Upgrade modal */}
       {showUpgradeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowUpgradeModal(false)}>
-          <div className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className={VEIL} onClick={() => setShowUpgradeModal(false)}>
+          <div className={DIALOG} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-amber-500">
+              <div className="w-10 h-10 rounded-xl bg-chord/10 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-chord">
                   <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2Z"/>
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-stone-900">You&apos;ve reached the free limit</h2>
+                <h2 className={DIALOG_TITLE}>You&apos;ve reached the free limit</h2>
                 <p className="text-xs text-stone-500">{`Free includes ${songLimit} songs`}</p>
               </div>
             </div>
@@ -1661,7 +1723,7 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
             <div className="flex gap-2">
               <button
                 onClick={() => setShowUpgradeModal(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
+                className={`flex-1 ${BTN_QUIET}`}
               >
                 Not now
               </button>
@@ -1688,9 +1750,9 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
       {/* Delete-category confirmation */}
       {confirmDeleteCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeleteCategory(null)}>
-          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title" className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <h2 id="delete-category-title" className="text-base font-semibold text-stone-900 mb-1">Delete setlist?</h2>
+        <div className={VEIL} onClick={() => setConfirmDeleteCategory(null)}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title" className={DIALOG} onClick={(e) => e.stopPropagation()}>
+            <h2 id="delete-category-title" className={`${DIALOG_TITLE} mb-1.5`}>Delete setlist?</h2>
             <p className="text-sm text-stone-500 mb-5">
               <span className="font-medium text-stone-700">&ldquo;{confirmDeleteCategory.name}&rdquo;</span>
               {confirmDeleteCategory.subCount > 0 && <> and the {confirmDeleteCategory.subCount === 1 ? "list" : `${confirmDeleteCategory.subCount} lists`} inside it</>}
@@ -1703,13 +1765,13 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
               <button
                 autoFocus
                 onClick={() => setConfirmDeleteCategory(null)}
-                className="px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
+                className={BTN_QUIET}
               >
                 Cancel
               </button>
               <button
                 onClick={() => { handleDeleteCategory(confirmDeleteCategory.id); setConfirmDeleteCategory(null); }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                className={BTN_DANGER}
               >
                 Delete
               </button>
@@ -1720,22 +1782,23 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
       {/* Delete confirmation modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl border border-rule shadow-xl p-6 w-full max-w-sm mx-4">
-            <h2 className="text-base font-semibold text-stone-900 mb-1">Delete song?</h2>
+        <div className={VEIL} onClick={() => setConfirmDelete(null)}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-song-title" className={DIALOG} onClick={(e) => e.stopPropagation()}>
+            <h2 id="delete-song-title" className={`${DIALOG_TITLE} mb-1.5`}>Delete song?</h2>
             <p className="text-sm text-stone-500 mb-5">
-              <span className="font-medium text-stone-700">"{confirmDelete.title}"</span> will be permanently deleted. This cannot be undone.
+              <span className="font-medium text-stone-700">&ldquo;{confirmDelete.title || "Untitled song"}&rdquo;</span> will be permanently deleted. This cannot be undone.
             </p>
             <div className="flex gap-2 justify-end">
               <button
+                autoFocus
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-stone-600 bg-paper-deep hover:bg-stone-200 rounded-lg transition-colors"
+                className={BTN_QUIET}
               >
                 Cancel
               </button>
               <button
                 onClick={() => { handleDelete(confirmDelete.id, confirmDelete.source); setConfirmDelete(null); }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                className={BTN_DANGER}
               >
                 Delete
               </button>
