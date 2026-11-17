@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CtaLink from "@/components/ui/CtaLink";
@@ -207,7 +208,7 @@ export default async function HomePage() {
         <TransformationSection />
 
         {/* ── Features ─────────────────────────────────────────────────────── */}
-        <section id="features" className="scroll-mt-16 border-t border-rule">
+        <section id="features" className="scroll-mt-16 border-t border-rule bg-paper-deep">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-4 lg:gap-16 lg:items-end mb-10 sm:mb-14">
               <div>
@@ -218,13 +219,15 @@ export default async function HomePage() {
                 Focus on the music, not the formatting.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-12">
-              {featureGroups.map((g) => (
-                <div key={g.label}>
-                  <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 pb-3">{g.label}</h3>
-                  <ul className="border-b border-ink/15">
-                    {g.items.map((f) => (
-                      <li key={f.title} className="border-t border-ink/15 py-5">
+            {/* One grid, filled a column at a time, so each row is as tall as
+                its tallest text and the rules run level across all three
+                groups. As three separate lists they ended at three heights. */}
+            <div className="md:grid md:grid-flow-col md:grid-rows-[repeat(4,auto)] md:gap-x-10">
+              {featureGroups.map((g, gi) => (
+                <Fragment key={g.label}>
+                  <h3 className={`font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 pb-3 ${gi ? "mt-12 md:mt-0" : ""}`}>{g.label}</h3>
+                    {g.items.map((f, fi) => (
+                      <div key={f.title} className={`border-t border-ink/15 py-5 ${fi === g.items.length - 1 ? "border-b" : ""}`}>
                         <h4 className="font-display font-medium text-xl leading-snug tracking-[-0.01em] text-ink mb-1.5 flex flex-wrap items-baseline gap-x-3">
                           {f.title}
                           {f.limited && (
@@ -234,10 +237,9 @@ export default async function HomePage() {
                           )}
                         </h4>
                         <p className="text-[15px] text-stone-600 leading-relaxed">{f.description}</p>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
-                </div>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -299,11 +301,10 @@ export default async function HomePage() {
 
                     <div className="px-6 py-6 border-t border-rule flex-1">
                       <ul className="space-y-3">
-                        {Object.keys(FEATURE_LABELS).filter((key) => {
-                          const val = plan.features[key as keyof typeof plan.features];
-                          const active = val !== false && val !== 0;
-                          return isFree ? true : active;
-                        }).map((key) => {
+                        {/* Every row on every plan, the missing ones greyed. Monthly
+                            used to drop what it lacks, so its list ended a line
+                            short and nothing showed what Yearly adds. */}
+                        {Object.keys(FEATURE_LABELS).map((key) => {
                           const label = FEATURE_LABELS[key];
                           const val = plan.features[key as keyof typeof plan.features];
                           const active = val !== false && val !== 0;
@@ -413,8 +414,10 @@ export default async function HomePage() {
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="bg-ink border-t border-white/10 px-5 sm:px-8 py-10">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+      <footer className="bg-ink border-t border-white/10 py-10">
+        {/* Padding inside the column, like every section above: outside it, the
+            footer was 64px wider than the page and lined up with nothing. */}
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <span><Wordmark onInk className="text-lg" /></span>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 text-xs text-stone-400 [&>a]:py-2">
             <Link href="#examples" className="hover:text-white transition-colors">Examples</Link>
@@ -429,7 +432,7 @@ export default async function HomePage() {
             © {new Date().getFullYear()} ChordSheetMaker.ai · Built for musicians
           </p>
         </div>
-        <div className="max-w-6xl mx-auto mt-4 text-center sm:text-right">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 mt-4 text-center sm:text-right">
           <BuildStamp className="text-[10px] text-white/15 font-mono" />
         </div>
       </footer>

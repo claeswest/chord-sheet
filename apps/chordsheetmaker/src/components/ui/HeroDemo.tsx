@@ -71,7 +71,11 @@ export default function HeroDemo() {
             order. If that bar changes, change this with it; the caption
             beside the hero says this is how play mode looks. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0">
-          <div className="absolute inset-x-0 bottom-0 -top-16 bg-gradient-to-t from-black/75 to-transparent" />
+          {/* Denser than the viewer's own fade. There the controls sit over a
+              tall page; here they sit over three lines of a small one, and at
+              the viewer's strength the words read straight through the buttons.
+              Near-solid behind the row itself, with a short fade above it. */}
+          <div className="absolute inset-x-0 bottom-0 -top-10 bg-gradient-to-t from-black/95 via-black/90 via-60% to-transparent" />
           <div className="relative flex items-center justify-center gap-2.5 px-3 py-4">
             <div className="flex items-center gap-2">
               {/* Hide chords */}
