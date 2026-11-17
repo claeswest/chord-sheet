@@ -28,6 +28,14 @@ export function ExampleCards() {
               sizes="(max-width: 768px) 100vw, 360px"
               className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
             />
+            {/* The picture is the top of a longer sheet. Fading it into the
+                sheet's own page colour says so; without it the frame cut a
+                line of lyrics in half, and the Play tag sat on top of words. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[34%]"
+              style={{ background: `linear-gradient(to top, ${ex.style.background ?? "#1c1917"} 12%, transparent)` }}
+            />
             {/* In the corner, so it says "this plays" without covering the sheet. */}
             <span className="absolute left-3 bottom-3 inline-flex items-center gap-2 rounded-full bg-ink/90 py-1.5 pl-2.5 pr-3.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-paper transition-colors group-hover:bg-ink">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden>

@@ -105,14 +105,16 @@ export default function FaqSection() {
         </div>
 
         <div className="space-y-10 sm:space-y-12">
-          {GROUPS.map((g) => (
+          {GROUPS.map((g, gi) => (
             <div key={g.label}>
               <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500 pb-3">
                 {g.label}
               </h3>
               <div className="border-b border-ink/15">
-                {g.items.map((f) => (
-                  <details key={f.q} className="group border-t border-ink/15">
+                {g.items.map((f, fi) => (
+                  // The first one starts open: ten closed rows look like a list
+                  // of links, and one open answer shows what is behind them.
+                  <details key={f.q} open={gi === 0 && fi === 0} className="group border-t border-ink/15">
                     <summary className="flex items-baseline justify-between gap-5 py-4 sm:py-5 cursor-pointer list-none font-display font-medium text-[1.2rem] sm:text-[1.35rem] leading-snug tracking-[-0.01em] text-ink [&::-webkit-details-marker]:hidden hover:text-chord group-open:text-chord transition-colors">
                       {f.q}
                       {/* A plus that loses its upright when the answer is open. */}

@@ -134,6 +134,13 @@ export default function TransformationSection() {
                   sizes="(max-width: 640px) 100vw, 620px"
                   className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                 />
+                {/* Fades into the sheet's own page colour (Burning Gold's, in
+                    exampleStyles.json) so the frame does not cut a line in half. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%]"
+                  style={{ background: "linear-gradient(to top, #0f141d 10%, transparent)" }}
+                />
               </div>
             </button>
             <figcaption className="mt-3.5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 text-sm text-stone-600">

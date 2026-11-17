@@ -164,11 +164,19 @@ export default async function HomePage() {
 
         {/* ── How it works — three steps ("See how it works" lands here) ───── */}
         <section id="how" className="scroll-mt-20 border-b border-rule">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
-            <Eyebrow className="mb-4">How it works</Eyebrow>
-            <h2 className="font-display font-medium text-3xl sm:text-4xl tracking-[-0.02em] text-ink text-balance mb-10 sm:mb-12">
-              From a song to the stage in three steps
-            </h2>
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
+            {/* Same heading size and two-column head as the sections below.
+                It was the one section with a smaller heading and no lead. */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-4 lg:gap-16 lg:items-end mb-10 sm:mb-14">
+              <div>
+                <Eyebrow className="mb-4">How it works</Eyebrow>
+                <h2 className={`${H2} text-balance`}>From a song to the stage in three steps</h2>
+              </div>
+              <p className="text-lg text-stone-600 leading-relaxed lg:pb-1.5">
+                Nothing to install, and no account to make first. Bring a song and you are three
+                steps from playing it.
+              </p>
+            </div>
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-9">
               {steps.map((h, i) => (
                 <li key={h.n}>
