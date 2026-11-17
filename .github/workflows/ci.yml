@@ -1,0 +1,84 @@
+# Builds and typechecks all three apps on every push.
+#
+# Why this exists: `master` deploys to production by itself, and the only
+# check before that was whatever was run by hand — in practice a build of
+# ChordSheetMaker alone. A change to shared code (packages/core) could break
+# RecipeBookMaker or ScheduleMaker and nothing would say so until Vercel tried
+# to build them.
+#
+# What it does not do: it does not stop a deploy. Vercel builds from the same
+# push and does not wait for this. A red run here is a warning to act on, not
+# a gate. It also runs no tests, because there are none — it proves the code
+# compiles and builds, not that it behaves.
+#
+# No secrets are used. The values below are placeholders that let the apps
+# build: nothing connects to a database or signs anything while building.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+  AUTH_SECRET: ci-only-not-a-real-secret
+  AUTH_URL: http://localhost:3000
+
+jobs:
+  app:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      # One app failing should not hide whether the others are fine.
+      fail-fast: false
+      matrix:
+        app: [chordsheetmaker, recipemaker, schedulemaker]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Also generates each app's Prisma client (postinstall).
+      - run: npm ci --no-audit --no-fund
+
+      # Twice at most: the build downloads its fonts from Google, and that
+      # request fails now and then for reasons that have nothing to do with
+      # the code. A real error fails both times.
+      - name: Build
+        run: npm run build --workspace=${{ matrix.app }} || npm run build --workspace=${{ matrix.app }}
+
+      # After the build, not before: the build writes next-env.d.ts, which is
+      # not in the repository and is what gives image imports their types.
+      - name: Typecheck
+        run: npm run typecheck --workspace=${{ matrix.app }}
+
+  core:
+    name: shared code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck --workspace=@clavos/core

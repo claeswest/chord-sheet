@@ -120,6 +120,14 @@ Test signups and test recipes therefore stay out of the live admin feed. What is
 *not* separate is everything outside the database: Stripe (unless test keys are
 used locally), Resend, and any AI provider all hit the real service.
 
+## What checks a push
+
+Every push to `master` is deployed by Vercel, and separately built and typechecked
+for all three apps by GitHub Actions (`.github/workflows/ci.yml`). The two do not
+wait for each other: a red run is a warning that something already went out, or
+failed to. There are no automated tests, so a green run means the code builds,
+not that it behaves. Results: the Actions tab of the repository.
+
 ## Everyday commands
 
 ```bash
