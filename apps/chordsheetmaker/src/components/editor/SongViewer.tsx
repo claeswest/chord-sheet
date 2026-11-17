@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { SongLine } from "@/types/song";
 import { extractInlineChords } from "@/lib/parseChordSheet";
-import { transposeSong } from "@/lib/transpose";
+import { transposeSong, songKey as keyOf } from "@/lib/transpose";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
@@ -79,6 +79,11 @@ const SPEED_PX_PER_MS: Record<number, number> = {
   16: 0.05, 17: 0.06, 18: 0.072, 19: 0.086, 20: 0.103,
 };
 const MAX_SPEED = 20;
+
+// The three controls beside Play — speed, text size, key — share these.
+const CONTROL_NAME = "hidden sm:inline text-[11px] font-medium uppercase tracking-[0.12em] text-white/50 select-none";
+const STEPPER = "flex items-center rounded-lg border border-white/20 overflow-hidden";
+const STEP = "w-8 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors text-sm";
 
 // Perceived-luminance check for the glow: light page colors need a light halo
 // (a dark one smudges dark text into "blur"), dark pages need a dark halo.
@@ -178,7 +183,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const [keyShift, setKeyShift] = useState(0);
 
   // #3 Convert leftover inline [Em7] tokens into real positioned chords
-  const cleanLines = useMemo(() => transposeSong(extractInlineChords(lines), keyShift), [lines, keyShift]);
+  const writtenLines = useMemo(() => extractInlineChords(lines), [lines]);
+  const cleanLines = useMemo(() => transposeSong(writtenLines, keyShift), [writtenLines, keyShift]);
+  // The key on the Key control: "Fm", and "Gm" once it has been moved up two.
+  const playedKey = useMemo(() => keyOf(writtenLines, keyShift), [writtenLines, keyShift]);
 
   // Lyrics-only mode: drop chord-only lines (intros/outros mean nothing to a
   // singer) and collapse the blank stacks they leave behind.
@@ -710,11 +718,12 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 <button
                   onClick={() => queue.prev && onQueueGo(queue.prev.url)}
                   disabled={!queue.prev}
-                  className="w-8 h-7 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  className="min-w-8 h-7 px-1.5 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                   title={queue.prev ? `Previous: ${queue.prev.title} (B)` : "This is the first song"}
                   aria-label={queue.prev ? `Previous song: ${queue.prev.title}` : "No previous song"}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                  <span className="hidden lg:inline ml-1"><Kbd>B</Kbd></span>
                 </button>
                 <span className="px-1.5 whitespace-nowrap tabular-nums truncate">
                   {queue.index + 1} / {queue.total}
@@ -723,10 +732,11 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 <button
                   onClick={() => queue.next && onQueueGo(queue.next.url)}
                   disabled={!queue.next}
-                  className="w-8 h-7 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  className="min-w-8 h-7 px-1.5 flex items-center justify-center rounded hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                   title={queue.next ? `Next: ${queue.next.title} (N)` : "This is the last song"}
                   aria-label={queue.next ? `Next song: ${queue.next.title}` : "No next song"}
                 >
+                  <span className="hidden lg:inline mr-1"><Kbd>N</Kbd></span>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
@@ -754,6 +764,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
               </svg>
               Songs
+              {onEdit && <span className="hidden lg:inline font-normal"><Kbd>S</Kbd></span>}
             </Link>
           )}
         </div>
@@ -835,6 +846,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 <line x1="12" y1="19" x2="12" y2="22" />
               </svg>
               <span className="hidden sm:inline">{hideChords ? "Show chords" : "Hide chords"}</span>
+              <span className="hidden xl:inline"><Kbd>C</Kbd></span>
             </button>
 
             {/* Performance mode toggle — mobile only */}
@@ -897,7 +909,8 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             <button
               onClick={(e) => { togglePlay(); (e.currentTarget as HTMLButtonElement).blur(); }}
               className="w-11 h-11 flex items-center justify-center bg-paper hover:bg-white text-ink rounded-full shadow-lg transition-colors"
-              title="Space to toggle"
+              title={playing ? "Pause (Space)" : "Play (Space)"}
+              aria-label={playing ? "Pause" : "Play"}
             >
               {playing ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -910,14 +923,16 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 </svg>
               )}
             </button>
+            <span className="hidden xl:inline" title="Space plays and pauses"><Kbd>Space</Kbd></span>
           </div>
 
-          {/* ── Row 2 (wraps on mobile): speed + font size ── */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pl-1 border-l border-white/20">
+          {/* ── Row 2 (wraps on mobile): speed, text size, key ──
+              Each is a name and its control. The names are left out on a
+              phone, where the row would otherwise wrap again. */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 xl:pl-4 xl:border-l border-white/20">
             {/* Speed */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/50 text-xs tabular-nums w-4 text-right">{speed}</span>
-              <span className="hidden sm:inline text-white/60 text-xs">Slow</span>
+            <label className="flex items-center gap-2">
+              <span className={CONTROL_NAME}>Speed</span>
               <input
                 type="range"
                 min={1}
@@ -925,57 +940,72 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                 value={speed}
                 onChange={(e) => { setSpeed(Number(e.target.value)); revealControls(); }}
                 className="w-24 sm:w-28 accent-white"
-                title="← → to adjust"
+                title="Slower and faster: ← →"
+                aria-label="Scroll speed"
               />
-              <span className="hidden sm:inline text-white/60 text-xs">Fast</span>
-            </div>
+              <span className="text-white/80 text-xs tabular-nums w-4">{speed}</span>
+            </label>
 
-            {/* Font size */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => { setSizeAdjust(s => Math.max(-6, s - 1)); revealControls(); }}
-                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-                title="− to shrink"
-              >
-                A−
-              </button>
-              <span className="text-white/35 text-xs w-5 text-center tabular-nums">{lyricSize}</span>
-              <button
-                onClick={() => { setSizeAdjust(s => Math.min(14, s + 1)); revealControls(); }}
-                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-                title="+ to grow"
-              >
-                A+
-              </button>
+            {/* Text size */}
+            <div className="flex items-center gap-2">
+              <span className={CONTROL_NAME}>Text</span>
+              <div className={STEPPER}>
+                <button
+                  onClick={() => { setSizeAdjust(s => Math.max(-6, s - 1)); revealControls(); }}
+                  className={STEP}
+                  title="Smaller text: −"
+                  aria-label="Smaller text"
+                >
+                  A−
+                </button>
+                <span className="w-px self-stretch bg-white/20" aria-hidden />
+                <button
+                  onClick={() => { setSizeAdjust(s => Math.min(14, s + 1)); revealControls(); }}
+                  className={STEP}
+                  title="Larger text: +"
+                  aria-label="Larger text"
+                >
+                  A+
+                </button>
+              </div>
             </div>
 
             {/* Key — hidden with the chords, since there is nothing to move */}
             {!hideChords && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => { setKeyShift((k) => Math.max(-11, k - 1)); revealControls(); }}
-                  className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-                  title="Transpose down a semitone"
-                  aria-label="Transpose down a semitone"
-                >
-                  −
-                </button>
-                <button
-                  onClick={() => { setKeyShift(0); revealControls(); }}
-                  className={`h-7 min-w-[2.75rem] px-1 text-center text-xs tabular-nums rounded transition-colors ${keyShift === 0 ? "text-white/50" : "text-white font-semibold hover:bg-white/10"}`}
-                  title={keyShift === 0 ? "Change the key for this play-through" : "Back to the song's own key"}
-                  aria-label={keyShift === 0 ? "Key: as written" : `Key shifted ${keyShift > 0 ? "up" : "down"} ${Math.abs(keyShift)} semitones. Reset`}
-                >
-                  {keyShift === 0 ? "Key" : `${keyShift > 0 ? "+" : "−"}${Math.abs(keyShift)}`}
-                </button>
-                <button
-                  onClick={() => { setKeyShift((k) => Math.min(11, k + 1)); revealControls(); }}
-                  className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded transition-colors text-sm"
-                  title="Transpose up a semitone"
-                  aria-label="Transpose up a semitone"
-                >
-                  +
-                </button>
+              <div className="flex items-center gap-2">
+                <span className={CONTROL_NAME}>Key</span>
+                <div className={STEPPER}>
+                  <button
+                    onClick={() => { setKeyShift((k) => Math.max(-11, k - 1)); revealControls(); }}
+                    className={STEP}
+                    title="Down a semitone"
+                    aria-label="Transpose down a semitone"
+                  >
+                    −
+                  </button>
+                  <button
+                    onClick={() => { setKeyShift(0); revealControls(); }}
+                    disabled={keyShift === 0}
+                    className={`h-7 min-w-[3rem] px-1.5 flex items-center justify-center gap-1 border-x border-white/20 text-xs tabular-nums transition-colors ${keyShift === 0 ? "text-white/80" : "text-white font-semibold hover:bg-white/10"}`}
+                    title={keyShift === 0 ? "The song's own key" : "Back to the song's own key"}
+                    aria-label={keyShift === 0
+                      ? (playedKey ? `Key of ${playedKey}, as written` : "Key: as written")
+                      : `${playedKey ? `Key of ${playedKey}, ` : ""}${Math.abs(keyShift)} ${Math.abs(keyShift) === 1 ? "semitone" : "semitones"} ${keyShift > 0 ? "up" : "down"}. Back to the song's own key`}
+                  >
+                    {playedKey ?? (keyShift === 0 ? "–" : "")}
+                    {keyShift !== 0 && (
+                      <span className={playedKey ? "font-normal text-white/60" : ""}>{keyShift > 0 ? "+" : "−"}{Math.abs(keyShift)}</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => { setKeyShift((k) => Math.min(11, k + 1)); revealControls(); }}
+                    className={STEP}
+                    title="Up a semitone"
+                    aria-label="Transpose up a semitone"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             )}
           </div>

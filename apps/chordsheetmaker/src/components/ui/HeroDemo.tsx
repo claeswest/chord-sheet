@@ -29,9 +29,10 @@ import Image from "next/image";
 // same colour (step 5 above), which is what hides the loop's seam.
 const SHEET_TOP = "#e3e3db";
 
-// The viewer's two kinds of control, as class strings.
+// The viewer's two kinds of control, as class strings (its STEPPER and STEP).
 const GHOST = "flex items-center rounded-lg border border-white/20 px-2.5 py-1.5 text-white/70 backdrop-blur-sm";
-const SQUARE = "flex h-7 w-7 items-center justify-center rounded border border-white/20 text-sm text-white/70";
+const STEPPER = "flex items-center overflow-hidden rounded-lg border border-white/20";
+const STEP = "flex h-7 w-8 items-center justify-center text-sm text-white/70";
 
 function Sheet() {
   return (
@@ -105,23 +106,24 @@ export default function HeroDemo() {
 
             <div className="flex items-center gap-2.5 border-l border-white/20 pl-2.5">
               {/* Speed */}
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 text-right text-xs tabular-nums text-white/50">3</span>
-                <span className="relative h-1 w-16 rounded-full bg-white/30 sm:w-20">
+              <div className="flex items-center gap-2">
+                <span className="relative h-1 w-14 rounded-full bg-white/30 sm:w-16">
                   <span className="absolute inset-y-0 left-0 w-[22%] rounded-full bg-white" />
                   <span className="absolute left-[22%] top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow" />
                 </span>
+                <span className="w-3 text-xs tabular-nums text-white/80">3</span>
               </div>
               {/* Text size */}
-              <div className="flex items-center gap-1">
-                <span className={SQUARE}>A−</span>
-                <span className={SQUARE}>A+</span>
+              <div className={STEPPER}>
+                <span className={STEP}>A−</span>
+                <span className="w-px self-stretch bg-white/20" />
+                <span className={STEP}>A+</span>
               </div>
-              {/* Key */}
-              <div className="hidden items-center gap-1 sm:flex">
-                <span className={SQUARE}>−</span>
-                <span className="px-1 text-xs text-white/50">Key</span>
-                <span className={SQUARE}>+</span>
+              {/* Key: the one this song is in */}
+              <div className={`hidden sm:flex ${STEPPER}`}>
+                <span className={STEP}>−</span>
+                <span className="flex h-7 min-w-[2.25rem] items-center justify-center border-x border-white/20 px-1.5 text-xs text-white/80">G</span>
+                <span className={STEP}>+</span>
               </div>
             </div>
           </div>
