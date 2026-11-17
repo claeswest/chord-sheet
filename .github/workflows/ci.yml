@@ -8,7 +8,9 @@
 #
 # What it does not do: it does not stop a deploy. Vercel builds from the same
 # push and does not wait for this. A red run here is a warning to act on, not
-# a gate. It runs the unit tests there are, which is a handful: for the most
+# a gate. (ChordSheetMaker's unit tests are a gate, but not through this file:
+# its build script runs them first, so a failing test fails the Vercel build
+# and the version already live stays.) It runs the unit tests there are, which is a handful: for the most
 # part it proves the code compiles and builds, not that it behaves.
 #
 # No secrets are used. The values below are placeholders that let the apps

@@ -127,7 +127,11 @@ for all three apps by GitHub Actions (`.github/workflows/ci.yml`). The two do no
 wait for each other: a red run is a warning that something already went out, or
 failed to. It also runs the unit tests (`npm test`), of which there are only a few so
 far, so a green run mostly means the code builds, not that it behaves. A test sits
-beside what it tests, as `<file>.test.ts`. Results: the Actions tab of the repository.
+beside what it tests, as `<file>.test.ts`.
+
+One thing does stop a release: ChordSheetMaker's build runs its unit tests first
+(`vitest run && next build`). A failing test fails the Vercel build, and Vercel
+keeps serving the version that was already live. Results: the Actions tab of the repository.
 
 ## Everyday commands
 
