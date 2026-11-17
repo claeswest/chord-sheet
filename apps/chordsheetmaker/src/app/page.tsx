@@ -434,6 +434,7 @@ export default async function HomePage() {
             <Link href="#faq"      className="hover:text-white transition-colors">FAQ</Link>
             <Link href="/songs"    className="hover:text-white transition-colors">My songs</Link>
             <Link href="/terms"    className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/privacy"  className="hover:text-white transition-colors">Privacy</Link>
             <a href="mailto:claes@clavos.se" className="hover:text-white transition-colors">Contact</a>
           </nav>
           <p className="text-xs text-stone-400">

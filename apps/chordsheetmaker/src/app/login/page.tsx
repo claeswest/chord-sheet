@@ -179,6 +179,11 @@ export default async function LoginPage({
           <Link href="/terms" className="underline underline-offset-2 hover:text-ink transition-colors">
             terms of service
           </Link>
+          . How we handle your data is in the{" "}
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-ink transition-colors">
+            privacy page
+          </Link>
+          .
         </p>
 
         {/* No escape hatch when the user is mid-checkout — it dead-ends the trial */}

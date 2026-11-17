@@ -1,122 +1,150 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { LANDING_FONTS } from "@/components/landing/fonts";
-import { Eyebrow, Wordmark } from "@/components/landing/kit";
+import { LegalEmail, LegalLink, LegalPage, LegalSection } from "@/components/landing/Legal";
+import { featureLimit, getSongLimit } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms of service for ChordSheetMaker — plain-language rules for using the app.",
 };
 
-const UPDATED = "July 3, 2026";
+// Change this with the text. What the app does with personal data is on
+// /privacy; when a feature starts sending content somewhere new, both pages
+// need a look (section 4 here, section 4 there).
+const UPDATED = "November 17, 2026";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-8">
-      <h2 className="text-lg font-semibold text-ink mb-2">{title}</h2>
-      <div className="text-[15px] text-stone-600 leading-relaxed space-y-2">{children}</div>
-    </section>
-  );
-}
+/** "2 songs", "1 song". */
+const songs = (n: number | null) => `${n} ${n === 1 ? "song" : "songs"}`;
 
 export default function TermsPage() {
+  const freeSongs = getSongLimit("free");
+  const freePdf = featureLimit("free", "pdfExport");
+  const freeShares = featureLimit("free", "sharing");
+
   return (
-    <div className={`${LANDING_FONTS} min-h-screen bg-paper text-ink`}>
-      <header className="px-5 sm:px-8 py-4 border-b border-rule">
-        <div className="max-w-6xl mx-auto w-full">
-          <Link href="/" aria-label="ChordSheetMaker — home"><Wordmark className="text-[1.15rem] sm:text-2xl" /></Link>
-        </div>
-      </header>
+    <LegalPage
+      title="Terms of Service"
+      updated={UPDATED}
+      lead="The rules for using ChordSheetMaker, in plain language. What we do with your personal data is on a page of its own."
+      other={{ href: "/privacy", label: "Privacy" }}
+    >
+      <LegalSection title="1. Who we are">
+        <p>
+          ChordSheetMaker (chordsheetmaker.ai) is a web app for creating, styling and
+          performing chord sheets, operated by HB Clavos, Sweden. Questions? Email <LegalEmail />.
+        </p>
+      </LegalSection>
 
-      <div className="max-w-2xl mx-auto px-6 pt-10 sm:pt-14">
-        <Eyebrow className="mb-4">Last updated {UPDATED}</Eyebrow>
-        <h1 className="font-display font-medium text-[2.6rem] sm:text-6xl leading-[1.05] tracking-[-0.02em] text-ink">
-          Terms of Service
-        </h1>
-      </div>
+      <LegalSection title="2. Your account">
+        <p>
+          You can use ChordSheetMaker without an account (songs are then stored only on
+          your device). Creating an account — via Google, GitHub, Apple or an email
+          sign-in link — stores your songs with your account so they&apos;re available on all
+          your devices. You&apos;re responsible for keeping access to your sign-in method secure.
+        </p>
+      </LegalSection>
 
-      <div className="max-w-2xl mx-auto px-6 py-10 sm:py-12">
-        <div className="bg-white rounded-xl border border-rule p-6 sm:p-10">
-          <Section title="1. Who we are">
-            <p>
-              ChordSheetMaker (chordsheetmaker.ai) is a web app for creating, styling and
-              performing chord sheets, operated by HB Clavos, Sweden. Questions? Email{" "}
-              <a href="mailto:claes@clavos.se" className="text-chord hover:text-ink">claes@clavos.se</a>.
-            </p>
-          </Section>
+      <LegalSection title="3. Plans, trials and billing">
+        <p>
+          The Free plan is free for as long as you like
+          {freeSongs !== null && <>, with room for {songs(freeSongs)}</>}
+          {freePdf !== null && freeShares !== null && (
+            <>, PDF export for {songs(freePdf)} and share links for {songs(freeShares)}</>
+          )}
+          . Paid plans (Monthly, Yearly) remove those limits.
+        </p>
+        <p>
+          A paid plan starts with a <strong>7-day free trial</strong>, and starting the trial
+          needs a payment card. <strong>If you don&apos;t cancel before the 7 days are up, the card
+          is charged when the trial ends</strong>, at the price shown at checkout, and then again
+          every month or every year until you cancel. Cancel at any time during the trial
+          and you pay nothing.
+        </p>
+        <p>
+          You cancel from your account page. A plan you have paid for then runs until the end
+          of the period you&apos;ve paid for, and is not renewed. Payments are processed by Stripe;
+          we never see or store your card details.
+        </p>
+        <p>
+          By starting a paid plan you consent to the service beginning immediately, which may
+          affect statutory withdrawal rights for digital services in the EU. If something
+          went wrong with a charge, email us — we&apos;re reasonable people.
+        </p>
+      </LegalSection>
 
-          <Section title="2. Your account">
-            <p>
-              You can use ChordSheetMaker without an account (songs are then stored only on
-              your device). Creating an account — via Google, GitHub, Apple or an email
-              sign-in link — stores your songs with your account so they're available on all
-              your devices. You're responsible for keeping access to your sign-in method secure.
-            </p>
-          </Section>
+      <LegalSection title="4. Your content">
+        <p>
+          Your songs are yours. We claim no ownership of the lyrics, chords, styles or
+          images in your charts. We don&apos;t sell them and we don&apos;t show them to other users.
+          Your content leaves your account only in these cases:
+        </p>
+        <ul>
+          <li>
+            <strong>Share links you create.</strong> Anyone who has the link can open that
+            song, without an account. Send it only to people you want to have it.
+          </li>
+          <li>
+            <strong>AI features you use.</strong> What you hand to one of them — a song title,
+            pasted text, a photo, the chart to be styled — is sent to Google&apos;s AI service to
+            produce the result.
+          </li>
+          <li>
+            <strong>The companies that run the service for us</strong>, such as hosting and the
+            database, store it on our behalf.
+          </li>
+          <li>
+            <strong>Support.</strong> Our staff may look at your content only to help you or to
+            keep the service working.
+          </li>
+        </ul>
+        <p>
+          The <LegalLink href="/privacy">privacy page</LegalLink> names those companies and says
+          what else we store.
+        </p>
+        <p>
+          You&apos;re responsible for what you create and share. The lyrics and chords of
+          published songs are usually protected by copyright: make sure your use is permitted
+          where you live, and take particular care before sending a share link or a PDF to
+          others. Don&apos;t use the service to store or share unlawful content. If you believe
+          something shared through ChordSheetMaker infringes your rights, email <LegalEmail /> and
+          we&apos;ll deal with it promptly.
+        </p>
+      </LegalSection>
 
-          <Section title="3. Plans, trials and billing">
-            <p>
-              The Free plan is free forever, with limited features. Paid plans (Monthly,
-              Yearly) unlock more and start with a <strong>7-day free trial</strong> — you can
-              cancel any time during the trial and pay nothing. After the trial, your plan
-              renews automatically until you cancel. Payments are processed by Stripe; we never
-              see or store your card details.
-            </p>
-            <p>
-              You can cancel from your account page at any time; your plan then runs until the
-              end of the period you've paid for. By starting a paid plan you consent to the
-              service beginning immediately, which may affect statutory withdrawal rights for
-              digital services in the EU. If something went wrong with a charge, email us —
-              we're reasonable people.
-            </p>
-          </Section>
+      <LegalSection title="5. AI features">
+        <p>
+          Finding a song&apos;s chords, tidying pasted text, reading a photo, styling a chart and
+          generating a background picture all use AI. The results can be wrong or incomplete,
+          and the features can occasionally be unavailable. Treat what the AI gives you as a
+          starting point and check it — chords in particular may need a human ear.
+        </p>
+      </LegalSection>
 
-          <Section title="4. Your content">
-            <p>
-              Your songs are yours. We claim no ownership of the lyrics, chords, styles or
-              images in your charts, and we don't share them with anyone. Our staff may view
-              your content only to provide support or keep the service working.
-            </p>
-            <p>
-              You're responsible for what you create: if you make chord sheets of copyrighted
-              songs, make sure your use is permitted where you live (personal/performance use
-              is typically the user's own responsibility). Don't use the service to store or
-              share unlawful content.
-            </p>
-          </Section>
+      <LegalSection title="6. The service">
+        <p>
+          We work hard to keep ChordSheetMaker fast and available, but it&apos;s provided
+          &quot;as is&quot; without warranties; we may change or improve features over time.
+          To the extent permitted by law, our liability is limited to the amount you&apos;ve
+          paid us in the last 12 months. We may suspend accounts that abuse the service.
+        </p>
+        <p>
+          Nothing in these terms takes away rights you have as a consumer under laws that
+          cannot be set aside by agreement.
+        </p>
+      </LegalSection>
 
-          <Section title="5. AI features">
-            <p>
-              Song search, import cleanup and image generation use AI and can be wrong,
-              incomplete or occasionally unavailable. Always check the result — chords in
-              particular may need a human ear.
-            </p>
-          </Section>
+      <LegalSection title="7. Changes to these terms">
+        <p>
+          If we make material changes we&apos;ll update this page and the date above. Continuing
+          to use the service after a change means you accept the new terms.
+        </p>
+      </LegalSection>
 
-          <Section title="6. The service">
-            <p>
-              We work hard to keep ChordSheetMaker fast and available, but it's provided
-              &quot;as is&quot; without warranties; we may change or improve features over time.
-              To the extent permitted by law, our liability is limited to the amount you've
-              paid us in the last 12 months. We may suspend accounts that abuse the service.
-            </p>
-          </Section>
-
-          <Section title="7. Changes to these terms">
-            <p>
-              If we make material changes we'll update this page and the date above. Continuing
-              to use the service after a change means you accept the new terms. Swedish law
-              applies.
-            </p>
-          </Section>
-
-          <div className="pt-4 border-t border-rule">
-            <Link href="/" className="text-sm text-chord hover:text-ink">
-              ← Back to ChordSheetMaker
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+      <LegalSection title="8. Governing law">
+        <p>
+          Swedish law applies to these terms. If you use ChordSheetMaker as a consumer, you
+          also keep the protection of the mandatory consumer rules of the country you live in.
+        </p>
+      </LegalSection>
+    </LegalPage>
   );
 }
