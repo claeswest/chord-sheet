@@ -69,7 +69,14 @@ test("a slash chord is built from a root and a bass note", async ({ page }) => {
   await page.getByTitle('Click to place "D/F#"').click();
   await expect(page.getByRole("button", { name: "Remove chord" })).toHaveCount(1);
   // Once placed it is one of the song's chords, a click away from the next line.
-  await expect(palette.getByRole("button", { name: "D/F#", exact: true })).toBeVisible();
+  const chip = palette.getByRole("button", { name: "D/F#", exact: true });
+  await expect(chip).toBeVisible();
+
+  // Choosing it there shows it in the builder too, ready to be changed.
+  await palette.getByRole("button", { name: "Clear" }).click();
+  await expect(bassF).toHaveAttribute("aria-pressed", "false");
+  await chip.click();
+  await expect(bassF).toHaveAttribute("aria-pressed", "true");
 });
 
 test("saving as a visitor offers a free account to keep the song", async ({ page }) => {

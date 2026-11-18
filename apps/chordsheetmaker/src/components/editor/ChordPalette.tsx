@@ -61,14 +61,37 @@ function chordName(p: Parts): string | null {
   return `${p.root}${p.accidental}${p.quality}${bass}`;
 }
 
-const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
-const btnActive = "bg-chord border-transparent text-white";
-const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-ink/40 hover:text-ink";
+const BUILDABLE_QUALITIES = [...QUALITIES, ...ADVANCED_QUALITIES].map((q) => q.value);
+
+/** The reverse of chordName, for a chord the builder could have made. Null for any other. */
+function partsOf(chord: string): Parts | null {
+  const m = chord.match(/^([A-G])([#b]?)(.*?)(?:\/([A-G])([#b]?))?$/);
+  if (!m || !BUILDABLE_QUALITIES.includes(m[3])) return null;
+  return { root: m[1], accidental: m[2], quality: m[3], bass: m[4] ?? null, bassAccidental: m[5] ?? "" };
+}
+
+// The panel is paper, and a chord is blue ink on it (globals.css): warm rules
+// instead of grey ones, and blue wherever something is a chord or will make one.
+const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-colors duration-150";
+const btnActive = "bg-chord border-chord text-white shadow-sm shadow-chord/30";
+const btnIdle = "bg-white border-rule text-ink hover:border-chord/50 hover:bg-chord/5 hover:text-chord";
 // Not usable yet, but still readable: these wait for an earlier step, and a
 // faded-out grid looked broken rather than waiting.
-const btnWaiting = "bg-stone-100 border-transparent text-stone-500 cursor-not-allowed";
-const heading = "text-[11px] font-semibold uppercase tracking-widest text-stone-500";
+const btnWaiting = "bg-paper-deep/60 border-transparent text-stone-500 cursor-not-allowed";
+// A chord that is already in the song, written the way the song writes it.
+const chipIdle = "bg-chord/[0.07] border-transparent text-chord hover:bg-chord/15";
+const card = "rounded-2xl border border-rule bg-white shadow-sm";
+const heading = "flex items-center text-[11px] font-semibold uppercase tracking-widest text-stone-600";
 const aside = "text-[11px] font-normal normal-case tracking-normal text-stone-500";
+
+/** The number of a step in building a chord. It fills in once the step has been taken. */
+function Step({ n, done }: { n: number; done: boolean }) {
+  return (
+    <span aria-hidden className={`mr-2 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-bold tracking-normal transition-colors ${
+      done ? "bg-chord text-white" : "bg-chord/10 text-chord"
+    }`}>{n}</span>
+  );
+}
 
 /** A button that stays down while its choice is in the chord. */
 function btn(pressed: boolean, waiting = false): string {
@@ -149,8 +172,15 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
     try { localStorage.setItem(ADV_KEY, next ? "1" : "0"); } catch { /* ignore */ }
   };
 
+  // The chord is also chosen elsewhere (a chip, the Custom field, Clear), so
+  // the builder follows it: it shows the selected chord if it could have built
+  // it, and nothing otherwise. It used to keep showing the last chord built.
   useEffect(() => {
-    if (!activeChord) setParts(NOTHING_PICKED);
+    setParts((current) => {
+      if (!activeChord) return NOTHING_PICKED;
+      if (chordName(current) === activeChord) return current;
+      return partsOf(activeChord) ?? NOTHING_PICKED;
+    });
   }, [activeChord]);
 
   // Load Noto Music for musical symbols
@@ -248,13 +278,13 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
 
         {/* ── Chords in this song ── */}
         {songChords.length > 0 && (
-          <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
+          <div className={`${card} px-3.5 py-3`}>
             <p className={`${heading} mb-2`}>In this song</p>
             <div className="flex gap-1.5 flex-wrap">
               {songChords.map((chord) => (
                 <button key={chord} type="button" onClick={() => { onSelectChord(chord); onConfirmChord?.(); }}
                   aria-pressed={activeChord === chord}
-                  className={`${btn(activeChord === chord)} !rounded-full px-3`}
+                  className={`${btnBase} !rounded-full px-3 ${activeChord === chord ? btnActive : chipIdle}`}
                 >{chord}</button>
               ))}
             </div>
@@ -262,11 +292,11 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         )}
 
         {/* ── Chord builder card ── */}
-        <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+        <div className={`${card} overflow-hidden`}>
 
           {/* Root + accidental — one visual step */}
-          <div className="px-3.5 py-3 border-b border-zinc-100">
-            <p className={`${heading} mb-2`}>Root</p>
+          <div className="px-3.5 py-3 border-b border-rule/60">
+            <p className={`${heading} mb-2`}><Step n={1} done={!!root} />Root</p>
             <NotePicker
               note={root}
               accidental={accidental}
@@ -276,10 +306,10 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
           </div>
 
           {/* Quality */}
-          <div className="px-3.5 py-3 border-b border-zinc-100">
-            <p className={`${heading} mb-2 flex items-baseline justify-between`}>
-              Quality
-              {!root && <span className={aside}>Pick a root first</span>}
+          <div className="px-3.5 py-3 border-b border-rule/60">
+            <p className={`${heading} mb-2`}>
+              <Step n={2} done={!!root} />Quality
+              {!root && <span className={`${aside} ml-auto`}>Pick a root first</span>}
             </p>
             <div className="grid grid-cols-4 gap-1">
               {QUALITIES.map(qualityButton)}
@@ -295,7 +325,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
             <button
               type="button"
               onClick={toggleAdvanced}
-              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-stone-600 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors py-1.5"
+              className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium text-chord hover:bg-chord/5 rounded-lg transition-colors py-1.5"
             >
               {showAdvanced || qualityIsAdvanced ? "Fewer chords" : "More chords"}
               <svg className={`w-3 h-3 transition-transform ${showAdvanced || qualityIsAdvanced ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -306,9 +336,9 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
 
           {/* Bass: the note after the slash */}
           <div className="px-3.5 py-3">
-            <p className={`${heading} mb-2 flex items-baseline justify-between`}>
-              Bass note
-              <span className={aside}>optional, as in D/F♯</span>
+            <p className={`${heading} mb-2`}>
+              <Step n={3} done={!!bass} />Bass note
+              <span className={`${aside} ml-auto`}>optional, as in D/F♯</span>
             </p>
             <NotePicker
               bass
@@ -322,7 +352,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         </div>
 
         {/* ── Custom chord card ── */}
-        <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
+        <div className={`${card} px-3.5 py-3`}>
           <p className={`${heading} mb-2`}>Custom</p>
           <form onSubmit={handleCustomSubmit} className="flex gap-1.5">
             <input
@@ -330,13 +360,13 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
               onChange={(e) => setCustomChord(e.target.value)}
               aria-label="Custom chord"
               placeholder="Badd11, G7sus4…"
-              className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 bg-white transition-shadow"
+              className="flex-1 min-w-0 text-sm border border-rule rounded-lg px-2.5 py-1.5 outline-none focus:border-chord focus:ring-2 focus:ring-chord/15 bg-white transition-shadow"
             />
             {/* Quiet until there is something to use: it is the least used control here. */}
             <button type="submit"
               disabled={!customChord.trim()}
               className={`shrink-0 text-xs px-3.5 py-1.5 rounded-lg border font-semibold transition-colors ${
-                customChord.trim() ? "bg-ink border-transparent text-paper hover:bg-stone-700" : btnWaiting
+                customChord.trim() ? "bg-chord border-chord text-white hover:brightness-110" : btnWaiting
               }`}
             >Use</button>
           </form>
