@@ -52,6 +52,26 @@ test("a chord picked in the palette is placed on a lyric line", async ({ page })
   await expect(page.getByRole("button", { name: "Remove chord" })).toHaveCount(1);
 });
 
+test("a slash chord is built from a root and a bass note", async ({ page }) => {
+  await page.goto("/editor/new");
+  await page.getByRole("dialog", { name: "New chord sheet" }).getByRole("button", { name: /Build from scratch/ }).click();
+  await page.getByRole("textbox", { name: "Type lyrics here…" }).fill(LYRIC);
+  const palette = page.getByRole("complementary");
+  const bassF = palette.getByRole("button", { name: "Bass F", exact: true });
+
+  // The bass notes wait for a root.
+  await expect(bassF).toBeDisabled();
+  await palette.getByRole("button", { name: "D", exact: true }).click();
+  await bassF.click();
+  await palette.getByRole("button", { name: "Bass sharp" }).click();
+  await expect(bassF).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByTitle('Click to place "D/F#"').click();
+  await expect(page.getByRole("button", { name: "Remove chord" })).toHaveCount(1);
+  // Once placed it is one of the song's chords, a click away from the next line.
+  await expect(palette.getByRole("button", { name: "D/F#", exact: true })).toBeVisible();
+});
+
 test("saving as a visitor offers a free account to keep the song", async ({ page }) => {
   await writeAndSaveSong(page);
   await expect(page.getByRole("link", { name: /Keep my songs/ })).toHaveAttribute("href", /^\/login\?/);

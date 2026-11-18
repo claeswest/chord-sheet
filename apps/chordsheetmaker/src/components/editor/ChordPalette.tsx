@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 const ROOTS = ["C", "D", "E", "F", "G", "A", "B"];
 
 const ACCIDENTALS = [
-  { label: "♯", value: "#" },
-  { label: "♭", value: "b" },
+  { label: "♯", value: "#", name: "Sharp" },
+  { label: "♭", value: "b", name: "Flat" },
 ];
 
 // Ordered roughly by how often each quality appears in popular music
@@ -43,6 +43,82 @@ const ADVANCED_QUALITIES = [
   { label: "7alt",  value: "7alt" }, // altered dominant
 ];
 
+/** What the builder has picked so far. There is a chord once there is a root. */
+interface Parts {
+  root: string | null;
+  accidental: string;
+  quality: string;
+  /** The note under a slash chord: the F♯ of D/F♯. */
+  bass: string | null;
+  bassAccidental: string;
+}
+
+const NOTHING_PICKED: Parts = { root: null, accidental: "", quality: "", bass: null, bassAccidental: "" };
+
+function chordName(p: Parts): string | null {
+  if (!p.root) return null;
+  const bass = p.bass ? `/${p.bass}${p.bassAccidental}` : "";
+  return `${p.root}${p.accidental}${p.quality}${bass}`;
+}
+
+const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
+const btnActive = "bg-chord border-transparent text-white";
+const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-ink/40 hover:text-ink";
+// Not usable yet, but still readable: these wait for an earlier step, and a
+// faded-out grid looked broken rather than waiting.
+const btnWaiting = "bg-stone-100 border-transparent text-stone-500 cursor-not-allowed";
+const heading = "text-[11px] font-semibold uppercase tracking-widest text-stone-500";
+const aside = "text-[11px] font-normal normal-case tracking-normal text-stone-500";
+
+/** A button that stays down while its choice is in the chord. */
+function btn(pressed: boolean, waiting = false): string {
+  return `${btnBase} ${waiting ? btnWaiting : pressed ? btnActive : btnIdle}`;
+}
+
+/**
+ * The seven notes and, under them, sharp and flat. Used for the root and again
+ * for the bass, whose buttons say so in their names: otherwise there would be
+ * two buttons called "G".
+ */
+function NotePicker({ note, accidental, onNote, onAccidental, waiting = false, bass = false }: {
+  note: string | null;
+  accidental: string;
+  onNote: (note: string) => void;
+  onAccidental: (value: string) => void;
+  waiting?: boolean;
+  bass?: boolean;
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-7 gap-1">
+        {ROOTS.map((n) => (
+          <button key={n} type="button" onClick={() => onNote(n)}
+            disabled={waiting}
+            aria-pressed={note === n}
+            aria-label={bass ? `Bass ${n}` : undefined}
+            className={`${btn(note === n, waiting)} !px-0 text-center`}
+          >{n}</button>
+        ))}
+      </div>
+      <div className="flex items-center gap-1.5 mt-1.5">
+        {ACCIDENTALS.map((a) => {
+          const pressed = !!note && accidental === a.value;
+          return (
+            <button key={a.value} type="button" onClick={() => onAccidental(a.value)}
+              disabled={!note}
+              aria-pressed={pressed}
+              aria-label={bass ? `Bass ${a.name.toLowerCase()}` : a.name}
+              style={{ fontFamily: "'Noto Music', sans-serif", fontSize: 17 }}
+              className={`${btn(pressed, !note)} w-12 text-center`}
+            >{a.label}</button>
+          );
+        })}
+        <span className="text-[11px] text-stone-500 ml-1">sharp / flat</span>
+      </div>
+    </>
+  );
+}
+
 interface Props {
   activeChord: string | null;
   onSelectChord: (chord: string | null) => void;
@@ -52,11 +128,11 @@ interface Props {
 }
 
 export default function ChordPalette({ activeChord, onSelectChord, onConfirmChord, songChords = [], asideClassName }: Props) {
-  const [root, setRoot] = useState<string | null>(null);
-  const [accidental, setAccidental] = useState("");
-  const [quality, setQuality] = useState("");
+  const [parts, setParts] = useState<Parts>(NOTHING_PICKED);
   const [customChord, setCustomChord] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const { root, accidental, quality, bass, bassAccidental } = parts;
+
   // Keep the advanced row visible whenever an advanced quality is selected.
   const qualityIsAdvanced = ADVANCED_QUALITIES.some((q) => q.value === quality);
 
@@ -74,11 +150,7 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
   };
 
   useEffect(() => {
-    if (!activeChord) {
-      setRoot(null);
-      setAccidental("");
-      setQuality("");
-    }
+    if (!activeChord) setParts(NOTHING_PICKED);
   }, [activeChord]);
 
   // Load Noto Music for musical symbols
@@ -93,39 +165,32 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
     }
   }, []);
 
-  const handleRootClick = (note: string) => {
-    const newRoot = root === note ? null : note;
-    setRoot(newRoot);
-    onSelectChord(newRoot ? `${newRoot}${accidental}${quality}` : null);
-  };
-
-  const handleAccidentalClick = (value: string) => {
-    const newAcc = accidental === value ? "" : value;
-    setAccidental(newAcc);
-    if (root) onSelectChord(`${root}${newAcc}${quality}`);
-  };
-
-  const handleQualityClick = (value: string) => {
-    const newQ = quality === value ? "" : value;
-    setQuality(newQ);
-    if (root) onSelectChord(`${root}${accidental}${newQ}`);
+  /** Changes one part of the chord and selects what that makes. Picking a part twice takes it away. */
+  const pick = (change: Partial<Parts>) => {
+    const next = { ...parts, ...change };
+    setParts(next);
+    onSelectChord(chordName(next));
   };
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customChord.trim()) {
       onSelectChord(customChord.trim());
-      setRoot(null);
-      setAccidental("");
-      setQuality("");
+      setParts(NOTHING_PICKED);
       setCustomChord("");
     }
   };
 
-  const btnBase = "px-2.5 py-1.5 rounded-lg border text-sm font-semibold transition-all duration-150";
-  const btnActive = "bg-chord border-transparent text-white";
-  const btnIdle = "bg-white border-zinc-200 text-zinc-700 hover:border-ink/40 hover:text-ink";
-  const heading = "text-[11px] font-semibold uppercase tracking-widest text-stone-500";
+  const qualityButton = (q: { label: string; value: string }) => {
+    const pressed = !!root && quality === q.value;
+    return (
+      <button key={q.label} type="button" onClick={() => pick({ quality: quality === q.value ? "" : q.value })}
+        disabled={!root}
+        aria-pressed={pressed}
+        className={`${btn(pressed, !root)} !px-0 text-center`}
+      >{q.label}</button>
+    );
+  };
 
   return (
     <aside className={asideClassName ?? "w-80 shrink-0 border-l border-zinc-200 bg-zinc-50 flex flex-col overflow-hidden"}>
@@ -166,12 +231,18 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
         ) : (
           <div className="flex items-center gap-2.5 rounded-xl border border-rule bg-white px-3.5 py-2.5">
             <span className="flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-paper-deep text-chord text-sm">♪</span>
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              Pick a root note, then{" "}
-              <span className="sm:hidden">tap</span>
-              <span className="hidden sm:inline">click</span>{" "}
-              a lyric line to place it.
-            </p>
+            <div className="text-xs text-zinc-600 leading-relaxed">
+              <p>
+                Pick a root note, then{" "}
+                <span className="sm:hidden">tap</span>
+                <span className="hidden sm:inline">click</span>{" "}
+                a lyric line to place it.
+              </p>
+              {/* Only once there is a chord to move: before that it is noise. */}
+              {songChords.length > 0 && (
+                <p className="mt-1 text-stone-500">Drag a placed chord to move it, double-click to rename it.</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -181,8 +252,9 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
             <p className={`${heading} mb-2`}>In this song</p>
             <div className="flex gap-1.5 flex-wrap">
               {songChords.map((chord) => (
-                <button key={chord} onClick={() => { onSelectChord(chord); onConfirmChord?.(); }}
-                  className={`${btnBase} !rounded-full px-3 ${activeChord === chord ? btnActive : btnIdle}`}
+                <button key={chord} type="button" onClick={() => { onSelectChord(chord); onConfirmChord?.(); }}
+                  aria-pressed={activeChord === chord}
+                  className={`${btn(activeChord === chord)} !rounded-full px-3`}
                 >{chord}</button>
               ))}
             </div>
@@ -195,52 +267,28 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
           {/* Root + accidental — one visual step */}
           <div className="px-3.5 py-3 border-b border-zinc-100">
             <p className={`${heading} mb-2`}>Root</p>
-            <div className="grid grid-cols-7 gap-1">
-              {ROOTS.map((note) => (
-                <button key={note} onClick={() => handleRootClick(note)}
-                  className={`${btnBase} !px-0 text-center ${root === note ? btnActive : btnIdle}`}
-                >{note}</button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              {ACCIDENTALS.map((a) => (
-                <button key={a.label} onClick={() => handleAccidentalClick(a.value)}
-                  disabled={!root}
-                  style={{ fontFamily: "'Noto Music', sans-serif", fontSize: 17 }}
-                  className={`${btnBase} w-12 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
-                    accidental === a.value && root ? btnActive : btnIdle
-                  }`}
-                >{a.label}</button>
-              ))}
-              <span className="text-[11px] text-stone-500 ml-1">sharp / flat</span>
-            </div>
+            <NotePicker
+              note={root}
+              accidental={accidental}
+              onNote={(n) => pick({ root: root === n ? null : n })}
+              onAccidental={(v) => pick({ accidental: accidental === v ? "" : v })}
+            />
           </div>
 
           {/* Quality */}
-          <div className="px-3.5 py-3">
-            <p className={`${heading} mb-2`}>Quality</p>
+          <div className="px-3.5 py-3 border-b border-zinc-100">
+            <p className={`${heading} mb-2 flex items-baseline justify-between`}>
+              Quality
+              {!root && <span className={aside}>Pick a root first</span>}
+            </p>
             <div className="grid grid-cols-4 gap-1">
-              {QUALITIES.map((q) => (
-                <button key={q.label} onClick={() => handleQualityClick(q.value)}
-                  disabled={!root}
-                  className={`${btnBase} !px-0 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
-                    quality === q.value && root ? btnActive : btnIdle
-                  }`}
-                >{q.label}</button>
-              ))}
+              {QUALITIES.map(qualityButton)}
             </div>
 
             {/* Advanced jazz qualities */}
             {(showAdvanced || qualityIsAdvanced) && (
               <div className="grid grid-cols-4 gap-1 mt-1">
-                {ADVANCED_QUALITIES.map((q) => (
-                  <button key={q.label} onClick={() => handleQualityClick(q.value)}
-                    disabled={!root}
-                    className={`${btnBase} !px-0 text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${
-                      quality === q.value && root ? btnActive : btnIdle
-                    }`}
-                  >{q.label}</button>
-                ))}
+                {ADVANCED_QUALITIES.map(qualityButton)}
               </div>
             )}
 
@@ -255,26 +303,44 @@ export default function ChordPalette({ activeChord, onSelectChord, onConfirmChor
               </svg>
             </button>
           </div>
+
+          {/* Bass: the note after the slash */}
+          <div className="px-3.5 py-3">
+            <p className={`${heading} mb-2 flex items-baseline justify-between`}>
+              Bass note
+              <span className={aside}>optional, as in D/F♯</span>
+            </p>
+            <NotePicker
+              bass
+              waiting={!root}
+              note={bass}
+              accidental={bassAccidental}
+              onNote={(n) => pick(bass === n ? { bass: null, bassAccidental: "" } : { bass: n })}
+              onAccidental={(v) => pick({ bassAccidental: bassAccidental === v ? "" : v })}
+            />
+          </div>
         </div>
 
         {/* ── Custom chord card ── */}
         <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm px-3.5 py-3">
-          <p className={`${heading} mb-2`}>Custom <span className="text-zinc-300 normal-case tracking-normal font-normal">(e.g. D/F#)</span></p>
+          <p className={`${heading} mb-2`}>Custom</p>
           <form onSubmit={handleCustomSubmit} className="flex gap-1.5">
             <input
               value={customChord}
               onChange={(e) => setCustomChord(e.target.value)}
-              placeholder="D/F#, Badd11…"
+              aria-label="Custom chord"
+              placeholder="Badd11, G7sus4…"
               className="flex-1 min-w-0 text-sm border border-zinc-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 bg-white transition-shadow"
             />
+            {/* Quiet until there is something to use: it is the least used control here. */}
             <button type="submit"
-              className="shrink-0 text-xs bg-ink text-paper px-3.5 py-1.5 rounded-lg hover:bg-stone-700 transition-colors font-semibold"
+              disabled={!customChord.trim()}
+              className={`shrink-0 text-xs px-3.5 py-1.5 rounded-lg border font-semibold transition-colors ${
+                customChord.trim() ? "bg-ink border-transparent text-paper hover:bg-stone-700" : btnWaiting
+              }`}
             >Use</button>
           </form>
         </div>
-
-        {/* ── Tip ── */}
-        <p className="text-[11px] text-stone-500 px-1">Drag a placed chord to move it · double-click to rename</p>
 
       </div>
     </aside>
