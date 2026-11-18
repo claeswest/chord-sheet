@@ -139,8 +139,8 @@ before adding a test. Like the rest of that job they report and do not stop a
 release.
 
 To run them on your own machine, Playwright's browser has to be downloaded once
-(`npx playwright install --only-shell chromium`, about 250 MB on disk, kept outside the
-repository). Without it every test fails at once with "Executable doesn't exist".
+(`npx playwright install chromium`, kept outside the repository). Without it every
+test fails at once with "Executable doesn't exist".
 
 One thing does stop a release: ChordSheetMaker's build runs its unit tests first
 (`vitest run && next build`). A failing test fails the Vercel build, and Vercel
@@ -154,7 +154,9 @@ npm run build          # production build (run before pushing anything risky)
 npx tsc --noEmit       # typecheck
 npm test               # unit tests (Vitest)
 npm run e2e            # browser tests (Playwright); needs `npm run build` first
-npx playwright install --only-shell chromium   # once per machine, before the first `npm run e2e`
+npm run e2e:watch      # the same, slowly, in a window you can watch
+npm run e2e:ui         # Playwright's window: pick a test, step through it
+npx playwright install chromium   # once per machine, before the first `npm run e2e`
 npm run lint           # eslint
 npx prisma studio      # browse/edit the database in a GUI
 npx prisma db push     # apply schema.prisma changes (additive changes are safe)

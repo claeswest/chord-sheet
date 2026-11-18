@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Browser tests: a real Chromium clicks through the app the way a visitor
 // would. `npm run e2e` at the repository root, or in CI (.github/workflows/ci.yml).
+// To see it happen: `npm run e2e:watch` opens a window and goes through the
+// tests one at a time, slowly; `npm run e2e:ui` opens Playwright's own window,
+// where a test can be picked and stepped through.
 //
 // They run against the production build, not the dev server, so build first
 // (`npm run build` at the root). Playwright starts `next start` on a port of
@@ -28,6 +31,9 @@ export default defineConfig({
     // to step through what the browser saw.
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    // `npm run e2e:watch` sets this: a pause after every click and keystroke,
+    // so a person can follow what the browser is doing. Unset, tests run flat out.
+    launchOptions: { slowMo: Number(process.env.E2E_SLOW_MS ?? 0) },
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

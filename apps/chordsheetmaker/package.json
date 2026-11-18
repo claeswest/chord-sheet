@@ -10,7 +10,9 @@
     "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:watch": "cross-env E2E_SLOW_MS=500 playwright test --headed --workers=1",
+    "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
