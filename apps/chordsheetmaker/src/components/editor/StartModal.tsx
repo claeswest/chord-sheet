@@ -106,7 +106,7 @@ export default function StartModal({ onSearch, onImport, onWriteMyself, onTempla
           <Option
             onClick={onWriteMyself}
             title="Build from scratch"
-            hint="Type your lyrics, then click or drag to place chords"
+            hint="Type your lyrics, then click to place chords"
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />

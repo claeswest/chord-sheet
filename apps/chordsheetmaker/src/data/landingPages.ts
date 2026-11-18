@@ -44,8 +44,8 @@ export const LANDING_PAGES: LandingPage[] = [
         body: "Search for any song by name and our AI builds a complete chord sheet for you — chords aligned over the right syllables, sections labelled, ready to play. Tweak anything with a click.",
       },
       {
-        heading: "Drag-and-drop chord placement",
-        body: "Grab a chord and drop it above the exact beat where the change happens. What you see is what you play — perfectly spaced on every device, every screen size.",
+        heading: "Point-and-click chord placement",
+        body: "Pick a chord and click above the exact beat where the change happens, then drag it sideways to fine-tune. What you see is what you play — perfectly spaced on every device, every screen size.",
       },
       {
         heading: "Perform hands-free",
@@ -90,7 +90,7 @@ export const LANDING_PAGES: LandingPage[] = [
     sections: [
       {
         heading: "Chords above every lyric — perfectly aligned",
-        body: "Drop chords exactly where the change lands. Capo and transpose tools let you move any song into a key that suits your voice and your open-chord shapes.",
+        body: "Place chords exactly where the change lands. Capo and transpose tools let you move any song into a key that suits your voice and your open-chord shapes.",
       },
       {
         heading: "From your couch to the stage",
@@ -237,7 +237,7 @@ export const LANDING_PAGES: LandingPage[] = [
     sections: [
       {
         heading: "Chords above every lyric",
-        body: "Drop each chord exactly where the change lands so you always know what to play next. Perfectly spaced on your phone, tablet or laptop.",
+        body: "Place each chord exactly where the change lands so you always know what to play next. Perfectly spaced on your phone, tablet or laptop.",
       },
       {
         heading: "Transpose to a uke-friendly key",
@@ -338,8 +338,8 @@ export const LANDING_PAGES: LandingPage[] = [
         body: "Search any song by name and our AI builds a complete chord chart — chords aligned over the right syllables, sections labelled, ready to play.",
       },
       {
-        heading: "Drag-and-drop placement",
-        body: "Grab a chord and drop it above the exact beat where it changes. What you see is what you play, perfectly spaced on every screen.",
+        heading: "Point-and-click placement",
+        body: "Pick a chord and click above the exact beat where it changes, then drag it sideways to fine-tune. What you see is what you play, perfectly spaced on every screen.",
       },
       {
         heading: "Transpose and perform",

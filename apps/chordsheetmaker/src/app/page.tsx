@@ -48,7 +48,7 @@ const featureGroups: { label: string; items: { title: string; description: strin
   {
     label: "Make it yours",
     items: [
-      { title: "Drag chords into place", description: "Drop each chord above the syllable where the change lands. No fiddling with spaces." },
+      { title: "Place chords with a click", description: "Click above the syllable where the change lands, and drag a chord to nudge it. No fiddling with spaces." },
       { title: "Transpose to your key", description: "One tap moves the whole chart up or down, with every chord respelled for the new key." },
       { title: "Style it with AI", description: "One press, and the AI reads the lyrics and gives the song fonts, colours and a picture." },
     ],
