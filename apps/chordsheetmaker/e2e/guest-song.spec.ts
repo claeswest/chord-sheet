@@ -33,9 +33,40 @@ test("the start page's button opens the demo song in the editor", async ({ page 
 test("a new song starts by asking how, with every way in on offer", async ({ page }) => {
   await page.goto("/editor/new");
   const dialog = page.getByRole("dialog", { name: "New chord sheet" });
-  for (const way of [/Find a song with AI/, /I already have chords/, /Use a template/, /Build from scratch/, /Explore with a demo song/]) {
+  // The first way is a field to type a title in, and that is where typing starts.
+  await expect(dialog.getByRole("textbox", { name: "Find a song with AI" })).toBeFocused();
+  for (const way of [/I already have chords/, /Use a template/, /Build from scratch/, /Explore with a demo song/]) {
     await expect(dialog.getByRole("button", { name: way })).toBeVisible();
   }
+});
+
+test("a title typed on the start screen is searched for at once", async ({ page }) => {
+  // The AI is paid per request, so this test answers for it. A request that
+  // got past these two would reach the guard and fail the test.
+  const asked: string[] = [];
+  const found = { title: "Paper Lanterns", artist: "The Tests", text: "Verse 1\n[Am]Paper lanterns [G]on the water" };
+  await page.route("**/api/ai/search", (route) => {
+    asked.push(route.request().postDataJSON().query);
+    return route.fulfill({ json: found });
+  });
+  await page.route("**/api/ai/parse", (route) => route.fulfill({ json: found }));
+
+  await page.goto("/editor/new");
+  const search = page.getByRole("textbox", { name: "Find a song with AI" });
+  await search.fill("paper lanterns");
+  await search.press("Enter");
+
+  // No second dialog to type it in again: the song is found and offered.
+  await page.getByRole("button", { name: /Import$/ }).click();
+  await expect(page.getByRole("textbox", { name: "Song title" })).toHaveValue("Paper Lanterns");
+  expect(asked).toEqual(["paper lanterns"]);
+});
+
+test("Escape leaves the start screen for the library", async ({ page }) => {
+  await page.goto("/editor/new");
+  await expect(page.getByRole("dialog", { name: "New chord sheet" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/songs$/);
 });
 
 test("a chord picked in the palette is placed on a lyric line", async ({ page }) => {

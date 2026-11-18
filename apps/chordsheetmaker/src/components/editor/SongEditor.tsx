@@ -240,6 +240,8 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
   const [showImport, setShowImport] = useState<"search" | "text" | "image" | false>(
     initialMode === "search" ? "search" : initialMode === "import" ? "text" : false
   );
+  // A title typed on the start screen, handed to the search dialog to look up at once.
+  const [startQuery, setStartQuery] = useState("");
   // Start modal: only show on a genuinely blank new song
   const isBlankNew = !initialSong || (
     (initialSong.lines?.length ?? 0) <= 1 &&
@@ -1748,7 +1750,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {/* Start modal — full-page overlay for blank new songs */}
       {mounted && !startModalDismissed && !showTemplateModal && (
         <StartModal
-          onSearch={() => { trackStartChoice("search"); setStartModalDismissed(true); setShowImport("search"); }}
+          onSearch={(query) => { trackStartChoice("search"); setStartModalDismissed(true); setStartQuery(query); setShowImport("search"); }}
           onImport={() => { trackStartChoice("import"); setStartModalDismissed(true); setShowImport("text"); }}
           onWriteMyself={() => { trackStartChoice("scratch"); setStartModalDismissed(true); }}
           onTemplate={() => { trackStartChoice("template"); setShowTemplateModal(true); }}
@@ -1788,6 +1790,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       {showImport && (
         <ImportModal
           defaultTab={showImport}
+          initialQuery={startQuery}
           onImport={(imported, meta, source) => {
             creationOrigin.current =
               source === "search" ? "ai-search" : source === "photo" ? "photo" : "pasted-text";
@@ -1803,6 +1806,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           }}
           onClose={(didImport) => {
             setShowImport(false);
+            setStartQuery("");
             // Only redirect if the user closed without importing anything
             if (!didImport) {
               const stillBlank = !title && !artist &&

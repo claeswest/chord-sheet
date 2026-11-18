@@ -14,6 +14,8 @@ interface Props {
   onImport: (lines: SongLine[], meta?: ImportMeta, source?: "search" | "text" | "photo") => void;
   onClose: (didImport?: boolean) => void;
   defaultTab?: "search" | "text" | "image";
+  /** A title already typed on the start screen: it is searched for at once. */
+  initialQuery?: string;
 }
 
 const EXAMPLE = `Verse 1
@@ -82,7 +84,7 @@ function ChordPreview({ preview }: { preview: SongLine[] }) {
   );
 }
 
-export default function ImportModal({ onImport, onClose, defaultTab = "search" }: Props) {
+export default function ImportModal({ onImport, onClose, defaultTab = "search", initialQuery = "" }: Props) {
   const [tab, setTab] = useState<"search" | "text" | "image">(defaultTab);
 
   const [text, setText] = useState("");
@@ -98,7 +100,7 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
     defaultTab === "search" ? "search" : "text"
   );
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -108,6 +110,15 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search" }
   const [ocrError, setOcrError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+
+  // Once only: in development React runs a new effect twice, and a search costs money.
+  const searchedOnArrival = useRef(false);
+  useEffect(() => {
+    if (!initialQuery.trim() || searchedOnArrival.current) return;
+    searchedOnArrival.current = true;
+    handleSearch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (tab === "text" && !cleaned) textareaRef.current?.focus();
