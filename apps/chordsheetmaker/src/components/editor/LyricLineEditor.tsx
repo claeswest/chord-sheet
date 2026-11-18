@@ -255,7 +255,10 @@ export default function LyricLineEditor({
   })();
 
   return (
-    <div className="group/line relative py-0.5 px-1 rounded-lg transition-colors hover:bg-ink/15 border-l-2 border-transparent hover:border-ink/40">
+    // A line with chords gets air above it, and its chords stand on the bottom
+    // edge of their row, so they sit next to their own words. They used to hang
+    // from the top of the row, which put them nearer the line above.
+    <div className={`group/line relative pb-0.5 px-1 rounded-lg transition-colors hover:bg-ink/15 border-l-2 border-transparent hover:border-ink/40 ${line.chords.length > 0 ? "pt-2" : "pt-0.5"}`}>
       {/* ── Chord row ────────────────────────────────────────────────────────── */}
       <div
         ref={chordAreaRef}
@@ -285,7 +288,7 @@ export default function LyricLineEditor({
           <div
             key={chord.id}
             data-chord-token
-            className="group/chord absolute top-0 flex items-center"
+            className="group/chord absolute bottom-0 flex items-center"
             style={{ left: chordDisplayPositions.get(chord.id) ?? chordLeftPx(chord.position) }}
             onMouseDown={(e) => {
               if ((e.target as HTMLElement).closest("[data-chord-delete]")) return;
@@ -385,7 +388,7 @@ export default function LyricLineEditor({
               if (e.key === "Escape") setAddingAtPx(null);
             }}
             placeholder="Am"
-            className="absolute top-0 w-14 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm z-10"
+            className="absolute bottom-0 w-14 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm z-10"
             style={{ fontSize: chordSize, left: addingAtPx, fontFamily: chordFont }}
             onClick={(e) => e.stopPropagation()}
           />
@@ -394,7 +397,7 @@ export default function LyricLineEditor({
         {/* Ghost chord — follows cursor when activeChord is set */}
         {activeChord && chordHoverPx !== null && (
           <span
-            className="absolute top-0 pointer-events-none opacity-70"
+            className="absolute bottom-0 pointer-events-none opacity-70"
             style={{
               left: chordLeftPx(pxToCharPos(line.text, chordHoverPx)),
               fontSize: chordSize,
@@ -410,7 +413,7 @@ export default function LyricLineEditor({
 
       {/* Divider between chord row and lyric row */}
       {(line.chords.length > 0 || addingAtPx !== null) && (
-        <div className="w-full h-px bg-ink/10 mb-0.5 opacity-0 group-hover/line:opacity-100 transition-opacity" />
+        <div className="w-full h-px bg-ink/10 opacity-0 group-hover/line:opacity-100 transition-opacity" />
       )}
 
       {/* ── Lyric input ──────────────────────────────────────────────────────── */}
