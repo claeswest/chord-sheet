@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { SongLine } from "@/types/song";
+import type { LyricLine, SongLine } from "@/types/song";
 import { parseChordSheet } from "@/lib/parseChordSheet";
 import { trackAiSearch, trackImportSuccess, activityBeacon, anonHeader } from "@/lib/analytics";
 
@@ -44,42 +44,77 @@ function Spinner({ size = 4 }: { size?: number }) {
   );
 }
 
+/**
+ * What the dialog shows while the AI works: finding the song, then tidying it.
+ * The notes rise one after another; with reduced motion they stand still.
+ */
+function Working({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div role="status" className="flex-1 flex flex-col items-center justify-center gap-2 py-14 text-center">
+      <style>{`
+        @keyframes note-rise { 0%, 100% { transform: translateY(0); opacity: .35 } 40% { transform: translateY(-7px); opacity: 1 } }
+        .note-rise { display: inline-block; animation: note-rise 1.2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .note-rise { animation: none; opacity: 1 } }
+      `}</style>
+      <div aria-hidden className="flex gap-2 text-2xl text-chord mb-2">
+        {["♪", "♫", "♪"].map((note, i) => (
+          <span key={i} className="note-rise" style={{ animationDelay: `${i * 0.18}s` }}>{note}</span>
+        ))}
+      </div>
+      <p className="font-display text-xl text-ink">{title}</p>
+      <p className="text-sm text-stone-500">{detail}</p>
+    </div>
+  );
+}
+
+/**
+ * One line of the preview. The words are cut where the chords fall, and each
+ * chord sits on top of its piece, so it stays over its syllable in a typeface
+ * where letters differ in width. (Chords used to be listed at the start of the
+ * line, which showed which chords, but not where.)
+ */
+function PreviewLine({ line }: { line: LyricLine }) {
+  const lyric = "text-[15px] leading-snug text-ink";
+  if (line.chords.length === 0) return <div className={`${lyric} whitespace-pre-wrap`}>{line.text}</div>;
+
+  const chords = [...line.chords].sort((a, b) => a.position - b.position);
+  const cut = (i: number) => i < chords.length
+    ? Math.min(Math.max(0, Math.round(chords[i].position)), line.text.length)
+    : line.text.length;
+  const pieces = [
+    ...(cut(0) > 0 ? [{ chord: "", text: line.text.slice(0, cut(0)) }] : []),
+    ...chords.map((c, i) => ({ chord: c.chord, text: line.text.slice(cut(i), cut(i + 1)) })),
+  ];
+  return (
+    <div className="flex flex-wrap items-end">
+      {pieces.map((piece, i) => (
+        <span key={i} className="inline-flex flex-col">
+          {/* The space after a chord keeps two close chords from running together. */}
+          <span className="h-[1.35em] pr-2 text-[13px] font-semibold text-chord whitespace-nowrap">{piece.chord}</span>
+          {line.text && <span className={`${lyric} whitespace-pre`}>{piece.text || "\u00A0"}</span>}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function ChordPreview({ preview }: { preview: SongLine[] }) {
-  // Strip all empty lines — section headers already provide spacing via pt-6
+  // Strip all empty lines — section headers already provide the spacing
   const filtered = preview.filter((line) =>
     line.type === "section" || line.text.trim() || line.chords.length > 0
   );
 
   return (
-    <div className="space-y-0">
-      {filtered.map((line) => {
-        if (line.type === "section") {
-          return (
-            <div key={line.id} className="pt-6 pb-1 first:pt-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-chord">
-                {line.label}
-              </span>
-            </div>
-          );
-        }
-        if (!line.text.trim() && line.chords.length === 0) return null;
-        const hasChords = line.chords.length > 0;
-        const hasText = line.text.trim().length > 0;
-        return (
-          <div key={line.id} className="relative mb-0.5" style={{ paddingTop: hasChords ? "1.4em" : 0 }}>
-            {hasChords && (
-              <div className="absolute top-0 left-0 text-xs font-semibold text-chord tracking-wide whitespace-nowrap">
-                {line.chords.map((c) => c.chord).join("  ")}
-              </div>
-            )}
-            {hasText && (
-              <div className="text-sm text-zinc-700 leading-snug whitespace-pre-wrap">
-                {line.text}
-              </div>
-            )}
+    <div>
+      {filtered.map((line) =>
+        line.type === "section" ? (
+          <div key={line.id} className="pt-6 pb-1.5 first:pt-0">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-chord">{line.label}</span>
           </div>
-        );
-      })}
+        ) : (
+          <div key={line.id} className="mb-1"><PreviewLine line={line} /></div>
+        )
+      )}
     </div>
   );
 }
@@ -123,7 +158,9 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
   useEffect(() => {
     if (tab === "text" && !cleaned) textareaRef.current?.focus();
     if (tab === "search") searchInputRef.current?.focus();
-  }, [tab, cleaned]);
+    // searchLoading too: the field is away while a search runs, and typing
+    // should resume in it when a search fails and it comes back.
+  }, [tab, cleaned, searchLoading]);
 
   useEffect(() => {
     if (text.trim()) {
@@ -296,6 +333,16 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
   const showReview = cleaned && !aiLoading;
   const searchOnly = defaultTab === "search";
 
+  // Out of the result without leaving the dialog: the wrong song, or text that
+  // needs another look. Closing instead would drop a new song back in the library.
+  const backToInput = () => {
+    setCleaned(false);
+    if (!searchOnly) return;
+    setText("");
+    setMeta({});
+    setTab("search");
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -308,18 +355,18 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
         <div className="flex items-center justify-between px-6 py-4 bg-paper-deep border-b border-rule">
           {!showReview ? (
             <div>
-              <h2 className="text-base font-semibold text-ink">
+              <h2 className="font-display font-medium text-2xl leading-tight tracking-[-0.01em] text-ink">
                 {searchOnly ? "Find a song" : "Import from web or photo"}
               </h2>
-              <p className="text-xs mt-0.5 text-stone-600">
+              <p className="text-[13px] mt-1 text-stone-600">
                 {searchOnly
-                  ? "Type artist and song below — AI does the rest."
+                  ? "Type the artist and song — AI does the rest."
                   : "Paste chords from a website or upload a photo."}
               </p>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold shrink-0">✓</span>
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-chord text-white text-[11px] font-bold shrink-0">✓</span>
               <span className="text-sm font-semibold text-ink">Chords found</span>
             </div>
           )}
@@ -354,15 +401,15 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
         {showReview ? (
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Song identity */}
-            <div className="px-6 py-3 border-b border-zinc-100">
-              <div className="text-xl font-semibold text-zinc-900">
-                {meta.title ?? <span className="italic text-zinc-400">Untitled</span>}
+            {/* The chart on paper: its title, then the song. */}
+            <div className="flex-1 overflow-y-auto bg-paper px-7 sm:px-9 pt-6 pb-8">
+              <div className="font-display font-medium text-[1.75rem] leading-tight tracking-[-0.01em] text-ink">
+                {meta.title ?? <span className="italic text-stone-500">Untitled</span>}
               </div>
-              {meta.artist && <div className="text-sm text-zinc-400 mt-0.5">{meta.artist}</div>}
-            </div>
-            {/* Chord preview */}
-            <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8">
-              <ChordPreview preview={preview} />
+              {meta.artist && <div className="text-sm text-stone-600 mt-1">{meta.artist}</div>}
+              <div className="mt-5 pt-5 border-t border-rule">
+                <ChordPreview preview={preview} />
+              </div>
             </div>
           </div>
 
@@ -370,8 +417,12 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
           /* ── Input views ── */
           <div className="flex flex-col flex-1 p-5 gap-4 bg-white">
 
-            {tab === "search" && (
-              <div className="flex-1 flex flex-col justify-center gap-4 py-4">
+            {tab === "search" && searchLoading && (
+              <Working title="Finding the chords…" detail={`“${query.trim()}”`} />
+            )}
+
+            {tab === "search" && !searchLoading && (
+              <div className="flex-1 flex flex-col justify-center gap-3 py-4">
                 {searchError && (
                   <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{searchError}</p>
                 )}
@@ -383,29 +434,28 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
                     onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                     placeholder="e.g. Oasis Wonderwall"
                     spellCheck={false}
-                    className="flex-1 border border-zinc-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-ink transition-colors"
+                    aria-label="Artist and song"
+                    className="flex-1 min-w-0 border border-rule rounded-lg px-4 py-3 text-base text-ink outline-none placeholder:text-stone-400 focus:border-chord focus:ring-2 focus:ring-chord/15 transition-shadow"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={!query.trim() || searchLoading}
                     className="flex items-center gap-1.5 text-sm font-medium bg-ink hover:bg-stone-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                   >
-                    {searchLoading ? <><Spinner size={4} /> Searching…</> : <>✦ Search</>}
+                    Search
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400">Results may need a tweak — AI isn&apos;t always perfect.</p>
+                <p className="text-[13px] text-stone-500">Results may need a tweak — AI isn&apos;t always perfect.</p>
               </div>
             )}
 
             {tab === "text" && (
               <>
                 {aiLoading ? (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 text-center">
-                    <style>{`@keyframes wave { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(30deg)} }`}</style>
-                    <span style={{ fontSize: 40, display: "inline-block", transformOrigin: "bottom right", animation: "wave 1.4s ease-in-out infinite" }}>🪄</span>
-                    <p className="text-sm font-medium text-zinc-600">AI is cleaning up the chord sheet…</p>
-                    <p className="text-xs text-zinc-400">This usually takes a few seconds</p>
-                  </div>
+                  <Working
+                    title={importSource.current === "search" ? "Found it. Tidying up the chart…" : "Tidying up the chart…"}
+                    detail="This usually takes a few seconds"
+                  />
                 ) : (
                   <>
                     {aiError && (
@@ -501,7 +551,15 @@ export default function ImportModal({ onImport, onClose, defaultTab = "search", 
 
         {/* Footer — only shown when there is something to import */}
         {preview.length > 0 && !aiLoading && (
-          <div className="flex items-center justify-end px-6 py-4 border-t border-zinc-100 bg-white">
+          <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-rule bg-white">
+            {showReview ? (
+              <button
+                onClick={backToInput}
+                className="text-sm font-medium text-stone-600 hover:text-ink underline underline-offset-4 decoration-ink/20 hover:decoration-ink transition-colors"
+              >
+                {searchOnly ? "Search again" : "Back to the text"}
+              </button>
+            ) : <span />}
             <button
               onClick={handleImport}
               className="flex items-center gap-1.5 text-sm font-medium bg-ink hover:bg-stone-700 text-white px-5 py-3 rounded-lg transition-colors"

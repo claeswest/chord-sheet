@@ -56,10 +56,18 @@ test("a title typed on the start screen is searched for at once", async ({ page 
   await search.fill("paper lanterns");
   await search.press("Enter");
 
-  // No second dialog to type it in again: the song is found and offered.
+  // No second dialog to type it in again: the song is found and shown.
+  await expect(page.getByText("Chords found")).toBeVisible();
+
+  // The wrong song is not a dead end: back to the field, the title still in it.
+  await page.getByRole("button", { name: "Search again" }).click();
+  const again = page.getByRole("textbox", { name: "Artist and song" });
+  await expect(again).toHaveValue("paper lanterns");
+  await again.press("Enter");
+
   await page.getByRole("button", { name: /Import$/ }).click();
   await expect(page.getByRole("textbox", { name: "Song title" })).toHaveValue("Paper Lanterns");
-  expect(asked).toEqual(["paper lanterns"]);
+  expect(asked).toEqual(["paper lanterns", "paper lanterns"]);
 });
 
 test("Escape leaves the start screen for the library", async ({ page }) => {
