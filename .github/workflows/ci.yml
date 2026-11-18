@@ -1,4 +1,5 @@
-# Builds, typechecks and tests all three apps on every push.
+# Builds, typechecks and tests all three apps on every push, and clicks through
+# ChordSheetMaker in a real browser.
 #
 # Why this exists: `master` deploys to production by itself, and the only
 # check before that was whatever was run by hand — in practice a build of
@@ -10,8 +11,9 @@
 # push and does not wait for this. A red run here is a warning to act on, not
 # a gate. (ChordSheetMaker's unit tests are a gate, but not through this file:
 # its build script runs them first, so a failing test fails the Vercel build
-# and the version already live stays.) It runs the unit tests there are, which is a handful: for the most
-# part it proves the code compiles and builds, not that it behaves.
+# and the version already live stays.) It runs the unit tests there are, which
+# is a handful, and ChordSheetMaker's browser tests, which cover what a visitor
+# without an account can do. Nothing here signs in, pays or calls the AI.
 #
 # No secrets are used. The values below are placeholders that let the apps
 # build: nothing connects to a database or signs anything while building.
@@ -72,6 +74,30 @@ jobs:
       # that is ChordSheetMaker; the others skip this step until they do.
       - name: Test
         run: npm run test --workspace=${{ matrix.app }} --if-present
+
+      # Browser tests, for the apps that have any (a playwright.config.ts and
+      # `npm run e2e` in the app). So far that is ChordSheetMaker. They run
+      # against the build made above, on a server with no database and no
+      # keys: apps/chordsheetmaker/e2e/fixtures.ts says what they may touch.
+      - name: Install the test browser
+        if: hashFiles(format('apps/{0}/playwright.config.ts', matrix.app)) != ''
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Browser tests
+        if: hashFiles(format('apps/{0}/playwright.config.ts', matrix.app)) != ''
+        run: npm run e2e --workspace=${{ matrix.app }}
+
+      # For a failed test: a screenshot and a trace of what the browser saw.
+      # Download it from the run's page and open the trace with
+      # `npx playwright show-trace trace.zip`.
+      - name: Keep what the failed browser tests saw
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-tests-${{ matrix.app }}
+          path: apps/${{ matrix.app }}/e2e/.results/
+          if-no-files-found: ignore
+          retention-days: 7
 
   core:
     name: shared code

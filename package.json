@@ -12,6 +12,7 @@
     "lint": "npm run lint --workspace=chordsheetmaker",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "e2e": "cross-env NEXT_DIST_DIR=.next-build npm run e2e --workspace=chordsheetmaker",
     "dev:recipes": "npm run dev --workspace=recipemaker",
     "build:recipes": "cross-env NEXT_DIST_DIR=.next-build npm run build --workspace=recipemaker",
     "dev:schedules": "npm run dev --workspace=schedulemaker",

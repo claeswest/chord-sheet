@@ -126,8 +126,17 @@ Every push to `master` is deployed by Vercel, and separately built and typecheck
 for all three apps by GitHub Actions (`.github/workflows/ci.yml`). The two do not
 wait for each other: a red run is a warning that something already went out, or
 failed to. It also runs the unit tests (`npm test`), of which there are only a few so
-far, so a green run mostly means the code builds, not that it behaves. A test sits
-beside what it tests, as `<file>.test.ts`.
+far. A test sits beside what it tests, as `<file>.test.ts`.
+
+ChordSheetMaker also has browser tests (`apps/chordsheetmaker/e2e`, Playwright): a
+real Chromium opens the built app and does what a visitor without an account can
+do — open the public pages, write and save a song, find it in the library, play
+it. They run in the same GitHub Actions job, after the build. They do not sign in,
+pay or use the AI: the test server is started without a database and without keys,
+and the browser is kept from every site but the app itself, so a run is not a
+visit in Analytics either. `e2e/fixtures.ts` is where that is decided; read it
+before adding a test. Like the rest of that job they report and do not stop a
+release.
 
 One thing does stop a release: ChordSheetMaker's build runs its unit tests first
 (`vitest run && next build`). A failing test fails the Vercel build, and Vercel
@@ -140,6 +149,7 @@ npm run dev            # dev server
 npm run build          # production build (run before pushing anything risky)
 npx tsc --noEmit       # typecheck
 npm test               # unit tests (Vitest)
+npm run e2e            # browser tests (Playwright); needs `npm run build` first
 npm run lint           # eslint
 npx prisma studio      # browse/edit the database in a GUI
 npx prisma db push     # apply schema.prisma changes (additive changes are safe)

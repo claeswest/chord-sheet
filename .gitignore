@@ -15,6 +15,9 @@ node_modules
 
 # testing
 coverage/
+# What Playwright leaves behind from a failed browser test (apps/*/e2e).
+**/e2e/.results/
+playwright-report/
 
 # next.js
 .next/
