@@ -79,6 +79,25 @@ test("a slash chord is built from a root and a bass note", async ({ page }) => {
   await expect(bassF).toHaveAttribute("aria-pressed", "true");
 });
 
+test("a background picture that was replaced can be brought back", async ({ page }) => {
+  // The smallest picture there is: one pixel.
+  const pixel = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+  await page.goto("/editor/new?start=demo");
+  await page.getByRole("button", { name: "Background", exact: true }).click();
+  const current = page.getByAltText("The song's background picture");
+  await expect(current).toHaveAttribute("src", "/demo-background.jpg");
+
+  await page.getByRole("button", { name: "Upload image" }).click();
+  await page.locator("#bg-upload-input").setInputFiles({ name: "pixel.png", mimeType: "image/png", buffer: pixel });
+  await expect(current).toHaveAttribute("src", /^data:image\//);
+
+  // The demo's picture was replaced, not lost.
+  await page.getByRole("button", { name: "Bring back earlier picture 1" }).click();
+  await expect(current).toHaveAttribute("src", "/demo-background.jpg");
+  // And the uploaded one is now the earlier picture.
+  await expect(page.getByRole("button", { name: /^Bring back earlier picture/ })).toHaveCount(1);
+});
+
 test("saving as a visitor offers a free account to keep the song", async ({ page }) => {
   await writeAndSaveSong(page);
   await expect(page.getByRole("link", { name: /Keep my songs/ })).toHaveAttribute("href", /^\/login\?/);

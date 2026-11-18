@@ -27,7 +27,7 @@ import { Wordmark } from "@/components/landing/kit";
 import SongViewer from "./SongViewer";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
-import StylePanel from "./StylePanel";
+import StylePanel, { type Picture } from "./StylePanel";
 import { transposeSong, transposeChord, semitoneLabel } from "@/lib/transpose";
 import PrintView from "./PrintView";
 import StartModal from "./StartModal";
@@ -284,6 +284,30 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
     }
     return base;
   });
+
+  // ── Earlier pictures ─────────────────────────────────────────────────────────
+  // A new picture replaces the one in use, and Undo covers the lines, not the
+  // look. So every picture the song stops showing — replaced, removed, or
+  // swept away by "Style it" — is kept here, where the Background tab offers it
+  // back. In memory only: a few pictures would not fit in a guest's browser
+  // storage, so they last until the page is left.
+  const MAX_EARLIER_PICTURES = 4;
+  const [earlierPictures, setEarlierPictures] = useState<Picture[]>([]);
+  const shownPicture = useRef<Picture | null>(null);
+  useEffect(() => {
+    const now = songStyle.backgroundImage
+      ? { image: songStyle.backgroundImage, source: songStyle.backgroundSource }
+      : null;
+    const before = shownPicture.current;
+    shownPicture.current = now;
+    if (before?.image === now?.image) return;
+    setEarlierPictures((list) => {
+      // The one now showing is no longer "earlier"; the one it replaced is the newest.
+      const others = list.filter((p) => p.image !== now?.image && p.image !== before?.image);
+      return (before ? [before, ...others] : others).slice(0, MAX_EARLIER_PICTURES);
+    });
+  }, [songStyle.backgroundImage, songStyle.backgroundSource]);
+
   const [rightPanel, setRightPanel] = useState<"chords" | "background" | "text">("chords");
   // Tools panel: on mobile it's a full-screen overlay, so start closed there —
   // visitors should land on the sheet, not the chord palette. On md+ the panel
@@ -1691,6 +1715,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             ) : (
               <StylePanel
                 style={songStyle}
+                earlierPictures={earlierPictures}
                 onChange={(s) => {
                   // Throttled server-side (one row per song per 30 min)
                   activityBeacon("style_changed", { songId, title });
@@ -1767,8 +1792,12 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
             creationOrigin.current =
               source === "search" ? "ai-search" : source === "photo" ? "photo" : "pasted-text";
             setLines(imported);
-            // Their own song must not arrive wearing the demo's road at dawn.
-            if (songStyle.backgroundImage === DEMO_STYLE.backgroundImage) setSongStyle(DEFAULT_STYLE);
+            // Their own song must not arrive wearing the demo's road at dawn,
+            // nor with it on offer as a picture the song once had.
+            if (songStyle.backgroundImage === DEMO_STYLE.backgroundImage) {
+              shownPicture.current = null;
+              setSongStyle(DEFAULT_STYLE);
+            }
             if (meta?.title && meta.title !== "Unknown") setTitle(meta.title);
             if (meta?.artist) setArtist(meta.artist);
           }}
