@@ -56,6 +56,17 @@ export default function LyricLineEditor({
   const chordSize = songStyle?.chords?.fontSize ?? 12;
   const chordColor = songStyle?.chords?.color ?? "#4f46e5";
 
+  // Chords are placed by measuring the words, and a web font arrives after the
+  // first render. Measure again once it has, or the chords sit where the
+  // fallback face would have put them until something else redraws the line.
+  const [, setFontsLoaded] = useState(0);
+  useEffect(() => {
+    const remeasure = () => setFontsLoaded((n) => n + 1);
+    document.fonts.addEventListener("loadingdone", remeasure);
+    document.fonts.ready.then(remeasure);
+    return () => document.fonts.removeEventListener("loadingdone", remeasure);
+  }, []);
+
   // Inline "add chord" popup
   const [addingAtPx, setAddingAtPx] = useState<number | null>(null);
   const [addingText, setAddingText] = useState("");

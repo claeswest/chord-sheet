@@ -43,12 +43,29 @@ export const DEFAULT_BG_STYLE = "photoreal";
 
 export const MONO_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
+const SANS = "'Poppins', sans-serif";
+const SANS_BODY = "'Inter', sans-serif";
+const SERIF = "'Lora', serif";
+const GARAMOND = "'EB Garamond', serif";
+const CONDENSED = "'Oswald', sans-serif";
+
+/**
+ * What a new song looks like before anyone styles it: a serif title, words in
+ * a plain sans a size up, and chords in the blue ink the rest of the app
+ * writes them in. It was small monospace throughout, which read as a text
+ * file. That look is still there as the "Clean" preset, and songs saved with
+ * it keep it, since every song stores its own style.
+ *
+ * The page stays white on purpose. A PDF prints its background, and the
+ * "Style it" offer takes a white page with no picture to mean nobody has
+ * styled the song yet (looksUnstyled in SongEditor).
+ */
 export const DEFAULT_STYLE: SongStyle = {
-  title:          { fontFamily: MONO_STACK, fontSize: 20, color: "#18181b", bold: true,  italic: false },
-  artist:         { fontFamily: MONO_STACK, fontSize: 13, color: "#71717a", bold: false, italic: false },
-  lyrics:         { fontFamily: MONO_STACK, fontSize: 14, color: "#27272a", bold: false, italic: false },
-  chords:         { fontFamily: MONO_STACK, fontSize: 12, color: "#4f46e5", bold: true,  italic: false },
-  section:        { fontFamily: MONO_STACK, fontSize: 11, color: "#4f46e5", bold: true,  italic: false },
+  title:          { fontFamily: SERIF,     fontSize: 28, color: "#1c1917", bold: true,  italic: false },
+  artist:         { fontFamily: SANS_BODY, fontSize: 14, color: "#78716c", bold: false, italic: false },
+  lyrics:         { fontFamily: SANS_BODY, fontSize: 15, color: "#292524", bold: false, italic: false },
+  chords:         { fontFamily: SANS_BODY, fontSize: 14, color: "#1c4a94", bold: true,  italic: false },
+  section:        { fontFamily: SANS_BODY, fontSize: 12, color: "#1c4a94", bold: true,  italic: false },
   background:     "#ffffff",
   titleAlign:     "center",
   sectionAlign:   "left",
@@ -83,12 +100,6 @@ export interface StylePreset {
   previewStack?: string;
   style: Partial<SongStyle>;
 }
-
-const SANS = "'Poppins', sans-serif";
-const SANS_BODY = "'Inter', sans-serif";
-const SERIF = "'Lora', serif";
-const GARAMOND = "'EB Garamond', serif";
-const CONDENSED = "'Oswald', sans-serif";
 
 export const STYLE_PRESETS: StylePreset[] = [
   {
