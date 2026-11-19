@@ -154,7 +154,7 @@ export default async function AuthorizePage({
         ) : (
           <p className="text-[13px] text-ink leading-relaxed">
             If you allow this you are sent back to{" "}
-            <strong className="font-semibold break-all">{returnAddress.hostname}</strong>. Check that
+            <strong className="font-semibold break-words">{returnAddress.hostname}</strong>. Check that
             this is the app you were using.
           </p>
         )}
