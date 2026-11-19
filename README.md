@@ -94,6 +94,7 @@ you're using. Same idea for GitHub.
 | `EMAIL_FROM` | email sender | e.g. `ChordSheetMaker <hello@chordsheetmaker.ai>`; falls back to Resend's shared sender, which only delivers to the Resend account owner |
 | `ADMIN_EMAILS` | `/admin` access | comma-separated; also the BCC/notification recipients and the "exclude my own activity" filter |
 | `CRON_SECRET` | the daily email job (`/api/cron/drip`) | any long random string, set in Vercel — Vercel Cron sends it by itself. **Without it the job answers 503 and no automatic email goes out.** Locally the job only ever does a dry run |
+| `MCP_SECRET` | the owner's MCP server (`/api/mcp`) | any random string of 32 characters or more, e.g. `openssl rand -hex 32`. **Without it the endpoint answers 503.** Whoever holds it can read the site's numbers and add songs to the owner's library, so it is a password: set it in Vercel, never in a file that is committed |
 | `STRIPE_SECRET_KEY` | checkout | |
 | `STRIPE_WEBHOOK_SECRET` | subscription status | |
 | `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_YEARLY` / `STRIPE_PRICE_LIFETIME` | plans | price ids |
@@ -201,6 +202,33 @@ copying infrastructure. Run npm commands from the **root**; they delegate to the
 app. `npm run dev`, `npm run build`, `npm run typecheck` all work from there.
 
 Admin lives at `/admin` (dashboard, users, activity) and is gated by `ADMIN_EMAILS`.
+
+## The MCP server
+
+ChordSheetMaker has an MCP server at `/api/mcp`, so an AI client such as Claude
+Code can work with the app directly. It is for the owner alone: it takes one key
+(`MCP_SECRET`), not a sign-in, and acts as the account of the first address in
+`ADMIN_EMAILS`.
+
+| Tool | What it does |
+|---|---|
+| `site_numbers` | accounts, songs, subscriptions, the funnel, AI use, the email job, trends. Counts only, never a name or an address |
+| `list_songs` | the songs in the owner's library |
+| `get_song` | one of them as text, chords in brackets: `[Am]Hello [G]world` |
+| `create_song` | adds a song from text in that same format. The plan's song limit applies, as in the editor |
+
+Nothing deletes or overwrites. The tools are in `src/lib/mcpServer.ts` and the key
+check in `src/app/api/mcp/route.ts`; read the comments in both before adding a tool.
+
+To connect Claude Code, with the key in an environment variable so that it is
+never written into a file:
+
+```bash
+claude mcp add --transport http chordsheetmaker https://chordsheetmaker.ai/api/mcp   --header "Authorization: Bearer $CHORDSHEETMAKER_MCP_KEY"
+```
+
+Locally the address is `http://localhost:3000/api/mcp` and the key is the
+`MCP_SECRET` in `apps/chordsheetmaker/.env`, which talks to the dev database.
 
 ## Other docs in this repo
 

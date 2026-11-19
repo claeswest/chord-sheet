@@ -22,8 +22,12 @@
 
 import { test as base, expect } from "@playwright/test";
 
-/** Routes no test may call: AI (paid per request), payments, sharing, admin, the daily job. */
-const FORBIDDEN = /\/api\/(ai|stripe|share|admin|cron)(\/|\?|$)/;
+/**
+ * Routes no page may call: AI (paid per request), payments, sharing, admin, the
+ * daily job, and the owner's MCP server. (e2e/mcp.spec.ts talks to that last one
+ * directly, not through a page, which is the only way anything should.)
+ */
+const FORBIDDEN = /\/api\/(ai|stripe|share|admin|cron|mcp)(\/|\?|$)/;
 
 export const test = base.extend<{ guard: void }>({
   guard: [

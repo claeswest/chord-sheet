@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { TEST_MCP_KEY } from "./e2e/keys";
 
 // Browser tests: a real Chromium clicks through the app the way a visitor
 // would. `npm run e2e` at the repository root, or in CI (.github/workflows/ci.yml).
@@ -64,6 +65,8 @@ export default defineConfig({
       STRIPE_WEBHOOK_SECRET: "",
       ERROR_WEBHOOK_URL: "",
       CRON_SECRET: "",
+      // Switched on, so the tests can see that it lets nobody in without the key.
+      MCP_SECRET: TEST_MCP_KEY,
     },
   },
 });
