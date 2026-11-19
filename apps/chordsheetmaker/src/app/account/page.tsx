@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { planFromUser, PLANS, Plan, canUseFeature, isOnTrial, trialDaysRemaining, yearlySavingPercent, allowanceLabel } from "@/lib/plans";
 import { syncStaleSubscription } from "@/lib/stripeSync";
@@ -10,6 +11,8 @@ import UserMenu from "@/components/ui/UserMenu";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { Wordmark } from "@/components/landing/kit";
 import ManageSubscriptionButton from "@/components/ui/ManageSubscriptionButton";
+import { userAccessOn } from "@/lib/oauth";
+import { connectedAppsOf, disconnectApp, type ConnectedAppRow } from "@/lib/connectedApps";
 
 const FEATURE_ROWS: { key: Parameters<typeof canUseFeature>[1]; label: string }[] = [
   { key: "pdfExport",       label: "PDF export"          },
@@ -36,6 +39,20 @@ export default async function AccountPage() {
   ]);
 
   if (!user) redirect("/login");
+
+  // The AI apps this person has let use their songs (/oauth/authorize). Asked
+  // for only while that is switched on, and a failure here never takes the
+  // account page down with it: the tables are newer than the rest.
+  let connectedApps: ConnectedAppRow[] = [];
+  if (userAccessOn()) {
+    try {
+      connectedApps = await connectedAppsOf(user.id);
+    } catch (e) {
+      console.error("[account] connected apps could not be read", e);
+    }
+  }
+  const shortDate = (d: Date) =>
+    new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
   // Self-heal: if the stored subscription period has passed (e.g. a missed
   // trial→active webhook), reconcile with Stripe before rendering.
@@ -276,6 +293,53 @@ export default async function AccountPage() {
             </div>
           )}
         </div>
+
+        {/* Connected apps — only when there are any: nobody needs an empty
+            list of something they have never done. */}
+        {connectedApps.length > 0 && (
+          <div className="bg-white rounded-xl border border-rule overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-100">
+              <h2 className="text-sm font-semibold text-zinc-900">Connected apps</h2>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                These can see your songs and add new ones. They cannot change or delete a song.
+              </p>
+            </div>
+            <ul className="divide-y divide-zinc-100">
+              {connectedApps.map((app) => (
+                <li key={app.id} className="px-6 py-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-zinc-700 break-words">
+                      {app.name}
+                      {app.site && <span className="font-normal text-zinc-400"> · {app.site}</span>}
+                    </p>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Connected {shortDate(app.connectedAt)}
+                      {" · "}
+                      {app.lastUsedAt ? `last used ${shortDate(app.lastUsedAt)}` : "not used yet"}
+                    </p>
+                  </div>
+                  <form
+                    action={async () => {
+                      "use server";
+                      const s = await auth();
+                      if (!s?.user?.id) return;
+                      // Only ever this person's own connection: the id alone is not enough.
+                      await disconnectApp(s.user.id, app.id);
+                      revalidatePath("/account");
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="shrink-0 text-sm border border-ink/25 text-ink hover:border-ink/60 px-4 py-2 rounded-full font-medium transition-colors cursor-pointer"
+                    >
+                      Disconnect
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Account card */}
         <div className="bg-white rounded-xl border border-rule overflow-hidden">

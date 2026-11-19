@@ -39,6 +39,18 @@ const nextConfig: NextConfig = {
   // /tour → the static system-tour deck. A redirect rather than a rewrite: the
   // deck references its images relatively so it also works opened as a local
   // file, and at a bare "/tour" those paths would resolve against the site root.
+  // The Allow page (/oauth/authorize) has one button that hands an app access
+  // to someone's songs. Shown inside another site's frame, a person could be
+  // tricked into pressing it, so it may not be framed at all.
+  async headers() {
+    return [{
+      source: "/oauth/:path*",
+      headers: [
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      ],
+    }];
+  },
   async redirects() {
     return [{ source: "/tour", destination: "/tour/index.html", permanent: false }];
   },

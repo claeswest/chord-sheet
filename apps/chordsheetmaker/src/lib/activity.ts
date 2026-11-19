@@ -22,6 +22,7 @@ export type ActivityType =
   | "style_changed"
   | "marketing_email"
   | "share_created" // a share link was made: meta.songId, meta.token
+  | "app_connected" // an AI app was allowed to use the songs: meta.app
   // Bookkeeping rather than something a person did. Hidden from the admin
   // feed unless asked for; the dashboard counts them.
   | "ai_call"   // an import the AI read: meta.kind = search | paste | photo
@@ -36,6 +37,7 @@ export type ActivityType =
 const FROM_THE_PERSON = new Set<ActivityType>([
   "account_created", "login", "song_created", "song_opened", "song_edited", "chord_added",
   "pdf_exported", "song_imported", "bg_generated", "ai_styled", "style_changed", "share_created", "ai_call",
+  "app_connected",
 ]);
 
 /**

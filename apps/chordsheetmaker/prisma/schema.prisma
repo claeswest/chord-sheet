@@ -39,6 +39,8 @@ model User {
   songs      Song[]
   categories Category[]
   activities ActivityLog[]
+  connectedApps ConnectedApp[]
+  connectCodes  ConnectCode[]
 }
 
 // Generic activity log — one row per notable event (account_created, login,
@@ -146,4 +148,57 @@ model Share {
   artist    String   @default("")
   content   Json     // { lines, style } — style includes backgroundImage
   createdAt DateTime @default(now())
+}
+
+// ── Connecting an AI app (ChatGPT, Claude) to an account ─────────────────────
+// The sign-in an app goes through before it may use /api/mcp as one person:
+// lib/connectedApps.ts, /oauth/authorize, /api/oauth/*. Three new tables and no
+// new column on any old one, so the rest of the app runs the same whether or
+// not they exist yet.
+
+// One app connected to one account. The keys the app holds are stored only as
+// hashes: a copy of this table opens nothing.
+model ConnectedApp {
+  id             String    @id @default(cuid())
+  userId         String
+  clientId       String    @db.Text // the app's id: an AppRegistration id, or the web address it identifies itself by
+  clientName     String    // what the app called itself when the person said yes
+  accessHash     String    @unique // the short-lived key sent with each request
+  accessExpires  DateTime
+  refreshHash    String    @unique // the key that fetches a new pair; replaced each time it is used
+  refreshExpires DateTime
+  createdAt      DateTime  @default(now())
+  lastUsedAt     DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// A "yes" on the Allow page, kept for the couple of minutes until the app
+// swaps it for keys. Used once: redeeming it deletes the row.
+model ConnectCode {
+  codeHash      String   @id
+  userId        String
+  clientId      String   @db.Text
+  clientName    String
+  redirectUri   String   @db.Text
+  codeChallenge String   // proves the app collecting the keys is the one that asked (PKCE)
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+// An app that introduced itself through /api/oauth/register, the older of the
+// two ways. Newer apps identify themselves by a web address and have no row.
+model AppRegistration {
+  id           String   @id @default(cuid())
+  name         String
+  redirectUris String[]
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }
