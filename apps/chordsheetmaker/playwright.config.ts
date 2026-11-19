@@ -67,6 +67,10 @@ export default defineConfig({
       CRON_SECRET: "",
       // Switched on, so the tests can see that it lets nobody in without the key.
       MCP_SECRET: TEST_MCP_KEY,
+      // The second door (a person's own sign-in) is switched on too, for the
+      // same reason, and so that a run does not depend on what a laptop's .env
+      // happens to say.
+      MCP_USER_ACCESS: "on",
     },
   },
 });

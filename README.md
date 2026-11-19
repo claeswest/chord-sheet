@@ -95,6 +95,7 @@ you're using. Same idea for GitHub.
 | `ADMIN_EMAILS` | `/admin` access | comma-separated; also the BCC/notification recipients and the "exclude my own activity" filter |
 | `CRON_SECRET` | the daily email job (`/api/cron/drip`) | any long random string, set in Vercel — Vercel Cron sends it by itself. **Without it the job answers 503 and no automatic email goes out.** Locally the job only ever does a dry run |
 | `MCP_SECRET` | the owner's MCP server (`/api/mcp`) | any random string of 32 characters or more, e.g. `openssl rand -hex 32`. **Without it the endpoint answers 503.** Whoever holds it can read the site's numbers and add songs to the owner's library, so it is a password: set it in Vercel, never in a file that is committed |
+| `MCP_USER_ACCESS` | letting customers connect an AI app to their own songs | `on` switches it on. **Off by default, and it must stay off until the three tables exist in that database** — see "The MCP server" below |
 | `STRIPE_SECRET_KEY` | checkout | |
 | `STRIPE_WEBHOOK_SECRET` | subscription status | |
 | `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_YEARLY` / `STRIPE_PRICE_LIFETIME` | plans | price ids |
@@ -206,19 +207,41 @@ Admin lives at `/admin` (dashboard, users, activity) and is gated by `ADMIN_EMAI
 ## The MCP server
 
 ChordSheetMaker has an MCP server at `/api/mcp`, so an AI client such as Claude
-Code can work with the app directly. It is for the owner alone: it takes one key
-(`MCP_SECRET`), not a sign-in, and acts as the account of the first address in
-`ADMIN_EMAILS`.
+or ChatGPT can work with the app directly. It has two doors:
 
-| Tool | What it does |
-|---|---|
-| `site_numbers` | accounts, songs, subscriptions, the funnel, AI use, the email job, trends. Counts only, never a name or an address |
-| `list_songs` | the songs in the owner's library |
-| `get_song` | one of them as text, chords in brackets: `[Am]Hello [G]world` |
-| `create_song` | adds a song from text in that same format. The plan's song limit applies, as in the editor |
+- **The owner's key** (`MCP_SECRET`). No sign-in; it acts as the account of the
+  first address in `ADMIN_EMAILS` and is the only way to the site's numbers.
+- **A person's own sign-in**, while `MCP_USER_ACCESS` is `on`. They add the
+  address `https://chordsheetmaker.ai/api/mcp` in their AI app, are sent to the
+  site to sign in, and press Allow. The app then works on their songs and
+  nothing else, until they press Disconnect on `/account`.
+
+| Tool | Who | What it does |
+|---|---|---|
+| `site_numbers` | owner only | accounts, songs, subscriptions, the funnel, AI use, the email job, trends. Counts only, never a name or an address |
+| `list_songs` | both | the songs in the caller's library |
+| `get_song` | both | one of them as text, chords in brackets: `[Am]Hello [G]world` |
+| `create_song` | both | adds a song from text in that same format. The plan's song limit applies, as in the editor |
 
 Nothing deletes or overwrites. The tools are in `src/lib/mcpServer.ts` and the key
 check in `src/app/api/mcp/route.ts`; read the comments in both before adding a tool.
+
+The sign-in is OAuth 2.1 as the MCP specification asks for it, with the site as
+its own authorization server:
+
+| Where | What |
+|---|---|
+| `src/lib/oauth.ts` | the rules, with no database or network, and their tests beside it |
+| `src/lib/appClients.ts` | finding out who an app is |
+| `src/lib/connectedApps.ts` | what is stored: codes, and keys as hashes only |
+| `/.well-known/oauth-*` | the two documents an app reads to find its way |
+| `/oauth/authorize` | the Allow page |
+| `/api/oauth/decision`, `/token`, `/register` | what the page posts to, where an app collects its keys, and registration for older apps |
+
+**To switch it on in production**, in this order: create the tables
+(`npx prisma db push` with production's `DATABASE_URL`; the change only adds
+three tables), then set `MCP_USER_ACCESS=on` in Vercel and redeploy. Which plans
+may connect an app is `aiApps` in `plans.ts`.
 
 To connect Claude Code, with the key in an environment variable so that it is
 never written into a file:

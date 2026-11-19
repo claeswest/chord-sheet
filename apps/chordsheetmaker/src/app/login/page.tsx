@@ -24,8 +24,19 @@ export default async function LoginPage({
     | "monthly"
     | "yearly"
     | undefined;
+  // Sent here by the Allow page (/oauth/authorize): an AI app is waiting.
+  const connecting = next?.startsWith("/oauth/authorize?") ?? false;
   return (
     <AuthShell>
+
+        {connecting && (
+          <div className="border-l-2 border-chord bg-paper pl-4 pr-3 py-3 mb-7">
+            <p className="text-sm text-ink leading-snug">
+              <strong className="font-semibold">An app wants to use your songs.</strong> Sign in
+              first, and you will be asked whether to allow it.
+            </p>
+          </div>
+        )}
 
         {/* Contextual continuity when arriving from "Start 7-day free trial" */}
         {planIntent && (
@@ -187,7 +198,7 @@ export default async function LoginPage({
         </p>
 
         {/* No escape hatch when the user is mid-checkout — it dead-ends the trial */}
-        {!planIntent && (
+        {!planIntent && !connecting && (
           <div className="mt-6 pt-6 border-t border-rule text-center">
             <Link href="/songs" className="text-sm text-stone-600 hover:text-ink underline underline-offset-4 decoration-ink/25 hover:decoration-ink transition-colors">
               Continue without an account

@@ -9,9 +9,11 @@ export const metadata: Metadata = {
 // This page describes what the code does, so it goes out of date when the code
 // changes. Look at it again when you: add a field to User or to the activity
 // log (lib/activity.ts), add a sign-in method (lib/auth.ts), send content to a
-// new service (app/api/ai/*), add an email (lib/marketing*.ts), or load a new
-// script for every visitor (components/analytics). Change UPDATED with the text.
-const UPDATED = "November 17, 2026";
+// new service (app/api/ai/*), add an email (lib/marketing*.ts), load a new
+// script for every visitor (components/analytics), or change what a connected
+// AI app can do or what is kept about it (lib/mcpServer.ts,
+// lib/connectedApps.ts). Change UPDATED with the text.
+const UPDATED = "November 19, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -50,10 +52,17 @@ export default function PrivacyPage() {
           <li>
             <strong>An activity log.</strong> One line when certain things happen: an account is
             created, you sign in, you create, open or edit a song, import one, export a PDF,
-            make a share link, use an AI feature, or a subscription starts, changes or ends. A
+            make a share link, use an AI feature, connect an app, or a subscription starts,
+            changes or ends. A
             line has the time, sometimes the song&apos;s title, and for things you did yourself the
             country you were in, as two letters. Our hosting provider works the country out
             from your internet address; we do not store the address itself.
+          </li>
+          <li>
+            <strong>Apps you have connected.</strong> If you let an AI app such as ChatGPT or
+            Claude use your songs, we store the name the app gave, when you connected it and
+            when it was last used. The keys the app holds are stored only in a scrambled form
+            that cannot be turned back into the keys.
           </li>
           <li>
             <strong>Emails we have sent you</strong>, and whether you have unsubscribed.
@@ -117,6 +126,14 @@ export default function PrivacyPage() {
         <p>
           Several of these are American companies, so data can be processed outside the EU.
         </p>
+        <p>
+          <strong>An AI app you connect yourself</strong> is different: it does not work for
+          us. If you allow one to use your songs, it can read the list of your songs and
+          their words and chords, and add new songs, until you disconnect it on your account
+          page. It cannot change or delete a song, and it cannot see your email address or
+          anything about your payments. What the app&apos;s maker does with what it reads is
+          between you and them.
+        </p>
       </LegalSection>
 
       <LegalSection title="5. Cookies and measurement">
@@ -146,7 +163,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>When an account is deleted,</strong> the account, its sign-in connections,
-            its songs and its setlists are removed. Its lines in the activity log remain for
+            its connected apps, its songs and its setlists are removed. Its lines in the activity log remain for
             our statistics but no longer point to the account.
           </li>
           <li>

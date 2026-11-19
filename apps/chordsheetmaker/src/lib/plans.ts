@@ -15,6 +15,7 @@ export type Feature =
   | "sharing"         // true = any song, number = for that many songs
   | "setlists"
   | "chordTranspose"  // already built, free for all
+  | "aiApps"          // connect ChatGPT, Claude… to the library (/oauth, /api/mcp)
   | "prioritySupport";
 
 export const PLANS: Record<Plan, PlanConfig> = {
@@ -36,6 +37,10 @@ export const PLANS: Record<Plan, PlanConfig> = {
       // paid features later monetise. The API never gated it anyway.
       setlists: true,
       chordTranspose: true,
+      // Free as well: an app can only add songs up to the song limit above,
+      // so it is another way into the library, not a way round the paywall.
+      // Not in the price lists yet, which name their own rows.
+      aiApps: true,
       prioritySupport: false,
     },
   },
@@ -51,6 +56,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       sharing: true,
       setlists: true,
       chordTranspose: true,
+      aiApps: true,
       prioritySupport: false,
     },
   },
@@ -66,6 +72,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       sharing: true,
       setlists: true,
       chordTranspose: true,
+      aiApps: true,
       prioritySupport: true,
     },
   },
@@ -81,6 +88,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       sharing: true,
       setlists: true,
       chordTranspose: true,
+      aiApps: true,
       prioritySupport: true,
     },
   },

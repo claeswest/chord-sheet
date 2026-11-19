@@ -28,6 +28,7 @@ export const TYPES: Record<string, { label: string; tone: Tone }> = {
   chord_added:     { label: "Chord added", tone: "quiet" },
   pdf_exported:    { label: "PDF exported", tone: "info" },
   share_created:   { label: "Share link made", tone: "info" },
+  app_connected:   { label: "AI app connected", tone: "info" },
   song_imported:   { label: "Song imported", tone: "info" },
   bg_generated:    { label: "AI picture", tone: "info" },
   ai_styled:       { label: "AI text style", tone: "info" },
@@ -64,6 +65,7 @@ const ORIGIN_LABELS: Record<string, string> = {
   duplicate: "duplicated",
   search: "AI search", // song_imported beacon uses "search"
   text: "pasted text",
+  mcp: "an AI app", // made through /api/mcp
 };
 
 const VIA_LABELS: Record<string, string> = {
@@ -87,6 +89,7 @@ export function metaSummary(item: ActivityItem): string {
     parts.push(m.kind === "photo" ? "photo read" : m.kind === "paste" ? "pasted text" : "song search");
   }
   if (typeof m.title === "string" && m.title) parts.push(`“${m.title}”`);
+  if (item.type === "app_connected" && typeof m.app === "string") parts.push(m.app);
   // The badge says a cancellation was scheduled; this adds until when.
   if (m.event === "cancel_scheduled" && typeof m.cancelAt === "string") {
     parts.push(`access until ${fmtDate(m.cancelAt)}`);
@@ -178,12 +181,13 @@ const PHRASES: Record<string, (n: number) => string> = {
   bg_generated: (n) => (n === 1 ? "made an AI picture" : `made ${n} AI pictures`),
   pdf_exported: (n) => (n === 1 ? "exported a PDF" : `exported ${n} PDFs`),
   share_created: (n) => (n === 1 ? "made a share link" : `made ${n} share links`),
+  app_connected: () => "connected an AI app",
   marketing_email: (n) => (n === 1 ? "was sent an email" : `was sent ${n} emails`),
 };
 // What matters most first; the summary names the top few.
 const ORDER = [
   "sub_ended", "sub_started", "sub_changed", "account_created", "song_created", "song_imported",
-  "share_created", "bg_generated", "ai_styled", "pdf_exported", "style_changed", "song_edited", "chord_added",
+  "app_connected", "share_created", "bg_generated", "ai_styled", "pdf_exported", "style_changed", "song_edited", "chord_added",
   "song_opened", "marketing_email", "login",
 ];
 
