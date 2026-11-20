@@ -225,7 +225,7 @@ landscape and portrait, ink-saving, and a schedule that shrinks to 78%. **Not
 checked:** A3, a real phone (iPhone Safari above all, where both the canvas and
 the download behave differently), and the file on paper.
 
-### A vector PDF, printed on the server (20 Nov 2026 — built, not switched on)
+### A vector PDF, printed on the server (20 Nov 2026)
 
 The picture PDF above is not as sharp as a real one, and the owner wants a
 real one from a button. Only a browser's own print engine makes that, and a
@@ -246,37 +246,42 @@ browser; this is that, without the press.
 
 **Privacy.** This is the second thing sent to the server, after the photograph,
 and it is treated the same: held in memory for the seconds it takes, written
-nowhere, never logged. The front page must say so before this is switched on
-— the sentence is not there yet.
+nowhere, never logged. The front page says so, in the paragraph under "Ert
+schema stannar hos er"; that sentence belongs to the switch below.
 
-**State on 20 Nov 2026:** `PRINT_ON_SERVER` in `app/page.tsx` is `false`. The
-route is deployed and nothing presses it; the button still makes the picture.
+**State on 20 Nov 2026: on.** `PRINT_ON_SERVER` in `app/page.tsx` is `true`.
+It shipped off first, was tried on the live site, and was switched on the same
+day. Setting it to `false` sends everyone back to the picture.
 
-- **Checked on a laptop**, where the route uses the installed Chrome: five
-  style and paper combinations, each one page of the right size, no images,
-  fonts embedded, text selectable, 90–180 kB, about 3 s. The button gets the
-  server's PDF, and gets the picture when the server call is made to fail.
-- **Not checked: anything on Vercel.** There it runs a different browser with
-  different libraries. Docker was not running on the laptop, so that could not
-  be tried before deploying.
-- **Fonts are the open question.** The server's browser has one font, Open
-  Sans. The three web-font styles bring their own display face, but every
-  style sets times and names in the device's own sans (`--font-body`), and
-  five styles use device fonts for headings too. On the server those all
-  become Open Sans — consistent, but not what the parent saw on screen. More
-  fonts can be shipped: anything in `/tmp/fonts` when the browser starts is
-  found. Which ones is a decision about how the sheet should look, to be made
-  looking at the server's output.
+- **Checked on Vercel:** all eight styles on A4 landscape, each one page, no
+  images, text selectable, 115–180 kB, 1.5 s warm and 5–6 s from cold.
+- **Checked on a laptop**, where the route uses the installed Chrome: portrait,
+  A3 and ink-saving as well; the button gets the server's PDF, and gets the
+  picture when the server call is made to fail. The 30-second limit on waiting
+  for the server was not waited out.
+- **Not checked:** a real phone, and what a month of this costs. Every PDF
+  starts a browser; the route allows twenty per quarter-hour per address, and
+  like `/api/read` that limit is per server instance.
+- **Fonts.** The server's browser has one font, Open Sans. The three web-font
+  styles bring their own display face (Lora, Caveat, Lexend); everything else —
+  times and names in every style, and the headings of Papper, Krita, Skymning,
+  Äng and Godis — is Open Sans in the PDF, whatever the parent's own device
+  showed. The owner looked at it and took it as it is. The sheet refits itself
+  for the font, so nothing overflows; it is the same from every device, which
+  the screen is not. More fonts can be shipped if a style should keep its
+  character: anything in `/tmp/fonts` when the browser starts is found.
+- **A print bug this turned up, fixed in `PrintFit`:** a sheet shrunk to fit
+  kept the paper's width and so came out narrower than the page — on a white
+  style invisible, on Skymning a white strip down the right-hand side. It was
+  in "Skriv ut" all along. The sheet is now laid out wider by the factor it is
+  shrunk by, and the page behind it takes the sheet's colour.
 - **Installing `puppeteer-core` moved two shared packages** in the lockfile:
   `ws` 8.20.0 → 8.23.0 and `zod` 4.3.6 → 4.6.7. Both are inside the ranges the
   other two apps ask for, and ChordSheetMaker uses `zod` in its MCP server.
+  Their typechecks, unit tests and builds passed with them.
 - `next.config.ts` names the Chromium files for the function
   (`outputFileTracingIncludes`); without that it works locally and fails only
   when deployed.
-
-To switch it on: look at the server's PDFs for all eight styles, settle the
-fonts, add the privacy sentence to the front page, set `PRINT_ON_SERVER`.
-The picture stays as the fallback when the server cannot.
 
 ### Code map
 

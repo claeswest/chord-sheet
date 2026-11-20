@@ -537,6 +537,12 @@ export default function Landing({
         <p>
           Delar du schemat med klassen ligger det i själva länken du skickar – inte hos oss.
         </p>
+        {/* True only while PRINT_ON_SERVER is on in app/page.tsx. The picture
+            PDF is drawn in the browser and sends nothing. */}
+        <p>
+          Trycker du på Skapa PDF skickas schemat till vår server medan filen görs. Det sparas inte
+          där.
+        </p>
         <p>
           Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
         </p>

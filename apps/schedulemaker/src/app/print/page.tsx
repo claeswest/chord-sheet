@@ -72,6 +72,7 @@ export default function PrintPage() {
         .sheet { width: ${paper.w}; min-height: ${paper.h}; }`}</style>
       <PrintFit
         pageHeightMm={parseInt(paper.h, 10)}
+        pageWidthMm={parseInt(paper.w, 10)}
         deps={`${state.paper}|${state.theme}|${state.ink}|${state.icons}|${state.illustration}`}
       />
       <div

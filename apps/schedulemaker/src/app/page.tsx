@@ -42,14 +42,17 @@ const STORE = "sm_state_v1";
  * Whether "Skapa PDF" has the server print the sheet (a vector PDF) or draws
  * a picture of it here in the browser.
  *
- * Off for now, on purpose. The server route works on a laptop, where it uses
- * the Chrome that is installed and the fonts that are installed. On the host
- * it runs a different browser with one font in it, and what that looks like
- * can only be seen there. So the route ships first with nothing pressing it,
- * is looked at, and then this becomes true — together with the sentence on the
- * front page that says a schedule is sent to the server when a PDF is made.
+ * On since 20 Nov 2026. It shipped off for an hour first: the route works on
+ * a laptop with the Chrome and the fonts that are installed there, and on the
+ * host it runs a different browser with one font in it, which could only be
+ * looked at once it was there. It was, in all eight styles, and it was right.
+ *
+ * Setting this to false is the way to go back to the picture for everyone —
+ * if the host changes something, or the bill for running browsers does. The
+ * sentence on the front page about a schedule being sent to the server when a
+ * PDF is made belongs to this switch, and goes when it goes.
  */
-const PRINT_ON_SERVER = false;
+const PRINT_ON_SERVER = true;
 
 /** How long to wait for the server's PDF before drawing one here instead. */
 const SERVER_PDF_WAIT_MS = 30_000;
@@ -786,6 +789,7 @@ export default function Home() {
 
           <PrintFit
             pageHeightMm={parseInt(sheetPaper.h, 10)}
+            pageWidthMm={parseInt(sheetPaper.w, 10)}
             deps={`${JSON.stringify(schedule)}|${editing}|${paper}|${theme}|${ink}|${icons}|${illustration}`}
             onFit={setFit}
           />

@@ -28,16 +28,21 @@ const MEASURING = `
 
 export default function PrintFit({
   pageHeightMm,
+  pageWidthMm,
   deps,
   onFit,
 }: {
   pageHeightMm: number;
+  /** The paper's width. With it, a shrunk sheet still reaches both edges. */
+  pageWidthMm?: number;
   /** Anything that changes the sheet's height. */
   deps: unknown;
   /** Told the factor, so the toolbar can say what will happen. */
   onFit?: (factor: number) => void;
 }) {
   const [factor, setFactor] = useState(1);
+  /** The sheet's own paper colour, for the part of the page it does not cover. */
+  const [paperColor, setPaperColor] = useState("#ffffff");
 
   useEffect(() => {
     const measure = () => {
@@ -66,6 +71,7 @@ export default function PrintFit({
       // one page doesn't round its way onto two.
       const next = natural > 0 ? Math.min(1, (available * 0.995) / natural) : 1;
       setFactor(next);
+      setPaperColor(getComputedStyle(sheet).backgroundColor || "#ffffff");
       onFit?.(next);
     };
 
@@ -84,8 +90,28 @@ export default function PrintFit({
     };
   }, [pageHeightMm, deps, onFit]);
 
+  // A shrunk sheet used to keep the paper's width and so came out narrower
+  // than the page: at 96% there was a strip of bare paper down the right-hand
+  // side. On a white style nobody could see it. On Skymning it was a white
+  // stripe along a dark page, and it was only noticed when the server started
+  // printing PDFs and one of them was looked at closely.
+  //
+  // So the sheet is laid out wider by the same factor it is shrunk by, which
+  // is the paper's width again once zoomed, and the page behind it is given
+  // the sheet's own colour — for the last half-millimetre at the bottom, which
+  // is left on purpose so that rounding cannot push the sheet onto a second
+  // page.
+  const fill = pageWidthMm
+    ? `width: ${pageWidthMm / factor}mm; min-height: ${(pageHeightMm * 0.99) / factor}mm;`
+    : "";
   return (
     <style>{`${MEASURING}
-      @media print { .sheet { zoom: ${factor}; } }`}</style>
+      @media print {
+        html, body {
+          background: ${paperColor} !important;
+          print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        }
+        .sheet { zoom: ${factor}; ${fill} }
+      }`}</style>
   );
 }
