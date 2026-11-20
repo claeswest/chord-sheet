@@ -7,8 +7,8 @@
 //
 // That part is the whole design. A browser never sends what follows the # to
 // the server it is asking for the page, so this app still has no schedule, no
-// log line with a school in it and no route that could leak one. "/api/read is
-// the only route" stays true. The price is a long link, which is why the
+// log line with a school in it and no route that could leak one: sharing adds
+// nothing to the server at all. The price is a long link, which is why the
 // payload below is packed as tightly as it is.
 //
 // What goes, and what does not:

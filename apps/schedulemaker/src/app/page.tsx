@@ -32,18 +32,27 @@ import {
 } from "@/lib/glossary";
 import { ShareError, sharedIn, unpackSchedule } from "@/lib/share";
 import { pdfName, saveFile, sheetPdf } from "@/lib/sheetPdf";
+import { PAPERS, paperOf, type SheetState } from "@/lib/sheetState";
 import { THEMES } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
 const STORE = "sm_state_v1";
 
-/** Paper the sheet is laid out for. A3 is the same document, printed larger. */
-const PAPERS = [
-  { id: "a4-landscape", name: "A4 liggande", css: "A4 landscape", w: "297mm", h: "210mm" },
-  { id: "a4-portrait", name: "A4 stående", css: "A4 portrait", w: "210mm", h: "297mm" },
-  { id: "a3-landscape", name: "A3 liggande", css: "A3 landscape", w: "420mm", h: "297mm" },
-  { id: "a3-portrait", name: "A3 stående", css: "A3 portrait", w: "297mm", h: "420mm" },
-];
+/**
+ * Whether "Skapa PDF" has the server print the sheet (a vector PDF) or draws
+ * a picture of it here in the browser.
+ *
+ * Off for now, on purpose. The server route works on a laptop, where it uses
+ * the Chrome that is installed and the fonts that are installed. On the host
+ * it runs a different browser with one font in it, and what that looks like
+ * can only be seen there. So the route ships first with nothing pressing it,
+ * is looked at, and then this becomes true — together with the sentence on the
+ * front page that says a schedule is sent to the server when a PDF is made.
+ */
+const PRINT_ON_SERVER = false;
+
+/** How long to wait for the server's PDF before drawing one here instead. */
+const SERVER_PDF_WAIT_MS = 30_000;
 
 type Stored = {
   schedule: Schedule;
@@ -172,14 +181,42 @@ export default function Home() {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
   }
 
-  /** The finished sheet as a file, straight to the downloads. See lib/sheetPdf.ts. */
+  /**
+   * The finished sheet as a file, straight to the downloads.
+   *
+   * Printed for real: the schedule goes to /api/pdf, where a browser on the
+   * server opens it and saves it as a PDF, the way "Skriv ut" followed by
+   * "Spara som PDF" would. That file is vector — text is text, sharp at any
+   * size — which a picture of the sheet never is.
+   *
+   * The picture is still here, as what happens when the server cannot: no
+   * connection, a browser that would not start, too many in a row. A PDF that
+   * is slightly less sharp beats a button that sometimes does nothing.
+   */
   async function makePdf() {
     if (!schedule || makingPdf) return;
-    const size = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
+    const size = paperOf(paper);
     setMakingPdf(true);
     setError(null);
     try {
-      const blob = await sheetPdf({ wMm: parseInt(size.w, 10), hMm: parseInt(size.h, 10) });
+      let blob: Blob | null = null;
+      if (PRINT_ON_SERVER) {
+        try {
+          const state: SheetState = { schedule, glossary, theme, paper, ink, icons, illustration };
+          const res = await fetch("/api/pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(state),
+            signal: AbortSignal.timeout(SERVER_PDF_WAIT_MS),
+          });
+          const got = res.ok ? await res.blob() : null;
+          if (got && got.type === "application/pdf" && got.size > 1000) blob = got;
+          else console.warn("[pdf] the server gave no PDF, drawing one here instead", res.status);
+        } catch (e) {
+          console.warn("[pdf] the server could not be reached, drawing one here instead", e);
+        }
+      }
+      blob ??= await sheetPdf({ wMm: parseInt(size.w, 10), hMm: parseInt(size.h, 10) });
       saveFile(blob, pdfName(schedule.heading, schedule.title));
     } catch (e) {
       console.error("[pdf]", e);
@@ -491,7 +528,7 @@ export default function Home() {
     setOpenLesson(null);
   }
 
-  const sheetPaper = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
+  const sheetPaper = paperOf(paper);
   const openChoices = schedule ? unresolvedChoices(schedule) : 0;
 
   // The style belongs to the sheet, not the page. It used to be set up here

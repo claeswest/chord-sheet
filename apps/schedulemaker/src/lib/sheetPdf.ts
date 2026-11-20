@@ -11,9 +11,13 @@
 // nowhere. That rules out the way the notes in docs/schedulemaker.md would
 // make a press-ready file (a headless browser on a server), and leaves one
 // honest way to do it on the page: draw the sheet to a canvas and put that
-// picture on a page of the right size. So this PDF is a picture of the sheet —
-// about 290 dpi on A4, which a home printer cannot tell from the real thing —
-// and its text cannot be selected. The dialog's own PDF stays where it was.
+// picture on a page of the right size. So this PDF is a picture of the sheet,
+// and its text cannot be selected. The dialog's own PDF stays where it was,
+// and is still the only one that is sharp however far you zoom.
+//
+// The picture is as fine as a home printer prints: 600 dpi on A4. It was 290
+// at first, which is plenty on paper and visibly soft on a screen the moment
+// anyone zooms in — and a PDF is looked at on a screen before it is printed.
 //
 // The picture is taken of a copy, not of the sheet on screen. The one on
 // screen is scaled to the window by FitToWidth and has the app's buttons in
@@ -21,11 +25,26 @@
 
 const PX_PER_MM = 96 / 25.4;
 
-/** Pixels along the page's long side. 3400 on A4 is 290 dpi; on A3, 205. */
-const LONG_SIDE_PX = 3400;
+/**
+ * How many pixels the picture may have.
+ *
+ * 35 million is A4 at 600 dpi (and A3 at about 420). A phone gets 16 million —
+ * A4 at about 400 dpi — because Safari on an iPhone refuses a canvas larger
+ * than 16.7 million pixels, and refuses it by handing back a blank one with no
+ * error. A finger rather than a mouse is the nearest thing to "this might be
+ * an iPhone" that can be asked without guessing from the browser's name.
+ */
+const PIXELS = 35_000_000;
+const PIXELS_TOUCH = 16_000_000;
 
-const frame = () =>
-  new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+/**
+ * JPEG, not PNG, although a timetable is flat colour and sharp text — the
+ * case PNG is for. The PDF library unpacks a PNG and packs it again in
+ * JavaScript, which at this size took longer than everything else put
+ * together; a JPEG goes into the file as it is. At this quality and this many
+ * pixels the two could not be told apart side by side, enlarged.
+ */
+const JPEG_QUALITY = 0.95;
 
 /**
  * Give every drawing that is pinned to a corner a box to be pinned in.
@@ -80,14 +99,17 @@ export async function sheetPdf(paper: { wMm: number; hMm: number }): Promise<Blo
     // the paper's width, and if that is more than a page, lay it out wider by
     // the same factor. Wider and then shrunk is the paper's shape again, with
     // nothing cut off and nothing squeezed.
+    //
+    // Reading scrollHeight makes the browser lay the copy out there and then.
+    // This waited for the next painted frame instead, which never comes while
+    // the tab is in the background: the button sat on "Skapar PDF…" until
+    // someone came back to look.
     sheet.style.width = `${paper.wMm}mm`;
     sheet.style.minHeight = "0";
-    await frame();
     const natural = sheet.scrollHeight;
     const fit = natural > 0 ? Math.min(1, (paper.hMm * PX_PER_MM) / natural) : 1;
     sheet.style.width = `${paper.wMm / fit}mm`;
     sheet.style.minHeight = `${paper.hMm / fit}mm`;
-    await frame();
 
     unpinDrawings(sheet);
 
@@ -99,8 +121,9 @@ export async function sheetPdf(paper: { wMm: number; hMm: number }): Promise<Blo
       import("jspdf"),
     ]);
 
+    const pixels = window.matchMedia("(pointer: coarse)").matches ? PIXELS_TOUCH : PIXELS;
     const canvas = await html2canvas(sheet, {
-      scale: LONG_SIDE_PX / Math.max(box.width, box.height),
+      scale: Math.sqrt(pixels / (box.width * box.height)),
       backgroundColor: paperColor,
       logging: false,
       useCORS: true,
@@ -122,7 +145,16 @@ export async function sheetPdf(paper: { wMm: number; hMm: number }): Promise<Blo
     const h = canvas.height * scale;
     pdf.setFillColor(paperColor);
     pdf.rect(0, 0, paper.wMm, paper.hMm, "F");
-    pdf.addImage(canvas, "PNG", (paper.wMm - w) / 2, (paper.hMm - h) / 2, w, h, undefined, "FAST");
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", JPEG_QUALITY),
+      "JPEG",
+      (paper.wMm - w) / 2,
+      (paper.hMm - h) / 2,
+      w,
+      h,
+      undefined,
+      "FAST",
+    );
 
     return pdf.output("blob");
   } finally {

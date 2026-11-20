@@ -197,9 +197,13 @@ every browser and on a phone most people never find it.
 It is made in the browser (`src/lib/sheetPdf.ts`), so the schedule still goes
 nowhere. A copy of the sheet is laid out at the paper's width, drawn to a
 canvas with `html2canvas`, and placed on one page of the chosen size with
-`jsPDF`. **So this PDF is a picture of the sheet**: about 290 dpi on A4 and
-205 on A3, around 450 kB, and its text cannot be selected. The dialog's PDF is
-the vector one. Part 2's point stands — a press-ready file still needs a real
+`jsPDF`. **So this PDF is a picture of the sheet**: 600 dpi on A4 and about
+420 on A3 (about 400 on a phone, see `PIXELS_TOUCH`), around 1.4 MB, and its
+text cannot be selected. It was 290 dpi for its first hour, which is fine on
+paper and visibly soft on a screen once you zoom. The picture is a JPEG at
+quality 0.95: side by side with a lossless one, enlarged, they could not be
+told apart, and the PDF library packs a PNG so slowly that the sharper file is
+also the faster one (1.8 s against 3.4). The dialog's PDF is the vector one. Part 2's point stands — a press-ready file still needs a real
 browser doing the printing.
 
 It fits the page the way print does: if the sheet is taller than a page it is
@@ -221,6 +225,59 @@ landscape and portrait, ink-saving, and a schedule that shrinks to 78%. **Not
 checked:** A3, a real phone (iPhone Safari above all, where both the canvas and
 the download behave differently), and the file on paper.
 
+### A vector PDF, printed on the server (20 Nov 2026 — built, not switched on)
+
+The picture PDF above is not as sharp as a real one, and the owner wants a
+real one from a button. Only a browser's own print engine makes that, and a
+page may not call it without the dialog. So the browser runs on the server:
+
+```
+Skapa PDF  →  POST /api/pdf  { schedule, glossary, theme, paper, ink, … }
+           →  cleanState()            checks it as if a stranger wrote it
+           →  headless Chromium       puppeteer-core; @sparticuz/chromium on Vercel
+           →  opens /print            this app's own page: ScheduleSheet + PrintFit
+           →  page.pdf()              the same thing as "Spara som PDF"
+           →  the PDF, and the browser is closed
+```
+
+`/print` is the point: it is the same sheet component and the same fit as step
+three, so there is still one layout. Part 2 said the renderer has to be a
+browser; this is that, without the press.
+
+**Privacy.** This is the second thing sent to the server, after the photograph,
+and it is treated the same: held in memory for the seconds it takes, written
+nowhere, never logged. The front page must say so before this is switched on
+— the sentence is not there yet.
+
+**State on 20 Nov 2026:** `PRINT_ON_SERVER` in `app/page.tsx` is `false`. The
+route is deployed and nothing presses it; the button still makes the picture.
+
+- **Checked on a laptop**, where the route uses the installed Chrome: five
+  style and paper combinations, each one page of the right size, no images,
+  fonts embedded, text selectable, 90–180 kB, about 3 s. The button gets the
+  server's PDF, and gets the picture when the server call is made to fail.
+- **Not checked: anything on Vercel.** There it runs a different browser with
+  different libraries. Docker was not running on the laptop, so that could not
+  be tried before deploying.
+- **Fonts are the open question.** The server's browser has one font, Open
+  Sans. The three web-font styles bring their own display face, but every
+  style sets times and names in the device's own sans (`--font-body`), and
+  five styles use device fonts for headings too. On the server those all
+  become Open Sans — consistent, but not what the parent saw on screen. More
+  fonts can be shipped: anything in `/tmp/fonts` when the browser starts is
+  found. Which ones is a decision about how the sheet should look, to be made
+  looking at the server's output.
+- **Installing `puppeteer-core` moved two shared packages** in the lockfile:
+  `ws` 8.20.0 → 8.23.0 and `zod` 4.3.6 → 4.6.7. Both are inside the ranges the
+  other two apps ask for, and ChordSheetMaker uses `zod` in its MCP server.
+- `next.config.ts` names the Chromium files for the function
+  (`outputFileTracingIncludes`); without that it works locally and fails only
+  when deployed.
+
+To switch it on: look at the server's PDFs for all eight styles, settle the
+fonts, add the privacy sentence to the front page, set `PRINT_ON_SERVER`.
+The picture stays as the fallback when the server cannot.
+
 ### Code map
 
 | File | What it holds |
@@ -236,6 +293,9 @@ the download behave differently), and the file on paper.
 | `lib/readSchedule.ts` | Prompt and parser |
 | `lib/share.ts` | A schedule packed into a link and read back out of one |
 | `lib/sheetPdf.ts` | The finished sheet drawn to a one-page PDF, in the browser |
+| `app/api/pdf/route.ts` | The finished sheet printed to a vector PDF by a browser on the server |
+| `app/print/page.tsx` | The page that browser prints: the sheet and nothing else |
+| `lib/sheetState.ts` | Paper sizes, the state a sheet is made from, and the check on one that arrives from outside |
 | `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
 | `types/schedule.ts` | The model and its time helpers |
 
