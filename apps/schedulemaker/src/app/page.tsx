@@ -18,7 +18,7 @@ import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
-import { PrintIcon, RestartIcon, ShareIcon } from "@/components/UiIcon";
+import { PdfIcon, PrintIcon, RestartIcon, ShareIcon } from "@/components/UiIcon";
 import SharePanel from "@/components/SharePanel";
 import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
 import Landing from "@/components/Landing";
@@ -31,6 +31,7 @@ import {
   type Glossary,
 } from "@/lib/glossary";
 import { ShareError, sharedIn, unpackSchedule } from "@/lib/share";
+import { pdfName, saveFile, sheetPdf } from "@/lib/sheetPdf";
 import { THEMES } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
@@ -106,6 +107,8 @@ export default function Home() {
   const pendingSlotStart = useRef<string | null>(null);
   /** The dialog that makes a link for the class. See lib/share.ts. */
   const [sharing, setSharing] = useState(false);
+  /** A PDF is being drawn. It takes a second or two, and a second press would start another. */
+  const [makingPdf, setMakingPdf] = useState(false);
   // A schedule that arrived in a link while this browser already holds one.
   // There is room for one schedule here, so opening the link would replace an
   // afternoon of somebody's work — it waits for an answer instead.
@@ -167,6 +170,27 @@ export default function Home() {
    */
   function clearLink() {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  /** The finished sheet as a file, straight to the downloads. See lib/sheetPdf.ts. */
+  async function makePdf() {
+    if (!schedule || makingPdf) return;
+    const size = PAPERS.find((p) => p.id === paper) ?? PAPERS[0];
+    setMakingPdf(true);
+    setError(null);
+    try {
+      const blob = await sheetPdf({ wMm: parseInt(size.w, 10), hMm: parseInt(size.h, 10) });
+      saveFile(blob, pdfName(schedule.heading, schedule.title));
+    } catch (e) {
+      console.error("[pdf]", e);
+      // The dialog's own PDF is made by the browser, not by this page, so it
+      // still works when this does not — and it says where to find it.
+      setError(
+        "Det gick inte att skapa en PDF här. Tryck på Skriv ut och välj ”Spara som PDF” i stället.",
+      );
+    } finally {
+      setMakingPdf(false);
+    }
   }
 
   /** Make a schedule from a link the one this browser holds. */
@@ -632,7 +656,7 @@ export default function Home() {
                       to its own line below (see .actions-hint). */}
                   <p className="hint actions-hint">
                     Snyggt! Kolla tiderna en sista gång, sen är det bara att trycka på{" "}
-                    <strong>Skriv ut</strong> – eller spara som PDF.
+                    <strong>Skriv ut</strong> – eller skapa en PDF.
                   </p>
                   {/* Beside print, because it is the other thing to do with a
                       finished sheet — and only here, on step three: a link made
@@ -641,6 +665,13 @@ export default function Home() {
                   <button className="with-icon" onClick={() => setSharing(true)}>
                     <ShareIcon />
                     Dela med klassen
+                  </button>
+                  {/* A file in one press. The print dialog can save a PDF too,
+                      but it is a different dialog in every browser and on a
+                      phone most people never find it. */}
+                  <button className="with-icon" onClick={makePdf} disabled={makingPdf}>
+                    <PdfIcon />
+                    {makingPdf ? "Skapar PDF…" : "Skapa PDF"}
                   </button>
                   <button className="primary onward with-icon" onClick={() => window.print()}>
                     <PrintIcon />

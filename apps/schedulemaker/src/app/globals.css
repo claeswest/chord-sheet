@@ -605,6 +605,13 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 .notice p { margin: 0; flex: 1 1 auto; }
 .notice .quiet { flex: 0 0 auto; margin-left: 0; }
 
+/* The copy of the sheet that "Skapa PDF" draws from — see lib/sheetPdf.ts.
+ * Laid out for real, at the paper's width, but far above the window: it is
+ * there for a moment and nobody should see it arrive. The shadow is the
+ * screen's way of saying "a sheet of paper", and a page has no use for it. */
+.pdf-capture { position: fixed; left: 0; top: -99999px; pointer-events: none; }
+.pdf-capture .sheet { margin: 0; box-shadow: none; }
+
 /* ── Ink-saving: thin lines, no fills, black on white ──────────────────────
  * A switch over the top of any style rather than a style of its own, because
  * it answers a question about your printer and not about your taste.

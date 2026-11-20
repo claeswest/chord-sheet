@@ -188,6 +188,39 @@ Not done, and worth knowing:
   in a browser: round trip, an existing schedule, seven kinds of broken link.
 - Anyone holding a link can read the schedule in it. The dialog says so.
 
+### Skapa PDF (20 Nov 2026)
+
+Step three has **Skapa PDF** beside Skriv ut: one press, one file, no dialog.
+The print dialog can save a PDF too, and still does, but it looks different in
+every browser and on a phone most people never find it.
+
+It is made in the browser (`src/lib/sheetPdf.ts`), so the schedule still goes
+nowhere. A copy of the sheet is laid out at the paper's width, drawn to a
+canvas with `html2canvas`, and placed on one page of the chosen size with
+`jsPDF`. **So this PDF is a picture of the sheet**: about 290 dpi on A4 and
+205 on A3, around 450 kB, and its text cannot be selected. The dialog's PDF is
+the vector one. Part 2's point stands — a press-ready file still needs a real
+browser doing the printing.
+
+It fits the page the way print does: if the sheet is taller than a page it is
+laid out wider by the same factor, so the picture is the paper's shape with
+nothing cut off.
+
+Two things the canvas library does differently from the browser:
+
+- It lifts each SVG out as an image with its computed styles on it. A
+  *positioned* SVG then moves itself out of its own frame, which is why the
+  style's illustration was missing until `unpinDrawings()` gave it a wrapper.
+  Any new absolutely placed drawing on the sheet gets the same treatment
+  automatically, but check it.
+- It has no `text-overflow: ellipsis`. Text that the sheet cuts with "…" is cut
+  without it in the PDF.
+
+Checked in a browser on a laptop: Papper, Skymning, Lekfull and Godis, A4
+landscape and portrait, ink-saving, and a schedule that shrinks to 78%. **Not
+checked:** A3, a real phone (iPhone Safari above all, where both the canvas and
+the download behave differently), and the file on paper.
+
 ### Code map
 
 | File | What it holds |
@@ -202,6 +235,7 @@ Not done, and worth knowing:
 | `lib/glossary.ts` | Name/colour mapping, golden-angle hues, `isBreak`/`isMeal` |
 | `lib/readSchedule.ts` | Prompt and parser |
 | `lib/share.ts` | A schedule packed into a link and read back out of one |
+| `lib/sheetPdf.ts` | The finished sheet drawn to a one-page PDF, in the browser |
 | `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
 | `types/schedule.ts` | The model and its time helpers |
 
