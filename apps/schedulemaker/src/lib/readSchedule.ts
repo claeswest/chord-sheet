@@ -35,7 +35,8 @@ Rules:
 - Repeated free periods, lunch and breaks ARE part of the day: include them as lessons with the subject as written ("Lunch", "Rast").
 - notes: real footnotes and reminders outside the grid — "Idrott jämna veckor", "Ta med simsaker". NOT the document's own furniture: the word "SCHEMA" or "Timetable" at the top, a print date, a page number and the school's name are not notes. If there are no footnotes, notes is [].
 - title: whose schedule it is — the class or the name only. Drop the field label the sheet prints in front of it: "Klass: 7A" gives title "7A", "Class 3A" gives "3A". If the sheet does not say, use "".
-- subtitle: school, term, ward, date range — whatever sits under the title, else null.
+- subtitle: school, term, ward, date range — whatever sits under the title, else null. Not the word "SCHEMA" or "Timetable": "Månskensskolan  SCHEMA  Läsåret 2027-2028" across the top of a sheet gives "Månskensskolan · Läsåret 2027-2028".
+- label (on the week): "" unless the sheet prints a name for the week itself — "Vecka 12", "Vecka A". The word "SCHEMA", the class and the school are not the name of a week.
 
 Shape:
 {
@@ -94,6 +95,20 @@ function time(v: unknown): string {
   return m ? `${m[1].padStart(2, "0")}:${m[2]}` : s;
 }
 
+/**
+ * A week's label, unless it is only the sheet's own heading.
+ *
+ * Every school prints "SCHEMA" across the top, and a model that has been told
+ * the banner is not a note still needs somewhere to put it. It chose the week:
+ * a blue "SCHEMA" above Monday, on a sheet whose banner already says whose
+ * schedule it is. The prompt asks it not to; this is for when it does anyway,
+ * because the prompt is a request and this is not.
+ */
+function weekLabel(v: unknown): string {
+  const s = str(v);
+  return /^(vecko)?schema$|^timetable$|^schedule$/i.test(s) ? "" : s;
+}
+
 export function parseSchedule(
   raw: string,
   /** Shapes the refusal message; the rule itself is the same either way. */
@@ -145,7 +160,7 @@ export function parseSchedule(
         // A named day with no lessons is kept: "Fredag — studiedag" is
         // information, and dropping it makes the week look wrong.
         .filter((day) => day.name !== "" || day.lessons.length > 0);
-      return { id: uid(), label: str(wk.label), days };
+      return { id: uid(), label: weekLabel(wk.label), days };
     })
     .filter((w) => w.days.length > 0);
 
