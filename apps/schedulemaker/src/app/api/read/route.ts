@@ -27,6 +27,31 @@ const MAX_CHARS = 20_000;
  */
 export const maxDuration = 60;
 const READ_TIMEOUT_MS = 50_000;
+/** A second try is only worth starting while most of the time is still left. */
+const RETRY_WITHIN_MS = 15_000;
+
+/**
+ * Read without the model deliberating first.
+ *
+ * `gemini-flash-latest` is an alias, and by 20 Nov 2026 it pointed at a model
+ * that thinks before it answers unless told otherwise. On a photographed 7B
+ * sheet with 43 lessons that was about 12,000 tokens of thought and 110
+ * seconds — against the 50 this route allows — so every dense sheet failed in
+ * production, while a short pasted text still came back in 14 and made the
+ * route look healthy.
+ *
+ * With thinking at its lowest the same sheet took 21 seconds, and held up
+ * against the photograph at least as well: it got an end time right that the
+ * deliberate read got wrong. The one thing it did worse — writing a language
+ * block's five lines into a single subject — is now a rule in READ_PROMPT.
+ * Which is the comment further down, borne out: a grid is transcription.
+ *
+ * "low" is the least this model accepts ("minimal" is refused, and a token
+ * budget either switched thinking off or was ignored). A model that does not
+ * know the setting answers 400 at once, and the read is tried again without
+ * it — see below.
+ */
+const QUICK = { thinkingConfig: { thinkingLevel: "low" } };
 
 export async function POST(req: NextRequest) {
   // No account behind this, so the model is the thing to protect. Six a
@@ -82,17 +107,41 @@ export async function POST(req: NextRequest) {
         ]
       : [{ text: READ_PROMPT + text }];
 
-    const res = await geminiFetch(
-      geminiUrl(GEMINI_TEXT_MODEL, apiKey),
-      {
-        contents: [{ parts }],
-        // A grid is transcription, not judgement. Any creativity here shows up
-        // as a lesson that isn't on the sheet.
-        generationConfig: { temperature: 0, responseMimeType: "application/json" },
-      },
-      // Reading a dense grid takes longer than reading prose.
-      { timeoutMs: READ_TIMEOUT_MS },
-    );
+    // A grid is transcription, not judgement. Any creativity here shows up
+    // as a lesson that isn't on the sheet.
+    const plain = { temperature: 0, responseMimeType: "application/json" };
+
+    // One clock for the whole read, however many tries it takes. geminiFetch
+    // retries by itself unless told not to, and its retry used to get a fresh
+    // 50 seconds: a read that timed out once ran for 100, the platform killed
+    // it at 60, and the parent got the host's bare 504 — the exact thing
+    // maxDuration above was set to prevent. So the retrying is done here, and
+    // every try is given only what is left.
+    const started = Date.now();
+    const early = () => Date.now() - started < RETRY_WITHIN_MS;
+    const ask = (generationConfig: object) =>
+      geminiFetch(
+        geminiUrl(GEMINI_TEXT_MODEL, apiKey),
+        { contents: [{ parts }], generationConfig },
+        { timeoutMs: Math.max(1_000, READ_TIMEOUT_MS - (Date.now() - started)), retries: 0 },
+      );
+
+    let res: Response;
+    try {
+      res = await ask({ ...plain, ...QUICK });
+    } catch (e) {
+      // A connection that failed at once is worth one more go. A read that
+      // ran out of time is not: there is no time left to give it.
+      if (!early()) throw e;
+      res = await ask({ ...plain, ...QUICK });
+    }
+    if (!res.ok && early()) {
+      // 400 this fast is the model refusing the request as written, and the
+      // thinking setting is the one part of it a different model might not
+      // know. Anything else transient gets the same request again.
+      if (res.status === 400) res = await ask(plain);
+      else if (res.status === 429 || res.status >= 500) res = await ask({ ...plain, ...QUICK });
+    }
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
       console.error(`[api/read] Gemini ${res.status} using ${GEMINI_TEXT_MODEL}:`, detail.slice(0, 400));

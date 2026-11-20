@@ -30,6 +30,7 @@ Rules:
   - A lesson that DIFFERS between the grids, or appears in only one of them, is kept as its own lesson with the grid's label copied into "note" — "jämna veckor". Two of them at the same time on the same day is correct and expected; it is exactly how a one-grid sheet writes the same thing, with "BL jv" and "SV uv" in a single cell.
   - Never drop a grid and never pick one.
 - Days keep the sheet's order and the sheet's names, including a Saturday or a Sunday if there is one.
+- A CELL THAT LISTS SEVERAL ALTERNATIVES, one per line — a language block reading "Fr PeRa 118", "Sp ToSk 214", "Ty NoVi 425" — is ONE LESSON PER LINE. Each gets the cell's start and end time and is split into subject, teacher and room like any other lesson. Never put several lines into one subject.
 - A cell holding several things ("Matte, sal 12, AB") splits into subject, room and teacher only where the sheet makes that obvious. Anything you cannot confidently split goes in note, unchanged.
 - Repeated free periods, lunch and breaks ARE part of the day: include them as lessons with the subject as written ("Lunch", "Rast").
 - notes: real footnotes and reminders outside the grid — "Idrott jämna veckor", "Ta med simsaker". NOT the document's own furniture: the word "SCHEMA" or "Timetable" at the top, a print date, a page number and the school's name are not notes. If there are no footnotes, notes is [].
