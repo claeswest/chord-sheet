@@ -243,6 +243,62 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+/**
+ * Whether a page colour is light, by how bright it looks to the eye. An
+ * unreadable or missing colour counts as light, like the white default.
+ */
+export function isLightBg(hex?: string): boolean {
+  if (!hex) return true;
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return true;
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55;
+}
+
+/** At this much wash and above, the wash alone keeps the words readable. */
+const HALO_GONE_AT = 0.5;
+
+/**
+ * The soft halo behind a song's text when it sits on a picture, as a CSS
+ * `text-shadow`, or undefined for none.
+ *
+ * A picture is covered by a wash of the page colour (overlayOpacity), and the
+ * wash is what keeps words readable. The halo is only for when the wash has
+ * been turned down and the picture shows through: at the usual wash it did
+ * nothing but make the letters look soft. So it fades in as the wash goes
+ * from HALO_GONE_AT down to none, with no sudden jump while dragging the
+ * slider.
+ *
+ * A light page gets a light halo and a dark page a dark one: a dark halo
+ * round dark letters reads as blur.
+ *
+ * The editor, play mode and the PDF all ask here, so that what is edited,
+ * what is played and what is printed look the same.
+ */
+export function textHalo(s: SongStyle): string | undefined {
+  if (!s.backgroundImage) return undefined;
+  const wash = Math.min(1, Math.max(0, s.overlayOpacity ?? 0.5));
+  const strength = 1 - wash / HALO_GONE_AT;
+  if (strength <= 0) return undefined;
+  const a = (alpha: number) => (alpha * strength).toFixed(2);
+  return isLightBg(s.background)
+    ? `0 0 6px rgba(255,255,255,${a(0.85)}), 0 0 2px rgba(255,255,255,${a(0.6)})`
+    : `0 1px 8px rgba(0,0,0,${a(0.65)}), 0 0 2px rgba(0,0,0,${a(0.45)})`;
+}
+
+/**
+ * How the editor hands the halo to the song's own text. The editor's page is
+ * full of controls that must not get it, so it cannot simply be inherited as
+ * in play mode: the page sets this variable ({@link haloVariable}) and only
+ * the elements that show the song's text use it.
+ */
+export const SHEET_HALO = "var(--sheet-halo, none)";
+
+/** The style that sets the variable {@link SHEET_HALO} reads. */
+export function haloVariable(s: SongStyle): CSSProperties {
+  return { "--sheet-halo": textHalo(s) ?? "none" } as CSSProperties;
+}
+
 /** Returns a React `style` object for the outermost background div. */
 export function backgroundStyle(s: SongStyle): CSSProperties {
   if (s.backgroundImage) {

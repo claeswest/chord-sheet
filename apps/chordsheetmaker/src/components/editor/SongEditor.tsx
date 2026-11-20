@@ -37,7 +37,7 @@ import { getSong, saveSongWithPicture, listSongs, type StoredSong } from "@/lib/
 import { encodeSong, type SharedSong } from "@/lib/songUrl";
 import { upsertSong, fetchSongStyle, SongLimitError } from "@/lib/songDb";
 import { getSongLimit } from "@/lib/plans";
-import { DEFAULT_STYLE, DEFAULT_BG_STYLE, backgroundStyle, loadStyleFonts } from "@/lib/songStyle";
+import { DEFAULT_STYLE, DEFAULT_BG_STYLE, SHEET_HALO, backgroundStyle, haloVariable, loadStyleFonts } from "@/lib/songStyle";
 import type { SongStyle } from "@/lib/songStyle";
 import { generateBackground } from "@/lib/generateBackground";
 import { generateTextStyle } from "@/lib/generateTextStyle";
@@ -1538,7 +1538,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
 
       <div className="flex flex-1 overflow-hidden">
         {/* Editor area */}
-        <div className="flex-1 overflow-y-auto" style={backgroundStyle(songStyle)}>
+        <div className="flex-1 overflow-y-auto" style={{ ...backgroundStyle(songStyle), ...haloVariable(songStyle) }}>
           <div className="max-w-3xl mx-auto px-2 sm:px-12 py-10 space-y-0">
             {/* Title & artist — editable inline */}
             <div
@@ -1561,6 +1561,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                   fontWeight: songStyle.title.bold !== false ? "bold" : "normal",
                   fontStyle: songStyle.title.italic ? "italic" : "normal",
                   color: songStyle.title.color ?? "#18181b",
+                  textShadow: SHEET_HALO,
                   lineHeight: 1.2,
                   opacity: title ? 1 : 0.35,
                   textAlign: songStyle.titleAlign ?? "center",
@@ -1578,6 +1579,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                   fontWeight: songStyle.artist?.bold ? "bold" : "normal",
                   fontStyle: songStyle.artist?.italic ? "italic" : "normal",
                   color: songStyle.artist?.color ?? "#71717a",
+                  textShadow: SHEET_HALO,
                   opacity: artist ? 1 : 0.35,
                   textAlign: songStyle.titleAlign ?? "center",
                 }}

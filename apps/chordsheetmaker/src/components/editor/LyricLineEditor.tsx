@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { LyricLine } from "@/types/song";
 import type { SongStyle } from "@/lib/songStyle";
-import { MONO_STACK } from "@/lib/songStyle";
+import { MONO_STACK, SHEET_HALO } from "@/lib/songStyle";
 import ChordLabel from "./ChordLabel";
 
 interface Props {
@@ -350,6 +350,7 @@ export default function LyricLineEditor({
                     fontWeight: songStyle?.chords?.bold !== false ? "bold" : "normal",
                     fontStyle: songStyle?.chords?.italic ? "italic" : "normal",
                     color: chordColor,
+                    textShadow: SHEET_HALO,
                   }}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
@@ -433,6 +434,7 @@ export default function LyricLineEditor({
             fontWeight: songStyle?.lyrics?.bold ? "bold" : "normal",
             fontStyle: songStyle?.lyrics?.italic ? "italic" : "normal",
             color: songStyle?.lyrics?.color ?? "#27272a",
+            textShadow: SHEET_HALO,
             padding: 0,
             margin: 0,
           }}

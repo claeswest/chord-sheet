@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import type { SectionHeader } from "@/types/song";
+import { SHEET_HALO } from "@/lib/songStyle";
 
 const QUICK_LABELS = ["Intro", "Verse", "Chorus", "Bridge", "Pre-Chorus", "Outro", "Solo", "Interlude"];
 
@@ -67,7 +68,7 @@ export default function SectionHeaderBlock({ section, onUpdate, onDelete, onDupl
         <button
           onClick={() => setEditing(true)}
           className="uppercase tracking-widest transition-colors shrink-0"
-          style={{ color, fontSize, fontWeight: bold ? "bold" : "normal", fontStyle: italic ? "italic" : "normal" }}
+          style={{ color, fontSize, fontWeight: bold ? "bold" : "normal", fontStyle: italic ? "italic" : "normal", textShadow: SHEET_HALO }}
         >
           {section.label}
         </button>

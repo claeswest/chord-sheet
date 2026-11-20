@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { SongLine } from "@/types/song";
 import { extractInlineChords } from "@/lib/parseChordSheet";
 import { transposeSong, songKey as keyOf } from "@/lib/transpose";
-import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba } from "@/lib/songStyle";
+import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba, textHalo } from "@/lib/songStyle";
 import LoadingNotes from "@/components/ui/LoadingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@clavos/core/pdf";
@@ -85,15 +85,6 @@ const CONTROL_NAME = "hidden sm:inline text-[11px] font-medium uppercase trackin
 const STEPPER = "flex items-center rounded-lg border border-white/20 overflow-hidden";
 const STEP = "w-8 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors text-sm";
 
-// Perceived-luminance check for the glow: light page colors need a light halo
-// (a dark one smudges dark text into "blur"), dark pages need a dark halo.
-function isLightBg(hex?: string): boolean {
-  if (!hex) return true;
-  const c = hex.replace("#", "");
-  if (c.length !== 6) return true;
-  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55;
-}
 
 
 export default function SongViewer({ title, artist, lines, onEdit, songStyle, songId, loading = false, isShared = false, promoCta = false, queue = null, onQueueGo, noPdf = false }: Props) {
@@ -165,13 +156,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   const bgImgRef = useRef<HTMLImageElement>(null);
 
   const s = songStyle ?? DEFAULT_STYLE;
-  // #1 Legibility over photo backgrounds: soft shadow behind all sheet text
-  // when a background image is set (undefined = no style emitted on plain bg).
-  const textGlow = s.backgroundImage
-    ? isLightBg(s.background)
-      ? "0 0 6px rgba(255,255,255,0.85), 0 0 2px rgba(255,255,255,0.6)"
-      : "0 1px 8px rgba(0,0,0,0.65), 0 0 2px rgba(0,0,0,0.45)"
-    : undefined;
+  // Legibility over a picture: a soft halo behind all sheet text, only when
+  // the wash over the picture is thin. The rule is textHalo's, shared with the
+  // editor and the PDF.
+  const textGlow = textHalo(s);
   const perfBoost = perfMode ? 8 : 0;
   const lyricSize = (s.lyrics.fontSize ?? 14) + sizeAdjust + perfBoost;
   const chordSize = (s.chords.fontSize ?? 12) + sizeAdjust + perfBoost;
