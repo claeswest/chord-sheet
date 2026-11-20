@@ -141,6 +141,53 @@ way to look after that is not to have it.*
 
 Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 
+### Sharing with the class (20 Nov 2026)
+
+Everyone in a class is sent the same sheet, so one parent's finished schedule
+is worth something to the other twenty-five. Step three has **Dela med
+klassen**, which makes a link; whoever opens it gets a copy to put their own
+child's name on.
+
+**The schedule is in the link, after the `#`.** A browser does not send that
+part to the server, so there is still no schedule on our side, no route besides
+`/api/read`, and nothing in a log. That is the whole reason it is built this
+way rather than as a stored share page like ChordSheetMaker's. The payload is
+compact JSON, deflated in the browser and base64url-encoded
+(`src/lib/share.ts`): an invented 7A week of 38 lessons with fourteen named
+teachers came to about 1,300 characters.
+
+What travels and what does not is decided in `toWire()` and explained at the
+top of that file:
+
+- **Goes:** class, school, days, times, subjects, teachers, rooms, notes, the
+  names in the glossary, and any colour that is not the default.
+- **Stays:** the banner ("Elins schema"), every choice made (all options come
+  back as open questions — one child's German is not the next child's), and
+  the style, paper and switches. The dialog lists this with the sheet's own
+  words before the link is copied.
+
+Opening a link: with no schedule in the browser it opens straight into step
+two with a strip saying what to do. With one already there it asks first,
+because there is room for one schedule and the link would replace it. Either
+way the `#…` is removed from the address afterwards.
+
+**A link is written by whoever sent it, so nothing in it is trusted.**
+`fromWire()` caps sizes and counts, caps the unpacked size while inflating,
+accepts a colour only as six hex digits, and refuses codes like `constructor`
+that a plain-object glossary would answer to. A link that cannot be read gives
+a message and leaves the current schedule alone.
+
+Not done, and worth knowing:
+
+- **Untested on a real phone.** The share sheet button ("Skicka länken") only
+  appears where `navigator.share` exists, which the preview pane does not have.
+  Whether a 1,300-character link survives each chat app was not tried either.
+- **Nothing counts how often it is used** — the app has no measurement at all.
+- **No unit tests**, like the rest of the app. `packSchedule` / `unpackSchedule`
+  are pure and would be the first thing worth one. The checks made were by hand
+  in a browser: round trip, an existing schedule, seven kinds of broken link.
+- Anyone holding a link can read the schedule in it. The dialog says so.
+
 ### Code map
 
 | File | What it holds |
@@ -154,6 +201,8 @@ Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 | `components/GlossaryPanel.tsx` | Codes → words and colours |
 | `lib/glossary.ts` | Name/colour mapping, golden-angle hues, `isBreak`/`isMeal` |
 | `lib/readSchedule.ts` | Prompt and parser |
+| `lib/share.ts` | A schedule packed into a link and read back out of one |
+| `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
 | `types/schedule.ts` | The model and its time helpers |
 
 ### House rules that bite

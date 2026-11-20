@@ -18,7 +18,8 @@ import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
-import { PrintIcon, RestartIcon } from "@/components/UiIcon";
+import { PrintIcon, RestartIcon, ShareIcon } from "@/components/UiIcon";
+import SharePanel from "@/components/SharePanel";
 import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
 import Landing from "@/components/Landing";
 import {
@@ -29,6 +30,7 @@ import {
   withKnownNames,
   type Glossary,
 } from "@/lib/glossary";
+import { ShareError, sharedIn, unpackSchedule } from "@/lib/share";
 import { THEMES } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
@@ -102,6 +104,20 @@ export default function Home() {
   // Which slot a "behåll alla" / "ändra val" click was about, since those
   // carry no lesson to identify it by.
   const pendingSlotStart = useRef<string | null>(null);
+  /** The dialog that makes a link for the class. See lib/share.ts. */
+  const [sharing, setSharing] = useState(false);
+  // A schedule that arrived in a link while this browser already holds one.
+  // There is room for one schedule here, so opening the link would replace an
+  // afternoon of somebody's work — it waits for an answer instead.
+  const [incoming, setIncoming] = useState<{ schedule: Schedule; glossary: Glossary } | null>(null);
+  /** The schedule on screen came from a link, and its reader hasn't been told what to do with it yet. */
+  const [fromLink, setFromLink] = useState(false);
+  // What the link handler needs to know when it runs, which is later than when
+  // it was set up: whether there is already a schedule here.
+  const scheduleRef = useRef<Schedule | null>(null);
+  useEffect(() => {
+    scheduleRef.current = schedule;
+  }, [schedule]);
 
   useEffect(() => {
     try {
@@ -143,6 +159,71 @@ export default function Home() {
     }
   }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration]);
 
+  /**
+   * Take the schedule out of the address once it has been dealt with.
+   *
+   * Left there, a reload would ask the same question again, and a class's
+   * timetable would sit in the address bar and the history for no reason.
+   */
+  function clearLink() {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  /** Make a schedule from a link the one this browser holds. */
+  function adopt(got: { schedule: Schedule; glossary: Glossary }) {
+    setSchedule(got.schedule);
+    setGlossary(got.glossary);
+    // Whatever photograph was in memory belonged to the schedule this replaces.
+    setSource(null);
+    // Step two: the link deliberately arrives without a name or any choices
+    // made, and those are what this step is for. The style, paper and switches
+    // are left as this reader had them — they were never the sender's to set.
+    setMode("edit");
+    setOpenLesson(null);
+    setError(null);
+    setIncoming(null);
+    setFromLink(true);
+    clearLink();
+    window.scrollTo({ top: 0 });
+  }
+
+  // A schedule in the address: someone was sent a link. Waits for the stored
+  // schedule to be read first, because what happens next depends on whether
+  // there is one. Listens for the address changing as well — pasting a link
+  // into a tab that already has this page open changes the # without loading
+  // anything.
+  useEffect(() => {
+    if (!loaded) return;
+    let live = true;
+    async function check() {
+      const payload = sharedIn(window.location.hash);
+      if (!payload) return;
+      try {
+        const got = await unpackSchedule(payload);
+        if (!live) return;
+        if (scheduleRef.current) {
+          // One question at a time: the link dialog may be open underneath.
+          setSharing(false);
+          setError(null);
+          setIncoming(got);
+        } else adopt(got);
+      } catch (e) {
+        if (!live) return;
+        setError(
+          e instanceof ShareError ? e.message : "Den här länken gick inte att läsa. Be om en ny.",
+        );
+        clearLink();
+      }
+    }
+    check();
+    window.addEventListener("hashchange", check);
+    return () => {
+      live = false;
+      window.removeEventListener("hashchange", check);
+    };
+    // adopt and clearLink only call setters, so there is nothing stale to capture.
+  }, [loaded]);
+
   async function read(payload: { image?: string; text?: string }) {
     setBusy(true);
     setPhase("read");
@@ -159,6 +240,7 @@ export default function Home() {
         return;
       }
       setSchedule(data.schedule);
+      setFromLink(false);
       // Colours and the names we're sure of up front, so the sheet arrives
       // looking like something and already half in words.
       const read = codesIn(data.schedule).subjects;
@@ -218,6 +300,9 @@ export default function Home() {
     setFit(1);
     pendingSlotStart.current = null;
     setResetting(false);
+    setSharing(false);
+    setIncoming(null);
+    setFromLink(false);
     // The front page starts at its top, not wherever the editor was scrolled.
     window.scrollTo({ top: 0 });
   }
@@ -549,6 +634,14 @@ export default function Home() {
                     Snyggt! Kolla tiderna en sista gång, sen är det bara att trycka på{" "}
                     <strong>Skriv ut</strong> – eller spara som PDF.
                   </p>
+                  {/* Beside print, because it is the other thing to do with a
+                      finished sheet — and only here, on step three: a link made
+                      halfway through naming the teachers hands the class the
+                      half that is left. */}
+                  <button className="with-icon" onClick={() => setSharing(true)}>
+                    <ShareIcon />
+                    Dela med klassen
+                  </button>
                   <button className="primary onward with-icon" onClick={() => window.print()}>
                     <PrintIcon />
                     Skriv ut
@@ -584,6 +677,23 @@ export default function Home() {
           )}
 
           {error && <p className="error no-print">{error}</p>}
+
+          {/* Says what is missing on purpose. A schedule from a link has no
+              name across the top and every choice open again, and without
+              this it just looks unfinished. */}
+          {fromLink && editing && (
+            <div className="notice no-print" role="status">
+              <p>
+                <strong>Det här schemat har en annan förälder delat med dig.</strong>{" "}
+                <span className="on-mouse">Klicka</span>
+                <span className="on-touch">Tryck</span> på rubriken och skriv ert barns namn, gör era
+                egna val och skriv ut. Det sparas bara här i din webbläsare.
+              </p>
+              <button className="quiet" onClick={() => setFromLink(false)}>
+                Okej
+              </button>
+            </div>
+          )}
 
           {editing && <ChoicesPanel schedule={schedule} glossary={glossary} onDecide={decide} />}
 
@@ -640,6 +750,61 @@ export default function Home() {
               onDelete={deleteLesson}
               onClose={() => setOpenLesson(null)}
             />
+          )}
+
+          {sharing && (
+            <SharePanel schedule={schedule} glossary={glossary} onClose={() => setSharing(false)} />
+          )}
+
+          {incoming && (
+            // Closing it any other way than "Öppna" keeps what is here: the
+            // cautious answer is the one a stray click should give.
+            <div
+              className="overlay no-print"
+              onClick={() => {
+                setIncoming(null);
+                clearLink();
+              }}
+            >
+              <div
+                className="dialog share"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="incoming-title"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="panel-title" id="incoming-title">
+                  Öppna det delade schemat?
+                </p>
+                <p className="share-lead">
+                  Länken du öppnade innehåller ett schema
+                  {incoming.schedule.title || incoming.schedule.subtitle ? (
+                    <>
+                      {" "}
+                      för{" "}
+                      <strong>
+                        {[incoming.schedule.title, incoming.schedule.subtitle].filter(Boolean).join(" · ")}
+                      </strong>
+                    </>
+                  ) : null}
+                  . Du har redan ett schema här i webbläsaren, och det försvinner om du öppnar det
+                  delade.
+                </p>
+                <div className="controls" style={{ marginTop: 16, marginBottom: 0 }}>
+                  <button
+                    onClick={() => {
+                      setIncoming(null);
+                      clearLink();
+                    }}
+                  >
+                    Behåll mitt
+                  </button>
+                  <button className="danger" onClick={() => adopt(incoming)} style={{ marginLeft: "auto" }}>
+                    Öppna det delade
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

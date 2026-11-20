@@ -535,6 +535,9 @@ export default function Landing({
           webbläsare om du vill fortsätta senare. (Rensar du webbläsarens data försvinner det.)
         </p>
         <p>
+          Delar du schemat med klassen ligger det i själva länken du skickar – inte hos oss.
+        </p>
+        <p>
           Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
         </p>
       </footer>

@@ -588,6 +588,23 @@ kbd {
 .dialog input { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #d6d6de; border-radius: 8px; }
 button.danger { color: #b3261e; border-color: #f0c9c6; }
 
+/* ── Sharing with the class ───────────────────────────────────────────────
+ * The dialog that hands out a link, and the strip that greets whoever opens
+ * one. Both are the app's own furniture: never printed, never themed. */
+.dialog.share { max-width: 460px; }
+.share-lead { font-size: 14px; line-height: 1.5; margin: 8px 0 14px; color: #45454f; }
+.share-what { margin: 0 0 14px; font-size: 14px; line-height: 1.45; }
+.share-what dt { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #6b6b6b; margin-top: 10px; }
+.share-what dd { margin: 2px 0 0; }
+/* The link is long and nobody reads it; one line, cut off, selectable. */
+.dialog input.share-link { font-family: ui-monospace, monospace; font-size: 12px; color: #6b6b6b; text-overflow: ellipsis; }
+.notice {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 20px; padding: 12px 16px;
+  background: #eef2ff; border: 1px solid #d5ddfb; border-radius: 14px; font-size: 14px; line-height: 1.45; color: #1a1a1a;
+}
+.notice p { margin: 0; flex: 1 1 auto; }
+.notice .quiet { flex: 0 0 auto; margin-left: 0; }
+
 /* ── Ink-saving: thin lines, no fills, black on white ──────────────────────
  * A switch over the top of any style rather than a style of its own, because
  * it answers a question about your printer and not about your taste.
