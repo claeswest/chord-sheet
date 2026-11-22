@@ -172,11 +172,19 @@ is the exception — it is deliberately never stored — and waits in a module
 variable for the one page change.
 
 Every page has the same strip across the top (`components/SiteHeader.tsx`):
-the logo, which is the way home, and at most three links — "Nytt schema" from
-the editor, "Mitt schema" from anywhere else while a schedule is open, and
-"Mina scheman" or "Logga in" where there are accounts. A row, not a menu that
-folds out: three links do not need one. They are 44 points tall; the lone link
-they replace was 28.
+the logo, which is the way home, and at most two links — "Nytt schema" from
+the editor, and "Mina scheman" or "Logga in" where there are accounts. A row,
+not a menu that folds out: two links do not need one. They are 44 points tall;
+the lone link they replace was 28.
+
+**There is no link in the strip to the schedule that is open, on purpose.**
+There was, twice in one day: as "Mitt schema", which beside "Mina scheman"
+raised the question it should have answered (someone with three saved
+schedules has three of "mine"), and then by the schedule's own name. The
+owner's point was simpler than either: a schedule is opened from "Mina
+scheman". For someone with no account, whose one schedule lives in the
+browser, the start page names the open schedule and has the button to it, and
+the logo is one press from there.
 
 Three things follow from the start page being reachable with a schedule open:
 

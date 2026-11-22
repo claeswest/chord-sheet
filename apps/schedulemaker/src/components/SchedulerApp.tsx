@@ -22,7 +22,7 @@ import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
 import { PdfIcon, PrintIcon, RestartIcon, SaveIcon, ShareIcon } from "@/components/UiIcon";
 import SharePanel from "@/components/SharePanel";
-import SiteHeader, { type Account } from "@/components/SiteHeader";
+import SiteHeader, { scheduleName, type Account } from "@/components/SiteHeader";
 import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
 import Landing from "@/components/Landing";
 import {
@@ -733,7 +733,7 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
   // around the sheet now, as the front page already did for its preview.
   return (
     <main className={view === "editor" && schedule ? "app has-bar" : "app"}>
-      <SiteHeader current={view} account={account} hasSchedule={Boolean(schedule)} />
+      <SiteHeader current={view} account={account} />
       {/* @page can't be set from a class, so the chosen size is injected.
           Without it the browser prints A4 whatever the sheet is laid out for,
           and an A3 schedule comes out cropped. */}
@@ -747,9 +747,9 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
         // just opened from your own saved ones — of course it is still there.
         <div className="notice no-print" role="status">
           <p>
-            {schedule.heading?.trim() || schedule.title.trim() ? (
+            {scheduleName(schedule) ? (
               <>
-                <strong>{schedule.heading?.trim() || schedule.title.trim()}</strong> är öppet.
+                <strong>{scheduleName(schedule)}</strong> är öppet.
               </>
             ) : (
               <strong>Du har ett schema öppet.</strong>

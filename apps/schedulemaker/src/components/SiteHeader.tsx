@@ -1,40 +1,45 @@
 "use client";
 
-// The strip across the top of every page: the way home, and the two or three
+// The strip across the top of every page: the way home, and the one or two
 // places there are to go.
 //
 // It exists because there was no way home. The editor had no logo; the start
 // page could only be reached from it through "Börja om", which throws the
 // schedule away; and the one link to an account was a small grey word in a
-// corner. Three links do not need a menu that folds out, so this is a row.
+// corner. Two links do not need a menu that folds out, so this is a row.
 //
-// What it shows depends on two things only the browser knows: whether there
-// is a schedule being worked on (it lives in this browser's storage), and
-// whether anyone is signed in. A page that already knows either passes it in;
-// a page that does not — the server-rendered ones — lets this find out.
+// There is deliberately no link here to "the schedule that is open". There
+// was, twice in one day: as "Mitt schema", which beside "Mina scheman" raised
+// the question it should have answered, and then by the schedule's own name.
+// The owner's point was simpler than either: a schedule is opened from "Mina
+// scheman". For someone with no account, whose one schedule lives in this
+// browser, the start page says which schedule is open and has the button to
+// it — and the logo here is one press from that.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogoMark, SITE_NAME } from "@/components/Logo";
-import { SHEET_STORE } from "@/lib/sheetState";
 
 export type Account = { enabled: boolean; email: string | null };
+
+/** What a schedule is called where it is named: its banner, else its class. */
+export function scheduleName(s: { heading?: string; title: string } | null | undefined): string {
+  return s ? s.heading?.trim() || s.title.trim() : "";
+}
 
 export default function SiteHeader({
   current,
   account: given,
-  hasSchedule: givenSchedule,
 }: {
   /** Which page this is, so it does not offer a link to itself. */
   current: "start" | "editor" | "saved" | "other";
   /** Who is signed in, where the page already asked. Null means "asked, not answered yet". */
   account?: Account | null;
-  /** Whether a schedule is open in this browser, where the page already knows. */
-  hasSchedule?: boolean;
 }) {
   const [found, setFound] = useState<Account | null>(null);
-  const [stored, setStored] = useState(false);
 
+  // A page that did not ask who is signed in — the server-rendered ones —
+  // leaves it to this.
   useEffect(() => {
     if (given !== undefined) return;
     let live = true;
@@ -47,18 +52,7 @@ export default function SiteHeader({
     };
   }, [given]);
 
-  useEffect(() => {
-    if (givenSchedule !== undefined) return;
-    try {
-      const raw = localStorage.getItem(SHEET_STORE);
-      setStored(Boolean(raw && JSON.parse(raw)?.schedule));
-    } catch {
-      setStored(false);
-    }
-  }, [givenSchedule]);
-
   const account = given !== undefined ? given : found;
-  const hasSchedule = givenSchedule !== undefined ? givenSchedule : stored;
 
   return (
     <header className="site-header no-print">
@@ -72,7 +66,6 @@ export default function SiteHeader({
             this one: it stays where it is until something replaces it, and
             the start page asks before that happens. */}
         {current === "editor" && <Link href="/">Nytt schema</Link>}
-        {current !== "editor" && hasSchedule && <Link href="/schema">Mitt schema</Link>}
         {account?.enabled && account.email && current !== "saved" && (
           <Link href="/scheman">Mina scheman</Link>
         )}
