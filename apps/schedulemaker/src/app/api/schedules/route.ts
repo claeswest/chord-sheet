@@ -1,0 +1,60 @@
+import { NextRequest, NextResponse } from "next/server";
+import { currentUserId } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
+import { PLANS, planFromUser } from "@/lib/plans";
+import { cleanState } from "@/lib/sheetState";
+import { countSchedules, createSchedule, lessonCount, listSchedules } from "@/lib/scheduleDb";
+
+// The signed-in person's saved schedules: list them, add one.
+//
+// Nothing here works without a session, and nothing here exists for a visitor
+// who has not made an account — for them the schedule is still only in their
+// own browser.
+
+/** A whole upper-secondary week with its glossary is about 15 kB. */
+const MAX_BODY_CHARS = 300_000;
+
+const unauthorized = () => NextResponse.json({ error: "Du behöver logga in." }, { status: 401 });
+const unreadable = () =>
+  NextResponse.json({ error: "Det där gick inte att läsa som ett schema." }, { status: 400 });
+
+export async function GET() {
+  const userId = await currentUserId();
+  if (!userId) return unauthorized();
+  return NextResponse.json(
+    { schedules: await listSchedules(userId) },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
+
+export async function POST(req: NextRequest) {
+  const userId = await currentUserId();
+  if (!userId) return unauthorized();
+
+  const raw = await req.text().catch(() => "");
+  if (raw.length === 0 || raw.length > MAX_BODY_CHARS) return unreadable();
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return unreadable();
+  }
+  // The same check as before printing: what is stored is what was checked,
+  // not what was sent.
+  const state = cleanState(parsed);
+  if (!state) return unreadable();
+
+  const limit = PLANS[planFromUser({})].features.scheduleLimit;
+  if ((await countSchedules(userId)) >= limit) {
+    return NextResponse.json(
+      {
+        error: `Du har ${limit} sparade scheman, och fler får inte plats. Ta bort några du inte behöver.`,
+      },
+      { status: 403 },
+    );
+  }
+
+  const schedule = await createSchedule(userId, state);
+  await logActivity("schedule_saved", userId, { lessons: lessonCount(state), new: true });
+  return NextResponse.json({ schedule }, { status: 201 });
+}

@@ -57,3 +57,13 @@ export function PdfIcon() {
     </svg>
   );
 }
+
+/** A page slid into a folder: kept, to be found again. */
+export function SaveIcon() {
+  return (
+    <svg {...base}>
+      <path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <path d="M9 13l2.2 2.2L15.5 11" />
+    </svg>
+  );
+}

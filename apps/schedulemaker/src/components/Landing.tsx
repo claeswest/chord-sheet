@@ -187,6 +187,7 @@ export default function Landing({
   onIcons,
   illustration,
   onIllustration,
+  accounts = false,
 }: {
   busy: boolean;
   phase: null | "shrink" | "read";
@@ -201,6 +202,8 @@ export default function Landing({
   onIcons: (on: boolean) => void;
   illustration: boolean;
   onIllustration: (on: boolean) => void;
+  /** Whether this site has accounts. Decides what the privacy text may promise. */
+  accounts?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -543,6 +546,14 @@ export default function Landing({
           Trycker du på Skapa PDF skickas schemat till vår server medan filen görs. Det sparas inte
           där.
         </p>
+        {/* Said only where it is true. On a site without accounts nothing is
+            ever kept, and the paragraph above is the whole story. */}
+        {accounts && (
+          <p>
+            Vill du hitta schemat igen nästa termin kan du skapa ett konto och spara det. Då lagras
+            det hos oss tills du tar bort det – och du kan ta bort hela kontot när du vill.
+          </p>
+        )}
         <p>
           Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
         </p>

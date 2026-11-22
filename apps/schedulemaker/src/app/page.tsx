@@ -18,7 +18,7 @@ import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
-import { PdfIcon, PrintIcon, RestartIcon, ShareIcon } from "@/components/UiIcon";
+import { PdfIcon, PrintIcon, RestartIcon, SaveIcon, ShareIcon } from "@/components/UiIcon";
 import SharePanel from "@/components/SharePanel";
 import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
 import Landing from "@/components/Landing";
@@ -32,11 +32,11 @@ import {
 } from "@/lib/glossary";
 import { ShareError, sharedIn, unpackSchedule } from "@/lib/share";
 import { pdfName, saveFile, sheetPdf } from "@/lib/sheetPdf";
-import { PAPERS, paperOf, type SheetState } from "@/lib/sheetState";
+import { PAPERS, SHEET_STORE, paperOf, type SheetState, type StoredSheet } from "@/lib/sheetState";
 import { THEMES } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
-const STORE = "sm_state_v1";
+const STORE = SHEET_STORE;
 
 /**
  * Whether "Skapa PDF" has the server print the sheet (a vector PDF) or draws
@@ -57,15 +57,10 @@ const PRINT_ON_SERVER = true;
 /** How long to wait for the server's PDF before drawing one here instead. */
 const SERVER_PDF_WAIT_MS = 30_000;
 
-type Stored = {
-  schedule: Schedule;
-  glossary: Glossary;
-  theme: string;
-  paper?: string;
-  ink?: boolean;
-  icons?: boolean;
-  illustration?: boolean;
-};
+type Stored = StoredSheet;
+
+/** Who is signed in, as the page knows it. Null until /api/me has answered. */
+type Account = { enabled: boolean; email: string | null };
 
 /**
  * What a fresh start looks like. One place, read both when the page first loads
@@ -134,6 +129,27 @@ export default function Home() {
     scheduleRef.current = schedule;
   }, [schedule]);
 
+  // ── Accounts ──────────────────────────────────────────────────────────
+  // Optional, and invisible on a site that has none: until /api/me says there
+  // are accounts here, nothing below draws anything.
+  const [account, setAccount] = useState<Account | null>(null);
+  /** Which saved schedule the one on screen is. See StoredSheet.savedId. */
+  const [savedId, setSavedId] = useState<string | undefined>(undefined);
+  /** The sheet as it was when it was last saved, to know whether it has changed since. */
+  const [savedAs, setSavedAs] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => live && setAccount({ enabled: Boolean(d.enabled), email: d.user?.email ?? null }))
+      .catch(() => live && setAccount({ enabled: false, email: null }));
+    return () => {
+      live = false;
+    };
+  }, []);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE);
@@ -155,6 +171,7 @@ export default function Home() {
           setIcons(s.icons ?? DEFAULTS.icons);
           setIllustration(s.illustration ?? DEFAULTS.illustration);
           setPaper(s.paper ?? DEFAULTS.paper);
+          setSavedId(typeof s.savedId === "string" ? s.savedId : undefined);
         }
       }
     } catch {
@@ -167,12 +184,79 @@ export default function Home() {
     if (!loaded) return;
     try {
       if (schedule)
-        localStorage.setItem(STORE, JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration }));
+        localStorage.setItem(
+          STORE,
+          JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration, savedId }),
+        );
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration]);
+  }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration, savedId]);
+
+  /** Everything a save sends, as text — also what "has it changed since?" compares. */
+  const sheetNow = schedule
+    ? JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration } satisfies SheetState)
+    : null;
+  const unsaved = sheetNow !== null && sheetNow !== savedAs;
+
+  /**
+   * Keep this schedule in the account.
+   *
+   * Signed out, this is the way in: the schedule stays in the browser while
+   * its owner signs in, and the address they come back to (/?spara=1) saves
+   * it without their having to ask again. Signed in, it updates the saved
+   * schedule this one came from, or makes a new one.
+   */
+  async function save() {
+    if (!schedule || !sheetNow || saving) return;
+    if (!account?.email) {
+      window.location.href = "/login?next=save";
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const send = (url: string, method: string) =>
+        fetch(url, { method, headers: { "Content-Type": "application/json" }, body: sheetNow });
+      let res = savedId ? await send(`/api/schedules/${savedId}`, "PUT") : await send("/api/schedules", "POST");
+      // Saved once, then deleted from "Mina scheman" in another tab: it is
+      // still wanted, or nobody would be pressing Spara. Make it again.
+      if (savedId && res.status === 404) res = await send("/api/schedules", "POST");
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        window.location.href = "/login?next=save";
+        return;
+      }
+      if (!res.ok) {
+        setError(data.error ?? "Det gick inte att spara. Försök igen.");
+        return;
+      }
+      if (data.schedule?.id) setSavedId(data.schedule.id);
+      setSavedAs(sheetNow);
+    } catch {
+      setError("Vi når inte fram just nu. Schemat finns kvar här i webbläsaren – försök spara igen om en stund.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // A schedule opened from "Mina scheman", or saved before this page was
+  // reloaded, is as saved as it gets until something changes. Taken once, when
+  // both the stored schedule and the sign-in are known.
+  const baselined = useRef(false);
+  useEffect(() => {
+    if (!loaded || !account || baselined.current) return;
+    baselined.current = true;
+    if (account.email && savedId && sheetNow) setSavedAs(sheetNow);
+    // Back from signing in with a schedule waiting to be saved.
+    if (new URLSearchParams(window.location.search).get("spara") === "1") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+      if (account.email && schedule) save();
+    }
+    // Runs once by design; save and sheetNow are read as they are at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, account]);
 
   /**
    * Take the schedule out of the address once it has been dealt with.
@@ -247,6 +331,9 @@ export default function Home() {
     setError(null);
     setIncoming(null);
     setFromLink(true);
+    // Somebody else's schedule, newly arrived: not any saved one of ours.
+    setSavedId(undefined);
+    setSavedAs(null);
     clearLink();
     window.scrollTo({ top: 0 });
   }
@@ -305,6 +392,9 @@ export default function Home() {
       }
       setSchedule(data.schedule);
       setFromLink(false);
+      // A fresh read is a new schedule, not a new version of a saved one.
+      setSavedId(undefined);
+      setSavedAs(null);
       // Colours and the names we're sure of up front, so the sheet arrives
       // looking like something and already half in words.
       const read = codesIn(data.schedule).subjects;
@@ -367,6 +457,10 @@ export default function Home() {
     setSharing(false);
     setIncoming(null);
     setFromLink(false);
+    // Starting over lets go of the saved schedule; it does not delete it.
+    // That is what "Mina scheman" is for.
+    setSavedId(undefined);
+    setSavedAs(null);
     // The front page starts at its top, not wherever the editor was scrolled.
     window.scrollTo({ top: 0 });
   }
@@ -541,6 +635,18 @@ export default function Home() {
   // around the sheet now, as the front page already did for its preview.
   return (
     <main className="app">
+      {/* Only where there are accounts, and never on paper. Signed out it is
+          one quiet link: the app's first promise is that none of this is
+          needed. */}
+      {account?.enabled && (
+        <nav className="account no-print" aria-label="Konto">
+          {account.email ? (
+            <a href="/scheman">Mina scheman</a>
+          ) : (
+            <a href="/login">Logga in</a>
+          )}
+        </nav>
+      )}
       {/* @page can't be set from a class, so the chosen size is injected.
           Without it the browser prints A4 whatever the sheet is laid out for,
           and an A3 schedule comes out cropped. */}
@@ -561,6 +667,7 @@ export default function Home() {
           onIcons={setIcons}
           illustration={illustration}
           onIllustration={setIllustration}
+          accounts={Boolean(account?.enabled)}
         />
       )}
 
@@ -588,6 +695,29 @@ export default function Home() {
             />
             {/* One click used to throw away the schedule, and naming a set of
                 teacher codes is an afternoon. It asks now. */}
+            {/* Beside the way out, because it is the other answer to "what
+                happens to this schedule?" — and before it, since it is the
+                kinder one. Says what state things are in rather than only what
+                it does: "Sparat" is information, and a greyed-out "Spara"
+                would not be. */}
+            {account?.enabled && !resetting && (
+              <button
+                className="quiet with-icon save"
+                onClick={save}
+                disabled={saving || (Boolean(account.email) && !unsaved)}
+              >
+                <SaveIcon />
+                {!account.email
+                  ? "Spara schemat"
+                  : saving
+                    ? "Sparar…"
+                    : unsaved
+                      ? savedId
+                        ? "Spara ändringar"
+                        : "Spara"
+                      : "Sparat"}
+              </button>
+            )}
             {resetting ? (
               <span className="confirm">
                 Ta bort det här schemat och börja om?

@@ -31,6 +31,30 @@ export type SheetState = {
   illustration: boolean;
 };
 
+/** Where this browser keeps the schedule being worked on. */
+export const SHEET_STORE = "sm_state_v1";
+
+/**
+ * What is kept there. Looser than SheetState on purpose: schedules saved by
+ * earlier versions of the app are still in people's browsers, with fewer
+ * fields, and have to open.
+ */
+export type StoredSheet = {
+  schedule: Schedule;
+  glossary: Glossary;
+  theme: string;
+  paper?: string;
+  ink?: boolean;
+  icons?: boolean;
+  illustration?: boolean;
+  /**
+   * The saved schedule this one is, for someone with an account: set when it
+   * is saved or opened from "Mina scheman", so the next save updates that one
+   * instead of making another. Absent means it lives only in this browser.
+   */
+  savedId?: string;
+};
+
 // ── Checking a state that came from somewhere else ──────────────────────
 //
 // The server prints whatever it is sent, in a browser of its own, so what it

@@ -141,6 +141,82 @@ way to look after that is not to have it.*
 
 Read Part 2 with this in mind. It is the thing print-on-demand collides with.
 
+**Since 20 Nov 2026 there are two exceptions, both chosen by the person.**
+Pressing Skapa PDF sends the schedule to the server for the seconds it takes to
+print it (see "A vector PDF" below). And someone who makes an account and
+presses Spara has that schedule stored until they delete it (see "Accounts").
+The path with no account is untouched: nothing of it is kept anywhere.
+
+### Accounts and saved schedules (20 Nov 2026 — built, not deployed)
+
+The owner's decision: an optional account, so that a schedule can be found
+again next term, with a paid plan for teachers to come later. Built the way
+the other two apps are, on purpose — RecipeBookMaker's files were the template.
+
+- **Its own database**: a Neon project named `schedulemaker`, in **Frankfurt**
+  (`eu-central-1`). The other two are in US East; this one holds Swedish
+  children's timetables, and that is the one place it does not copy them.
+  `production` is the default branch and `dev` is a child of it, set never to
+  be deleted. `apps/schedulemaker/.env` points at `dev`.
+- **Tables** (`prisma/schema.prisma`): the same User, Account, Session,
+  VerificationToken and ActivityLog as the other apps — plan and Stripe columns
+  included, unused, so a paid plan later changes no table — plus `Schedule`,
+  which holds a whole sheet as one JSON value (`SheetState`).
+- **Sign-in** (`src/lib/auth.ts`): Google and an emailed link, each switched
+  on by its own keys. `accountsEnabled` is false without a database, a session
+  secret and at least one of them, and then nothing about accounts is drawn or
+  reachable: `/api/me` says so, `/login` and `/scheman` go to the front page.
+  That is the state production is in until its settings exist.
+- **Saving** (`save()` in `app/page.tsx`): the editor's Spara. Signed out it
+  leads to `/login?next=save`; the schedule waits in the browser and
+  `/?spara=1` on the way back saves it unasked. The browser remembers which
+  saved schedule it has open (`savedId`), so the next save updates that one.
+- **Mina scheman** (`/scheman`): open, copy, delete, sign out, and delete the
+  account. Deleting the account is one row; the database removes the rest
+  (`onDelete: Cascade`).
+- **Limits** live in `src/lib/plans.ts`, as in the other apps. There is one
+  plan, and its 200-schedule ceiling is a guard, not a paywall.
+- **The activity log** records that something happened and how big it was
+  ("saved, 35 lessons"), never what was on the sheet or whose it was. It is
+  also the first counting this app has had.
+
+**Checked on a laptop against the dev database**, with two throwaway accounts
+given sessions directly in the database (no sign-in method is set up locally):
+save, list, open, update, copy, delete; one account reading, overwriting,
+copying and deleting the other's schedule (refused every time, and the
+schedule untouched); deleting an account (user and session gone); the editor's
+button through Spara → Sparat → Spara ändringar; the question before an unsaved
+schedule is replaced; the automatic save on `/?spara=1`. And a production build
+with no database settings, run for real: front page as before, no account
+links, `/login` and `/scheman` redirecting away.
+
+**Not checked:** signing in itself — neither Google nor the emailed link has
+keys anywhere yet — and anything on Vercel.
+
+Three things worth knowing before touching this:
+
+- **`updateMany` throws at run time** ("Transactions are not supported in HTTP
+  mode"): the Neon HTTP driver has no transactions and Prisma makes one. It
+  typechecks and builds. Use `update` with the owner in `where`.
+- **A page that asks who is signed in must be rendered per request.**
+  `currentUserId()` calls `connection()` for that. Before it did, `/scheman`
+  was built once at deploy time with nobody signed in, and would have sent
+  every signed-in person back to the login page — in production only.
+- **On a laptop, new rows are stamped an hour ahead** (local time written as
+  if it were UTC, on insert but not on update), so a schedule saved again can
+  sort below one made in the last hour. Vercel runs in UTC and does not have
+  this. The other two apps' dev databases will show the same.
+
+Installing the database and sign-in libraries tried to move the other two
+apps' versions of them; they are pinned here to the exact ranges RecipeBookMaker
+uses, and the lockfile gained seven lines and changed none.
+
+To go live it needs, in this order: the tables created in `production`
+(`npx prisma db push` with that branch's connection string), `DATABASE_URL`
+and a new `AUTH_SECRET` in Vercel, and one sign-in method's keys. Not built:
+a privacy page, the paid plan, any email other than the sign-in link, an
+admin view of the activity log.
+
 ### Sharing with the class (20 Nov 2026)
 
 Everyone in a class is sent the same sheet, so one parent's finished schedule
