@@ -92,6 +92,32 @@ const DRAWINGS: Record<string, { svg: string; pop: string }> = {
   },
   // Lekfull — a smiling sun. The eyes are zero-length strokes: round caps
   // turn them into dots, and they stay dots in ink-saving.
+  // Hav — a sailing boat on a wave.
+  ocean: {
+    pop: "#f08a6b",
+    svg: `<path class="l" d="M32 8v36"/>
+      <path class="l w" d="M28 13v27H12Z"/>
+      <path class="l f" d="M36 19v21h15Z"/>
+      <path class="l p" d="M9 44h46l-7 10H16Z"/>
+      <path class="l" d="M5 61c4-4 9-4 13 0s9 4 13 0 9-4 13 0 9 4 13 0"/>`,
+  },
+  // Lavendel — a butterfly.
+  lavender: {
+    pop: "#cbb8f5",
+    svg: `<path class="l p" d="M32 26C24 8 6 10 8 26c1 9 14 11 24 7Z"/>
+      <path class="l p" d="M32 26c8-18 26-16 24 0-1 9-14 11-24 7Z"/>
+      <path class="l f" d="M32 34c-9 2-17 8-13 16 4 6 12 1 13-8Z"/>
+      <path class="l f" d="M32 34c9 2 17 8 13 16-4 6-12 1-13-8Z"/>
+      <path class="l" d="M32 22v24M32 22c-2-6-5-9-9-9m9 9c2-6 5-9 9-9"/>`,
+  },
+  // Grafit — a pencil, and the line it has just drawn.
+  graphite: {
+    pop: "#f2b84b",
+    svg: `<path class="l p" d="M44 8 56 20 24 52 12 40Z"/>
+      <path class="l w" d="M12 40 24 52 8 56Z"/>
+      <path class="l" d="M38 14 50 26"/>
+      <path class="l" d="M30 60h24"/>`,
+  },
   playful: {
     pop: "#f2c866",
     svg: `<path class="l" d="M32 5v6m0 42v6M5 32h6m42 0h6M13 13l5 5m28 28 5 5m0-38-5 5M18 46l-5 5"/>

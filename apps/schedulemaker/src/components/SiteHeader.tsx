@@ -20,7 +20,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogoMark, SITE_NAME } from "@/components/Logo";
 
-export type Account = { enabled: boolean; email: string | null };
+/**
+ * Who is signed in, as a page knows it. The plan is for drawing — which doors
+ * to show open — and never for deciding: every route that depends on a plan
+ * works it out again on the server.
+ */
+export type Account = { enabled: boolean; email: string | null; plan?: "free" | "plus" };
 
 /** What a schedule is called where it is named: its banner, else its class. */
 export function scheduleName(s: { heading?: string; title: string } | null | undefined): string {
@@ -45,7 +50,11 @@ export default function SiteHeader({
     let live = true;
     fetch("/api/me")
       .then((r) => r.json())
-      .then((d) => live && setFound({ enabled: Boolean(d.enabled), email: d.user?.email ?? null }))
+      .then(
+        (d) =>
+          live &&
+          setFound({ enabled: Boolean(d.enabled), email: d.user?.email ?? null, plan: d.user?.plan }),
+      )
       .catch(() => live && setFound({ enabled: false, email: null }));
     return () => {
       live = false;

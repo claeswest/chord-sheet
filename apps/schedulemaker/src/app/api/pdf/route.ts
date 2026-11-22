@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Browser } from "puppeteer-core";
 import { rateLimit, clientIp } from "@clavos/core/rate-limit";
 import { cleanState } from "@/lib/sheetState";
+import { currentAccount, withinPlan } from "@/lib/auth";
 
 // POST /api/pdf — a finished schedule in, a printed PDF out.
 //
@@ -110,8 +111,12 @@ export async function POST(req: NextRequest) {
   } catch {
     return fail(400, "Det där gick inte att läsa som ett schema.");
   }
-  const state = cleanState(parsed);
-  if (!state) return fail(400, "Det där gick inte att läsa som ett schema.");
+  const checked = cleanState(parsed);
+  if (!checked) return fail(400, "Det där gick inte att läsa som ett schema.");
+  // Printing needs no account, and still does not. An account only matters
+  // for what it unlocks: without one, or on Gratis, a Plus style prints as the
+  // default one.
+  const state = withinPlan(checked, (await currentAccount())?.plan ?? "free");
 
   const origin = ownOrigin(req);
   if (!origin) return fail(400, "Okänd adress.");

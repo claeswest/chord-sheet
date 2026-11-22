@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUserId } from "@/lib/auth";
+import { currentAccount, currentUserId, withinPlan } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { cleanState } from "@/lib/sheetState";
 import { deleteSchedule, getSchedule, lessonCount, updateSchedule } from "@/lib/scheduleDb";
@@ -32,8 +32,9 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 }
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
-  const userId = await currentUserId();
-  if (!userId) return unauthorized();
+  const account = await currentAccount();
+  if (!account) return unauthorized();
+  const userId = account.id;
   const { id } = await params;
 
   const raw = await req.text().catch(() => "");
@@ -45,10 +46,11 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       parsed = null;
     }
   }
-  const state = cleanState(parsed);
-  if (!state) {
+  const checked = cleanState(parsed);
+  if (!checked) {
     return NextResponse.json({ error: "Det där gick inte att läsa som ett schema." }, { status: 400 });
   }
+  const state = withinPlan(checked, account.plan);
 
   if (!(await updateSchedule(userId, id, state))) return notFound();
   await logActivity("schedule_saved", userId, { lessons: lessonCount(state), new: false });

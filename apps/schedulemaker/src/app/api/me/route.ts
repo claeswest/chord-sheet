@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { accountsEnabled, currentUserId, signOut } from "@/lib/auth";
+import { accountsEnabled, currentAccount, currentUserId, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET    — is anyone signed in, and does this site have accounts at all?
@@ -12,10 +12,11 @@ const fresh = { headers: { "Cache-Control": "no-store" } };
 
 export async function GET() {
   if (!accountsEnabled) return NextResponse.json({ enabled: false, user: null }, fresh);
-  const userId = await currentUserId();
-  if (!userId) return NextResponse.json({ enabled: true, user: null }, fresh);
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-  return NextResponse.json({ enabled: true, user: user ? { email: user.email } : null }, fresh);
+  const account = await currentAccount();
+  if (!account) return NextResponse.json({ enabled: true, user: null }, fresh);
+  // The plan is sent so the page can draw the right doors open. It is not
+  // what opens them: every route that depends on a plan asks again itself.
+  return NextResponse.json({ enabled: true, user: { email: account.email, plan: account.plan } }, fresh);
 }
 
 /**

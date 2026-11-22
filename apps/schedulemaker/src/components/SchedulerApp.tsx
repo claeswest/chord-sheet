@@ -20,7 +20,7 @@ import LessonEditor from "@/components/LessonEditor";
 import PrintFit from "@/components/PrintFit";
 import Check from "@/components/Check";
 import Stepper from "@/components/Stepper";
-import { PdfIcon, PrintIcon, RestartIcon, SaveIcon, ShareIcon } from "@/components/UiIcon";
+import { LockIcon, PdfIcon, PrintIcon, RestartIcon, SaveIcon, ShareIcon } from "@/components/UiIcon";
 import SharePanel from "@/components/SharePanel";
 import SiteHeader, { scheduleName, type Account } from "@/components/SiteHeader";
 import ChoicesPanel, { type Decision } from "@/components/ChoicesPanel";
@@ -36,7 +36,7 @@ import {
 import { ShareError, sharedIn, unpackSchedule } from "@/lib/share";
 import { pdfName, saveFile, sheetPdf } from "@/lib/sheetPdf";
 import { PAPERS, SHEET_STORE, paperOf, type SheetState, type StoredSheet } from "@/lib/sheetState";
-import { THEMES } from "@/lib/themes";
+import { THEMES, type Theme } from "@/lib/themes";
 import { unresolvedChoices, type Lesson, type Schedule } from "@/types/schedule";
 
 const STORE = SHEET_STORE;
@@ -168,12 +168,18 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
   /** The sheet as it was when it was last saved, to know whether it has changed since. */
   const [savedAs, setSavedAs] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  /** The Plus style someone on Gratis has just pressed, while the note about it is open. */
+  const [plusStyle, setPlusStyle] = useState<Theme | null>(null);
 
   useEffect(() => {
     let live = true;
     fetch("/api/me")
       .then((r) => r.json())
-      .then((d) => live && setAccount({ enabled: Boolean(d.enabled), email: d.user?.email ?? null }))
+      .then(
+        (d) =>
+          live &&
+          setAccount({ enabled: Boolean(d.enabled), email: d.user?.email ?? null, plan: d.user?.plan }),
+      )
       .catch(() => live && setAccount({ enabled: false, email: null }));
     return () => {
       live = false;
@@ -920,17 +926,27 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
                 <div className="setgroup" role="group" aria-label="Stil">
                   <span className="setlabel">Stil</span>
                   <div className="swatches">
-                    {THEMES.map((t) => (
-                      <button
-                        key={t.id}
-                        className="swatch"
-                        style={{ background: t.dot }}
-                        aria-label={t.name}
-                        title={t.name}
-                        aria-pressed={theme === t.id}
-                        onClick={() => setTheme(t.id)}
-                      />
-                    ))}
+                    {/* The Plus styles are in the row with a lock on them, for
+                        anyone not on Plus: a style nobody can see is a style
+                        nobody can want. Not on a site without accounts, where
+                        there is no Plus to be on. The lock here is a sign on the
+                        door; the door itself is withinPlan() on the server. */}
+                    {THEMES.filter((t) => !t.plus || account?.enabled).map((t) => {
+                      const locked = Boolean(t.plus) && account?.plan !== "plus";
+                      return (
+                        <button
+                          key={t.id}
+                          className={locked ? "swatch locked" : "swatch"}
+                          style={{ background: t.dot }}
+                          aria-label={locked ? `${t.name} – ingår i Plus` : t.name}
+                          title={locked ? `${t.name} – ingår i Plus` : t.name}
+                          aria-pressed={theme === t.id}
+                          onClick={() => (locked ? setPlusStyle(t) : setTheme(t.id))}
+                        >
+                          {locked && <LockIcon />}
+                        </button>
+                      );
+                    })}
                   </div>
                   {/* Named, because eight dots cannot say which is which. */}
                   <span className="setvalue">{THEMES.find((t) => t.id === theme)?.name}</span>
@@ -1149,6 +1165,38 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
 
           {sharing && (
             <SharePanel schedule={schedule} glossary={glossary} onClose={() => setSharing(false)} />
+          )}
+
+          {plusStyle && (
+            // What a locked style says when pressed. Short, and honest about
+            // the one thing that would otherwise disappoint: Plus cannot be
+            // bought yet. The page it leads to says the rest.
+            <div className="overlay no-print" onClick={() => setPlusStyle(null)}>
+              <div
+                className="dialog share"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="plus-style-title"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="panel-title" id="plus-style-title">
+                  <span className="plus-dot" style={{ background: plusStyle.dot }} aria-hidden />
+                  {plusStyle.name} ingår i Plus
+                </p>
+                <p className="share-lead">
+                  {plusStyle.note} Plus är för dig som gör scheman åt andra. Det går inte att köpa
+                  än, men du kan säga till att du vill ha det.
+                </p>
+                <div className="controls" style={{ marginTop: 16, marginBottom: 0 }}>
+                  <Link href="/plus" className="btn primary">
+                    Läs om Plus →
+                  </Link>
+                  <button onClick={() => setPlusStyle(null)} style={{ marginLeft: "auto" }}>
+                    Stäng
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {incoming && (

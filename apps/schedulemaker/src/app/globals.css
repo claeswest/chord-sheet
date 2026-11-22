@@ -66,6 +66,24 @@
   --paper: #fffdf2; --ink: #352e21; --muted: #716348; --rule: #e8dfbd;
   --accent: #87522b; --accent-soft: #fff1be;
 }
+/* The Plus styles — see lib/themes.ts. Built exactly like the others: the
+ * same handful of variables, nothing a free style cannot do. What is sold is
+ * more to choose from, not a better sheet. */
+[data-theme="ocean"] {
+  --paper: #f2fafb; --ink: #10303a; --muted: #54737c; --rule: #cfe5ea;
+  --accent: #0e7c86; --accent-soft: #dcf1f3;
+  --font-display: var(--font-rounded);
+}
+[data-theme="lavender"] {
+  --paper: #faf7ff; --ink: #2a1f45; --muted: #7a6d99; --rule: #e4dcf5;
+  --accent: #6b4fc4; --accent-soft: #ece5fb;
+  --font-display: var(--font-serif);
+}
+[data-theme="graphite"] {
+  --paper: #f6f6f4; --ink: #1b1b1d; --muted: #66666b; --rule: #dcdcd8;
+  --accent: #d9531f; --accent-soft: #ececea;
+  --font-display: var(--font-grotesque);
+}
 [data-theme="playful"] .sheet h1.banner {
   font-family: var(--font-caveat), cursive;
   font-size: 32px; letter-spacing: 0.03em;
@@ -683,7 +701,38 @@ a.btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .legal li { margin-bottom: 6px; }
 .legal a { color: #3b5bdb; }
 .legal .auth-logo { color: #1a1a1a; }
+/* The strip across the top keeps its own colours on these pages: the rule
+   above is for links in the text, and was painting the logo and "Logga in"
+   blue as well. */
+.legal .site-home { color: #1a1a1a; }
+.legal .site-nav a { color: #45454f; }
+.legal .site-nav a:hover { color: #1a1a1a; }
 .legal-back { margin-top: 36px; }
+
+/* ── Plus ──────────────────────────────────────────────────────────────── */
+/* A locked style in the picker: the same dot, a little faded, with a padlock.
+   Still a button — pressing it says what it is and where to read more. */
+.swatch.locked { display: inline-grid; place-items: center; color: #fff; opacity: 0.72; }
+.swatch.locked svg { filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.55)); }
+.swatch.locked:hover { opacity: 1; }
+.plus-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+
+.legal .plus-list { list-style: none; padding: 0; margin: 0 0 6px; display: grid; gap: 10px; }
+.legal .plus-list li { background: #fff; border: 1px solid #e4e4ea; border-radius: 14px; padding: 14px 16px; margin: 0; }
+.plus-tag {
+  display: inline-block; margin: 0 8px 4px 0; padding: 2px 8px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  background: #ececf1; color: #55555f; vertical-align: 1px;
+}
+.plus-tag.now { background: #e3f4e7; color: #23683a; }
+.plus-dots { display: inline-flex; gap: 5px; margin-left: 8px; vertical-align: -3px; }
+.plus-dots span { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 1px #d6d6de; }
+.legal a.btn.primary { color: #fff; }
+.plus-ask { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+.plus-ask .hint { margin: 0; }
+.plus-thanks { background: #f3faf5; border: 1px solid #cfe6d5; border-radius: 14px; padding: 14px 16px; }
+.saved-plan { margin: 18px 0 0; }
+.saved-plan a { color: #3b5bdb; }
 
 /* Mina scheman */
 .saved-page { max-width: 760px; }

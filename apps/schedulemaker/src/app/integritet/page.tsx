@@ -10,7 +10,10 @@ import SiteHeader from "@/components/SiteHeader";
 // - add a column to User or Account, or a sign-in method (prisma/schema.prisma,
 //   lib/auth.ts) — the list of what an account holds is spelled out below
 // - log anything new, or put more than counts in the activity log
-//   (lib/activity.ts and every logActivity call)
+//   (lib/activity.ts and every logActivity call) — "plus_interest" is one, and
+//   it is the row that is kept so someone can be written to
+// - start charging for Plus: a payment company then handles card details, and
+//   section 7 has to name it
 // - load a script for every visitor: there is none today, and section 6 says so
 // - move the database or the hosting: section 7 says both are in Frankfurt,
 //   which for the server is the one line in apps/schedulemaker/vercel.json
@@ -137,16 +140,21 @@ export default function PrivacyPage() {
             Den gäller i högst 30 dagar åt gången.
           </li>
           <li>
+            <strong>Vilken plan du har.</strong> Gratis eller Plus.
+          </li>
+          <li>
             <strong>En räkning av vad som händer.</strong> En rad när ett konto skapas, när du
-            loggar in och när ett schema sparas, kopieras eller tas bort. Raden har tidpunkten och
+            loggar in, när ett schema sparas, kopieras eller tas bort, och om du säger till att du
+            vill ha Plus. Raden har tidpunkten och
             ibland hur många lektioner schemat hade. Den innehåller aldrig något av det som står
             på schemat.
           </li>
         </ul>
         <p>
           Vi sparar det för att du ska kunna hitta dina scheman igen, och räkningen för att vi ska
-          kunna se om tjänsten används. Vi använder inte uppgifterna till något annat, och vi
-          skickar ingen reklam.
+          kunna se om tjänsten används. Har du sagt till att du vill ha Plus hör vi av oss en gång,
+          när det finns. Vi använder inte uppgifterna till något annat, och vi skickar ingen
+          reklam.
         </p>
         <p>
           <strong>Så tar du bort det.</strong> Under Mina scheman kan du ta bort ett schema i taget,

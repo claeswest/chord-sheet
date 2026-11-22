@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUserId } from "@/lib/auth";
+import { currentAccount, currentUserId, withinPlan } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
-import { PLANS, planFromUser } from "@/lib/plans";
+import { PLANS } from "@/lib/plans";
 import { cleanState } from "@/lib/sheetState";
 import { countSchedules, createSchedule, lessonCount, listSchedules } from "@/lib/scheduleDb";
 
@@ -28,8 +28,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await currentUserId();
-  if (!userId) return unauthorized();
+  const account = await currentAccount();
+  if (!account) return unauthorized();
+  const userId = account.id;
 
   const raw = await req.text().catch(() => "");
   if (raw.length === 0 || raw.length > MAX_BODY_CHARS) return unreadable();
@@ -41,10 +42,11 @@ export async function POST(req: NextRequest) {
   }
   // The same check as before printing: what is stored is what was checked,
   // not what was sent.
-  const state = cleanState(parsed);
-  if (!state) return unreadable();
+  const checked = cleanState(parsed);
+  if (!checked) return unreadable();
+  const state = withinPlan(checked, account.plan);
 
-  const limit = PLANS[planFromUser({})].features.scheduleLimit;
+  const limit = PLANS[account.plan].features.scheduleLimit;
   if ((await countSchedules(userId)) >= limit) {
     return NextResponse.json(
       {

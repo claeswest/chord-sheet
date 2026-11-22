@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { accountsEnabled, currentUserId, signOut } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { accountsEnabled, currentAccount, signOut } from "@/lib/auth";
+import { PLANS } from "@/lib/plans";
 import SiteHeader from "@/components/SiteHeader";
 import SavedSchedules from "@/components/SavedSchedules";
 
@@ -18,9 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MySchedulesPage() {
   if (!accountsEnabled) redirect("/");
-  const userId = await currentUserId();
-  if (!userId) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  const user = await currentAccount();
   if (!user) redirect("/login");
 
   return (
@@ -44,6 +43,19 @@ export default async function MySchedulesPage() {
       </header>
 
       <SavedSchedules />
+
+      {/* Said quietly, under the list: which plan this is, and that there is
+          another. Not above it — the schedules are what this page is for. */}
+      <p className="saved-plan hint">
+        Du har {PLANS[user.plan].name}.{" "}
+        {user.plan === "plus" ? (
+          <Link href="/plus">Vad som ingår</Link>
+        ) : (
+          <>
+            Gör du scheman åt andra? <Link href="/plus">Läs om Plus</Link>
+          </>
+        )}
+      </p>
     </main>
   );
 }

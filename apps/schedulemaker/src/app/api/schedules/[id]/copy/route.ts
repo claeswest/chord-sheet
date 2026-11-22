@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUserId } from "@/lib/auth";
+import { currentAccount } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
-import { PLANS, planFromUser } from "@/lib/plans";
+import { PLANS } from "@/lib/plans";
 import { copySchedule, countSchedules } from "@/lib/scheduleDb";
 
 // POST — a second schedule with the same content. Last term's sheet is most
@@ -10,11 +10,12 @@ import { copySchedule, countSchedules } from "@/lib/scheduleDb";
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(_req: NextRequest, { params }: Ctx) {
-  const userId = await currentUserId();
-  if (!userId) return NextResponse.json({ error: "Du behöver logga in." }, { status: 401 });
+  const account = await currentAccount();
+  if (!account) return NextResponse.json({ error: "Du behöver logga in." }, { status: 401 });
+  const userId = account.id;
   const { id } = await params;
 
-  const limit = PLANS[planFromUser({})].features.scheduleLimit;
+  const limit = PLANS[account.plan].features.scheduleLimit;
   if ((await countSchedules(userId)) >= limit) {
     return NextResponse.json(
       {

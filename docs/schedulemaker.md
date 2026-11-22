@@ -271,8 +271,8 @@ the other two apps are, on purpose — RecipeBookMaker's files were the template
   changes to a saved schedule without a word, even with that schedule's own
   saved version. It asked only when the open schedule had never been saved.
   Now it asks in both cases, and says which. Changed 22 Nov 2026; the editor's
-  half was tried with a simulated sign-in, the question in Mina scheman has
-  not been seen working anywhere.
+  half was tried with a simulated sign-in; the question in Mina scheman was
+  confirmed by the owner on the live site the same day.
 - **Mina scheman** (`/scheman`): open, copy, delete, sign out, and delete the
   account. Deleting the account is one row; the database removes the rest
   (`onDelete: Cascade`).
@@ -353,6 +353,50 @@ What it has to admit, and what would let it say less:
 
 Not built: the paid plan, any email other than the sign-in link, an admin view
 of the activity log.
+
+### Plus: a second plan, not yet for sale (22 Nov 2026)
+
+The owner's idea: people who make schedules for others — a teacher, a coach,
+whoever runs the after-school club — might pay for more. Started small, with
+Stripe left for later on purpose. What exists is the machinery and one feature.
+
+- **Two plans, in `src/lib/plans.ts`**: Gratis and Plus. `planFromUser()` puts
+  an account on Plus if its `plan` column says so (what checkout will set), or
+  if its address is in the server setting `PLUS_EMAILS`, a comma-separated
+  list. That setting is how the owner and anyone trying it get Plus today,
+  without touching the database.
+- **One Plus feature: three more styles** — Hav, Lavendel and Grafit, marked
+  `plus` in `lib/themes.ts`. They are built exactly like the free ones; what
+  is sold is more to choose from, not a better sheet. In step three they sit in
+  the row with a padlock for anyone not on Plus, and pressing one says what it
+  is and leads to the Plus page. The start page's picker shows the free eight.
+- **The lock is on the server**: `withinPlan()` in `lib/auth.ts`. A sheet
+  saved or printed in a Plus style by an account that is not on Plus is saved
+  or printed in the default style instead. The padlock in the picker is a sign
+  on the door. Printing with the browser's own dialog cannot be stopped and is
+  not tried.
+- **The Plus page, `/plus`**, says what Plus includes, marks what exists
+  ("Finns nu") from what does not ("Kommer": a link that always shows the
+  latest version; sending the schedule to a list of addresses), and says more
+  than once that it cannot be bought. Its button, "Jag vill ha Plus", writes
+  one `plus_interest` row to the activity log for the signed-in account. That
+  is the count of who wants it, and — because it is tied to the account — a
+  list of who to tell. It is where the buy button will go.
+- Mina scheman says which plan the account is on. The privacy page mentions
+  the plan and the interest row.
+
+**Checked on a laptop:** the three styles and their drawings on screen; the
+padlock and its note; the picker with the plan simulated as Plus; a Plus style
+sent to `/api/pdf` without Plus coming back in the default style; the interest
+route refusing a visitor who is not signed in. **Not checked:** anything that
+needs a real account — the interest button, saving in a Plus style, Mina
+scheman's plan line — because the dev database still does not answer here.
+
+To see how many want Plus, until there is an admin view: count the rows of
+type `plus_interest` in the production `ActivityLog`.
+
+Not built: checkout, a price, the two "Kommer" features, taking Plus away
+again when someone stops paying.
 
 ### Sharing with the class (20 Nov 2026)
 
@@ -515,6 +559,8 @@ day. Setting it to `false` sends everyone back to the picture.
 | `app/api/pdf/route.ts` | The finished sheet printed to a vector PDF by a browser on the server |
 | `app/print/page.tsx` | The page that browser prints: the sheet and nothing else |
 | `lib/sheetState.ts` | Paper sizes, the state a sheet is made from, and the check on one that arrives from outside |
+| `lib/plans.ts` | The two plans and what each may do. The one place that decides |
+| `app/plus/page.tsx` | What Plus is, and the button that counts who wants it |
 | `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
 | `types/schedule.ts` | The model and its time helpers |
 

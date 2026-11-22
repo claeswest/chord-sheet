@@ -19,7 +19,17 @@
 // browns — Klassisk #79502e and Lekfull #87522b could not be told apart at 26px.
 // So Skymning is its dark paper and Lekfull its sunny yellow: each is the
 // colour that most says what that style is.
-export type Theme = { id: string; name: string; dot: string; note: string };
+export type Theme = {
+  id: string;
+  name: string;
+  dot: string;
+  note: string;
+  /**
+   * Part of Plus (see lib/plans.ts). Shown to everyone, with a lock for those
+   * on Gratis — a style nobody can see is a style nobody can want.
+   */
+  plus?: boolean;
+};
 
 export const THEMES: Theme[] = [
   { id: "", name: "Papper", dot: "#3b5bdb", note: "Rent och luftigt med blå detaljer. Passar alla." },
@@ -30,4 +40,18 @@ export const THEMES: Theme[] = [
   { id: "schoolbook", name: "Skolbok", dot: "#245e85", note: "Ljusblått med extra tydliga ämnesrubriker." },
   { id: "classic", name: "Klassisk", dot: "#79502e", note: "Elfenbensvitt och klassiska rubriker, lite som en gammal bok." },
   { id: "playful", name: "Lekfull", dot: "#f2c14e", note: "Solgult med handskriven rubrik – glatt och busigt." },
+  // The Plus styles. Three colours the eight above do not have — a teal, a
+  // violet and a grey — so that they read as more to choose from, not as
+  // variations on what is already free.
+  { id: "ocean", name: "Hav", dot: "#12a3a8", note: "Turkost och friskt, som en dag vid vattnet.", plus: true },
+  { id: "lavender", name: "Lavendel", dot: "#9b7fe8", note: "Mjukt lila med lugna rubriker.", plus: true },
+  { id: "graphite", name: "Grafit", dot: "#55555b", note: "Grått och stramt med en orange accent.", plus: true },
 ];
+
+/** The styles anyone may use. */
+export const FREE_THEMES = THEMES.filter((t) => !t.plus);
+
+/** Whether a style, by id, is one of the Plus ones. An unknown id is not. */
+export function isPlusTheme(id: string): boolean {
+  return THEMES.some((t) => t.id === id && t.plus);
+}

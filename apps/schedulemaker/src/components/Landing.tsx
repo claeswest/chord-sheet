@@ -21,7 +21,7 @@ import Check from "./Check";
 import Stepper from "./Stepper";
 import { SAMPLE_SCHEDULE, SAMPLE_TEACHERS } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
-import { THEMES } from "@/lib/themes";
+import { FREE_THEMES, THEMES } from "@/lib/themes";
 
 const SAMPLE_SUBJECTS = codesIn(SAMPLE_SCHEDULE).subjects;
 const SAMPLE_GLOSSARY = withDefaultColors(
@@ -404,7 +404,7 @@ export default function Landing({
             <h2>Hitta er stil</h2>
             <p className="style-intro">Klicka runt och prova på exemplet – det du väljer följer med till ert eget schema.</p>
             <div className="styles" role="group" aria-label="Stil på schemat">
-              {THEMES.map((t) => (
+              {FREE_THEMES.map((t) => (
                 <button
                   key={t.id}
                   className="style"

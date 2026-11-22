@@ -20,6 +20,9 @@ import ResendProvider from "next-auth/providers/resend";
 import type { Provider } from "next-auth/providers";
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
+import { planFromUser, type Plan } from "./plans";
+import { isPlusTheme } from "./themes";
+import type { SheetState } from "./sheetState";
 
 export const googleEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
@@ -168,4 +171,34 @@ export async function currentUserId(): Promise<string | null> {
     console.error(`[auth] session lookup failed: ${e instanceof Error ? e.message : String(e)}`);
     return null;
   }
+}
+
+/**
+ * The signed-in account with the plan it is on, or null.
+ *
+ * The plan is worked out here, on the server, every time it is asked for —
+ * never taken from the browser, which can be made to say anything.
+ */
+export async function currentAccount(): Promise<{ id: string; email: string; plan: Plan } | null> {
+  const id = await currentUserId();
+  if (!id) return null;
+  const user = await prisma.user.findUnique({ where: { id }, select: { email: true, plan: true } });
+  if (!user) return null;
+  return { id, email: user.email, plan: planFromUser(user) };
+}
+
+/**
+ * A sheet as this plan may keep or print it.
+ *
+ * The one thing a plan changes about a sheet today is its style: the Plus
+ * styles are for Plus. Someone on Gratis who sends one anyway — the picker
+ * will not let them, so this is a request made by hand — gets the same sheet
+ * in the default style. Not an error: the schedule is theirs and still wanted;
+ * only the dress is not on offer.
+ *
+ * This is the lock. The one in the style picker is a sign on the door.
+ */
+export function withinPlan(state: SheetState, plan: Plan): SheetState {
+  if (plan !== "plus" && isPlusTheme(state.theme)) return { ...state, theme: "" };
+  return state;
 }

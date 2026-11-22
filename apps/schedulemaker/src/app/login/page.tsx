@@ -23,7 +23,7 @@ export default async function LoginPage({
 }) {
   if (!accountsEnabled) redirect("/");
   const { next, error } = await searchParams;
-  const after = next === "save" ? "/schema?spara=1" : "/scheman";
+  const after = next === "save" ? "/schema?spara=1" : next === "plus" ? "/plus" : "/scheman";
   if (await currentUserId()) redirect(after);
 
   const nothingConfigured = !googleEnabled && !emailEnabled;
