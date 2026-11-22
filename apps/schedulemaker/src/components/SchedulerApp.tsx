@@ -229,6 +229,11 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
     ? JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration } satisfies SheetState)
     : null;
   const unsaved = sheetNow !== null && sheetNow !== savedAs;
+  /**
+   * The open schedule exists nowhere but in this browser, in whole or in part:
+   * nobody is signed in, or it was never saved, or it has changed since.
+   */
+  const openOnlyHere = !account?.email || !savedId || unsaved;
 
   /**
    * Keep this schedule in the account.
@@ -275,10 +280,13 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
   // reloaded, is as saved as it gets until something changes. Taken once, when
   // both the stored schedule and the sign-in are known.
   const baselined = useRef(false);
+  /** True once it is known whether the open schedule is saved. Until then, nothing claims either way. */
+  const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (!loaded || !account || baselined.current) return;
     baselined.current = true;
     if (account.email && savedId && sheetNow) setSavedAs(sheetNow);
+    setSettled(true);
     // Back from signing in with a schedule waiting to be saved.
     if (view === "editor" && new URLSearchParams(window.location.search).get("spara") === "1") {
       window.history.replaceState(null, "", window.location.pathname + window.location.hash);
@@ -739,21 +747,26 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
           and an A3 schedule comes out cropped. */}
       <style>{`@page { size: ${sheetPaper.css}; margin: 0; }
         .sheet { width: ${sheetPaper.w}; min-height: ${sheetPaper.h}; }`}</style>
-      {view === "start" && schedule && !pendingRead && !busy && phase === null && (
-        // The first thing a returning visitor needs is the thing they left.
-        // It says which schedule is open and nothing about where it is kept.
-        // Two earlier wordings did: "på gång" read as a status report, and
-        // "finns kvar" is an odd thing to be told about a schedule you have
-        // just opened from your own saved ones — of course it is still there.
+      {view === "start" && schedule && settled && openOnlyHere && !pendingRead && !busy && phase === null && (
+        // The way back to a schedule that cannot be reached any other way.
+        //
+        // Shown only then. Signed in, with the open schedule saved and
+        // unchanged, it is in "Mina scheman" and that is where one goes for
+        // it — a strip saying it is open told a signed-in person nothing. It
+        // is for the visitor with no account, whose one schedule lives in this
+        // browser, and for anyone whose open schedule holds work that is not
+        // saved: without this, that work would be a page nobody links to.
+        //
+        // Earlier wordings said more than was true or needed: "på gång" read
+        // as a status report, and "finns kvar" stated the obvious.
         <div className="notice no-print" role="status">
           <p>
-            {scheduleName(schedule) ? (
-              <>
-                <strong>{scheduleName(schedule)}</strong> är öppet.
-              </>
-            ) : (
-              <strong>Du har ett schema öppet.</strong>
-            )}
+            <strong>{scheduleName(schedule) || "Ett schema"}</strong>{" "}
+            {!account?.email
+              ? "är öppet."
+              : savedId
+                ? "har ändringar som inte är sparade."
+                : "är öppet men inte sparat."}
           </p>
           <Link href="/schema" className="btn primary">
             Gå till schemat →

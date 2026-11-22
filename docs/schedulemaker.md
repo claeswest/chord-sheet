@@ -188,7 +188,12 @@ the logo is one press from there.
 
 Three things follow from the start page being reachable with a schedule open:
 
-- It says so first: "Annas schema är öppet.", with a button back to it. Nothing about where the schedule is kept: for one opened from Mina scheman, "finns kvar" stated the obvious.
+- It says which schedule is open, with a button back to it — but only when
+  that schedule cannot be reached any other way (`openOnlyHere`): nobody is
+  signed in, or it was never saved, or it has changed since it was. Signed in
+  with a saved, unchanged schedule there is no strip; that schedule is in "Mina
+  scheman". The wording follows the case: "är öppet.", "är öppet men inte
+  sparat.", "har ändringar som inte är sparade."
 - Uploading there makes a new schedule. If the open one is not safely saved,
   that is the same loss "Börja om" asks about, so it asks too.
 - "Nytt schema" is therefore just a link to the start page. The open schedule
