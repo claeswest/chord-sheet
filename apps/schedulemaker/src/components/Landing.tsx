@@ -557,6 +557,10 @@ export default function Landing({
         <p>
           Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
         </p>
+        {/* The paragraphs above are the short version. This is the whole of it. */}
+        <p>
+          <a href="/integritet">Allt om hur vi hanterar era uppgifter</a>
+        </p>
       </footer>
 
       {dragging && (

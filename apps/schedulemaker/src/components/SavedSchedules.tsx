@@ -208,7 +208,8 @@ export default function SavedSchedules() {
         <h2>Ta bort kontot</h2>
         <p className="hint">
           Tar bort kontot och alla scheman du har sparat här. Det går inte att ångra. Ett schema som
-          ligger öppet i den här webbläsaren finns kvar där.
+          ligger öppet i den här webbläsaren finns kvar där.{" "}
+          <Link href="/integritet">Vad vi sparar och varför</Link>
         </p>
         {armed === "account" ? (
           <span className="confirm">

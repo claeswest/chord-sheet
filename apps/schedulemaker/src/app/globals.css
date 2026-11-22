@@ -479,6 +479,7 @@ kbd {
 .landing-foot h2 { margin: 0 0 6px; font-size: 15px; font-weight: 650; color: #302b3f; }
 .landing-foot p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); max-width: 68ch; }
 .landing-foot p + p { margin-top: 8px; }
+.landing-foot a { color: #3b5bdb; text-underline-offset: 3px; }
 
 /* Dropping an image anywhere on the page works, so the page says so. */
 .landing.dropping::after {
@@ -648,6 +649,22 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 }
 .auth-foot { margin-top: 28px; line-height: 1.55; }
 .auth-foot a, .saved-back a, .saved-empty a { color: #3b5bdb; }
+
+/* The privacy page: one readable column of plain text. Nothing to click but
+   the way back, so it is set for reading rather than for scanning. */
+.legal { max-width: 640px; margin: 0 auto; padding: 56px 20px 96px; color: #1a1a1a; }
+.legal h1 { font-family: var(--font-display); font-size: 30px; margin: 28px 0 4px; letter-spacing: -0.01em; }
+.legal-updated { margin: 0 0 20px; font-size: 13px; color: #6b6b6b; }
+.legal-lead { font-size: 17px; line-height: 1.55; color: #302b3f; margin: 0 0 8px; }
+.legal section { margin-top: 30px; }
+.legal h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 8px; }
+.legal p, .legal li { font-size: 15px; line-height: 1.65; color: #33333b; }
+.legal p { margin: 0 0 10px; }
+.legal ul { margin: 0 0 10px; padding-left: 20px; }
+.legal li { margin-bottom: 6px; }
+.legal a { color: #3b5bdb; }
+.legal .auth-logo { color: #1a1a1a; }
+.legal-back { margin-top: 36px; }
 
 /* Mina scheman */
 .saved-page { max-width: 760px; }

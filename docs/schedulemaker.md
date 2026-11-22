@@ -147,7 +147,7 @@ print it (see "A vector PDF" below). And someone who makes an account and
 presses Spara has that schedule stored until they delete it (see "Accounts").
 The path with no account is untouched: nothing of it is kept anywhere.
 
-### Accounts and saved schedules (20 Nov 2026 — built, not deployed)
+### Accounts and saved schedules (live since 22 Nov 2026)
 
 The owner's decision: an optional account, so that a schedule can be found
 again next term, with a paid plan for teachers to come later. Built the way
@@ -166,7 +166,7 @@ the other two apps are, on purpose — RecipeBookMaker's files were the template
   on by its own keys. `accountsEnabled` is false without a database, a session
   secret and at least one of them, and then nothing about accounts is drawn or
   reachable: `/api/me` says so, `/login` and `/scheman` go to the front page.
-  That is the state production is in until its settings exist.
+  Production has all of them since 22 Nov 2026, with Google as the one way in.
 - **Saving** (`save()` in `app/page.tsx`): the editor's Spara. Signed out it
   leads to `/login?next=save`; the schedule waits in the browser and
   `/?spara=1` on the way back saves it unasked. The browser remembers which
@@ -190,8 +190,12 @@ schedule is replaced; the automatic save on `/?spara=1`. And a production build
 with no database settings, run for real: front page as before, no account
 links, `/login` and `/scheman` redirecting away.
 
-**Not checked:** signing in itself — neither Google nor the emailed link has
-keys anywhere yet — and anything on Vercel.
+**On the live site, 22 Nov 2026:** it reports accounts as on, the login page
+offers Google, "Mina scheman" and the saved-schedule routes refuse a visitor who
+is not signed in, and the owner signed in with Google for real. **Not checked
+by anyone but the owner:** saving and opening on the live site. **Not set up:**
+the emailed link (it needs a sending domain), and Google keys on a laptop, so
+local sign-in still means putting a session in the dev database by hand.
 
 Three things worth knowing before touching this:
 
@@ -211,11 +215,38 @@ Installing the database and sign-in libraries tried to move the other two
 apps' versions of them; they are pinned here to the exact ranges RecipeBookMaker
 uses, and the lockfile gained seven lines and changed none.
 
-To go live it needs, in this order: the tables created in `production`
-(`npx prisma db push` with that branch's connection string), `DATABASE_URL`
-and a new `AUTH_SECRET` in Vercel, and one sign-in method's keys. Not built:
-a privacy page, the paid plan, any email other than the sign-in link, an
-admin view of the activity log.
+How it went live, for the next app that does this: the tables were created in
+`production` with `npx prisma db push` and that branch's connection string;
+`DATABASE_URL`, a new `AUTH_SECRET`, `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` are set in Vercel for Production only. The Google
+sign-in client lives in the Google Cloud project "Schedule Maker" under the
+clavos.se organisation — its own project, not ChordSheetMaker's, so the
+sign-in screen carries this app's name. That name is "Schedule Maker", the
+owner's choice, while the site calls itself Fixa schemat. When
+`fixaschemat.se` is live the client needs that address added as a redirect.
+
+**There is a privacy page, `/integritet`, since 22 Nov 2026**, and it describes
+the code: what happens to a photo, a PDF, a shared link and a saved schedule,
+what an account holds, which companies handle it and how to delete it. Every
+sentence was checked against the code that day, and two against the live site
+(a visitor who is not signed in gets no cookie from any page; no script or font
+is loaded from another company). The comment at the top of
+`src/app/integritet/page.tsx` lists what should send you back to it.
+
+What it has to admit, and what would let it say less:
+
+- **An account keeps more than it needs.** The sign-in library stores the name
+  and picture Google sends and Google's tokens for that sign-in, and none of
+  them is used. Dropping them is a small change to `lib/auth.ts`, but it is a
+  change to sign-in, which can only be tried for real on the live site.
+- **The server is probably in the United States.** The database is in
+  Frankfurt, but nothing in the repository sets where Vercel runs the
+  functions, and its default is US East. A schedule being read, printed or
+  saved passes through there. Setting the region to Frankfurt would also put
+  the server next to its database. Not checked in Vercel, not changed.
+
+Not built: the paid plan, any email other than the sign-in link, an admin view
+of the activity log.
 
 ### Sharing with the class (20 Nov 2026)
 
