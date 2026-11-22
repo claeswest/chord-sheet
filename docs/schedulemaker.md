@@ -180,7 +180,7 @@ they replace was 28.
 
 Three things follow from the start page being reachable with a schedule open:
 
-- It says so first: "Du har ett schema på gång", with a button back to it.
+- It says so first: "Annas schema är öppet.", with a button back to it. Nothing about where the schedule is kept: for one opened from Mina scheman, "finns kvar" stated the obvious.
 - Uploading there makes a new schedule. If the open one is not safely saved,
   that is the same loss "Börja om" asks about, so it asks too.
 - "Nytt schema" is therefore just a link to the start page. The open schedule

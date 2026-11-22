@@ -741,16 +741,22 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
         .sheet { width: ${sheetPaper.w}; min-height: ${sheetPaper.h}; }`}</style>
       {view === "start" && schedule && !pendingRead && !busy && phase === null && (
         // The first thing a returning visitor needs is the thing they left.
+        // It says which schedule is open and nothing about where it is kept.
+        // Two earlier wordings did: "på gång" read as a status report, and
+        // "finns kvar" is an odd thing to be told about a schedule you have
+        // just opened from your own saved ones — of course it is still there.
         <div className="notice no-print" role="status">
           <p>
-            <strong>Du har ett schema på gång</strong>
-            {schedule.heading?.trim() || schedule.title.trim()
-              ? ` – ${schedule.heading?.trim() || schedule.title.trim()}`
-              : ""}
-            . Det ligger kvar här i webbläsaren.
+            {schedule.heading?.trim() || schedule.title.trim() ? (
+              <>
+                <strong>{schedule.heading?.trim() || schedule.title.trim()}</strong> är öppet.
+              </>
+            ) : (
+              <strong>Du har ett schema öppet.</strong>
+            )}
           </p>
           <Link href="/schema" className="btn primary">
-            Fortsätt →
+            Gå till schemat →
           </Link>
         </div>
       )}

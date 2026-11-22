@@ -89,8 +89,7 @@ export default async function LoginPage({
 
       <p className="hint auth-foot">
         Det du sparar lagras hos oss tills du tar bort det, och du kan ta bort hela kontot när du
-        vill. <Link href="/integritet">Läs mer om integritet</Link> ·{" "}
-        <Link href="/schema">Tillbaka till schemat</Link>
+        vill. <Link href="/integritet">Läs mer om integritet</Link>
       </p>
     </main>
   );

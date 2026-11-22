@@ -200,9 +200,9 @@ export default function SavedSchedules() {
         </ul>
       )}
 
-      <p className="saved-back">
-        <Link href="/schema">← Till schemat</Link>
-      </p>
+      {/* There was a "← Till schemat" link here. On a page that lists schedules,
+          "the schedule" is nobody in particular; the strip at the top already
+          has "Mitt schema" for the one that is open, and the logo for home. */}
 
       <section className="saved-account">
         <h2>Ta bort kontot</h2>
