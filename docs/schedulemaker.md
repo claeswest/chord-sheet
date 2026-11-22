@@ -239,11 +239,15 @@ What it has to admit, and what would let it say less:
   and picture Google sends and Google's tokens for that sign-in, and none of
   them is used. Dropping them is a small change to `lib/auth.ts`, but it is a
   change to sign-in, which can only be tried for real on the live site.
-- **The server is probably in the United States.** The database is in
-  Frankfurt, but nothing in the repository sets where Vercel runs the
-  functions, and its default is US East. A schedule being read, printed or
-  saved passes through there. Setting the region to Frankfurt would also put
-  the server next to its database. Not checked in Vercel, not changed.
+- ~~**The server is in the United States.**~~ **Moved to Frankfurt on 22 Nov
+  2026.** Nothing said where Vercel should run the functions, and the live
+  site's response headers showed them in US East (`x-vercel-id: arn1::iad1::…`,
+  in at Stockholm, handled in Washington). `apps/schedulemaker/vercel.json` now
+  names `fra1`, and the same header shows it for every route; accounts, a PDF
+  and a text read were tried from there. Next's `preferredRegion` is not the
+  way: its documentation says Vercel honours it only for the edge runtime.
+  What still leaves the EU is the reading itself, which Google does where
+  Google chooses, and the page says so.
 
 Not built: the paid plan, any email other than the sign-in link, an admin view
 of the activity log.

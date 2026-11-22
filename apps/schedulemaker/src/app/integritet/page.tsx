@@ -12,7 +12,8 @@ import { LogoMark, SITE_NAME } from "@/components/Logo";
 // - log anything new, or put more than counts in the activity log
 //   (lib/activity.ts and every logActivity call)
 // - load a script for every visitor: there is none today, and section 6 says so
-// - move the database or the hosting (section 7 names Frankfurt)
+// - move the database or the hosting: section 7 says both are in Frankfurt,
+//   which for the server is the one line in apps/schedulemaker/vercel.json
 // - turn PRINT_ON_SERVER off in app/page.tsx: section 3 is only true while it is on
 //
 // Every sentence here was checked against the code on the date below. Change
@@ -175,8 +176,8 @@ export default function PrivacyPage() {
         <p>De här företagen behandlar uppgifter åt oss, var och en för en sak:</p>
         <ul>
           <li>
-            <strong>Vercel</strong> driver webbplatsen och servern. Som alla webbhotell ser de
-            internetadressen för varje anrop.
+            <strong>Vercel</strong> driver webbplatsen och servern. Servern står i Frankfurt. Som
+            alla webbhotell ser de internetadressen för varje anrop.
           </li>
           <li>
             <strong>Neon</strong> driver databasen där konton, sparade scheman och räkningen
@@ -188,8 +189,8 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p>
-          Alla tre är amerikanska företag, så uppgifter kan behandlas utanför EU även om databasen
-          ligger i Frankfurt.
+          Servern och databasen står alltså i Frankfurt. Var Google läser av en bild styr vi inte
+          över, och alla tre är amerikanska företag, så uppgifter kan ändå behandlas utanför EU.
         </p>
       </section>
 
