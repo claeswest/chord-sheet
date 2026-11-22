@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { accountsEnabled, currentUserId, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { LogoMark, SITE_NAME } from "@/components/Logo";
+import SiteHeader from "@/components/SiteHeader";
 import SavedSchedules from "@/components/SavedSchedules";
 
 // "Mina scheman" — everything the signed-in person has saved, and the way out:
@@ -26,11 +25,9 @@ export default async function MySchedulesPage() {
 
   return (
     <main className="app saved-page">
+      <SiteHeader current="saved" />
       <header className="saved-head">
-        <Link href="/" className="auth-logo" aria-label="Fixa schemat – till schemat">
-          <LogoMark />
-        <span>{SITE_NAME}</span>
-        </Link>
+        <h1>Mina scheman</h1>
         <div className="saved-who">
           <span className="hint">{user.email}</span>
           <form
@@ -46,7 +43,6 @@ export default async function MySchedulesPage() {
         </div>
       </header>
 
-      <h1>Mina scheman</h1>
       <SavedSchedules />
     </main>
   );

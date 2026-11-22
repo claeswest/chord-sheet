@@ -72,7 +72,7 @@ export default function SavedSchedules() {
       if (!res.ok) throw new Error(data.error ?? "");
       const stored: StoredSheet = { ...data.schedule.state, savedId: id };
       localStorage.setItem(SHEET_STORE, JSON.stringify(stored));
-      window.location.href = "/";
+      window.location.href = "/schema";
     } catch (e) {
       setError((e instanceof Error && e.message) || "Det gick inte att öppna schemat. Försök igen.");
       setBusy(null);
@@ -146,7 +146,7 @@ export default function SavedSchedules() {
       {items !== null && items.length === 0 && (
         <p className="saved-empty">
           Du har inga sparade scheman än. Gör ett schema och tryck på <strong>Spara</strong>, så
-          hamnar det här. <Link href="/">Till schemat</Link>
+          hamnar det här. <Link href="/">Gör ett schema</Link>
         </p>
       )}
 
@@ -201,7 +201,7 @@ export default function SavedSchedules() {
       )}
 
       <p className="saved-back">
-        <Link href="/">← Till schemat</Link>
+        <Link href="/schema">← Till schemat</Link>
       </p>
 
       <section className="saved-account">

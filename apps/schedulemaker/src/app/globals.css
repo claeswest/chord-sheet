@@ -617,20 +617,39 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
  * All of it is the app's own furniture, never the sheet's: not printed, not
  * themed. And all of it is absent on a site with no accounts. */
 
-/* One quiet link in the corner. It is not the point of the page for anyone
-   who arrives to make a schedule, and it must not look like the first step. */
-.account { display: flex; justify-content: flex-end; margin: -14px 0 10px; font-size: 13px; }
-.account a { color: #6b6b6b; text-decoration: none; padding: 4px 2px; }
-.account a:hover { color: #1a1a1a; text-decoration: underline; text-underline-offset: 3px; }
+/* The strip across the top of every page. The way home on the left, the two
+   or three places to go on the right — quiet, because for someone who came to
+   make a schedule none of them is the first step. The links are sized for a
+   thumb: the one that used to stand here alone was 28 points tall. */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap;
+  margin: -12px 0 28px; min-height: 44px;
+}
+.site-home { display: inline-flex; align-items: center; gap: 10px; color: #1a1a1a; text-decoration: none; }
+.site-nav { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-right: -10px; }
+.site-nav a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px;
+  font-size: 14px; font-weight: 600; color: #45454f; text-decoration: none; border-radius: 10px;
+}
+.site-nav a:hover { color: #1a1a1a; background: rgb(0 0 0 / 0.05); }
+/* A link dressed as the app's button, for the one place a link is the action. */
+a.btn { display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
+a.btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.notice .confirm { margin-left: 0; flex: 0 0 auto; }
+@media (max-width: 520px) {
+  .notice { flex-wrap: wrap; }
+}
 
 /* Spara sits beside Börja om and shares its quiet look; the pair is pushed to
    the right together, so only the first of them takes the auto margin. */
 .flowbar .save { margin-left: auto; }
 .flowbar .save + .quiet, .flowbar .save + .confirm { margin-left: 0; }
-.flowbar .save:disabled { opacity: 0.7; text-decoration: none; }
+.flowbar .save { padding: 7px 14px; }
+/* "Sparat" is a state being reported, not a control that is out of order. */
+.flowbar .save:disabled { opacity: 1; color: #2f7d46; border-color: #cfe6d5; background: #f3faf5; }
 
 /* Sign-in and "check your mail": one narrow column, like a form on paper. */
-.auth-page { max-width: 400px; margin: 0 auto; padding: 56px 20px 80px; }
+.auth-page { max-width: 400px; margin: 0 auto; padding: 32px 20px 80px; }
 .auth-logo {
   display: inline-flex; align-items: center; gap: 10px; color: #1a1a1a; text-decoration: none;
   font-family: var(--font-display); font-weight: 700; font-size: 17px;
@@ -652,7 +671,7 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 
 /* The privacy page: one readable column of plain text. Nothing to click but
    the way back, so it is set for reading rather than for scanning. */
-.legal { max-width: 640px; margin: 0 auto; padding: 56px 20px 96px; color: #1a1a1a; }
+.legal { max-width: 640px; margin: 0 auto; padding: 32px 20px 96px; color: #1a1a1a; }
 .legal h1 { font-family: var(--font-display); font-size: 30px; margin: 28px 0 4px; letter-spacing: -0.01em; }
 .legal-updated { margin: 0 0 20px; font-size: 13px; color: #6b6b6b; }
 .legal-lead { font-size: 17px; line-height: 1.55; color: #302b3f; margin: 0 0 8px; }
@@ -668,7 +687,8 @@ button.danger { color: #b3261e; border-color: #f0c9c6; }
 
 /* Mina scheman */
 .saved-page { max-width: 760px; }
-.saved-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.saved-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.saved-head h1 { margin: 0; }
 .saved-who { display: flex; align-items: center; gap: 6px; }
 .saved-who .quiet { margin-left: 0; }
 .saved-page h1 { font-family: var(--font-display); font-size: 26px; margin: 26px 0 16px; letter-spacing: -0.01em; }
@@ -902,8 +922,16 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
    is dark once that step is reached, so the done part of the path reads as
    one line. */
 .stepper { margin: 0 0 16px; }
-.stepper ol { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; }
-.stepper-step { display: flex; align-items: center; min-width: 0; }
+/* Wraps as a last resort: on a screen too narrow for three labels in a row,
+   the third goes to a second line rather than out of its box. */
+.stepper ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; row-gap: 6px; align-items: center; }
+/* No min-width: 0 here. With it a step could be made narrower than its own
+   label, and the label then spilled over the line that starts the next step:
+   on a phone "Ladda upp" had a rule drawn through its last letters. Left at
+   its default, a step can shrink only as far as its line can, which is the
+   part that is meant to give way. */
+.stepper-step { display: flex; align-items: center; }
+.stepper-item { flex: 0 0 auto; }
 /* Long enough to read as the path between steps. It read as a hyphen —
    "Ladda upp - Redigera" — and not because 36px was short: it was never 36px.
    An empty pseudo-element with only a flex-basis adds nothing to its step's
@@ -911,8 +939,14 @@ select { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 999px
    to its 12px minimum. A real width counts; flex-shrink still lets it give way
    on a narrow screen. */
 .stepper-step + .stepper-step::before {
-  content: ""; flex: 0 1 auto; width: 56px; min-width: 12px; height: 2px; margin: 0 12px;
+  content: ""; flex: 0 0 auto; width: 56px; height: 2px; margin: 0 12px;
   background: #d6d6de; border-radius: 1px;
+}
+/* The line is a fixed length at each size of screen, set here, rather than
+   one length that is asked to shrink. Shrinking was how the labels came to
+   overlap: the browser squeezed whole steps, not just their lines. */
+@media (max-width: 640px) {
+  .stepper-step + .stepper-step::before { width: 20px; margin: 0 8px; }
 }
 .stepper-step.done + .stepper-step::before { background: #1a1a1a; }
 .stepper-item {
@@ -943,8 +977,10 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 /* A phone: inside the upload card the row measured 16px wider than its box at
    375px. Tighter spacing, not smaller words — the labels are the point. */
 @media (max-width: 420px) {
-  .stepper-step + .stepper-step::before { margin: 0 5px; min-width: 6px; }
-  .stepper-item { gap: 6px; font-size: 13.5px; }
+  .stepper-step + .stepper-step::before { width: 6px; margin: 0 4px; }
+  /* No side padding: twelve pixels across three steps is what keeps the row
+     on one line at 360, the commonest Android width. */
+  .stepper-item { gap: 5px; font-size: 13px; padding-left: 0; padding-right: 0; }
   .stepper-no { width: 22px; height: 22px; font-size: 12px; }
 }
 
@@ -962,7 +998,33 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 .toolbar > * + * { margin-top: 12px; }
 /* Back left, onwards right — the direction the steps run. */
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.actions .onward { margin-left: auto; }
+/* The ways out of a step, kept together at the right-hand end. */
+.actions-buttons { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-left: auto; }
+.actions .quiet.back { margin-left: 0; padding-left: 4px; }
+
+/* A phone. The step's main action used to sit at the top of a page whose
+   point is further down: in step two the schedule began almost a full screen
+   below the fold, in step three after nineteen controls. The actions now sit
+   in a bar along the bottom, where a thumb is and where they stay while the
+   schedule is scrolled, and the top of the page is left to the schedule. */
+@media (max-width: 640px) {
+  .app.has-bar { padding-bottom: 104px; }
+  .actions-buttons {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; margin: 0;
+    flex-wrap: nowrap; gap: 8px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgb(255 255 255 / 0.97); border-top: 1px solid #e4e4ea;
+    box-shadow: 0 -6px 20px rgb(0 0 0 / 0.06);
+  }
+  .actions-buttons > button {
+    flex: 1 1 0; min-width: 0; justify-content: center; white-space: nowrap;
+    padding: 12px 8px; font-size: 15px;
+  }
+  .actions-buttons > button.primary { flex-grow: 1.5; }
+  .actions .wide { display: none; }
+  .actions .back { display: none; }
+  .actions-hint { flex-basis: 100%; text-align: left; }
+}
 /* The step's hint, centred in the space between back and onwards. When that
    space is too narrow for it to read as a sentence, it takes a line of its own
    under both buttons instead of squeezing into a column. */

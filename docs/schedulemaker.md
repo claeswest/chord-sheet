@@ -147,6 +147,84 @@ print it (see "A vector PDF" below). And someone who makes an account and
 presses Spara has that schedule stored until they delete it (see "Accounts").
 The path with no account is untouched: nothing of it is kept anywhere.
 
+### The pages, and the way between them (22 Nov 2026)
+
+The app was one address. The front page was simply what showed when no schedule
+existed, so anyone with a schedule could never see it again without pressing
+"Börja om", which throws the schedule away. The editor had no logo and no way
+home, and the only link to an account was a small grey word in a corner.
+
+| Address | What it is |
+| --- | --- |
+| `/` | The start page: what this is, and where a timetable is uploaded. Always. |
+| `/schema` | The editor: steps two and three, for the schedule this browser has open. With none, it goes to `/`. |
+| `/scheman` | Mina scheman, for someone signed in. |
+| `/login`, `/verify-request` | Signing in. |
+| `/integritet` | The privacy page. |
+| `/print` | Not for people: what the server's browser prints from. |
+
+`/` and `/schema` are one component, `components/SchedulerApp.tsx`, given a
+`view`. They share nearly everything they know, and what carries a schedule
+from one to the other is what carries it across a reload: the browser's
+storage. A read on the start page writes the schedule there and then, before
+going to the editor, so the editor never opens to find nothing. The photograph
+is the exception — it is deliberately never stored — and waits in a module
+variable for the one page change.
+
+Every page has the same strip across the top (`components/SiteHeader.tsx`):
+the logo, which is the way home, and at most three links — "Nytt schema" from
+the editor, "Mitt schema" from anywhere else while a schedule is open, and
+"Mina scheman" or "Logga in" where there are accounts. A row, not a menu that
+folds out: three links do not need one. They are 44 points tall; the lone link
+they replace was 28.
+
+Three things follow from the start page being reachable with a schedule open:
+
+- It says so first: "Du har ett schema på gång", with a button back to it.
+- Uploading there makes a new schedule. If the open one is not safely saved,
+  that is the same loss "Börja om" asks about, so it asks too.
+- "Nytt schema" is therefore just a link to the start page. The open schedule
+  stays where it is until something replaces it.
+
+**Links made before the split point at `/#s=…`** and are out in class chats.
+The start page passes them on to the editor whole. A link that cannot be read,
+opened where no schedule is, ends on the start page with the message.
+
+Checked in a browser on a laptop, not signed in: a read ending in the editor;
+reload; the start page with a schedule open; the question before replacing
+one; an old-style link with and without a schedule; a broken link; "Börja om";
+the editor opened with nothing stored; the strip on a phone. **Not checked:**
+anything signed in — "Spara", the return from signing in to `/schema?spara=1`,
+opening from Mina scheman — because the dev database's password stopped
+working on 22 Nov 2026 and `.env` needs a new connection string for `dev`.
+
+The rest of the same walkthrough, done the same day:
+
+- **On a phone the step's main action is a bar along the bottom** (`.actions-buttons`,
+  fixed below 640 px): "Nästa: Skriv ut" in step two; Dela, PDF and Skriv ut
+  in step three. It sat at the top of a page whose point is further down. The
+  schedule now begins at 459 px in step three, from 524, and at 371 in step
+  two when no choice is waiting. With a choice waiting it is still most of a
+  screen down (689), because the question has to be answered first and is
+  asked above the sheet.
+- **Step three's buttons have an order.** One primary (Skriv ut), two beside it
+  (Skapa PDF, Dela med klassen), and "← Redigera" and "Börja om" quiet. They
+  were six of equal weight. On a phone "← Redigera" is gone; the stepper goes
+  back.
+- **Spara is a button, and says what it does.** Signed out it reads "Spara i
+  ett konto", since pressing it leads to the login page. Saved, it reads
+  "Sparat" in green: a state being reported, not a control out of order.
+- **The shrink notice** ("krymps till 93 %") shows in step three only. It is
+  about the printout.
+- **The stepper's line has a fixed length per screen size.** One length asked
+  to shrink was how "Ladda upp" got a rule through its last letters on a
+  phone: the browser squeezed whole steps, not just their lines. It fits on
+  one row at 360 px and wraps, rather than overflowing, at 320.
+
+Measured in the preview pane's phone emulation at 375, 360 and 320 px wide.
+Not tried on a real phone, where the bottom bar meets the browser's own
+toolbar and the home indicator.
+
 ### Accounts and saved schedules (live since 22 Nov 2026)
 
 The owner's decision: an optional account, so that a schedule can be found
@@ -167,7 +245,7 @@ the other two apps are, on purpose — RecipeBookMaker's files were the template
   secret and at least one of them, and then nothing about accounts is drawn or
   reachable: `/api/me` says so, `/login` and `/scheman` go to the front page.
   Production has all of them since 22 Nov 2026, with Google as the one way in.
-- **Saving** (`save()` in `app/page.tsx`): the editor's Spara. Signed out it
+- **Saving** (`save()` in `components/SchedulerApp.tsx`): the editor's Spara. Signed out it
   leads to `/login?next=save`; the schedule waits in the browser and
   `/?spara=1` on the way back saves it unasked. The browser remembers which
   saved schedule it has open (`savedId`), so the next save updates that one.
@@ -360,7 +438,7 @@ and it is treated the same: held in memory for the seconds it takes, written
 nowhere, never logged. The front page says so, in the paragraph under "Ert
 schema stannar hos er"; that sentence belongs to the switch below.
 
-**State on 20 Nov 2026: on.** `PRINT_ON_SERVER` in `app/page.tsx` is `true`.
+**State on 20 Nov 2026: on.** `PRINT_ON_SERVER` in `components/SchedulerApp.tsx` is `true`.
 It shipped off first, was tried on the live site, and was switched on the same
 day. Setting it to `false` sends everyone back to the picture.
 
@@ -398,7 +476,8 @@ day. Setting it to `false` sends everyone back to the picture.
 
 | File | What it holds |
 | --- | --- |
-| `app/page.tsx` | All app state: schedule, glossary, theme, ink, icons, illustration, paper, mode |
+| `components/SchedulerApp.tsx` | All app state: schedule, glossary, theme, ink, icons, illustration, paper, mode. Rendered as the start page by `app/page.tsx` and as the editor by `app/schema/page.tsx` |
+| `components/SiteHeader.tsx` | The strip across the top of every page |
 | `app/api/read/route.ts` | The only route. Model call, limits, no storage |
 | `components/Landing.tsx` | Front page. Hero is a real sheet from `lib/sample.ts`; the faults section pins six numbered faults on the same week as the school printed it |
 | `components/ScheduleSheet.tsx` | The sheet, plus `useFitCards` |

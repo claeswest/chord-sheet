@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { accountsEnabled, currentUserId, emailEnabled, googleEnabled, signIn } from "@/lib/auth";
-import { LogoMark, SITE_NAME } from "@/components/Logo";
+import SiteHeader from "@/components/SiteHeader";
 
 // Signing in. Optional, and said to be: the first thing on this page is that
 // a schedule can be made and printed without it.
 //
 // `?next=save` is how the editor's "Spara schemat" arrives here. The schedule
-// being worked on stays in the browser while its owner signs in, and `/?spara=1`
+// being worked on stays in the browser while its owner signs in, and `/schema?spara=1`
 // on the way back is what tells the editor to save it without being asked twice.
 
 export const metadata = { title: "Logga in – Fixa schemat" };
@@ -23,17 +23,14 @@ export default async function LoginPage({
 }) {
   if (!accountsEnabled) redirect("/");
   const { next, error } = await searchParams;
-  const after = next === "save" ? "/?spara=1" : "/scheman";
+  const after = next === "save" ? "/schema?spara=1" : "/scheman";
   if (await currentUserId()) redirect(after);
 
   const nothingConfigured = !googleEnabled && !emailEnabled;
 
   return (
     <main className="auth-page">
-      <Link href="/" className="auth-logo" aria-label="Fixa schemat – till startsidan">
-        <LogoMark />
-        <span>{SITE_NAME}</span>
-      </Link>
+      <SiteHeader current="other" />
       <h1>Logga in</h1>
       <p className="auth-lead">
         Med ett konto kan du spara dina scheman och hitta dem igen nästa termin. Du behöver inget
@@ -93,7 +90,7 @@ export default async function LoginPage({
       <p className="hint auth-foot">
         Det du sparar lagras hos oss tills du tar bort det, och du kan ta bort hela kontot när du
         vill. <Link href="/integritet">Läs mer om integritet</Link> ·{" "}
-        <Link href="/">Tillbaka till schemat</Link>
+        <Link href="/schema">Tillbaka till schemat</Link>
       </p>
     </main>
   );

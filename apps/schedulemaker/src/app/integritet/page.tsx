@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogoMark, SITE_NAME } from "@/components/Logo";
+import SiteHeader from "@/components/SiteHeader";
 
 // The privacy page. It describes what the code does, so it goes out of date
 // when the code changes. Look at it again when you:
@@ -14,7 +14,7 @@ import { LogoMark, SITE_NAME } from "@/components/Logo";
 // - load a script for every visitor: there is none today, and section 6 says so
 // - move the database or the hosting: section 7 says both are in Frankfurt,
 //   which for the server is the one line in apps/schedulemaker/vercel.json
-// - turn PRINT_ON_SERVER off in app/page.tsx: section 3 is only true while it is on
+// - turn PRINT_ON_SERVER off in components/SchedulerApp.tsx: section 3 is only true while it is on
 //
 // Every sentence here was checked against the code on the date below. Change
 // UPDATED with the text.
@@ -37,10 +37,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main className="legal">
-      <Link href="/" className="auth-logo" aria-label="Fixa schemat – till startsidan">
-        <LogoMark />
-        <span>{SITE_NAME}</span>
-      </Link>
+      <SiteHeader current="start" />
 
       <h1>Integritet</h1>
       <p className="legal-updated">Senast ändrad {UPDATED}</p>
@@ -216,7 +213,7 @@ export default function PrivacyPage() {
       </section>
 
       <p className="legal-back">
-        <Link href="/">← Till schemat</Link>
+        <Link href="/">← Till startsidan</Link>
       </p>
     </main>
   );

@@ -18,7 +18,6 @@ import { useEffect, useRef, useState } from "react";
 import ScheduleSheet from "./ScheduleSheet";
 import FitToWidth from "./FitToWidth";
 import Check from "./Check";
-import { LogoMark, SITE_NAME } from "./Logo";
 import Stepper from "./Stepper";
 import { SAMPLE_SCHEDULE, SAMPLE_TEACHERS } from "@/lib/sample";
 import { EMPTY_GLOSSARY, codesIn, withDefaultColors, withKnownNames } from "@/lib/glossary";
@@ -281,11 +280,6 @@ export default function Landing({
       }}
       onDrop={drop}
     >
-      <header className="masthead">
-        <LogoMark size={30} />
-        <span className="wordmark">{SITE_NAME}</span>
-      </header>
-
       <section className="hero">
         <div className="hero-copy">
           <h1>Ett skolschema som barnen faktiskt kan läsa</h1>
@@ -540,7 +534,7 @@ export default function Landing({
         <p>
           Delar du schemat med klassen ligger det i själva länken du skickar – inte hos oss.
         </p>
-        {/* True only while PRINT_ON_SERVER is on in app/page.tsx. The picture
+        {/* True only while PRINT_ON_SERVER is on in SchedulerApp.tsx. The picture
             PDF is drawn in the browser and sends nothing. */}
         <p>
           Trycker du på Skapa PDF skickas schemat till vår server medan filen görs. Det sparas inte
