@@ -36,8 +36,8 @@ export default function SavedSchedules() {
   const [busy, setBusy] = useState<string | null>(null);
   /** The id whose delete is armed, or "account" for the whole account. */
   const [armed, setArmed] = useState<string | null>(null);
-  /** The id waiting for "yes, replace what is in the editor". */
-  const [replacing, setReplacing] = useState<string | null>(null);
+  /** The id waiting for "yes, replace what is in the editor", and what would be lost. */
+  const [replacing, setReplacing] = useState<{ id: string; lost: "schedule" | "changes" } | null>(null);
 
   async function load() {
     try {
@@ -59,9 +59,11 @@ export default function SavedSchedules() {
 
   async function open(id: string, confirmed = false) {
     const local = localSheet();
-    // Unsaved work in the editor that is not this schedule: ask before it goes.
-    if (!confirmed && local && !local.savedId) {
-      setReplacing(id);
+    // Work in the editor that exists nowhere else: ask before it goes. That
+    // is a schedule never saved — and also a saved one changed since, which
+    // this used to replace without a word, even with its own saved version.
+    if (!confirmed && local && (!local.savedId || local.dirty)) {
+      setReplacing({ id, lost: local.savedId ? "changes" : "schedule" });
       return;
     }
     setBusy(id);
@@ -162,9 +164,11 @@ export default function SavedSchedules() {
                 </p>
               </div>
 
-              {replacing === item.id ? (
+              {replacing?.id === item.id ? (
                 <span className="confirm">
-                  Schemat du har öppet är inte sparat och försvinner.
+                  {replacing.lost === "changes"
+                    ? "Schemat du har öppet har ändringar som inte är sparade. De försvinner."
+                    : "Schemat du har öppet är inte sparat och försvinner."}
                   <button className="danger" onClick={() => open(item.id, true)}>
                     Öppna ändå
                   </button>

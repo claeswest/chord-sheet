@@ -191,17 +191,31 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
           // by hand since, or one an older version of this app left blank.
           // Neither overwrites anything already decided.
           const subjects = codesIn(s.schedule).subjects;
-          setGlossary(
-            withDefaultColors(withKnownNames(normalizeGlossary(s.glossary), subjects), subjects),
-          );
-          // "plain" was the ink-saving style before it became a switch.
-          // Restoring it as a style id would leave the setting silently off.
-          setTheme(s.theme === "plain" ? DEFAULTS.theme : s.theme ?? DEFAULTS.theme);
-          setInk(s.ink ?? s.theme === "plain");
-          setIcons(s.icons ?? DEFAULTS.icons);
-          setIllustration(s.illustration ?? DEFAULTS.illustration);
-          setPaper(s.paper ?? DEFAULTS.paper);
-          setSavedId(typeof s.savedId === "string" ? s.savedId : undefined);
+          const restored: SheetState = {
+            schedule: s.schedule,
+            glossary: withDefaultColors(withKnownNames(normalizeGlossary(s.glossary), subjects), subjects),
+            // "plain" was the ink-saving style before it became a switch.
+            // Restoring it as a style id would leave the setting silently off.
+            theme: s.theme === "plain" ? DEFAULTS.theme : s.theme ?? DEFAULTS.theme,
+            paper: s.paper ?? DEFAULTS.paper,
+            ink: s.ink ?? s.theme === "plain",
+            icons: s.icons ?? DEFAULTS.icons,
+            illustration: s.illustration ?? DEFAULTS.illustration,
+          };
+          setGlossary(restored.glossary);
+          setTheme(restored.theme);
+          setInk(restored.ink);
+          setIcons(restored.icons);
+          setIllustration(restored.illustration);
+          setPaper(restored.paper);
+          const id = typeof s.savedId === "string" ? s.savedId : undefined;
+          setSavedId(id);
+          // A saved schedule that has not been touched since is, as it stands
+          // now, the saved version. One marked dirty is not: it used to be
+          // taken for saved all the same, so a reload turned unsaved changes
+          // into "Sparat". The keys are in the order sheetNow writes them —
+          // the two strings are compared.
+          if (id && !s.dirty) setSavedAs(JSON.stringify(restored));
         }
       }
     } catch {
@@ -210,25 +224,35 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
     setLoaded(true);
   }, []);
 
+  /** Everything a save sends, as text — also what "has it changed since?" compares. */
+  const sheetNow = schedule
+    ? JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration } satisfies SheetState)
+    : null;
+  const unsaved = sheetNow !== null && sheetNow !== savedAs;
+
   useEffect(() => {
     if (!loaded) return;
     try {
       if (schedule)
         localStorage.setItem(
           STORE,
-          JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration, savedId }),
+          JSON.stringify({
+            schedule,
+            glossary,
+            theme,
+            paper,
+            ink,
+            icons,
+            illustration,
+            savedId,
+            dirty: savedId ? unsaved : undefined,
+          } satisfies Stored),
         );
       else localStorage.removeItem(STORE);
     } catch {
       /* a full or disabled store just means edits don't survive a reload */
     }
-  }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration, savedId]);
-
-  /** Everything a save sends, as text — also what "has it changed since?" compares. */
-  const sheetNow = schedule
-    ? JSON.stringify({ schedule, glossary, theme, paper, ink, icons, illustration } satisfies SheetState)
-    : null;
-  const unsaved = sheetNow !== null && sheetNow !== savedAs;
+  }, [loaded, schedule, glossary, theme, paper, ink, icons, illustration, savedId, unsaved]);
   /**
    * The open schedule exists nowhere but in this browser, in whole or in part:
    * nobody is signed in, or it was never saved, or it has changed since.
@@ -276,16 +300,16 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
     }
   }
 
-  // A schedule opened from "Mina scheman", or saved before this page was
-  // reloaded, is as saved as it gets until something changes. Taken once, when
-  // both the stored schedule and the sign-in are known.
+  // Once, when both the stored schedule and the sign-in are known. Whether
+  // the schedule is saved was settled as it was read from storage; what waits
+  // for the sign-in is saying so, and the save that a return from the login
+  // page asks for.
   const baselined = useRef(false);
   /** True once it is known whether the open schedule is saved. Until then, nothing claims either way. */
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (!loaded || !account || baselined.current) return;
     baselined.current = true;
-    if (account.email && savedId && sheetNow) setSavedAs(sheetNow);
     setSettled(true);
     // Back from signing in with a schedule waiting to be saved.
     if (view === "editor" && new URLSearchParams(window.location.search).get("spara") === "1") {

@@ -53,6 +53,16 @@ export type StoredSheet = {
    * instead of making another. Absent means it lives only in this browser.
    */
   savedId?: string;
+  /**
+   * The saved schedule has been changed here since it was last saved or
+   * opened. Only means anything alongside savedId.
+   *
+   * Written down, rather than worked out, because two places need it that
+   * cannot work it out: the editor after a reload, which used to take
+   * whatever it found in storage to be the saved version, and "Mina scheman",
+   * which has to know before it replaces the open schedule with another.
+   */
+  dirty?: boolean;
 };
 
 // ── Checking a state that came from somewhere else ──────────────────────

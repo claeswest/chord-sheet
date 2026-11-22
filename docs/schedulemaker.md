@@ -262,6 +262,17 @@ the other two apps are, on purpose — RecipeBookMaker's files were the template
   leads to `/login?next=save`; the schedule waits in the browser and
   `/?spara=1` on the way back saves it unasked. The browser remembers which
   saved schedule it has open (`savedId`), so the next save updates that one.
+- **Whether the open schedule has unsaved changes is written down**
+  (`dirty`, beside `savedId` in the browser's storage), not worked out afresh.
+  Two places need it that cannot work it out. The editor after a reload used
+  to take whatever it found in storage to be the saved version, so a reload
+  turned unsaved changes into "Sparat". And Mina scheman has to know before it
+  replaces the open schedule: pressing Öppna there used to overwrite unsaved
+  changes to a saved schedule without a word, even with that schedule's own
+  saved version. It asked only when the open schedule had never been saved.
+  Now it asks in both cases, and says which. Changed 22 Nov 2026; the editor's
+  half was tried with a simulated sign-in, the question in Mina scheman has
+  not been seen working anywhere.
 - **Mina scheman** (`/scheman`): open, copy, delete, sign out, and delete the
   account. Deleting the account is one row; the database removes the rest
   (`onDelete: Cascade`).
