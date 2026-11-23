@@ -25,6 +25,7 @@ import Kbd from "@/components/ui/Kbd";
 import { LANDING_FONTS } from "@/components/landing/fonts";
 import { Wordmark } from "@/components/landing/kit";
 import SongViewer from "./SongViewer";
+import ShortcutsDialog, { KeyboardIcon } from "./ShortcutsDialog";
 import ImportModal from "./ImportModal";
 import FindReplaceModal from "./FindReplaceModal";
 import StylePanel, { type Picture } from "./StylePanel";
@@ -455,11 +456,17 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       emptyPlayTimer.current = setTimeout(() => setShowEmptyPlayHint(false), 3500);
       return;
     }
+    setShowShortcuts(false);
     setViewMode(true);
   };
   // Keep a ref so the stable keyboard listener always calls the fresh closure.
   const enterPlayModeRef = useRef(enterPlayMode);
   useEffect(() => { enterPlayModeRef.current = enterPlayMode; });
+
+  // Play mode has a cheatsheet of its own, opened by the same key. This
+  // listener stays up while it shows, so it has to know to keep out of it.
+  const viewModeRef = useRef(viewMode);
+  useEffect(() => { viewModeRef.current = viewMode; });
 
   // P = Play mode, E = Edit mode (only when not typing in an input/textarea)
   useEffect(() => {
@@ -470,7 +477,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       if (e.key === "p" || e.key === "P") enterPlayModeRef.current();
       if (e.key === "e" || e.key === "E") setViewMode(false);
       if (e.key === "s" || e.key === "S") router.push("/songs");
-      if (e.key === "?") { e.preventDefault(); setShowShortcuts((v) => !v); }
+      if (e.key === "?" && !viewModeRef.current) { e.preventDefault(); setShowShortcuts((v) => !v); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -1092,53 +1099,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
       )}
 
       {/* Keyboard shortcuts cheatsheet */}
-      {showShortcuts && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => setShowShortcuts(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-              <h2 className="text-base font-bold text-zinc-900">Keyboard shortcuts</h2>
-              <button onClick={() => setShowShortcuts(false)} className="text-zinc-400 hover:text-zinc-600 text-lg leading-none">✕</button>
-            </div>
-            <div className="px-6 py-4 space-y-5">
-              {([
-                { group: "Editing", rows: [
-                  ["Ctrl+Z", "Undo"],
-                  ["Ctrl+Y / Ctrl+Shift+Z", "Redo"],
-                  ["Enter", "New line below"],
-                  ["Esc", "Cancel chord placement"],
-                ]},
-                { group: "Navigate", rows: [
-                  ["P", "Play mode"],
-                  ["E", "Back to edit"],
-                  ["S", "Song library"],
-                  ["?", "This cheatsheet"],
-                ]},
-                { group: "Play mode", rows: [
-                  ["Space", "Play / pause auto-scroll"],
-                  ["← / →", "Scroll slower / faster"],
-                  ["+ / −", "Bigger / smaller text"],
-                  ["T", "Back to top"],
-                ]},
-              ] as const).map((g) => (
-                <div key={g.group}>
-                  <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-chord mb-2">{g.group}</p>
-                  <div className="space-y-1.5">
-                    {g.rows.map(([keys, what]) => (
-                      <div key={keys} className="flex items-center justify-between gap-4">
-                        <span className="text-sm text-zinc-600">{what}</span>
-                        <kbd className="shrink-0 text-[11px] font-mono font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200 rounded-md px-2 py-0.5">{keys}</kbd>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="px-6 pb-5 text-xs text-zinc-400">
-              Tip: drag a chord to move it · double-click a chord to rename it.
-            </p>
-          </div>
-        </div>
-      )}
+      {showShortcuts && <ShortcutsDialog mode="edit" onClose={() => setShowShortcuts(false)} />}
 
       {/* Small-screen tip — friendly, and never stacked on top of other banners */}
       {showSmallScreenBanner && !showDemoBanner && !showGuestSaveReminder && (
@@ -1197,13 +1158,13 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
           {/* Keyboard shortcuts */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="hidden lg:flex w-7 h-7 items-center justify-center text-stone-500 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors"
+            className="hidden lg:flex h-7 px-2 items-center gap-1.5 text-sm text-stone-600 hover:text-ink hover:bg-ink/5 border border-ink/20 rounded-lg transition-colors"
             title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <path strokeLinecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
-            </svg>
+            <KeyboardIcon className="w-[18px] h-[18px]" />
+            <span className="hidden xl:inline">Shortcuts</span>
+            <Kbd variant="light">?</Kbd>
           </button>
 
           {/* Transpose: − key + */}
@@ -1359,7 +1320,7 @@ export default function SongEditor({ initialSong, isLoggedIn = false, hasSongs =
                 </button>
                 <button onClick={() => { setShowOverflow(false); setShowShortcuts(true); }}
                   className="flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
-                  <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" /><path strokeLinecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" /></svg>
+                  <KeyboardIcon className="w-4 h-4 text-zinc-400" />
                   Keyboard shortcuts <Kbd variant="light" className="ml-auto">?</Kbd>
                 </button>
               </div>

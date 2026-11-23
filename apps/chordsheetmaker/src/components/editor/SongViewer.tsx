@@ -14,6 +14,7 @@ import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
 import Kbd from "@/components/ui/Kbd";
 import CtaLink from "@/components/ui/CtaLink";
 import PrintView from "./PrintView";
+import ShortcutsDialog, { KeyboardIcon } from "./ShortcutsDialog";
 import type { QueuePosition } from "@/lib/playQueue";
 import ChordLabel from "./ChordLabel";
 import { Wordmark } from "@/components/landing/kit";
@@ -119,6 +120,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
   // again before each use, so the answer is never a stale one.
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
   const [upgradeFeature, setUpgradeFeature] = useState<"pdf" | "share" | null>(null);
+  // Keyboard cheatsheet ("?" or the keyboard button in the top bar)
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
   // The allowance is per song; a song not saved yet goes by its title.
   const songKey = songId ?? title;
   const fetchEntitlements = useCallback(async (): Promise<Entitlements> => {
@@ -362,6 +366,9 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         if (queue?.next && onQueueGo) onQueueGo(queue.next.url);
       } else if ((e.key === "b" || e.key === "B") && !e.ctrlKey && !e.metaKey && !e.altKey) {
         if (queue?.prev && onQueueGo) onQueueGo(queue.prev.url);
+      } else if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
       }
     };
     window.addEventListener("keydown", handler);
@@ -730,6 +737,17 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
               </div>
             )}
           </div>
+          {/* Keyboard shortcuts — where there is likely to be a keyboard */}
+          <button
+            onClick={() => setShowShortcuts(true)}
+            className="hidden lg:flex items-center gap-1.5 mr-2 text-sm text-white hover:opacity-75 transition-opacity px-3 py-1.5 rounded-lg bg-black/45 backdrop-blur-sm"
+            title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
+          >
+            <KeyboardIcon className="w-[18px] h-[18px]" />
+            <span className="hidden xl:inline">Shortcuts</span>
+            <Kbd>?</Kbd>
+          </button>
           {promoCta ? (
             /* Growth loop: this viewer got the link from a bandmate — the
                warmest possible lead. One tasteful CTA, fades with the UI. */
@@ -1028,6 +1046,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
         </svg>
         <span className="text-[9px] font-semibold tracking-wider text-white/70 uppercase leading-none">Top</span>
       </button>
+
+      {showShortcuts && (
+        <ShortcutsDialog mode="play" canEdit={!!onEdit} inSetlist={!!(queue && onQueueGo)} onClose={closeShortcuts} />
+      )}
 
       {/* Pro-feature upgrade prompt — shown when a free user taps PDF or Share */}
       {upgradeFeature && (
