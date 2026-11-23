@@ -630,7 +630,10 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
                               fontWeight: s.chords.bold !== false ? "bold" : "normal",
                               fontStyle: s.chords.italic ? "italic" : "normal",
                               color: s.chords.color ?? "#4f46e5",
-                              bottom: "0.18em", // hug the lyric below (proximity), air above
+                              // Hug the lyric below (proximity), air above. Just under the
+                              // row's edge: the lyric's own leading is already most of
+                              // the space between. Matches the editor and the PDF.
+                              bottom: "-0.04em",
                             }}
                           >
                             <ChordLabel chord={chord.chord} jazz={s.jazzChords} />

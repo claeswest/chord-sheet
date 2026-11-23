@@ -6,6 +6,12 @@ import type { SongStyle } from "@/lib/songStyle";
 import { MONO_STACK, SHEET_HALO } from "@/lib/songStyle";
 import ChordLabel from "./ChordLabel";
 
+// A chord's distance below its row, in ems of the chord's own size. Set so
+// that the space between a chord and the capitals under it is about half the
+// height of a lyric letter, the same as in play mode (SongViewer) and in the
+// PDF (.print-chord in globals.css). Change one, change all three.
+const CHORD_DROP_EM = 0.35;
+
 interface Props {
   line: LyricLine;
   activeChord: string | null;
@@ -54,6 +60,10 @@ export default function LyricLineEditor({
   const lyricSize = songStyle?.lyrics?.fontSize ?? 14;
   const chordFont = songStyle?.chords?.fontFamily ?? MONO_STACK;
   const chordSize = songStyle?.chords?.fontSize ?? 12;
+  // How far chords hang below the bottom edge of their row, towards the words
+  // they belong to. The row itself is as tall as the things in it need to be
+  // for clicking and dragging, which alone leaves the chords too far up.
+  const chordBottom = -chordSize * CHORD_DROP_EM;
   const chordColor = songStyle?.chords?.color ?? "#4f46e5";
 
   // Chords are placed by measuring the words, and a web font arrives after the
@@ -288,8 +298,8 @@ export default function LyricLineEditor({
           <div
             key={chord.id}
             data-chord-token
-            className="group/chord absolute bottom-0 flex items-center"
-            style={{ left: chordDisplayPositions.get(chord.id) ?? chordLeftPx(chord.position) }}
+            className="group/chord absolute flex items-center"
+            style={{ left: chordDisplayPositions.get(chord.id) ?? chordLeftPx(chord.position), bottom: chordBottom }}
             onMouseDown={(e) => {
               if ((e.target as HTMLElement).closest("[data-chord-delete]")) return;
               e.preventDefault();
@@ -389,8 +399,8 @@ export default function LyricLineEditor({
               if (e.key === "Escape") setAddingAtPx(null);
             }}
             placeholder="Am"
-            className="absolute bottom-0 w-14 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm z-10"
-            style={{ fontSize: chordSize, left: addingAtPx, fontFamily: chordFont }}
+            className="absolute w-14 font-bold text-ink bg-ink/10 border border-ink/30 rounded px-1 outline-none shadow-sm z-10"
+            style={{ fontSize: chordSize, left: addingAtPx, bottom: chordBottom, fontFamily: chordFont }}
             onClick={(e) => e.stopPropagation()}
           />
         )}
@@ -398,9 +408,10 @@ export default function LyricLineEditor({
         {/* Ghost chord — follows cursor when activeChord is set */}
         {activeChord && chordHoverPx !== null && (
           <span
-            className="absolute bottom-0 pointer-events-none opacity-70"
+            className="absolute pointer-events-none opacity-70"
             style={{
               left: chordLeftPx(pxToCharPos(line.text, chordHoverPx)),
+              bottom: chordBottom,
               fontSize: chordSize,
               fontFamily: chordFont,
               fontWeight: "bold",

@@ -195,7 +195,10 @@ body {
 
 .print-chord {
   position: absolute;
-  bottom: 1.5pt; /* chords belong to the lyric BELOW them — hug it, air above */
+  /* Chords belong to the lyric BELOW them: hug it, air above. Below the row's
+     edge, because the lyric's 1.6 leading already puts space between. Matches
+     play mode (SongViewer) and the editor (LyricLineEditor). */
+  bottom: -0.22em;
   font-size: 9pt;
   font-weight: 700;
   color: #4f46e5;
