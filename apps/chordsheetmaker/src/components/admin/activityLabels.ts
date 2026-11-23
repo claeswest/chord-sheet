@@ -25,7 +25,8 @@ export const TYPES: Record<string, { label: string; tone: Tone }> = {
   song_created:    { label: "Song created", tone: "info" },
   song_opened:     { label: "Song opened", tone: "quiet" },
   song_edited:     { label: "Song edited", tone: "quiet" },
-  chord_added:     { label: "Chord added", tone: "quiet" },
+  song_deleted:    { label: "Song deleted", tone: "quiet" },
+  chord_added:    { label: "Chord added", tone: "quiet" },
   pdf_exported:    { label: "PDF exported", tone: "info" },
   share_created:   { label: "Share link made", tone: "info" },
   app_connected:   { label: "AI app connected", tone: "info" },
@@ -175,6 +176,7 @@ const PHRASES: Record<string, (n: number) => string> = {
   song_imported: (n) => (n === 1 ? "imported a song" : `imported ${n} songs`),
   song_edited: (n) => (n === 1 ? "edited a song" : `edited ${n} songs`),
   song_opened: (n) => (n === 1 ? "opened a song" : `opened ${n} songs`),
+  song_deleted: (n) => (n === 1 ? "deleted a song" : `deleted ${n} songs`),
   chord_added: () => "placed chords",
   style_changed: () => "changed the look",
   ai_styled: (n) => (n === 1 ? "used AI text style" : `used AI text style ${n} times`),
@@ -186,7 +188,7 @@ const PHRASES: Record<string, (n: number) => string> = {
 };
 // What matters most first; the summary names the top few.
 const ORDER = [
-  "sub_ended", "sub_started", "sub_changed", "account_created", "song_created", "song_imported",
+  "sub_ended", "sub_started", "sub_changed", "account_created", "song_created", "song_imported", "song_deleted",
   "app_connected", "share_created", "bg_generated", "ai_styled", "pdf_exported", "style_changed", "song_edited", "chord_added",
   "song_opened", "marketing_email", "login",
 ];

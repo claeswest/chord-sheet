@@ -14,6 +14,7 @@ export type ActivityType =
   | "song_created"
   | "song_opened"
   | "song_edited"
+  | "song_deleted" // the person removed one of their songs: meta.songId, meta.title
   | "chord_added"
   | "pdf_exported"
   | "song_imported"
@@ -35,7 +36,7 @@ export type ActivityType =
  * or the founder's kitchen.
  */
 const FROM_THE_PERSON = new Set<ActivityType>([
-  "account_created", "login", "song_created", "song_opened", "song_edited", "chord_added",
+  "account_created", "login", "song_created", "song_opened", "song_edited", "song_deleted", "chord_added",
   "pdf_exported", "song_imported", "bg_generated", "ai_styled", "style_changed", "share_created", "ai_call",
   "app_connected",
 ]);

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { logActivityThrottled } from "@/lib/activity";
+import { logActivity, logActivityThrottled } from "@/lib/activity";
 
 // GET /api/songs/[id]
 export async function GET(
@@ -38,10 +38,21 @@ export async function DELETE(
 
   const { id } = await params;
 
+  // The title is read first: once the song is gone, the log is the only
+  // place that says which one it was.
+  const song = await prisma.song.findFirst({
+    where: { id, userId: session.user.id },
+    select: { title: true },
+  });
+
   // Only delete if it belongs to the user
   await prisma.song.deleteMany({
     where: { id, userId: session.user.id },
   });
+
+  // The editor also asks for songs that were never saved to be removed;
+  // those were never here, so there is nothing to record.
+  if (song) await logActivity("song_deleted", session.user.id, { songId: id, title: song.title });
 
   return NextResponse.json({ ok: true });
 }
