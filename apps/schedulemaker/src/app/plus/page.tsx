@@ -10,7 +10,7 @@ import SiteHeader from "@/components/SiteHeader";
 // What Plus is, and the question of whether anyone wants it.
 //
 // Plus cannot be bought. This page says so more than once, on purpose: it
-// lists one thing that exists (the extra styles) and two that do not yet, and
+// lists what exists (the extra styles, the link) and what does not yet, and
 // a page that blurred that line would be selling something that is not there.
 // The button records interest and nothing else — see components/PlusInterest.
 //
@@ -21,7 +21,7 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "Plus – Fixa schemat",
   description:
-    "Plus är för dig som gör scheman åt andra: fler stilar nu, och på väg en länk som alltid visar senaste versionen.",
+    "Plus är för dig som gör scheman åt andra: fler stilar och en länk som alltid visar senaste versionen.",
 };
 
 // What it shows depends on who is signed in.
@@ -53,7 +53,8 @@ export default async function PlusPage() {
 
       {account?.plan === "plus" && (
         <p className="plus-thanks" role="status">
-          <strong>Du har Plus.</strong> De extra stilarna finns bland de andra i steg tre.
+          <strong>Du har Plus.</strong> De extra stilarna finns bland de andra i steg tre, och länken
+          skapar du under Dela.
         </p>
       )}
 
@@ -71,10 +72,10 @@ export default async function PlusPage() {
             </span>
           </li>
           <li>
-            <span className="plus-tag">Kommer</span>
+            <span className="plus-tag now">Finns nu</span>
             <strong>En länk som alltid visar senaste versionen.</strong> Byter en lektion sal
             ändrar du det en gång, och alla som har länken ser det nya schemat. Ingen behöver få
-            en ny länk.
+            en ny länk. Du skapar den under Dela i steg tre.
           </li>
           <li>
             <span className="plus-tag">Kommer</span>

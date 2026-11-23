@@ -7,6 +7,8 @@ import SiteHeader from "@/components/SiteHeader";
 //
 // - send a schedule or a photo anywhere new, or keep one anywhere new
 //   (app/api/read, app/api/pdf, lib/share.ts, lib/scheduleDb.ts)
+// - show a stored schedule to anyone but its owner: one way exists, the link
+//   in lib/linkDb.ts, and section 4 describes exactly that one
 // - add a column to User or Account, or a sign-in method (prisma/schema.prisma,
 //   lib/auth.ts) — the list of what an account holds is spelled out below
 // - log anything new, or put more than counts in the activity log
@@ -119,6 +121,12 @@ export default function PrivacyPage() {
           Alla som får länken kan läsa schemat, och den tjänst du skickar länken genom ser den
           också. Skicka den bara dit den ska.
         </p>
+        <p>
+          Har du Plus kan du i stället skapa en länk som alltid visar senaste versionen. Den
+          fungerar annorlunda: schemat ligger sparat hos oss, och alla som har länken ser det som
+          det är sparat, med rubriken, utan att logga in. Länken gäller tills du stänger av den
+          eller tar bort schemat eller kontot.
+        </p>
       </section>
 
       <section>
@@ -144,8 +152,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>En räkning av vad som händer.</strong> En rad när ett konto skapas, när du
-            loggar in, när ett schema sparas, kopieras eller tas bort, och om du säger till att du
-            vill ha Plus. Raden har tidpunkten och
+            loggar in, när ett schema sparas, kopieras eller tas bort, när en länk skapas eller
+            stängs av, och om du säger till att du vill ha Plus. Raden har tidpunkten och
             ibland hur många lektioner schemat hade. Den innehåller aldrig något av det som står
             på schemat.
           </li>

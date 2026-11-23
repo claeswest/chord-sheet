@@ -1094,7 +1094,9 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
           {fromLink && editing && (
             <div className="notice no-print" role="status">
               <p>
-                <strong>Det här schemat har en annan förälder delat med dig.</strong>{" "}
+                {/* "Delat med dig", not "från en annan förälder": it may as
+                    well have come from a teacher's link (components/SharedView). */}
+                <strong>Det här schemat är delat med dig.</strong>{" "}
                 <span className="on-mouse">Klicka</span>
                 <span className="on-touch">Tryck</span> på rubriken och skriv ert barns namn, gör era
                 egna val och skriv ut. Det sparas bara här i din webbläsare.
@@ -1164,7 +1166,23 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
           )}
 
           {sharing && (
-            <SharePanel schedule={schedule} glossary={glossary} onClose={() => setSharing(false)} />
+            <SharePanel
+              schedule={schedule}
+              glossary={glossary}
+              onClose={() => setSharing(false)}
+              live={
+                account?.enabled
+                  ? {
+                      plan: account.plan,
+                      signedIn: Boolean(account.email),
+                      savedId,
+                      unsaved,
+                      saving,
+                      onSave: save,
+                    }
+                  : undefined
+              }
+            />
           )}
 
           {plusStyle && (

@@ -147,6 +147,10 @@ print it (see "A vector PDF" below). And someone who makes an account and
 presses Spara has that schedule stored until they delete it (see "Accounts").
 The path with no account is untouched: nothing of it is kept anywhere.
 
+**Since 23 Nov 2026 a stored schedule can be shown to someone else**, in one
+way only: its owner turns on a link for it (see "A link that always shows the
+latest version"). Nothing stored is visible to anyone else by any other route.
+
 ### The pages, and the way between them (22 Nov 2026)
 
 The app was one address. The front page was simply what showed when no schedule
@@ -358,14 +362,16 @@ of the activity log.
 
 The owner's idea: people who make schedules for others — a teacher, a coach,
 whoever runs the after-school club — might pay for more. Started small, with
-Stripe left for later on purpose. What exists is the machinery and one feature.
+Stripe left for later on purpose. What exists is the machinery and two
+features: more styles, and the link in the section after "Sharing with the
+class".
 
 - **Two plans, in `src/lib/plans.ts`**: Gratis and Plus. `planFromUser()` puts
   an account on Plus if its `plan` column says so (what checkout will set), or
   if its address is in the server setting `PLUS_EMAILS`, a comma-separated
   list. That setting is how the owner and anyone trying it get Plus today,
   without touching the database.
-- **One Plus feature: three more styles** — Hav, Lavendel and Grafit, marked
+- **The first Plus feature: three more styles** — Hav, Lavendel and Grafit, marked
   `plus` in `lib/themes.ts`. They are built exactly like the free ones; what
   is sold is more to choose from, not a better sheet. In step three they sit in
   the row with a padlock for anyone not on Plus, and pressing one says what it
@@ -376,8 +382,8 @@ Stripe left for later on purpose. What exists is the machinery and one feature.
   on the door. Printing with the browser's own dialog cannot be stopped and is
   not tried.
 - **The Plus page, `/plus`**, says what Plus includes, marks what exists
-  ("Finns nu") from what does not ("Kommer": a link that always shows the
-  latest version; sending the schedule to a list of addresses), and says more
+  ("Finns nu": the styles and the link) from what does not ("Kommer":
+  sending the schedule to a list of addresses), and says more
   than once that it cannot be bought. Its button, "Jag vill ha Plus", writes
   one `plus_interest` row to the activity log for the signed-in account. That
   is the count of who wants it, and — because it is tied to the account — a
@@ -388,9 +394,10 @@ Stripe left for later on purpose. What exists is the machinery and one feature.
 **Checked on a laptop:** the three styles and their drawings on screen; the
 padlock and its note; the picker with the plan simulated as Plus; a Plus style
 sent to `/api/pdf` without Plus coming back in the default style; the interest
-route refusing a visitor who is not signed in. **Not checked:** anything that
-needs a real account — the interest button, saving in a Plus style, Mina
-scheman's plan line — because the dev database still does not answer here.
+route refusing a visitor who is not signed in. **On the live site, 23 Nov 2026:**
+the owner added his address to `PLUS_EMAILS` and confirmed that his account
+is on Plus. **Still not checked by anyone:** the interest button, and saving
+or printing in a Plus style.
 
 To see how many want Plus, until there is an admin view: count the rows of
 type `plus_interest` in the production `ActivityLog`.
@@ -444,6 +451,65 @@ Not done, and worth knowing:
   are pure and would be the first thing worth one. The checks made were by hand
   in a browser: round trip, an existing schedule, seven kinds of broken link.
 - Anyone holding a link can read the schedule in it. The dialog says so.
+
+### A link that always shows the latest version (23 Nov 2026)
+
+The second Plus feature, and the one the owner judged worth most to someone
+who makes schedules for others. The copy-in-a-link above is frozen when it is
+sent: move a lesson to another room and every family has the old room. This
+link holds a token instead; whoever opens it sees what was saved last.
+
+- **Where:** the share dialog in step three now has two halves. "Dela en kopia
+  med klassen" is the old link, unchanged. Under it, "En länk som alltid är
+  aktuell" (`components/LiveLink.tsx`). It says which state it is in: not on
+  Plus (leads to `/plus`), on Plus but not saved (a save button — there is
+  nothing to show until then), saved (make the link), or on (the address, copy,
+  and an armed "Stäng av länken"). With unsaved changes it warns that the link
+  still shows the saved version.
+- **The address is `/s/<token>`** (`app/s/[token]/page.tsx`): the sheet as
+  saved, in its style, read-only, with "Skriv ut" and "Gör ett eget av det
+  här". The second hands the schedule to the editor the way a shared copy
+  arrives — no name across the top, choices open again. The page is never
+  cached and is marked noindex.
+- **The table is `SharedLink`** (token, scheduleId, createdAt), one per
+  schedule, deleted with its schedule or account. It is a table of its own
+  rather than a column on `Schedule` on purpose: code that asks for a missing
+  column breaks every query on that table, and a missing table only breaks
+  the links. `GET /api/schedules` reads it separately and carries on without
+  it, so Mina scheman never depends on it.
+- **The rules** are at the top of `lib/linkDb.ts`: the token is 128 random
+  bits; only the owner makes or removes a link, and only Plus may make one
+  (`PLANS[plan].features.liveLink`, checked in the route); turning one off
+  needs no plan, so nobody is left with a link they cannot close; looking one
+  up returns the sheet and when it was saved, nothing about whose it is. A
+  token that matches nothing gets one message whether it never existed, was
+  turned off or lost its schedule. A database that cannot be reached gets a
+  different one, so nobody is told a working link is gone.
+- **Unlike the copy, this shows the heading** — the child's or the class's
+  name, as saved. The dialog says so before the link is made, and so does
+  section 4 of the privacy page.
+- Mina scheman marks a schedule that has a link ("Delas med länk"). Making and
+  removing a link are written to the activity log (`link_created`,
+  `link_removed`), without the token.
+
+**Decided, and worth revisiting when Plus is sold:** a link made on Plus keeps
+working if the account later leaves Plus; its owner can still see and close
+it but cannot make new ones.
+
+**Checked on a laptop, 23 Nov 2026:** the page the link opens, shown with an
+invented schedule through a temporary page (desktop and phone width); "Gör ett
+eget" arriving in the editor; every state of the dialog with the account and
+the link routes simulated in the browser; the two messages for a token that
+matches nothing and for a database that does not answer. **And through the
+dev database, the same day**, with two throwaway accounts: making a link;
+pressing again giving the same one; opening it signed out, in a Plus style;
+a saved change showing at once; a visitor, a free account and another Plus
+account all refused, the last also unable to see or close it; an account that
+left Plus still seeing and closing its link but not making a new one; a
+turned-off link and a deleted schedule's link both showing nothing, and no row
+left behind; a copy of a schedule having no link; the tag in Mina scheman; the
+activity log holding both events and no token. **Not checked:** on a real
+phone, in production, or printing from the page the link opens.
 
 ### Skapa PDF (20 Nov 2026)
 
@@ -562,6 +628,9 @@ day. Setting it to `false` sends everyone back to the picture.
 | `lib/plans.ts` | The two plans and what each may do. The one place that decides |
 | `app/plus/page.tsx` | What Plus is, and the button that counts who wants it |
 | `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
+| `components/LiveLink.tsx` | The second half of that dialog: the Plus link that follows the saved schedule |
+| `lib/linkDb.ts` | That link in the database: make, remove, look up by token |
+| `app/s/[token]/page.tsx`, `components/SharedView.tsx` | What the link opens: the sheet, read-only, for someone with no account |
 | `types/schedule.ts` | The model and its time helpers |
 
 ### House rules that bite
@@ -629,6 +698,19 @@ face has loaded. What is still open before this can go live:
   repo's `.env.example` is read by this app. Live at
   https://schedulemaker-sigma.vercel.app/; every push to `master` deploys it.
   No custom domain yet.
+- **The live link's table, `SharedLink`, has to be created before its code is
+  any use** — `npx prisma db push`, in the dev branch and in production, the
+  same way the first tables were made (see "Accounts"). Until it exists in
+  production the link cannot be made there and `/s/…` says the schedule could
+  not be fetched; everything else carries on. Done in dev and in production on 23 Nov 2026,
+  before the code was pushed. Two things went wrong on
+  the way and are worth knowing. The dev branch had deleted itself: Neon's
+  "Create branch" dialog defaults **Auto-delete to "After 1 day"**, so set it
+  to Never. The new one was made with "Branch schema only", so it holds no
+  real schedules. And this app's local `.env` had meanwhile come to hold
+  another app's connection string. Check which database `.env` points at
+  before pushing a schema — a push to the wrong one offers to drop that app's
+  tables.
 
 ---
 

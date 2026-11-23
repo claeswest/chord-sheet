@@ -4,6 +4,7 @@ import { logActivity } from "@/lib/activity";
 import { PLANS } from "@/lib/plans";
 import { cleanState } from "@/lib/sheetState";
 import { countSchedules, createSchedule, lessonCount, listSchedules } from "@/lib/scheduleDb";
+import { linkedIds } from "@/lib/linkDb";
 
 // The signed-in person's saved schedules: list them, add one.
 //
@@ -21,8 +22,15 @@ const unreadable = () =>
 export async function GET() {
   const userId = await currentUserId();
   if (!userId) return unauthorized();
+  // Which of them have a link is asked separately and allowed to fail: the
+  // list is what this page is for, and it must not go blank because the
+  // links' table could not be read.
+  const [schedules, linked] = await Promise.all([
+    listSchedules(userId),
+    linkedIds(userId).catch(() => [] as string[]),
+  ]);
   return NextResponse.json(
-    { schedules: await listSchedules(userId) },
+    { schedules: schedules.map((s) => ({ ...s, linked: linked.includes(s.id) })) },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

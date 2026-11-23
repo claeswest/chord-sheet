@@ -13,6 +13,8 @@
 // see it before anyone else does.
 
 import { useEffect, useRef, useState } from "react";
+import LiveLink from "@/components/LiveLink";
+import { copyText } from "@/lib/clipboard";
 import { packSchedule, shareUrl } from "@/lib/share";
 import type { Glossary } from "@/lib/glossary";
 import type { Schedule } from "@/types/schedule";
@@ -21,10 +23,23 @@ export default function SharePanel({
   schedule,
   glossary,
   onClose,
+  live,
 }: {
   schedule: Schedule;
   glossary: Glossary;
   onClose: () => void;
+  /**
+   * What the second way to share needs to know — see LiveLink. Left out on a
+   * site with no accounts, where there is nothing saved for a link to show.
+   */
+  live?: {
+    plan: "free" | "plus" | undefined;
+    signedIn: boolean;
+    savedId: string | undefined;
+    unsaved: boolean;
+    saving: boolean;
+    onSave: () => void;
+  };
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -54,22 +69,7 @@ export default function SharePanel({
 
   async function copy() {
     if (!url) return;
-    let ok = false;
-    try {
-      await navigator.clipboard.writeText(url);
-      ok = true;
-    } catch {
-      // The modern clipboard is refused in some places — an in-app browser, a
-      // page inside a frame. The old way still works in most of them, and
-      // either way the link is left selected so the keyboard's copy takes it.
-      field.current?.select();
-      try {
-        ok = document.execCommand("copy");
-      } catch {
-        /* neither worked; the message below says what to do */
-      }
-    }
-    setCopied(ok ? "yes" : "by-hand");
+    setCopied((await copyText(url, field.current)) ? "yes" : "by-hand");
   }
 
   async function send() {
@@ -94,7 +94,7 @@ export default function SharePanel({
         onClick={(e) => e.stopPropagation()}
       >
         <p className="panel-title" id="share-title">
-          Dela schemat med klassen
+          {live ? "Dela en kopia med klassen" : "Dela schemat med klassen"}
         </p>
         <p className="share-lead">
           Alla i klassen har samma schema. Skicka länken i klasschatten, så slipper de andra fota och
@@ -157,10 +157,27 @@ export default function SharePanel({
           <button className={canShare ? "" : "primary"} onClick={copy} disabled={!url}>
             {copied === "yes" ? "Kopierad!" : "Kopiera länken"}
           </button>
-          <button onClick={onClose} style={{ marginLeft: "auto" }}>
-            Stäng
-          </button>
+          {!live && (
+            <button onClick={onClose} style={{ marginLeft: "auto" }}>
+              Stäng
+            </button>
+          )}
         </div>
+
+        {live && (
+          <>
+            {/* Two ways to share, and they differ in the one way that matters:
+                the copy above is frozen the moment it is sent, and this one
+                follows the schedule. Kept apart, each under its own heading,
+                so nobody takes one for the other. */}
+            <LiveLink {...live} />
+            <div className="controls" style={{ marginTop: 18, marginBottom: 0 }}>
+              <button onClick={onClose} style={{ marginLeft: "auto" }}>
+                Stäng
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

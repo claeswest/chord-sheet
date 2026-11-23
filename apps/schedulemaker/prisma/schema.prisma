@@ -131,7 +131,26 @@ model Schedule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  link SharedLink?
 
   @@index([userId, updatedAt])
+}
+
+/// A link that shows one saved schedule, as last saved, to anyone who has it.
+///
+/// A table of its own rather than a column on Schedule, for a reason that has
+/// nothing to do with tidiness: a column the live database does not have yet
+/// breaks every query on its table, and this table missing breaks only the
+/// links. It can be created whenever, and the rest of the app does not care.
+///
+/// The token is the whole of the access: 128 random bits, made in
+/// src/lib/linkDb.ts. At most one link per schedule. Deleting the schedule, or
+/// the account, deletes the link with it.
+model SharedLink {
+  token      String   @id
+  scheduleId String   @unique
+  createdAt  DateTime @default(now())
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 }

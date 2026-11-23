@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SHEET_STORE, type StoredSheet } from "@/lib/sheetState";
 
-type Item = { id: string; title: string; detail: string | null; updatedAt: string };
+type Item = { id: string; title: string; detail: string | null; updatedAt: string; linked?: boolean };
 
 const dateOf = (iso: string) =>
   new Date(iso).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" });
@@ -157,7 +157,13 @@ export default function SavedSchedules() {
           {items.map((item) => (
             <li key={item.id} className="saved-item">
               <div className="saved-text">
-                <p className="saved-title">{item.title}</p>
+                <p className="saved-title">
+                  {item.title}
+                  {/* Worth seeing at a glance: this one is visible to anyone
+                      with its link, and saving it changes what they see. The
+                      link itself is in the schedule's share dialog. */}
+                  {item.linked && <span className="saved-linked">Delas med länk</span>}
+                </p>
                 <p className="hint">
                   {item.detail ? `${item.detail} · ` : ""}
                   ändrat {dateOf(item.updatedAt)}

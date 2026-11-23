@@ -23,6 +23,8 @@ export const PLANS: Record<
       scheduleLimit: number;
       /** The styles marked `plus` in lib/themes.ts. */
       plusStyles: boolean;
+      /** Turning on a link that always shows the latest saved version. See lib/linkDb.ts. */
+      liveLink: boolean;
     };
   }
 > = {
@@ -34,6 +36,7 @@ export const PLANS: Record<
       // database.
       scheduleLimit: 200,
       plusStyles: false,
+      liveLink: false,
     },
   },
   plus: {
@@ -42,6 +45,7 @@ export const PLANS: Record<
       // Someone with several classes or teams, over several years.
       scheduleLimit: 2000,
       plusStyles: true,
+      liveLink: true,
     },
   },
 };
