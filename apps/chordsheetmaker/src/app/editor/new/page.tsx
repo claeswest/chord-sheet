@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SongEditorLoader from "@/components/editor/SongEditorLoader";
 import NewSongAtLimit from "@/components/editor/NewSongAtLimit";
-import LoadingNotes from "@/components/ui/LoadingNotes";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 import { getSongLimit, planFromUser, type Plan } from "@/lib/plans";
 
 export default async function NewSongPage() {
@@ -31,7 +31,7 @@ export default async function NewSongPage() {
   }
 
   return (
-    <Suspense fallback={<LoadingNotes label="Loading editor…" />}>
+    <Suspense fallback={<WorkingNotes title="Loading editor…" className="h-screen" />}>
       <SongEditorLoader isLoggedIn={isLoggedIn} hasSongs={songCount > 0} />
     </Suspense>
   );

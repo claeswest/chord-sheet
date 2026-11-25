@@ -7,7 +7,7 @@ import type { SongLine } from "@/types/song";
 import { extractInlineChords } from "@/lib/parseChordSheet";
 import { transposeSong, songKey as keyOf } from "@/lib/transpose";
 import { DEFAULT_STYLE, MONO_STACK, backgroundStyle, hexToRgba, textHalo } from "@/lib/songStyle";
-import LoadingNotes from "@/components/ui/LoadingNotes";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 import type { SongStyle } from "@/lib/songStyle";
 import { downloadPdf } from "@clavos/core/pdf";
 import { trackStageModeStarted, activityBeacon } from "@/lib/analytics";
@@ -499,7 +499,7 @@ export default function SongViewer({ title, artist, lines, onEdit, songStyle, so
             transition: "opacity 600ms ease",
           }}
         >
-          <LoadingNotes overlay label="Loading…" />
+          <WorkingNotes onDark title="Loading…" />
         </div>
       )}
 

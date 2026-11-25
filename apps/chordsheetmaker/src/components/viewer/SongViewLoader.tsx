@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import SongViewer from "@/components/editor/SongViewer";
-import LoadingNotes from "@/components/ui/LoadingNotes";
 import { decodeSong } from "@/lib/songUrl";
 import { getSong } from "@/lib/storage";
 import { queuePosition } from "@/lib/playQueue";

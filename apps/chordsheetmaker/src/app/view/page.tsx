@@ -1,16 +1,16 @@
 "use client";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import LoadingNotes from "@/components/ui/LoadingNotes";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 
 const SongViewLoader = dynamic(() => import("@/components/viewer/SongViewLoader"), {
   ssr: false,
-  loading: () => <LoadingNotes label="Loading song…" />,
+  loading: () => <WorkingNotes title="Loading song…" className="h-screen" />,
 });
 
 export default function ViewPage() {
   return (
-    <Suspense fallback={<LoadingNotes label="Loading song…" />}>
+    <Suspense fallback={<WorkingNotes title="Loading song…" className="h-screen" />}>
       <SongViewLoader />
     </Suspense>
   );

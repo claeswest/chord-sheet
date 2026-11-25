@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SongEditor from "./SongEditor";
-import LoadingNotes from "@/components/ui/LoadingNotes";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 import { decodeSong, type SharedSong } from "@/lib/songUrl";
 
 interface Props {
@@ -19,7 +19,7 @@ export default function SongEditorLoader({ isLoggedIn, hasSongs = false }: Props
     setReady(true);
   }, []);
 
-  if (!ready) return <LoadingNotes label="Loading editor…" />;
+  if (!ready) return <WorkingNotes title="Loading editor…" className="h-screen" />;
 
   const encoded = searchParams.get("song");
   const initialSong: SharedSong | null = encoded ? decodeSong(encoded) : null;
