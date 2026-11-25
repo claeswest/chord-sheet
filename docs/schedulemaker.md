@@ -509,7 +509,8 @@ left Plus still seeing and closing its link but not making a new one; a
 turned-off link and a deleted schedule's link both showing nothing, and no row
 left behind; a copy of a schedule having no link; the tag in Mina scheman; the
 activity log holding both events and no token. **Not checked:** on a real
-phone, in production, or printing from the page the link opens.
+phone, or printing from the page the link opens. **On the live site, 23 Nov
+2026:** the owner made a link on his Plus account and confirmed that it works.
 
 ### Skapa PDF (20 Nov 2026)
 
