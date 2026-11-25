@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { LyricLine, SongLine } from "@/types/song";
 import { parseChordSheet } from "@/lib/parseChordSheet";
 import { trackAiSearch, trackImportSuccess, activityBeacon, anonHeader } from "@/lib/analytics";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 
 interface ImportMeta {
   title?: string;
@@ -46,25 +47,10 @@ function Spinner({ size = 4 }: { size?: number }) {
 
 /**
  * What the dialog shows while the AI works: finding the song, then tidying it.
- * The notes rise one after another; with reduced motion they stand still.
+ * The animation itself is shared with the library — see ui/WorkingNotes.
  */
 function Working({ title, detail }: { title: string; detail: string }) {
-  return (
-    <div role="status" className="flex-1 flex flex-col items-center justify-center gap-2 py-14 text-center">
-      <style>{`
-        @keyframes note-rise { 0%, 100% { transform: translateY(0); opacity: .35 } 40% { transform: translateY(-7px); opacity: 1 } }
-        .note-rise { display: inline-block; animation: note-rise 1.2s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) { .note-rise { animation: none; opacity: 1 } }
-      `}</style>
-      <div aria-hidden className="flex gap-2 text-2xl text-chord mb-2">
-        {["♪", "♫", "♪"].map((note, i) => (
-          <span key={i} className="note-rise" style={{ animationDelay: `${i * 0.18}s` }}>{note}</span>
-        ))}
-      </div>
-      <p className="font-display text-xl text-ink">{title}</p>
-      <p className="text-sm text-stone-500">{detail}</p>
-    </div>
-  );
+  return <WorkingNotes title={title} detail={detail} className="flex-1 py-14" />;
 }
 
 /**

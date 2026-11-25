@@ -12,7 +12,7 @@ import {
   fetchCategories, createCategory, renameCategory, deleteCategory,
   addSongToCategory, removeSongFromCategory, reorderSongsInCategory, reorderCategories, type DbCategory,
 } from "@/lib/categoryDb";
-import LoadingNotes from "@/components/ui/LoadingNotes";
+import WorkingNotes from "@/components/ui/WorkingNotes";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import UserMenu from "@/components/ui/UserMenu";
 import { trackPaywallSeen, trackSignUp, trackCategoriesTip } from "@/lib/analytics";
@@ -1213,7 +1213,8 @@ export default function SongLibraryPage({ isLoggedIn, userName, userImage, songL
 
             {loading ? (
               <div className="flex items-center justify-center pb-40" style={{ height: "50vh" }}>
-                <LoadingNotes label="Loading your songs…" />
+                {/* The same rising notes as the wait for an AI import. */}
+                <WorkingNotes title="Loading your songs…" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-stone-400">
