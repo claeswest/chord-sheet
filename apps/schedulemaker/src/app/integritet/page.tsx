@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { CONTACT } from "@/lib/site";
 
 // The privacy page. It describes what the code does, so it goes out of date
 // when the code changes. Look at it again when you:
@@ -14,8 +15,8 @@ import SiteHeader from "@/components/SiteHeader";
 // - log anything new, or put more than counts in the activity log
 //   (lib/activity.ts and every logActivity call) — "plus_interest" is one, and
 //   it is the row that is kept so someone can be written to
-// - start charging for Plus: a payment company then handles card details, and
-//   section 7 has to name it
+// - change what is kept about a payment or what Stripe is sent
+//   (lib/subscription.ts, app/api/stripe/*) — sections 5, 6 and 7 describe it
 // - load a script for every visitor: there is none today, and section 6 says so
 // - move the database or the hosting: section 7 says both are in Frankfurt,
 //   which for the server is the one line in apps/schedulemaker/vercel.json
@@ -28,10 +29,7 @@ import SiteHeader from "@/components/SiteHeader";
 // lawyer's document and does not try to sound like one; what it must be is
 // true and complete.
 
-const UPDATED = "22 november 2026";
-
-/** The same public address the owner's other sites give for privacy questions. */
-const CONTACT = "claes@clavos.se";
+const UPDATED = "26 november 2026";
 
 export const metadata: Metadata = {
   title: "Integritet – Fixa schemat",
@@ -148,12 +146,16 @@ export default function PrivacyPage() {
             Den gäller i högst 30 dagar åt gången.
           </li>
           <li>
-            <strong>Vilken plan du har.</strong> Gratis eller Plus.
+            <strong>Vilken plan du har.</strong> Gratis eller Plus. Betalar du för Plus sparar vi
+            också ditt kundnummer hos betaltjänsten Stripe, om abonnemanget är betalt, när
+            perioden går ut och om det är uppsagt. Kortuppgifter har vi aldrig; de finns bara hos
+            Stripe.
           </li>
           <li>
             <strong>En räkning av vad som händer.</strong> En rad när ett konto skapas, när du
             loggar in, när ett schema sparas, kopieras eller tas bort, när en länk skapas eller
-            stängs av, och om du säger till att du vill ha Plus. Raden har tidpunkten och
+            stängs av, om du säger till att du vill ha Plus, och när ett abonnemang påbörjas,
+            ändras eller tar slut. Raden har tidpunkten och
             ibland hur många lektioner schemat hade. Den innehåller aldrig något av det som står
             på schemat.
           </li>
@@ -170,6 +172,11 @@ export default function PrivacyPage() {
           inloggningen direkt. Räkningen blir kvar, men utan koppling till dig. Ett schema som du
           inte tar bort ligger kvar tills du gör det.
         </p>
+        <p>
+          Betalar du för Plus avslutas abonnemanget samtidigt, och vi tar bort dig som kund hos
+          Stripe. Kvitton på det du redan har betalat måste sparas så länge bokföringslagen
+          kräver, sju år.
+        </p>
       </section>
 
       <section>
@@ -178,6 +185,9 @@ export default function PrivacyPage() {
           Utan konto sätter vi inga kakor alls. Loggar du in sätts en kaka som håller dig inloggad,
           och ett par kortlivade kakor under själva inloggningen. De behövs för att inloggningen
           ska fungera och används inte till något annat.
+        </p>
+        <p>
+          Köper du Plus betalar du på Stripes egen sida, och Stripe sätter sina egna kakor där.
         </p>
         <p>
           Vi har ingen besöksstatistik, inga annonser och inga spårningsskript från andra företag.
@@ -200,10 +210,16 @@ export default function PrivacyPage() {
             <strong>Google</strong> läser av bilder och text med Gemini, och loggar in dig om du
             skapar ett konto. Då får Google veta att du loggade in på Fixa schemat.
           </li>
+          <li>
+            <strong>Stripe</strong> tar emot betalningen om du köper Plus. Stripe får din
+            e-postadress från oss, och kortuppgifterna och landet du bor i från dig. Av det får vi
+            veta att du har betalat, inte med vilket kort. Den som inte köper Plus har ingenting
+            hos Stripe.
+          </li>
         </ul>
         <p>
           Servern och databasen står alltså i Frankfurt. Var Google läser av en bild styr vi inte
-          över, och alla tre är amerikanska företag, så uppgifter kan ändå behandlas utanför EU.
+          över, och alla fyra är amerikanska företag, så uppgifter kan ändå behandlas utanför EU.
         </p>
       </section>
 

@@ -21,6 +21,7 @@ import type { Provider } from "next-auth/providers";
 import { prisma } from "./prisma";
 import { logActivity } from "./activity";
 import { planFromUser, type Plan } from "./plans";
+import { refreshIfStale } from "./subscription";
 import { isPlusTheme } from "./themes";
 import type { SheetState } from "./sheetState";
 
@@ -178,13 +179,21 @@ export async function currentUserId(): Promise<string | null> {
  *
  * The plan is worked out here, on the server, every time it is asked for —
  * never taken from the browser, which can be made to say anything.
+ *
+ * A paid plan whose period ran out without this app hearing of it is checked
+ * with Stripe on the way (see `refreshIfStale`). For everyone else that costs
+ * two more columns in a query that was being made anyway.
  */
 export async function currentAccount(): Promise<{ id: string; email: string; plan: Plan } | null> {
   const id = await currentUserId();
   if (!id) return null;
-  const user = await prisma.user.findUnique({ where: { id }, select: { email: true, plan: true } });
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true, plan: true, stripeSubscriptionId: true, stripeCurrentPeriodEnd: true },
+  });
   if (!user) return null;
-  return { id, email: user.email, plan: planFromUser(user) };
+  const plan = (await refreshIfStale({ id, ...user })) ?? user.plan;
+  return { id, email: user.email, plan: planFromUser({ plan, email: user.email }) };
 }
 
 /**

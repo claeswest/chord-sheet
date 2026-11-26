@@ -122,14 +122,19 @@ export default function SavedSchedules() {
     setError(null);
     try {
       const res = await fetch("/api/me", { method: "DELETE" });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        // The one refusal with a reason of its own: a subscription that could
+        // not be ended. The server says so, and it is worth passing on.
+        const data: { error?: string } = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "");
+      }
       const local = localSheet();
       if (local?.savedId) {
         localStorage.setItem(SHEET_STORE, JSON.stringify({ ...local, savedId: undefined }));
       }
       window.location.href = "/";
-    } catch {
-      setError("Det gick inte att ta bort kontot. Försök igen.");
+    } catch (e) {
+      setError((e instanceof Error && e.message) || "Det gick inte att ta bort kontot. Försök igen.");
       setBusy(null);
       setArmed(null);
     }
@@ -218,7 +223,8 @@ export default function SavedSchedules() {
         <h2>Ta bort kontot</h2>
         <p className="hint">
           Tar bort kontot och alla scheman du har sparat här. Det går inte att ångra. Ett schema som
-          ligger öppet i den här webbläsaren finns kvar där.{" "}
+          ligger öppet i den här webbläsaren finns kvar där. Betalar du för Plus avslutas abonnemanget
+          på en gång.{" "}
           <Link href="/integritet">Vad vi sparar och varför</Link>
         </p>
         {armed === "account" ? (

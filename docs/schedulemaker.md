@@ -358,13 +358,14 @@ What it has to admit, and what would let it say less:
 Not built: the paid plan, any email other than the sign-in link, an admin view
 of the activity log.
 
-### Plus: a second plan, not yet for sale (22 Nov 2026)
+### Plus: a second plan (22 Nov 2026)
 
 The owner's idea: people who make schedules for others — a teacher, a coach,
 whoever runs the after-school club — might pay for more. Started small, with
 Stripe left for later on purpose. What exists is the machinery and two
 features: more styles, and the link in the section after "Sharing with the
-class".
+class". The checkout came on 26 Nov 2026 and is switched off until its settings
+exist — see "Selling Plus" below.
 
 - **Two plans, in `src/lib/plans.ts`**: Gratis and Plus. `planFromUser()` puts
   an account on Plus if its `plan` column says so (what checkout will set), or
@@ -381,13 +382,14 @@ class".
   or printed in the default style instead. The padlock in the picker is a sign
   on the door. Printing with the browser's own dialog cannot be stopped and is
   not tried.
-- **The Plus page, `/plus`**, says what Plus includes, marks what exists
+- **The Plus page, `/plus`**, says what Plus includes and marks what exists
   ("Finns nu": the styles and the link) from what does not ("Kommer":
-  sending the schedule to a list of addresses), and says more
-  than once that it cannot be bought. Its button, "Jag vill ha Plus", writes
+  sending the schedule to a list of addresses). While Plus is not for sale it
+  says so more than once, and its button, "Jag vill ha Plus", writes
   one `plus_interest` row to the activity log for the signed-in account. That
   is the count of who wants it, and — because it is tied to the account — a
-  list of who to tell. It is where the buy button will go.
+  list of who to tell. Once Plus is for sale the same place holds the price and
+  the buy button instead.
 - Mina scheman says which plan the account is on. The privacy page mentions
   the plan and the interest row.
 
@@ -402,8 +404,88 @@ or printing in a Plus style.
 To see how many want Plus, until there is an admin view: count the rows of
 type `plus_interest` in the production `ActivityLog`.
 
-Not built: checkout, a price, the two "Kommer" features, taking Plus away
-again when someone stops paying.
+Not built: the "Kommer" feature, and telling the people who pressed "Jag vill
+ha Plus" that it now exists.
+
+### Selling Plus (26 Nov 2026)
+
+Built and tested on a laptop; **not switched on, and never run against
+Stripe itself.** The Plus page sells Plus where three server settings exist and
+asks who wants it where they do not, so pushing this code changes nothing on
+the live site until the owner adds them.
+
+- **The three settings**, all or none (`sellingEnabled` in `lib/stripe.ts`):
+  `STRIPE_SECRET_KEY` (the account's, shared with the other two apps),
+  `STRIPE_PRICE_PLUS` (a recurring price made for this app) and
+  `STRIPE_WEBHOOK_SECRET` (of an endpoint made for this app, at
+  `/api/stripe/webhook`, listening for `customer.subscription.created`,
+  `.updated` and `.deleted`). The webhook secret is required on purpose:
+  without it a payment would go through and nothing would tell the app when it
+  stopped.
+- **The price is not in the code.** The page reads the amount and the period
+  from the Stripe price and prints that ("49 kr per månad"), so what is shown
+  cannot differ from what is charged, and the owner sets or changes it without
+  a deployment. It says "inklusive moms" only if the price's tax behaviour is
+  "inclusive" — make the price that way. If Stripe cannot be asked, the page
+  says Plus cannot be bought right now and shows no button.
+- **One rule for what a subscription does to an account**,
+  `applySubscription` in `lib/subscription.ts`. Paying (`active`,
+  `trialing`, or `past_due` while Stripe retries a failed card) is Plus.
+  Ended is Gratis and forgotten. Not paying but not ended (`unpaid`,
+  `paused`) is Gratis with the subscription remembered, so the page can say
+  what is wrong and no second one is bought beside it. It always asks Stripe
+  what the subscription looks like now and ignores what the event said,
+  because events arrive out of order. A subscription to any other price, and
+  late news about a subscription the account has since replaced, change
+  nothing.
+- **Three things bring it news**, and all three call that one rule: the
+  webhook; the buyer landing back on `/plus?klart=<session>`, so Plus is on
+  before the webhook gets there; and `refreshIfStale`, run when a signed-in
+  account is looked up — if it is on a paid plan whose period ended more than
+  a day ago, Stripe is asked. The last one is what takes Plus away when a
+  webhook is lost for good.
+- **"Hantera abonnemang"** opens Stripe's customer portal: ending the
+  subscription, changing card, receipts. Its settings are the Stripe account's
+  and so shared with the other apps. Someone who cancels keeps Plus to the end
+  of what they paid for; the page shows the date.
+- **Deleting the account** deletes the customer at Stripe first, which ends
+  the subscription at once. If that fails while a subscription is on record,
+  the account is not deleted and the person is told — otherwise a card would go
+  on being charged for an account that no longer exists.
+- **A link made on Plus keeps working** after the account leaves Plus; it can
+  be turned off but not made again. Unchanged from before.
+- **The page's own wording is the terms**: renews by itself until ended, ended
+  on the page at any time, Plus kept for the paid period, 14 days' right of
+  withdrawal by writing to the contact address. No trial period. The privacy
+  page names Stripe and what is kept about a payment.
+
+**How it was tested.** The only Stripe key in the repository's `.env` files
+is a live one, so nothing could be tried against Stripe. `STRIPE_API_BASE`
+(read only outside production) points the client at a stand-in instead: a few
+lines of local server that answer the six calls the app makes. Against that
+and the dev database, 58 checks passed: the page before buying; starting a
+purchase; a signed-out visitor, a wrong webhook signature and another
+account's session all refused; Plus on at once on the way back, and by the
+webhook alone; cancelling and taking it back; a failed card that is retried, a
+stale event, a subscription left unpaid and then paid; the end; buying again;
+another price; a lost webhook; deleting the account with and without a
+subscription, and with Stripe unreachable. Looked at in a browser at laptop
+and phone width.
+
+**Not checked by anyone:** anything at Stripe itself — the real checkout
+page, a real card, VAT, the portal, a real webhook delivery. The stand-in
+answers as the code expects, which is not proof that Stripe does.
+
+**Before switching it on:**
+1. Try it once in Stripe's test mode (a sandbox key, a test price, a test
+   webhook endpoint, card 4242…), on a preview deployment or a laptop.
+2. Decide the price and make it in Stripe: recurring, SEK, tax behaviour
+   inclusive.
+3. Make the webhook endpoint in Stripe for the live address.
+4. Add the three settings in Vercel and redeploy — a setting takes effect only
+   in a deployment made after it was added.
+5. Read the wording on `/plus` and `/integritet` once as the seller: it
+   promises a refund within 14 days and names the contact address.
 
 ### Sharing with the class (20 Nov 2026)
 
@@ -613,7 +695,7 @@ day. Setting it to `false` sends everyone back to the picture.
 | --- | --- |
 | `components/SchedulerApp.tsx` | All app state: schedule, glossary, theme, ink, icons, illustration, paper, mode. Rendered as the start page by `app/page.tsx` and as the editor by `app/schema/page.tsx` |
 | `components/SiteHeader.tsx` | The strip across the top of every page |
-| `app/api/read/route.ts` | The only route. Model call, limits, no storage |
+| `app/api/read/route.ts` | Reading a photo or a text. Model call, limits, no storage |
 | `components/Landing.tsx` | Front page. Hero is a real sheet from `lib/sample.ts`; the faults section pins six numbered faults on the same week as the school printed it |
 | `components/ScheduleSheet.tsx` | The sheet, plus `useFitCards` |
 | `components/PrintFit.tsx` | Whole-sheet measurement → print `zoom` |
@@ -627,7 +709,11 @@ day. Setting it to `false` sends everyone back to the picture.
 | `app/print/page.tsx` | The page that browser prints: the sheet and nothing else |
 | `lib/sheetState.ts` | Paper sizes, the state a sheet is made from, and the check on one that arrives from outside |
 | `lib/plans.ts` | The two plans and what each may do. The one place that decides |
-| `app/plus/page.tsx` | What Plus is, and the button that counts who wants it |
+| `app/plus/page.tsx` | What Plus is; where it is bought and managed, or — where it is not for sale — the button that counts who wants it |
+| `lib/stripe.ts` | The Stripe client, whether Plus is for sale here, and the price as Stripe has it |
+| `lib/subscription.ts` | What a subscription does to an account's plan. The one place that decides |
+| `app/api/stripe/*` | `checkout` and `portal` answer with an address at Stripe; `webhook` is Stripe reporting back |
+| `components/PlusBilling.tsx` | The two buttons that lead to Stripe |
 | `components/SharePanel.tsx` | The dialog that makes the link and says what is in it |
 | `components/LiveLink.tsx` | The second half of that dialog: the Plus link that follows the saved schedule |
 | `lib/linkDb.ts` | That link in the database: make, remove, look up by token |

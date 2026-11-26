@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { accountsEnabled, currentAccount, currentUserId, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { closeCustomer } from "@/lib/subscription";
 
 // GET    — is anyone signed in, and does this site have accounts at all?
 // DELETE — remove the signed-in person's account and everything in it.
@@ -26,10 +27,25 @@ export async function GET() {
  * the user with onDelete: Cascade, so the database removes them — there is no
  * list of tables here to forget one from. The activity log keeps its rows with
  * the user blanked: counts of what happened, attached to nobody.
+ *
+ * Someone who pays for Plus has one thing that is not in this database: a
+ * subscription at Stripe, which would go on charging a card for an account
+ * that no longer exists. So that is ended first, and if it cannot be, the
+ * account stays and the person is told — better a delete that has to be
+ * pressed twice than a charge nobody can find the reason for.
  */
 export async function DELETE() {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "Du behöver logga in." }, { status: 401 });
+  if (!(await closeCustomer(userId))) {
+    return NextResponse.json(
+      {
+        error:
+          "Det gick inte att avsluta ditt abonnemang, så kontot är kvar. Försök igen om en stund.",
+      },
+      { status: 502 },
+    );
+  }
   await prisma.user.delete({ where: { id: userId } });
   // The session row went with the user; this clears the cookie that pointed at it.
   await signOut({ redirect: false }).catch(() => {});
