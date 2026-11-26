@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 /**
@@ -21,4 +22,18 @@ export async function isAdmin(): Promise<boolean> {
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
     .includes(email.toLowerCase());
+}
+
+/**
+ * The same check, for a page: anyone who isn't an admin gets a 404.
+ *
+ * Every page under /admin starts with this, as well as the layout above them.
+ * The layout alone is not enough: Next leaves a layout out when the request
+ * says the browser already has it, and then only the page runs (see "Layouts
+ * and auth checks" in Next's authentication guide, and the note in
+ * app/admin/layout.tsx for what that looked like here). The pages are what
+ * read other people's data, so the pages ask.
+ */
+export async function requireAdmin(): Promise<void> {
+  if (!(await isAdmin())) notFound();
 }

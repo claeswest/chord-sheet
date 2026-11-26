@@ -1,37 +1,60 @@
 import Link from "next/link";
-import { findUsers } from "@/lib/adminData";
-import { cancellationPending } from "@clavos/core/billing";
+import { requireAdmin } from "@/lib/admin";
+import { findUsers, SHOWS, SORTS, type Show, type Sort } from "@/lib/adminData";
+import { ago, billingLabel, day } from "@/lib/adminFormat";
 
-// Search and paging live in the URL rather than in client state: /admin/users
-// ?q=claes&page=2 can be sent to yourself, survives a reload, and needs no
-// JavaScript. The expandable row is a <details>, for the same reason.
+// Search, filter, order and paging all live in the URL rather than in client
+// state: /admin/users?show=trial&sort=active can be sent to yourself, survives
+// a reload, and needs no JavaScript. Each row is a link to the person's own
+// page, which is where their recipes and their timeline are.
 
-const day = (d: Date) =>
-  d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-
-function billingLabel(u: {
-  plan: string;
-  status: string | null;
-  cancelAt: Date | null;
-  periodEnd: Date | null;
-}): string {
-  if (u.plan === "free") return "Free";
-  if (cancellationPending(u.cancelAt)) return `Leaving ${day(u.cancelAt!)}`;
-  if (u.status === "trialing") return `Trial to ${u.periodEnd ? day(u.periodEnd) : "?"}`;
-  if (u.status === "active") return `Paying · renews ${u.periodEnd ? day(u.periodEnd) : "?"}`;
-  return u.status ?? u.plan;
-}
+const SHOW_LABELS: Record<Show, string> = {
+  all: "Everyone",
+  paying: "Paying",
+  trial: "In trial",
+  leaving: "Leaving",
+  free: "Free",
+  empty: "No recipes",
+};
 
 export default async function AdminUsers({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; sort?: string; show?: string }>;
 }) {
-  const { q = "", page } = await searchParams;
-  const data = await findUsers(q, Number(page) || 1);
+  await requireAdmin();
 
-  const link = (p: number) =>
-    `/admin/users?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`;
+  const params = await searchParams;
+  const q = params.q ?? "";
+  // Anything not on the list is the default, so a mistyped address still
+  // shows a page rather than an error.
+  const sort: Sort = SORTS.find((s) => s === params.sort) ?? "joined";
+  const show: Show = SHOWS.find((s) => s === params.show) ?? "all";
+  const data = await findUsers({ query: q, page: Number(params.page) || 1, sort, show });
+
+  /** This page's address with some of it changed; defaults are left out. */
+  const link = (change: { q?: string; page?: number; sort?: Sort; show?: Show }) => {
+    const next = { q, sort, show, page: 1, ...change };
+    const query = new URLSearchParams({
+      ...(next.q ? { q: next.q } : {}),
+      ...(next.show !== "all" ? { show: next.show } : {}),
+      ...(next.sort !== "joined" ? { sort: next.sort } : {}),
+      ...(next.page > 1 ? { page: String(next.page) } : {}),
+    }).toString();
+    return query ? `/admin/users?${query}` : "/admin/users";
+  };
+
+  /** A column heading that sorts by its column. All three sort newest or most first. */
+  const sortHead = (label: string, by: Sort) =>
+    sort === by ? (
+      <span className="text-ink" aria-sort="descending">
+        {label} ↓
+      </span>
+    ) : (
+      <Link href={link({ sort: by })} className="hover:text-ink">
+        {label}
+      </Link>
+    );
 
   return (
     <>
@@ -40,8 +63,11 @@ export default async function AdminUsers({
           People <span className="text-ink-faint">{data.total}</span>
         </h2>
 
-        {/* A plain GET form: no client component, and the result is a URL. */}
+        {/* A plain GET form: no client component, and the result is a URL.
+            The hidden fields carry the filter and the order through a search. */}
         <form className="flex gap-2">
+          {show !== "all" && <input type="hidden" name="show" value={show} />}
+          {sort !== "joined" && <input type="hidden" name="sort" value={sort} />}
           <input
             name="q"
             defaultValue={q}
@@ -53,7 +79,7 @@ export default async function AdminUsers({
           </button>
           {q && (
             <Link
-              href="/admin/users"
+              href={link({ q: "" })}
               className="rounded-full px-3 py-1.5 text-sm text-ink-faint hover:text-ink"
             >
               Clear
@@ -62,48 +88,68 @@ export default async function AdminUsers({
         </form>
       </div>
 
-      <ul className="mt-4 divide-y divide-rule/60">
-        {data.users.map((u) => (
-          <li key={u.id} className="py-3">
-            <details>
-              <summary className="flex cursor-pointer flex-wrap items-baseline gap-x-3 text-sm">
-                <span className="font-medium">{u.name || "—"}</span>
-                <span className="text-ink-faint">{u.email}</span>
-                <span className={u.recipes === 0 ? "text-ink-faint" : "text-ink"}>
-                  {u.recipes} recipe{u.recipes === 1 ? "" : "s"}
-                </span>
-                <span className="ml-auto text-ink-muted">{billingLabel(u)}</span>
-              </summary>
-
-              <div className="mt-2 pl-4 text-sm text-ink-muted">
-                <p>Joined {day(u.createdAt)}</p>
-                {u.latestRecipes.length > 0 ? (
-                  <ul className="mt-1 list-disc pl-5">
-                    {u.latestRecipes.map((r) => (
-                      <li key={r.id}>{r.title || "Untitled recipe"}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  // The most useful thing this page can tell you: someone
-                  // arrived and never wrote anything.
-                  <p className="mt-1 text-ink-faint">Signed up but never wrote a recipe.</p>
-                )}
-              </div>
-            </details>
-          </li>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {SHOWS.map((s) => (
+          <Link
+            key={s}
+            href={link({ show: s })}
+            className={`rounded-full border px-3 py-1 text-sm ${show === s ? "border-ink bg-ink text-paper-raised" : "border-rule text-ink-muted hover:bg-paper-sunken"}`}
+          >
+            {SHOW_LABELS[s]}
+          </Link>
         ))}
-      </ul>
+      </div>
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[46rem] text-sm">
+          <thead>
+            <tr className="border-b border-rule text-left text-xs uppercase tracking-[0.14em] text-ink-faint">
+              <th className="py-2 pr-4 font-normal">Person</th>
+              <th className="py-2 pr-4 font-normal">{sortHead("Recipes", "recipes")}</th>
+              <th className="py-2 pr-4 font-normal">{sortHead("Last active", "active")}</th>
+              <th className="py-2 pr-4 font-normal">{sortHead("Joined", "joined")}</th>
+              <th className="py-2 font-normal">Billing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.users.map((u) => (
+              <tr key={u.id} className="border-b border-rule/60">
+                <td className="py-2 pr-4">
+                  <Link href={`/admin/users/${u.id}`} className="font-medium hover:underline">
+                    {u.name || u.email}
+                  </Link>
+                  {u.name && <span className="block text-xs text-ink-faint">{u.email}</span>}
+                </td>
+                {/* Zero is the number worth seeing: someone who signed up and
+                    never wrote anything is the product failing, not the person. */}
+                <td className={`py-2 pr-4 ${u.recipes === 0 ? "text-ink-faint" : "text-ink"}`}>
+                  {u.recipes}
+                </td>
+                <td className="py-2 pr-4 text-ink-muted">
+                  {u.lastActive ? ago(u.lastActive) : "—"}
+                </td>
+                <td className="py-2 pr-4 text-ink-muted">{day(u.createdAt)}</td>
+                <td className="py-2 text-ink-muted">{billingLabel(u)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {data.users.length === 0 && (
         <p className="mt-4 text-sm text-ink-faint">
-          {q ? `Nobody matches “${q}”.` : "Nobody has signed up yet."}
+          {q
+            ? `Nobody matches “${q}”${show !== "all" ? " under this filter" : ""}.`
+            : show !== "all"
+              ? "Nobody here right now."
+              : "Nobody has signed up yet."}
         </p>
       )}
 
       {data.pages > 1 && (
         <div className="mt-6 flex items-center gap-4 text-sm">
           {data.page > 1 ? (
-            <Link href={link(data.page - 1)} className="text-ink-muted hover:text-ink">
+            <Link href={link({ page: data.page - 1 })} className="text-ink-muted hover:text-ink">
               ← Previous
             </Link>
           ) : (
@@ -113,7 +159,7 @@ export default async function AdminUsers({
             Page {data.page} of {data.pages}
           </span>
           {data.page < data.pages ? (
-            <Link href={link(data.page + 1)} className="text-ink-muted hover:text-ink">
+            <Link href={link({ page: data.page + 1 })} className="text-ink-muted hover:text-ink">
               Next →
             </Link>
           ) : (

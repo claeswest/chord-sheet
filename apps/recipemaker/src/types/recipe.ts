@@ -113,6 +113,26 @@ export function emptyContent(): RecipeContent {
   };
 }
 
+/**
+ * A stored `content` column as something safe to render.
+ *
+ * It is Json to the database, and a row may predate a shape change, so fall
+ * back group by group rather than crash — a recipe that won't open is worse
+ * than one that opens with an empty section.
+ */
+export function contentFromJson(json: unknown): RecipeContent {
+  const raw = (json ?? null) as Partial<RecipeContent> | null;
+  return {
+    ...emptyContent(),
+    ...(raw ?? {}),
+    ingredientGroups: raw?.ingredientGroups?.length
+      ? raw.ingredientGroups
+      : emptyContent().ingredientGroups,
+    stepGroups: raw?.stepGroups?.length ? raw.stepGroups : emptyContent().stepGroups,
+    notes: raw?.notes ?? [],
+  };
+}
+
 // ── Before adding relational ingredients ────────────────────────────────────
 //
 // The pull will come from features like "recipes I can make tonight" or a
