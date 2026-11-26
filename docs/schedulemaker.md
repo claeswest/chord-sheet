@@ -409,13 +409,14 @@ ha Plus" that it now exists.
 
 ### Selling Plus (26 Nov 2026)
 
-Built and tested on a laptop; **not switched on, and never run against
-Stripe itself.** The Plus page sells Plus where three server settings exist and
-asks who wants it where they do not, so pushing this code changes nothing on
-the live site until the owner adds them.
+Built, and tried against Stripe's sandbox from a laptop; **not switched on.**
+The Plus page sells Plus where three server settings exist and asks who wants
+it where they do not, so the code being live changes nothing on the site until
+the owner adds them.
 
 - **The three settings**, all or none (`sellingEnabled` in `lib/stripe.ts`):
-  `STRIPE_SECRET_KEY` (the account's, shared with the other two apps),
+  `STRIPE_SECRET_KEY` (from this app's own Stripe account — each of the
+  three products has one, so a buyer's receipt carries the right name),
   `STRIPE_PRICE_PLUS` (a recurring price made for this app) and
   `STRIPE_WEBHOOK_SECRET` (of an endpoint made for this app, at
   `/api/stripe/webhook`, listening for `customer.subscription.created`,
@@ -445,8 +446,8 @@ the live site until the owner adds them.
   a day ago, Stripe is asked. The last one is what takes Plus away when a
   webhook is lost for good.
 - **"Hantera abonnemang"** opens Stripe's customer portal: ending the
-  subscription, changing card, receipts. Its settings are the Stripe account's
-  and so shared with the other apps. Someone who cancels keeps Plus to the end
+  subscription, changing card, receipts. What it offers is set in the Stripe
+  account, under Customer portal. Someone who cancels keeps Plus to the end
   of what they paid for; the page shows the date.
 - **Deleting the account** deletes the customer at Stripe first, which ends
   the subscription at once. If that fails while a subscription is on record,
@@ -472,20 +473,52 @@ another price; a lost webhook; deleting the account with and without a
 subscription, and with Stripe unreachable. Looked at in a browser at laptop
 and phone width.
 
-**Not checked by anyone:** anything at Stripe itself — the real checkout
-page, a real card, VAT, the portal, a real webhook delivery. The stand-in
-answers as the code expects, which is not proof that Stripe does.
+**Then against Stripe itself, 26 Nov 2026**, in the sandbox of the new
+"Fixa schemat" account, from a laptop, with a test price of 49 kr a month
+(a figure for the test, not a decision). Stripe cannot reach a laptop, so its
+events were fetched from the sandbox and handed to the local webhook as they
+came. What was seen:
+
+- The page read the price from Stripe. "Skaffa Plus" opened Stripe's own
+  checkout, in Swedish, with the account's address filled in.
+- Paid with the test card 4242…: back on the Plus page with Plus on and the
+  renewal date shown. The `created` event arrived a few seconds later and
+  changed nothing; the start is in the log once.
+- "Hantera abonnemang" opened Stripe's portal, in Swedish. Cancelling there
+  ends the subscription at the end of the paid period, which is what the Plus
+  page promises; the page then said until which day. Nothing had to be set up
+  in the portal for this.
+- The subscription ended: Plus gone, the subscription forgotten, the customer
+  kept. Bought a second time with the same customer.
+- Deleting the account with a running subscription removed the customer at
+  Stripe and ended the subscription; the two receipts stayed there.
+
+**What that test found: no VAT.** Both receipts say 49 kr, of which 0 kr tax.
+Stripe Tax works out tax only for countries where the account has a tax
+registration, and the sandbox has none. The checkout and the page both say the
+price includes VAT, so before anything is sold the live account needs Sweden
+added under Tax → Registrations, or the receipts will show none.
+
+**Still not checked by anyone:** a card that fails at renewal (it needs
+Stripe's test clock); Stripe delivering an event to the live address with its
+own signature; anything in live mode with a real card.
 
 **Before switching it on:**
-1. Try it once in Stripe's test mode (a sandbox key, a test price, a test
-   webhook endpoint, card 4242…), on a preview deployment or a laptop.
-2. Decide the price and make it in Stripe: recurring, SEK, tax behaviour
+1. Activate the "Fixa schemat" Stripe account (company details, bank).
+2. Add the Swedish tax registration there — see above.
+3. Decide the price and make it in live mode: recurring, SEK, tax behaviour
    inclusive.
-3. Make the webhook endpoint in Stripe for the live address.
-4. Add the three settings in Vercel and redeploy — a setting takes effect only
+4. Make the webhook endpoint in live mode for the site's address,
+   `/api/stripe/webhook`, with the three `customer.subscription` events.
+5. Add the three settings in Vercel and redeploy — a setting takes effect only
    in a deployment made after it was added.
-5. Read the wording on `/plus` and `/integritet` once as the seller: it
+6. Read the wording on `/plus` and `/integritet` once as the seller: it
    promises a refund within 14 days and names the contact address.
+
+To try it again on a laptop: `apps/schedulemaker/.env.local` (not in git)
+holds the sandbox key, the test price and a local webhook secret. With that
+file in place `npm run dev:schedules` sells Plus against the sandbox; without
+it, the page asks who wants Plus.
 
 ### Sharing with the class (20 Nov 2026)
 

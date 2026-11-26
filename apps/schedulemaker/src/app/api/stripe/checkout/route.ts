@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: account.email,
-        // The Stripe account is shared with the owner's other sites. This is
-        // what says which of them a customer belongs to.
+        // So that a customer looked at in Stripe can be traced to an account
+        // here, and to this app if the key is ever used for another.
         metadata: { app: "schedulemaker", userId: account.id },
       });
       customerId = customer.id;

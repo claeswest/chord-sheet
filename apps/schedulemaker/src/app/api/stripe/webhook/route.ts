@@ -17,9 +17,9 @@ import { applySubscription } from "@/lib/subscription";
 // is then asked of Stripe (lib/subscription.ts), because events can arrive in
 // the wrong order and the newest state is the one that counts.
 //
-// The Stripe account is shared with the owner's other sites, so events for
-// their customers arrive here too. A customer this database does not know is
-// not ours, and is answered with a plain "received".
+// A customer this database does not know is not ours to act on — someone made
+// by hand in Stripe, say, or one whose account here has been deleted — and is
+// answered with a plain "received".
 //
 // A failure on our side is answered with an error on purpose: Stripe then
 // sends the event again, for up to three days.

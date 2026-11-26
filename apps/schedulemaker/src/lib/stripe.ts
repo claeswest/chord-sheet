@@ -1,8 +1,9 @@
 import Stripe from "stripe";
 import { plusPriceId } from "./plans";
 
-// Stripe, for selling Plus. The same shape as the other two apps' lib/stripe.ts
-// and the same Stripe account; what is this app's own is one price, named by
+// Stripe, for selling Plus. The same shape as the other two apps' lib/stripe.ts.
+// Like them, this app has a Stripe account of its own, so the name on a buyer's
+// receipt is this product's. In it there is one price, named by
 // STRIPE_PRICE_PLUS.
 //
 // Lazy, not module-scope: importing this file must not throw when the key is
