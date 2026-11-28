@@ -1044,6 +1044,27 @@ button.stepper-item:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 
 }
 /* In the upload panel it opens the card, above its heading. */
 .upload-panel .stepper { margin: 0 0 18px; padding-bottom: 16px; border-bottom: 1px solid #eeeaf3; }
+/* In the card, the lines are as long as the card has room for.
+   The lengths above are chosen by the width of the screen, and here that is
+   the wrong thing to ask: beside the sample sheet the card is about 475px wide
+   on a 1100px screen, the rule for wide screens gave it 56px lines, and the
+   row came out 13px wider than its box — "Skriv ut" dropped to a line of its
+   own on every laptop. So the card is measured instead (100cqw is its width).
+   300px is what the three labels take, with some to spare; what is left is
+   shared between the two lines and the space around them, from 56px down to
+   6px. Still no shrinking, which is how the labels once came to overlap: each
+   width of card gives one fixed length.
+   Not on a phone. There the tighter row below was measured to fit at 360px,
+   and this rule would add a few pixels back. */
+.upload-panel .stepper { container-type: inline-size; }
+@media (min-width: 421px) {
+  @container (min-width: 0) {
+    .upload-panel .stepper-step + .stepper-step::before {
+      margin: 0 clamp(4px, 2cqw, 12px);
+      width: clamp(6px, calc((100cqw - 300px) / 2 - 2 * clamp(4px, 2cqw, 12px)), 56px);
+    }
+  }
+}
 /* A phone: inside the upload card the row measured 16px wider than its box at
    375px. Tighter spacing, not smaller words — the labels are the point. */
 @media (max-width: 420px) {

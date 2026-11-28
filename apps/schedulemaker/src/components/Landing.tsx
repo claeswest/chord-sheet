@@ -37,20 +37,26 @@ const SAMPLE_GLOSSARY = withDefaultColors(
 
 const STEPS: [string, string, string][] = [
   ["01", "Fota schemat", "Ta en bild med mobilen, dra in en skärmbild eller klistra in texten. Lite snett eller skrynkligt går bra."],
-  ["02", "Gör det till ert", "Skriv in lärarnas namn en gång, välj rätt språk och slöjd, och kolla att tiderna stämmer."],
-  ["03", "Upp på kylskåpet", "Välj färger och stil, och skriv ut på A4 eller A3 – eller spara som PDF."],
+  // "Välj rätt språk och slöjd" stood here, which only means something to a
+  // parent who has already seen the choice. And the reminder to check the times
+  // is here, where the checking is done, with its reason: it used to sit in
+  // brackets in the lead of the section about the school's printout.
+  ["02", "Gör det till ert", "Skriv in lärarnas namn en gång och välj ditt barns grupp i språk och slöjd. Kolla tiderna mot originalet – AI:n läser bra, men inte felfritt."],
+  // The tip about several children ends the job it belongs to. It used to be
+  // the last line of the privacy text at the foot of the page.
+  ["03", "Upp på kylskåpet", "Välj färger och stil. Skriv sedan ut på A4 eller A3, eller spara som PDF. Flera barn? När det första är utskrivet trycker du på Börja om och gör nästa."],
 ];
 
 const BENEFITS: [string, string][] = [
   ["Namn i stället för koder", "MA blir Matematik och KRN blir Karin. Lärarnas namn skriver du in en gång – sen står de överallt."],
-  ["Hela dagen i rätt proportioner", "En lång lektion blir en stor ruta. Du ser direkt när det är rast och när skoldagen slutar."],
+  ["Du ser hur lång dagen är", "En lång lektion blir en stor ruta och en kort blir liten. Du ser direkt när det är rast och när skoldagen slutar."],
   ["Det viktiga först", "Ämnet syns tydligast. Tid, lärare och sal står i mindre text bredvid."],
   ["En färg per ämne", "Matten har alltid samma färg, så den är lätt att hitta hela veckan. Byt färger om ni vill."],
   // Not "jämna och udda veckor kan hållas isär": they are deliberately not
   // held apart. Two grids are folded into one week and the lesson that only
   // applies every other week carries the label — which is what the sheet a
   // school prints on one grid does anyway.
-  ["Bara det som gäller ditt barn", "Fem språk i samma ruta? Välj det ditt barn läser, så försvinner resten. Lektioner varannan vecka står tydligt i rutan."],
+  ["Bara det som gäller ditt barn", "Fem språk i samma ruta? Välj det ditt barn läser, så försvinner resten. En lektion som bara är varannan vecka får det utskrivet i rutan."],
   ["Ert alldeles egna schema", "Välj stil, sätt barnets namn överst och lägg till små symboler som hjälper den som inte läser än."],
 ];
 
@@ -71,7 +77,10 @@ type Fault = { term: string; body: React.ReactNode; at: [number, number] };
 
 const FAULTS: Fault[] = [
   {
-    term: "Koder i stället för ord",
+    // Named for what you get, like the five after it. It was "Koder i stället
+    // för ord" — the fault, where every other heading in the list is the fix,
+    // and the mirror image of "Namn i stället för koder" two sections up.
+    term: "Ord i stället för koder",
     // Subjects as well as teachers. The examples are Friday's TK with MTP,
     // which the sample above prints as Teknik and Mattias. "Vanliga
     // ämneskoder", not all of them: SO and NO are left as codes on purpose
@@ -82,9 +91,9 @@ const FAULTS: Fault[] = [
     // points at, and IDH VSL is the same fault with grey space beneath it.
     body: (
       <>
-        TK? MTP? Inte helt självklart en stressig tisdagsmorgon. Vanliga ämnen får sina riktiga
-        namn direkt, som <strong>Teknik</strong>, och lärarnas namn, som
-        <strong> Mattias</strong>, skriver du in en gång.
+        TK? MTP? Inte självklart en stressig tisdagsmorgon. Vanliga ämnen får sina riktiga namn
+        direkt, så TK blir <strong>Teknik</strong>. Lärarnas namn skriver du in en gång, och sedan
+        står det <strong>Mattias</strong> i stället för MTP.
       </>
     ),
     at: [18.9, 73.2],
@@ -95,7 +104,7 @@ const FAULTS: Fault[] = [
     // again, it has been measured — low-saturation, mid-lightness pixels in the
     // photo's day columns, 06:00 to 17:30, came to 59.1%.
     term: "Mer plats för själva dagen",
-    body: "Originalet visar tider från 06:00 till 17:30, fast skoldagen är mycket kortare. Här följer schemat skoldagen, så lektionerna får gott om plats att synas.",
+    body: "Originalet visar tider från 06:00 till 17:30, fast skoldagen är mycket kortare. Här följer schemat skoldagen, så lektionerna får gott om plats.",
     at: [49.7, 82.8],
   },
   {
@@ -117,7 +126,7 @@ const FAULTS: Fault[] = [
     // Not "rasten syns inte": on this sheet it does — white on the grey.
     // Lunch is the one that hides, as a box among the lessons.
     term: "Lunchen syns",
-    body: "I originalet ser lunchen nästan ut som en lektion. Här får rast och lunch en egen stil – med kniv och gaffel – så dagens pauser är lätta att hitta.",
+    body: "I originalet ser lunchen nästan ut som en lektion. Här får rast och lunch ett eget utseende, lunchen med kniv och gaffel, så att dagens pauser är lätta att hitta.",
     at: [36.8, 60.0],
   },
 ];
@@ -328,7 +337,7 @@ export default function Landing({
                 ) : (
                   <>
                     <span className="on-mouse">
-                      …eller dra in bilden hit. Har du en skärmbild? Klistra in med <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                      Du kan också dra hit bilden, eller klistra in en skärmbild med <kbd>Ctrl</kbd> + <kbd>V</kbd>.
                     </span>
                     <span className="on-touch">Fota schemat direkt eller välj en bild du redan har.</span>
                   </>
@@ -402,7 +411,7 @@ export default function Landing({
 
           <div className="style-panel">
             <h2>Hitta er stil</h2>
-            <p className="style-intro">Klicka runt och prova på exemplet – det du väljer följer med till ert eget schema.</p>
+            <p className="style-intro">Prova på exemplet. Det du väljer följer med till ert eget schema.</p>
             <div className="styles" role="group" aria-label="Stil på schemat">
               {FREE_THEMES.map((t) => (
                 <button
@@ -432,7 +441,7 @@ export default function Landing({
             </div>
             <p className="style-note" aria-live="polite">
               {ink
-                ? "Svart på vitt utan färgfyllningar – snällt mot bläckpatronen. Typsnittet är kvar."
+                ? "Svart på vitt utan färgade rutor – snällt mot bläckpatronen. Stilens typsnitt är kvar."
                 : THEMES.find((t) => t.id === theme)?.note}
             </p>
           </div>
@@ -471,8 +480,9 @@ export default function Landing({
             they did not choose and cannot help. */}
         <h2 id="pitfalls-heading">Känner du igen det här?</h2>
         <p className="lead">
-          Så här ser många scheman ut när de kommer hem: koder, grått och pyttesmå siffror. Och
-          så här fixar vi det. (AI:n läser bra, men kolla gärna tiderna mot originalet.)
+          Så här ser många scheman ut när de kommer hem: koder, grått och pyttesmå siffror.
+          Siffrorna på bilden visar vad som är svårt att läsa, och listan visar vad du får i
+          stället.
         </p>
         {SPECIMENS.map((s, si) => {
           // Numbered straight through, so the second sheet's faults read as
@@ -527,12 +537,12 @@ export default function Landing({
       <footer className="landing-foot">
         <h2>Ert schema stannar hos er</h2>
         <p>
-          Inget konto och ingen inloggning. Bilden eller texten läses av med AI hos Google, och vi
-          sparar varken den eller ert schema. Schemat sparas bara här i webbläsaren – använd samma
-          webbläsare om du vill fortsätta senare. (Rensar du webbläsarens data försvinner det.)
+          Du behöver inget konto. Bilden eller texten läses av med AI hos Google, och vi sparar
+          varken den eller schemat. Schemat ligger kvar här i webbläsaren, så använd samma
+          webbläsare om du vill fortsätta senare. Rensar du webbläsarens data försvinner det.
         </p>
         <p>
-          Delar du schemat med klassen ligger det i själva länken du skickar – inte hos oss.
+          Delar du schemat med klassen ligger det i själva länken du skickar, inte hos oss.
         </p>
         {/* True only while PRINT_ON_SERVER is on in SchedulerApp.tsx. The picture
             PDF is drawn in the browser and sends nothing. */}
@@ -548,9 +558,6 @@ export default function Landing({
             det hos oss tills du tar bort det – och du kan ta bort hela kontot när du vill.
           </p>
         )}
-        <p>
-          Flera barn? Skriv ut det första schemat, tryck på Börja om och ta nästa.
-        </p>
         {/* The paragraphs above are the short version. This is the whole of it. */}
         <p>
           <a href="/integritet">Allt om hur vi hanterar era uppgifter</a>
