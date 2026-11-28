@@ -47,8 +47,14 @@ const STEPS: [string, string, string][] = [
   ["03", "Upp på kylskåpet", "Välj färger och stil. Skriv sedan ut på A4 eller A3, eller spara som PDF. Flera barn? När det första är utskrivet trycker du på Börja om och gör nästa."],
 ];
 
+// Never "koder" alone where a visitor reads it. It is this app's own word for
+// MA and KRN — the code is full of it — and the owner's point was that someone
+// arriving cold does not know what it refers to. Running text says
+// "förkortningar och koder", his wording: MA is the one, KRN the other. The
+// headings say "förkortningar" and stay on one line. The lead at the top goes
+// a step further and shows a pair instead of naming the thing at all.
 const BENEFITS: [string, string][] = [
-  ["Namn i stället för koder", "MA blir Matematik och KRN blir Karin. Lärarnas namn skriver du in en gång – sen står de överallt."],
+  ["Namn i stället för förkortningar", "MA blir Matematik och KRN blir Karin. Lärarnas namn skriver du in en gång – sen står de överallt."],
   ["Du ser hur lång dagen är", "En lång lektion blir en stor ruta och en kort blir liten. Du ser direkt när det är rast och när skoldagen slutar."],
   ["Det viktiga först", "Ämnet syns tydligast. Tid, lärare och sal står i mindre text bredvid."],
   ["En färg per ämne", "Matten har alltid samma färg, så den är lätt att hitta hela veckan. Byt färger om ni vill."],
@@ -79,8 +85,8 @@ const FAULTS: Fault[] = [
   {
     // Named for what you get, like the five after it. It was "Koder i stället
     // för ord" — the fault, where every other heading in the list is the fix,
-    // and the mirror image of "Namn i stället för koder" two sections up.
-    term: "Ord i stället för koder",
+    // and the mirror image of the first benefit's heading two sections up.
+    term: "Ord i stället för förkortningar",
     // Subjects as well as teachers. The examples are Friday's TK with MTP,
     // which the sample above prints as Teknik and Mattias. "Vanliga
     // ämneskoder", not all of them: SO and NO are left as codes on purpose
@@ -294,7 +300,8 @@ export default function Landing({
           <h1>Ett skolschema som barnen faktiskt kan läsa</h1>
           <p className="lead">
             Fota schemat som kom hem från skolan. Efter några minuter har du ett tydligt,
-            färgglatt schema med riktiga namn i stället för koder – redo för kylskåpet.
+            färgglatt schema där det står Matematik och Karin i stället för MA och KRN – redo
+            för kylskåpet.
           </p>
 
           <div className="upload-panel">
@@ -385,8 +392,15 @@ export default function Landing({
           {/* One line, not the privacy paragraph: that argument is made once,
               at the foot of the page, and making it twice reads as protesting.
               What belongs beside the button is only what you need before you
-              press it. */}
-          <p className="fineprint">Gratis och utan konto. Schemat läses av med AI hos Google och sparas inte hos oss.</p>
+              press it.
+              Three plain sentences, one fact each. It was "Schemat läses av med
+              AI hos Google och sparas inte hos oss", which the owner read twice
+              without being sure what happens to the photo: it did not say that
+              the photo is sent anywhere, or what is not kept. */}
+          <p className="fineprint">
+            Gratis, och du behöver inget konto. Bilden skickas till Googles AI-tjänst, som läser av
+            schemat. Vi sparar varken bilden eller schemat.
+          </p>
         </div>
 
         {/* The label is visible text inside the figure, so it is the figure's
@@ -461,7 +475,7 @@ export default function Landing({
       <section className="benefits" aria-labelledby="benefits-heading">
         <h2 id="benefits-heading">Gjort för stressiga morgnar</h2>
         <p className="lead">
-          När alla ska ut genom dörren samtidigt ska ingen behöva tolka koder. Så här hjälper
+          När alla ska ut genom dörren samtidigt ska ingen behöva tyda förkortningar och koder. Så här hjälper
           schemat hela familjen att ha koll på veckan.
         </p>
         <dl>
@@ -480,7 +494,8 @@ export default function Landing({
             they did not choose and cannot help. */}
         <h2 id="pitfalls-heading">Känner du igen det här?</h2>
         <p className="lead">
-          Så här ser många scheman ut när de kommer hem: koder, grått och pyttesmå siffror.
+          Så här ser många scheman ut när de kommer hem: förkortningar och koder, grått och pyttesmå
+          siffror.
           Siffrorna på bilden visar vad som är svårt att läsa, och listan visar vad du får i
           stället.
         </p>
