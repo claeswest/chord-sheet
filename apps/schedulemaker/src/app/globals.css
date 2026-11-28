@@ -368,6 +368,8 @@ kbd {
   font: inherit; font-size: 12px; padding: 1px 6px; border-radius: 5px;
   border: 1px solid #d6d6de; border-bottom-width: 2px; background: #fff; color: #1a1a1a;
 }
+/* A key combination is one thing to press, so it is never split over two lines. */
+.keys { white-space: nowrap; }
 
 /* A link, not a button: it is the smaller of two doors, and dressing it as a
    second button would make people weigh the two. */
@@ -1215,8 +1217,12 @@ button.with-icon { display: inline-flex; align-items: center; gap: 8px; }
 .style-panel { margin-top: 20px; padding: 22px; background: #fff; border: 1px solid #e3e0ec; border-radius: 16px; }
 .style-panel .styles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .style-panel .style { border-radius: 8px; padding: 9px 6px; justify-content: center; font-size: 12px; gap: 5px; }
-.style-panel .inkrow { justify-content: flex-start; border-top: 1px solid #eeeaf3; padding-top: 16px; margin-top: 18px; }
-.style-note { margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: #625d71; }
+/* The three switches, one under the other. */
+.style-panel .inkrow { display: grid; justify-content: start; gap: 12px; border-top: 1px solid #eeeaf3; padding-top: 16px; margin-top: 16px; }
+/* Says what the chosen style is, so it stands with the styles: above the rule
+   that separates them from the switches, not below everything. */
+.style-note { margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: #5b5865; }
+.style-note strong { color: #1a1a1a; font-weight: 650; }
 @media (max-width: 900px) {
   .upload-panel, .style-panel { padding: 20px; }
 }

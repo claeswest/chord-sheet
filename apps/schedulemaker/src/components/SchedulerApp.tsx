@@ -971,9 +971,9 @@ export default function SchedulerApp({ view }: { view: "start" | "editor" }) {
                 <div className="setgroup">
                   {/* Beside the styles, not among them: they apply to whichever
                       one is chosen. */}
-                  <Check label="Bläcksnål utskrift" on={ink} onChange={setInk} />
                   <Check label="Ämnessymboler" on={icons} onChange={setIcons} />
                   <Check label="Illustration" on={illustration} onChange={setIllustration} />
+                  <Check label="Bläcksnål utskrift" on={ink} onChange={setInk} />
                 </div>
               </div>
             )}

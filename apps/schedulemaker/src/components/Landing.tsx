@@ -226,6 +226,8 @@ export default function Landing({
   const [text, setText] = useState("");
   const area = useRef<HTMLTextAreaElement>(null);
   const working = busy || phase !== null;
+  /** The style the sample is wearing, for the line that says what it is. */
+  const chosen = THEMES.find((t) => t.id === theme);
 
   /**
    * Seconds since the import started.
@@ -344,7 +346,14 @@ export default function Landing({
                 ) : (
                   <>
                     <span className="on-mouse">
-                      Du kan också dra hit bilden, eller klistra in en skärmbild med <kbd>Ctrl</kbd> + <kbd>V</kbd>.
+                      {/* The keys are in the middle of the sentence and held
+                          together. At the end, "Ctrl +" stood last on one line
+                          and a lone "V" with a full stop began the next. */}
+                      Du kan också dra hit bilden, eller trycka{" "}
+                      <span className="keys">
+                        <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                      </span>{" "}
+                      för att klistra in en skärmbild.
                     </span>
                     <span className="on-touch">Fota schemat direkt eller välj en bild du redan har.</span>
                   </>
@@ -440,24 +449,39 @@ export default function Landing({
                 </button>
               ))}
             </div>
-            {/* Under the styles rather than in the row, because it is not one of
-                them: it applies to whichever style is chosen, and it is a
-                question about your printer rather than your taste. */}
+            {/* What the chosen style is, straight under the buttons that choose
+                it and with its name in front. It used to be the last line of the
+                panel, under the three switches, where "Rent och luftigt med blå
+                detaljer" read as a remark about nothing in particular. */}
+            <p className="style-note" aria-live="polite">
+              <strong>{chosen?.name ?? "Papper"}{ink ? ", bläcksnålt" : ""}:</strong>{" "}
+              {ink ? "svart på vitt utan färgade rutor. Stilens typsnitt är kvar." : chosen?.note}
+            </p>
+            {/* Under the styles rather than among them, because they are not
+                styles: each applies to whichever style is chosen. One under the
+                other — three in two columns left the third alone on a row of
+                its own. What is drawn on the sheet first, and the one that is a
+                question about your printer rather than your taste last. */}
             <div className="inkrow">
-              <Check label="Bläcksnål utskrift" hint="svart på vitt – snällt mot skrivaren" on={ink} onChange={onInk} />
-              <Check label="Ämnessymboler" hint="små bilder för den som inte läser än" on={icons} onChange={onIcons} />
+              <Check
+                label="Ämnessymboler"
+                hint="en liten bild vid varje ämne, för den som inte läser än"
+                on={icons}
+                onChange={onIcons}
+              />
               <Check
                 label="Illustration"
-                hint="en liten bild som passar stilen"
+                hint="en liten teckning uppe i hörnet, olika för varje stil"
                 on={illustration}
                 onChange={onIllustration}
               />
+              <Check
+                label="Bläcksnål utskrift"
+                hint="svart på vitt utan färgade rutor – snällt mot skrivaren"
+                on={ink}
+                onChange={onInk}
+              />
             </div>
-            <p className="style-note" aria-live="polite">
-              {ink
-                ? "Svart på vitt utan färgade rutor – snällt mot bläckpatronen. Stilens typsnitt är kvar."
-                : THEMES.find((t) => t.id === theme)?.note}
-            </p>
           </div>
         </figure>
       </section>
